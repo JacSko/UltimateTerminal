@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>JSlogger</string>
+   <string>UltimateTerminal</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="enabled">
@@ -35,64 +35,88 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
-      <item row="8" column="4">
-       <widget class="QPushButton" name="btnOpen2_4">
-        <property name="text">
-         <string>PORT5</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label">
+      <item row="3" column="4">
+       <widget class="QPushButton" name="userButton_10">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="send4">
+      <item row="9" column="1">
+       <widget class="QLabel" name="portLabel_2">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="clearButton">
+        <property name="text">
+         <string>CLEAR</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="4">
+       <widget class="QLabel" name="portLabel_5">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="5">
+       <widget class="QListWidget" name="terminalView">
+        <property name="autoScrollMargin">
+         <number>2</number>
+        </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="portLabel_1">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="send1_2">
+       <widget class="QPushButton" name="userButton_1">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="9" column="3">
-       <widget class="QLabel" name="label_6">
+      <item row="2" column="1">
+       <widget class="QPushButton" name="userButton_2">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="3" column="4">
-       <widget class="QPushButton" name="send6_2">
+      <item row="8" column="3">
+       <widget class="QPushButton" name="portButton_4">
         <property name="text">
-         <string/>
+         <string>PORT4</string>
         </property>
        </widget>
       </item>
       <item row="3" column="3">
-       <widget class="QPushButton" name="send6">
+       <widget class="QPushButton" name="userButton_9">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="send1_5">
+      <item row="2" column="3">
+       <widget class="QPushButton" name="userButton_4">
         <property name="text">
-         <string>LOGGING</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item row="0" column="4">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="applicationName">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -112,26 +136,33 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
-       <widget class="QPushButton" name="btnOpen2_2">
+      <item row="2" column="2">
+       <widget class="QPushButton" name="userButton_3">
         <property name="text">
-         <string>PORT3</string>
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="3">
+       <widget class="QLabel" name="portLabel_4">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
       <item row="6" column="0" colspan="5">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QComboBox" name="comboBox"/>
+         <widget class="QComboBox" name="portComboBox"/>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit"/>
+         <widget class="QLineEdit" name="textEdit"/>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox_2"/>
+         <widget class="QComboBox" name="lineEndingComboBox"/>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="sendButton">
           <property name="text">
            <string>SEND</string>
           </property>
@@ -139,74 +170,22 @@
         </item>
        </layout>
       </item>
-      <item row="8" column="3">
-       <widget class="QPushButton" name="btnOpen2_3">
-        <property name="text">
-         <string>PORT4</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QPushButton" name="send5">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="send4_2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="5">
-       <widget class="QListWidget" name="termView">
-        <property name="autoScrollMargin">
-         <number>2</number>
-        </property>
-        <property name="verticalScrollMode">
-         <enum>QAbstractItemView::ScrollPerPixel</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="send2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="1">
-       <widget class="QPushButton" name="btnOpen2">
+       <widget class="QPushButton" name="portButton_2">
         <property name="text">
          <string>PORT2</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="4">
-       <widget class="QLabel" name="label_7">
+      <item row="3" column="0">
+       <widget class="QPushButton" name="userButton_6">
         <property name="text">
          <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QPushButton" name="send3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="send1_4">
-        <property name="text">
-         <string>MARKER</string>
         </property>
        </widget>
       </item>
       <item row="8" column="0">
-       <widget class="QPushButton" name="btnOpen">
+       <widget class="QPushButton" name="portButton_1">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -215,38 +194,59 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="send1">
+      <item row="3" column="2">
+       <widget class="QPushButton" name="userButton_8">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
-       <widget class="QLabel" name="label_4">
+      <item row="8" column="2">
+       <widget class="QPushButton" name="portButton_3">
         <property name="text">
-         <string/>
+         <string>PORT3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="markerButton">
+        <property name="text">
+         <string>MARKER</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="loggingButton">
+        <property name="text">
+         <string>LOGGING</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="4">
+       <widget class="QPushButton" name="portButton_5">
+        <property name="text">
+         <string>PORT5</string>
         </property>
        </widget>
       </item>
       <item row="9" column="2">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="portLabel_3">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="QPushButton" name="send3_2">
+       <widget class="QPushButton" name="userButton_5">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="send1_3">
+      <item row="3" column="1">
+       <widget class="QPushButton" name="userButton_7">
         <property name="text">
-         <string>CLEAR</string>
+         <string/>
         </property>
        </widget>
       </item>
