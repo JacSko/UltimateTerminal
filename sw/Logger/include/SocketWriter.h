@@ -36,7 +36,7 @@ class LoggerSocketWriter : public ILoggerWriter
 {
 public:
    LoggerSocketWriter(uint16_t port):
-   m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::ServerType::RAW_DATA)),
+   m_server(Drivers::SocketFactory::createServer()),
    m_port(port)
    {
    }
