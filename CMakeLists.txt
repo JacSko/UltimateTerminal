@@ -32,3 +32,4 @@ target_link_libraries(UltimateTerminal
 )
 
 add_subdirectory(sw/MainWindow)
+add_subdirectory(sw/Utilities)
