@@ -49,7 +49,7 @@ SettingsHandler* g_settings;
 
 SettingsHandler* SettingsHandler::get()
 {
-   HC_Assert(g_settings);
+   UT_Assert(g_settings);
    return g_settings;
 }
 
@@ -74,7 +74,7 @@ m_timer_id(TIMERS_INVALID_ID)
    SETTING_GROUPS
 #undef DEF_SETTING_GROUP
 
-   HC_Log(SETTINGS, INFO, "Default setting loaded");
+   UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
 
 void SettingsHandler::start(const std::string& settings_file_path, Utilities::ITimers* timers)
@@ -119,12 +119,12 @@ bool SettingsHandler::checkAndRefresh()
       if (m_last_file_modification.tv_sec != file_stats.st_mtim.tv_sec)
       {
          m_last_file_modification = file_stats.st_mtim;
-         HC_Log(SETTINGS, LOW, "Settings file changed");
+         UT_Log(SETTINGS, LOW, "Settings file changed");
          auto settings_changed = applySettings();
          if (settings_changed.size() > 0)
          {
             result = true;
-            HC_Log(SETTINGS, INFO, "%d settings changed", settings_changed.size());
+            UT_Log(SETTINGS, INFO, "%d settings changed", settings_changed.size());
             for (auto& key : settings_changed)
             {
                notifyListeners(key);
@@ -149,7 +149,7 @@ void SettingsHandler::reloadSettings()
 
    if (m_timer_id != TIMERS_INVALID_ID)
    {
-      HC_Log(SETTINGS, INFO, "File check period changed to %u", SETTING_GET_U32(Settings_fileCheckPeriod));
+      UT_Log(SETTINGS, INFO, "File check period changed to %u", SETTING_GET_U32(Settings_fileCheckPeriod));
       m_timers->setTimeout(m_timer_id, SETTING_GET_U32(Settings_fileCheckPeriod));
       m_timers->startTimer(m_timer_id, true);
    }
@@ -167,7 +167,7 @@ void SettingsHandler::startFileObservation()
 
 void SettingsHandler::stopFileObservation()
 {
-   HC_Log(SETTINGS, INFO, "%s", __func__);
+   UT_Log(SETTINGS, INFO, "%s", __func__);
    m_timers->stopTimer(m_timer_id);
    m_timers->removeTimer(m_timer_id);
    m_timer_id = TIMERS_INVALID_ID;
@@ -226,20 +226,20 @@ std::vector<KeyID> SettingsHandler::applySettings()
 void SettingsHandler::printSettings()
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Log(SETTINGS, INFO, "U32 SETTINGS:");
+   UT_Log(SETTINGS, INFO, "U32 SETTINGS:");
    for (auto& it : m_u32_items)
    {
-      HC_Log(SETTINGS, INFO, "%s => %u", m_setting_names[(uint32_t)it.first].c_str(), it.second);
+      UT_Log(SETTINGS, INFO, "%s => %u", m_setting_names[(uint32_t)it.first].c_str(), it.second);
    }
-   HC_Log(SETTINGS, INFO, "BOOL SETTINGS:");
+   UT_Log(SETTINGS, INFO, "BOOL SETTINGS:");
    for (auto& it : m_bool_items)
    {
-      HC_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second? "true" : "false");
+      UT_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second? "true" : "false");
    }
-   HC_Log(SETTINGS, INFO, "STRING SETTINGS:");
+   UT_Log(SETTINGS, INFO, "STRING SETTINGS:");
    for (auto& it : m_string_items)
    {
-      HC_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second.c_str());
+      UT_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second.c_str());
    }
 
 }
@@ -247,28 +247,28 @@ void SettingsHandler::printSettings()
 uint32_t SettingsHandler::getU32(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_u32_items[id];
 }
 
 std::string SettingsHandler::getString(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_string_items[id];
 }
 
 bool SettingsHandler::getBool(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_bool_items[id];
 }
 
 bool SettingsHandler::setU32(KeyID id, uint32_t value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    uint32_t old = m_u32_items[id];
    m_u32_items[id] = value;
    bool changed = old != value;
@@ -279,7 +279,7 @@ bool SettingsHandler::setU32(KeyID id, uint32_t value)
 bool SettingsHandler::setString(KeyID id, const std::string& value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    std::string old = m_string_items[id];
    m_string_items[id] = value;
    bool changed = old != value;
@@ -301,7 +301,7 @@ KeyID SettingsHandler::getID(const std::string& name)
 bool SettingsHandler::setBool(KeyID id, bool value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    bool old = m_bool_items[id];
    m_bool_items[id] = value;
    bool changed = old != value;

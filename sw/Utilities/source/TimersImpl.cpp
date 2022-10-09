@@ -23,13 +23,13 @@ TimersImpl::~TimersImpl()
 }
 bool TimersImpl::start()
 {
-   HC_Log(UTILITIES, INFO, "starting timers");
+   UT_Log(UTILITIES, INFO, "starting timers");
    constexpr uint32_t THREAD_START_TIMEOUT = 1000;
    return m_thread.start(THREAD_START_TIMEOUT);
 }
 void TimersImpl::stop()
 {
-   HC_Log(UTILITIES, INFO, "stopping timers");
+   UT_Log(UTILITIES, INFO, "stopping timers");
    m_thread.stop();
    std::lock_guard<std::recursive_mutex> lock(m_timers_mutex);
    m_timers.clear();
@@ -50,7 +50,7 @@ uint32_t TimersImpl::createTimer(ITimerClient* client, uint32_t default_timeout)
       m_timers.push_back((Timer){m_last_timer_id, default_timeout, default_timeout, false, false, {}, client});
       result = m_last_timer_id;
    }
-   HC_Log(UTILITIES, LOW, "creating timer %u with default timeout %u - %s", result, default_timeout, result == TIMERS_INVALID_ID? "NOK" : "OK");
+   UT_Log(UTILITIES, LOW, "creating timer %u with default timeout %u - %s", result, default_timeout, result == TIMERS_INVALID_ID? "NOK" : "OK");
    return result;
 }
 void TimersImpl::removeTimer(uint32_t timer_id)
@@ -61,7 +61,7 @@ void TimersImpl::removeTimer(uint32_t timer_id)
    {
       m_timers.erase(it);
    }
-   HC_Log(UTILITIES, LOW, "destroying timer %u", timer_id);
+   UT_Log(UTILITIES, LOW, "destroying timer %u", timer_id);
 }
 bool TimersImpl::setTimeout(uint32_t timer_id, uint32_t timeout)
 {
@@ -78,7 +78,7 @@ bool TimersImpl::setTimeout(uint32_t timer_id, uint32_t timeout)
          result = true;
       }
    }
-   HC_Log(UTILITIES, LOW, "setting timeout on timer %u to %u - %s", timer_id, timeout, result? "OK" : "NOK");
+   UT_Log(UTILITIES, LOW, "setting timeout on timer %u to %u - %s", timer_id, timeout, result? "OK" : "NOK");
    return result;
 }
 
@@ -106,7 +106,7 @@ void TimersImpl::startTimer(uint32_t timer_id)
       it->is_running = true;
       it->start_ts = std::chrono::steady_clock::now();
    }
-   HC_Log(UTILITIES, HIGH, "%s id %u", __func__, timer_id);
+   UT_Log(UTILITIES, HIGH, "%s id %u", __func__, timer_id);
 }
 void TimersImpl::startTimer(uint32_t timer_id, uint32_t timeout)
 {
@@ -118,7 +118,7 @@ void TimersImpl::startTimer(uint32_t timer_id, uint32_t timeout)
       it->current_timeout = timeout;
       it->start_ts = std::chrono::steady_clock::now();
    }
-   HC_Log(UTILITIES, HIGH, "%s id %u timeout %u", __func__, timer_id, timeout);
+   UT_Log(UTILITIES, HIGH, "%s id %u timeout %u", __func__, timer_id, timeout);
 }
 void TimersImpl::startTimer(uint32_t timer_id, bool periodic)
 {
@@ -130,7 +130,7 @@ void TimersImpl::startTimer(uint32_t timer_id, bool periodic)
       it->periodic = periodic;
       it->start_ts = std::chrono::steady_clock::now();
    }
-   HC_Log(UTILITIES, HIGH, "%s id %u periodic %u", __func__, timer_id, (uint8_t)periodic);
+   UT_Log(UTILITIES, HIGH, "%s id %u periodic %u", __func__, timer_id, (uint8_t)periodic);
 }
 void TimersImpl::stopTimer(uint32_t timer_id)
 {
@@ -140,7 +140,7 @@ void TimersImpl::stopTimer(uint32_t timer_id)
    {
       it->is_running = false;
    }
-   HC_Log(UTILITIES, HIGH, "%s %u", __func__, timer_id);
+   UT_Log(UTILITIES, HIGH, "%s %u", __func__, timer_id);
 }
 
 void TimersImpl::execute()

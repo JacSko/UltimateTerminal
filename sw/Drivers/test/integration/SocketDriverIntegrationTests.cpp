@@ -143,7 +143,6 @@ TEST_F(SocketDriveFixture, server_to_client_multiple_data_exchange_in_delimiter_
    ASSERT_TRUE(m_server->write(TEST_DATA_1, TEST_DATA_1.size()));
    ASSERT_TRUE(m_server->write(TEST_DATA_2, TEST_DATA_2.size()));
    ASSERT_TRUE(m_server->write(TEST_DATA_3, TEST_DATA_3.size()));
-   HC_Log(SOCK_DRV, INFO, "send data");
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
    /* disconnect client, stop server */

@@ -94,38 +94,38 @@ bool SocketClient::connect(DataMode mode, std::string ip_address, uint16_t port)
                if (system_call::connect(m_sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == 0)
                {
                   result = true;
-                  HC_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
+                  UT_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
                   m_worker.start(CLIENT_THREAD_START_TIMEOUT);
                }
                else
                {
-                  HC_Log(SOCK_DRV, ERROR, "cannot connect to %s:%u", m_ip_address.c_str(), m_port);
+                  UT_Log(SOCK_DRV, ERROR, "cannot connect to %s:%u", m_ip_address.c_str(), m_port);
                   system_call::close(m_sock_fd);
                   m_sock_fd = -1;
                }
             }
             else
             {
-               HC_Log(SOCK_DRV, ERROR, "cannot convert ip address %s:%u", m_ip_address.c_str(), m_port);
+               UT_Log(SOCK_DRV, ERROR, "cannot convert ip address %s:%u", m_ip_address.c_str(), m_port);
                system_call::close(m_sock_fd);
                m_sock_fd = -1;
             }
          }
          else
          {
-            HC_Log(SOCK_DRV, ERROR, "cannot set receive timeout");
+            UT_Log(SOCK_DRV, ERROR, "cannot set receive timeout");
             system_call::close(m_sock_fd);
             m_sock_fd = -1;
          }
       }
       else
       {
-         HC_Log(SOCK_DRV, ERROR, "cannot create socket %s:%u", m_ip_address.c_str(), m_port);
+         UT_Log(SOCK_DRV, ERROR, "cannot create socket %s:%u", m_ip_address.c_str(), m_port);
       }
    }
    else
    {
-      HC_Log(SOCK_DRV, ERROR, "already connected to %s:%u", m_ip_address.c_str(), m_port);
+      UT_Log(SOCK_DRV, ERROR, "already connected to %s:%u", m_ip_address.c_str(), m_port);
    }
 
    return result;

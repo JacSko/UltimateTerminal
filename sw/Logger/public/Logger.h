@@ -32,15 +32,6 @@
    DEF_LOGGER_GROUP(SETTINGS, ERROR)      \
    DEF_LOGGER_GROUP(SOCK_DRV, HIGH)       \
    DEF_LOGGER_GROUP(UTILITIES, HIGH)      \
-   DEF_LOGGER_GROUP(I2C_DRIVER, HIGH)     \
-   DEF_LOGGER_GROUP(DHT_DRIVER, HIGH)     \
-   DEF_LOGGER_GROUP(INT_DRIVER, HIGH)     \
-   DEF_LOGGER_GROUP(RPC_SERVER, HIGH)     \
-   DEF_LOGGER_GROUP(RPC_CLIENT, HIGH)     \
-   DEF_LOGGER_GROUP(HC_API, HIGH)         \
-   DEF_LOGGER_GROUP(BOARD, HIGH)          \
-   DEF_LOGGER_GROUP(ENV_CTRL, HIGH)       \
-   DEF_LOGGER_GROUP(TEST_CORE, HIGH)      \
 
 #define LOGGER_WRITERS               \
    DEF_LOGGER_WRITER(STDOUT_WRITER)  \
@@ -106,7 +97,7 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Log(group,level,fmt,...) LoggerEngine::get()->putLog(ALL_WRITERS,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
+#define UT_Log(group,level,fmt,...) LoggerEngine::get()->putLog(ALL_WRITERS,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
 /**
  * @brief Puts data into logger conditionally, to be save according to current settings.
  * @param[in] cond - if true, log will be processed
@@ -116,7 +107,7 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Log_If(cond,group,level,fmt,...) if(cond)LoggerEngine::get()->putLog(ALL_WRITERS,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
+#define UT_Log_If(cond,group,level,fmt,...) if(cond)LoggerEngine::get()->putLog(ALL_WRITERS,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
 /**
  * @brief Assertion with predefined message.
  * @param[in] cond - if true, application crash will be triggerred
@@ -124,7 +115,7 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Assert(cond) if(!(cond))LoggerEngine::get()->assertion(ALL_WRITERS,__FILENAME__,__LINE__,#cond)
+#define UT_Assert(cond) if(!(cond))LoggerEngine::get()->assertion(ALL_WRITERS,__FILENAME__,__LINE__,#cond)
 /**
  * @brief Puts data into logger, to be printed on standard output.
  * @param[in] logger_group - Logger group according to LoggerGroupID
@@ -133,7 +124,7 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Stdout_Log(group,level,fmt,...) LoggerEngine::get()->putLog(STDOUT_WRITER,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
+#define UT_Stdout_Log(group,level,fmt,...) LoggerEngine::get()->putLog(STDOUT_WRITER,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
 /**
  * @brief Puts data into logger conditionally, to be printed on standard output.
  * @param[in] cond - if true, log will be processed
@@ -143,7 +134,7 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Stdout_Log_If(cond,group,level,fmt,...) if(cond)LoggerEngine::get()->putLog(STDOUT_WRITER,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
+#define UT_Stdout_Log_If(cond,group,level,fmt,...) if(cond)LoggerEngine::get()->putLog(STDOUT_WRITER,group,level,__FILENAME__,__LINE__,fmt,##__VA_ARGS__)
 /**
  * @brief Assertion with predefined message printed only on standard output.
  * @param[in] cond - if true, application crash will be triggerred
@@ -151,21 +142,21 @@ typedef enum
  * @param[in] ... - Arguments for formatting
  * @return void
  */
-#define HC_Stdout_Assert(cond) if(!(cond))LoggerEngine::get()->assertion(STDOUT_WRITER,__FILENAME__,__LINE__,#cond)
+#define UT_Stdout_Assert(cond) if(!(cond))LoggerEngine::get()->assertion(STDOUT_WRITER,__FILENAME__,__LINE__,#cond)
 /**
  * @brief Set level for defined group.
  * @param[in] group - logging group for level changing
  * @param[in] level - desired level
  * @return void
  */
-#define HC_Set_Level(group, level) LoggerEngine::get()->setLevel(group, level)
+#define UT_Set_Level(group, level) LoggerEngine::get()->setLevel(group, level)
 
 /**
  * @brief Get level for defined group.
  * @param[in] group - logger group
  * @return Group level
  */
-#define HC_Get_Level(group) LoggerEngine::get()->getLevel(group)
+#define UT_Get_Level(group) LoggerEngine::get()->getLevel(group)
 
 
 #endif

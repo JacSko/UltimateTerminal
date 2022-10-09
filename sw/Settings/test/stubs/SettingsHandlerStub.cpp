@@ -71,7 +71,7 @@ m_timer_id(TIMERS_INVALID_ID)
    SETTING_GROUPS
 #undef DEF_SETTING_GROUP
 
-   HC_Log(SETTINGS, INFO, "Default setting loaded");
+   UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
 
 void SettingsHandler::start(const std::string&, Utilities::ITimers*)
@@ -120,28 +120,28 @@ void SettingsHandler::printSettings()
 uint32_t SettingsHandler::getU32(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_u32_items[id];
 }
 
 std::string SettingsHandler::getString(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_string_items[id];
 }
 
 bool SettingsHandler::getBool(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    return m_bool_items[id];
 }
 
 bool SettingsHandler::setU32(KeyID id, uint32_t value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    uint32_t old = m_u32_items[id];
    m_u32_items[id] = value;
    bool changed = old != value;
@@ -152,7 +152,7 @@ bool SettingsHandler::setU32(KeyID id, uint32_t value)
 bool SettingsHandler::setString(KeyID id, const std::string& value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    std::string old = m_string_items[id];
    m_string_items[id] = value;
    bool changed = old != value;
@@ -174,7 +174,7 @@ KeyID SettingsHandler::getID(const std::string& name)
 bool SettingsHandler::setBool(KeyID id, bool value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   HC_Assert(id < SETTING_GROUP_MAX);
+   UT_Assert(id < SETTING_GROUP_MAX);
    bool old = m_bool_items[id];
    m_bool_items[id] = value;
    bool changed = old != value;
