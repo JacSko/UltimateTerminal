@@ -1,7 +1,7 @@
-#include "MainWindow.h"
+#include "MainApplication.h"
 #include "ui_MainWindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainApplication::MainApplication(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 }
 
-MainWindow::~MainWindow()
+MainApplication::~MainApplication()
 {
     delete ui;
 }

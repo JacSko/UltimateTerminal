@@ -12,13 +12,13 @@ QT_END_NAMESPACE
 
 
 
-class MainWindow : public QMainWindow
+class MainApplication : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    MainApplication(QWidget *parent = nullptr);
+    ~MainApplication();
 private:
     Ui::MainWindow *ui;
 

@@ -34,7 +34,7 @@ add_executable(UltimateTerminal
 )
 target_link_libraries(UltimateTerminal
    pthread
-   MainWindow
+   MainApplication
 )
 
 else()
@@ -45,7 +45,7 @@ else()
 endif()
 
 add_subdirectory(ext_libs/json_parser)
-add_subdirectory(sw/MainWindow)
+add_subdirectory(sw/MainApplication)
 add_subdirectory(sw/Utilities)
 add_subdirectory(sw/Drivers)
 add_subdirectory(sw/Settings)
