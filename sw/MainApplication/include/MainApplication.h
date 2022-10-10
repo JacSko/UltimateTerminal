@@ -35,6 +35,8 @@ public slots:
    void onSendButtonClicked();
    void onPortButtonClicked();
    void onUserButtonClicked();
+   void onUserButtonContextMenuRequested();
+   void onPortButtonContextMenuRequested();
 
 };
 #endif
