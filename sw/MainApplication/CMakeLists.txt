@@ -10,4 +10,7 @@ target_include_directories(MainApplication PUBLIC
 
 target_link_libraries(MainApplication
    Qt5::Widgets
+   SettingsHandler
+   Logger
+   Utilities
 )

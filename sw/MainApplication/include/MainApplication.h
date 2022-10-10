@@ -5,6 +5,7 @@
 #include "QtWidgets/QLabel"
 #include "QtWidgets/QPushButton"
 #include <vector>
+#include "ITimers.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,6 +22,19 @@ public:
     ~MainApplication();
 private:
     Ui::MainWindow *ui;
+
+    std::unique_ptr<Utilities::ITimers> m_timers;
+
+    void connectSignalsToSlots();
+
+public slots:
+   void onMarkerButtonClicked();
+   void onLoggingButtonClicked();
+   void onClearButtonClicked();
+
+   void onSendButtonClicked();
+   void onPortButtonClicked();
+   void onUserButtonClicked();
 
 };
 #endif
