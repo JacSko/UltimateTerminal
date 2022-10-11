@@ -17,6 +17,7 @@
    DEF_SETTING_GROUP(Logger_socketPort, uint32_t, 5555) \
    DEF_SETTING_GROUP(Logger_logfilePath, std::string, "/home/jskowronek/projects/UltimateTerminal/build/log.log") \
    DEF_SETTING_GROUP(Logger_group_MAIN, std::string, "HIGH") \
+   DEF_SETTING_GROUP(Logger_group_MAIN_GUI, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_SETTINGS, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_UTILITIES, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_SOCK_DRV, std::string, "HIGH") \

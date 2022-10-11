@@ -29,6 +29,7 @@
 
 #define LOGGER_GROUPS                     \
    DEF_LOGGER_GROUP(MAIN,     HIGH)      \
+   DEF_LOGGER_GROUP(MAIN_GUI,     HIGH)      \
    DEF_LOGGER_GROUP(SETTINGS, HIGH)      \
    DEF_LOGGER_GROUP(SOCK_DRV, HIGH)       \
    DEF_LOGGER_GROUP(UTILITIES, HIGH)      \
