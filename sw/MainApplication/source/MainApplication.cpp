@@ -110,7 +110,8 @@ void MainApplication::onPortButtonClicked()
 void MainApplication::onPortButtonContextMenuRequested()
 {
    PortSettingDialog dialog (this);
-   dialog.showDialog({});
+   PortSettingDialog::Settings new_settings = dialog.showDialog({});
+   UT_Log(MAIN, LOW, "New settings: %s", std::string(new_settings).c_str());
 }
 void MainApplication::onUserButtonClicked()
 {

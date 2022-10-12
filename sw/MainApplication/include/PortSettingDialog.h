@@ -5,10 +5,14 @@
 #include <string>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFormLayout>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLineEdit>
 
 #include "Logger.h"
 
 #define DEF_PORT_TYPES     \
+   DEF_PORT_TYPE(UNKNOWN)  \
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \
 
@@ -80,23 +84,40 @@ enum class StopBits
       std::string port_name;
       std::string device;
       uint32_t baud_rate;
-      uint8_t data_bits;
-      uint8_t parity_bits;
-      uint8_t stop_bits;
+      DataBits data_bits;
+      ParityBits parity_bits;
+      StopBits stop_bits;
       std::string ip_address;
       uint32_t port;
+
+      operator std::string () const
+      {
+         std::string result = "";
+         result += toString(type) + " ";
+         result += toString(data_bits) + " ";
+         result += toString(parity_bits) + " ";
+         result += toString(stop_bits);
+         return result;
+      }
    };
 
    Settings showDialog(const Settings& current_settings);
+   static std::string toString(PortType);
+   static std::string toString(DataBits);
+   static std::string toString(ParityBits);
+   static std::string toString(StopBits);
 private:
 
    void addPortTypeComboBox(PortType current_selection = PortType::SERIAL);
    void addDialogButtons();
-
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
-
    void clearDialog();
+   Settings convertGuiValues();
+   bool validateSettings(const Settings& settings, PortType type);
+   bool validateBaudRate(uint32_t baudrate);
+   bool validateIpAddress(const std::string& ip_address);
+   bool validatePort(uint32_t port);
    PortType stringToPortType(const QString& name);
    DataBits stringToDataBits(const QString& name);
    ParityBits stringToParityBits(const QString& name);
@@ -105,6 +126,18 @@ private:
 
    QDialog m_dialog;
    QFormLayout m_form;
+   QComboBox m_portTypeBox;
+   QDialogButtonBox m_buttonBox;
+
+   QLineEdit m_portNameEdit;
+   QLineEdit m_deviceNameEdit;
+   QLineEdit m_baudRateEdit;
+   QComboBox m_dataBitsEdit;
+   QComboBox m_parityBitsEdit;
+   QComboBox m_stopBitsEdit;
+   QLineEdit m_ipAddressEdit;
+   QLineEdit m_ipPortEdit;
+
    std::vector<QWidget*> m_current_widgets;
 public slots:
    void onPortTypeChanged(const QString& port_name);

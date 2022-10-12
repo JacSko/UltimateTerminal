@@ -1,8 +1,5 @@
 #include "PortSettingDialog.h"
-
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QLineEdit>
+#include <arpa/inet.h>
 
 #undef DEF_PORT_TYPE
 #define DEF_PORT_TYPE(a) #a,
@@ -26,9 +23,22 @@ std::array<std::string, (size_t)PortSettingDialog::StopBits::STOP_BIT_MAX> g_sto
 
 PortSettingDialog::PortSettingDialog(QWidget* parent):
 m_dialog(parent),
-m_form(&m_dialog)
+m_form(&m_dialog),
+m_portTypeBox(&m_dialog),
+m_buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &m_dialog),
+m_portNameEdit(&m_dialog),
+m_deviceNameEdit(&m_dialog),
+m_baudRateEdit(&m_dialog),
+m_dataBitsEdit(&m_dialog),
+m_parityBitsEdit(&m_dialog),
+m_stopBitsEdit(&m_dialog),
+m_ipAddressEdit(&m_dialog),
+m_ipPortEdit(&m_dialog)
 {
-
+   m_portTypeBox.addItems({"SERIAL", "ETHERNET"});
+   m_dataBitsEdit.addItems({"5", "6", "7", "8"});
+   m_parityBitsEdit.addItems({"NONE", "EVEN", "ODD", "MARK", "SPACE"});
+   m_stopBitsEdit.addItems({"1", "2"});
 }
 PortSettingDialog::~PortSettingDialog()
 {
@@ -49,69 +59,81 @@ PortSettingDialog::Settings PortSettingDialog::showDialog(const Settings& curren
 
    if (m_dialog.exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN, ERROR, "accepted!");
+      UT_Log(MAIN_GUI, HIGH, "accepted, gathering new settings");
+      return convertGuiValues();
    }
+   else
+   {
+      return {};
+   }
+}
+std::string PortSettingDialog::toString(PortType type)
+{
+   UT_Assert(type < PortType::PORT_TYPE_MAX && "Invalid port type");
+   return g_port_names[(size_t)type];
+}
+std::string PortSettingDialog::toString(DataBits data)
+{
+   UT_Assert(data < DataBits::DATA_BIT_MAX && "Invalid data bits");
+   return g_databits_names[(size_t)data];
+}
+std::string PortSettingDialog::toString(ParityBits parity)
+{
+   UT_Assert(parity < ParityBits::PARITY_BIT_MAX && "Invalid parity bits");
+   return g_paritybits_names[(size_t)parity];
+}
+std::string PortSettingDialog::toString(StopBits stop)
+{
+   UT_Assert(stop < StopBits::STOP_BIT_MAX && "Invalid stop bits");
+   return g_stopbits_names[(size_t)stop];
 }
 void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
 {
    QString porttype_label = QString("Port type:");
-   QComboBox* porttype_box = new QComboBox(&m_dialog);
-   porttype_box->addItems({"SERIAL", "ETHERNET"});
-   porttype_box->setCurrentText(QString(g_port_names[(size_t)current_selection].c_str()));
-   m_form.addRow(porttype_label, porttype_box);
+   m_portTypeBox.setCurrentText(QString(PortSettingDialog::toString(current_selection).c_str()));
+   m_form.addRow(porttype_label, &m_portTypeBox);
 
-   QObject::connect(porttype_box, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
+   QObject::connect(&m_portTypeBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
 }
 void PortSettingDialog::addDialogButtons()
 {
-   QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &m_dialog);
-
-   m_form.addWidget(buttonBox);
-   QObject::connect(buttonBox, SIGNAL(accepted()), &m_dialog, SLOT(accept()));
-   QObject::connect(buttonBox, SIGNAL(rejected()), &m_dialog, SLOT(reject()));
+   m_form.addWidget(&m_buttonBox);
+   QObject::connect(&m_buttonBox, SIGNAL(accepted()), &m_dialog, SLOT(accept()));
+   QObject::connect(&m_buttonBox, SIGNAL(rejected()), &m_dialog, SLOT(reject()));
 }
 void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
    clearDialog();
 
    QString portname_label = QString("Port name:");
-   QLineEdit* portname_edit = new QLineEdit(dialog);
-   portname_edit->setText(QString(settings.port_name.c_str()));
-   form->insertRow(1, portname_label, portname_edit);
-   m_current_widgets.push_back(portname_edit);
+   m_portNameEdit.setText(QString(settings.port_name.c_str()));
+   form->insertRow(1, portname_label, &m_portNameEdit);
+   m_current_widgets.push_back(&m_portNameEdit);
 
    QString device_label = QString("Device name:");
-   QLineEdit* device_edit = new QLineEdit(dialog);
-   device_edit->setText(QString(settings.device.c_str()));
-   form->insertRow(2, device_label, device_edit);
-   m_current_widgets.push_back(device_edit);
+   m_deviceNameEdit.setText(QString(settings.device.c_str()));
+   form->insertRow(2, device_label, &m_deviceNameEdit);
+   m_current_widgets.push_back(&m_deviceNameEdit);
 
    QString baudrate_label = QString("Baudrate:");
-   QLineEdit* baudrate_edit = new QLineEdit(dialog);
-   baudrate_edit->setText(QString(settings.baud_rate));
-   form->insertRow(3, baudrate_label, baudrate_edit);
-   m_current_widgets.push_back(baudrate_edit);
+   m_baudRateEdit.setText(QString(settings.baud_rate));
+   form->insertRow(3, baudrate_label, &m_baudRateEdit);
+   m_current_widgets.push_back(&m_baudRateEdit);
 
    QString databits_label = QString("Data Bits:");
-   QComboBox* databits_box = new QComboBox(dialog);
-   databits_box->addItems({"5", "6", "7", "8"});
-   databits_box->setCurrentText(QString(settings.data_bits));
-   form->insertRow(4, databits_label, databits_box);
-   m_current_widgets.push_back(databits_box);
+   m_dataBitsEdit.setCurrentText(QString(PortSettingDialog::toString(settings.data_bits).c_str()));
+   form->insertRow(4, databits_label, &m_dataBitsEdit);
+   m_current_widgets.push_back(&m_dataBitsEdit);
 
    QString paritybits_label = QString("Parity Bits:");
-   QComboBox* paritybits_box = new QComboBox(dialog);
-   paritybits_box->addItems({"NONE", "EVEN", "ODD", "MARK", "SPACE"});
-   paritybits_box->setCurrentText(QString(settings.parity_bits));
-   form->insertRow(5, paritybits_label, paritybits_box);
-   m_current_widgets.push_back(paritybits_box);
+   m_parityBitsEdit.setCurrentText(QString(PortSettingDialog::toString(settings.parity_bits).c_str()));
+   form->insertRow(5, paritybits_label, &m_parityBitsEdit);
+   m_current_widgets.push_back(&m_parityBitsEdit);
 
    QString stopbits_label = QString("Stop Bits:");
-   QComboBox* stopbits_box = new QComboBox(dialog);
-   stopbits_box->addItems({"1", "2"});
-   stopbits_box->setCurrentText(QString(settings.stop_bits));
-   form->insertRow(6, stopbits_label, stopbits_box);
-   m_current_widgets.push_back(stopbits_box);
+   m_stopBitsEdit.setCurrentText(QString(PortSettingDialog::toString(settings.stop_bits).c_str()));
+   form->insertRow(6, stopbits_label, &m_stopBitsEdit);
+   m_current_widgets.push_back(&m_stopBitsEdit);
 
 }
 void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
@@ -119,28 +141,24 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    clearDialog();
 
    QString portname_label = QString("Port name:");
-   QLineEdit* portname_edit = new QLineEdit(dialog);
-   portname_edit->setText(QString(settings.port_name.c_str()));
-   form->insertRow(1, portname_label, portname_edit);
-   m_current_widgets.push_back(portname_edit);
+   m_portNameEdit.setText(QString(settings.port_name.c_str()));
+   form->insertRow(1, portname_label, &m_portNameEdit);
+   m_current_widgets.push_back(&m_portNameEdit);
 
    QString device_label = QString("Device name:");
-   QLineEdit* device_edit = new QLineEdit(dialog);
-   device_edit->setText(QString(settings.device.c_str()));
-   form->insertRow(2, device_label, device_edit);
-   m_current_widgets.push_back(device_edit);
+   m_deviceNameEdit.setText(QString(settings.device.c_str()));
+   form->insertRow(2, device_label, &m_deviceNameEdit);
+   m_current_widgets.push_back(&m_deviceNameEdit);
 
    QString address_label = QString("IP Address:");
-   QLineEdit* address_edit = new QLineEdit(dialog);
-   address_edit->setText(QString(settings.ip_address.c_str()));
-   form->insertRow(3, address_label, address_edit);
-   m_current_widgets.push_back(address_edit);
+   m_ipAddressEdit.setText(QString(settings.ip_address.c_str()));
+   form->insertRow(3, address_label, &m_ipAddressEdit);
+   m_current_widgets.push_back(&m_ipAddressEdit);
 
    QString port_label = QString("Port:");
-   QLineEdit* port_edit = new QLineEdit(dialog);
-   port_edit->setText(QString(settings.port));
-   form->insertRow(4, port_label, port_edit);
-   m_current_widgets.push_back(port_edit);
+   m_ipPortEdit.setText(QString(settings.port));
+   form->insertRow(4, port_label, &m_ipPortEdit);
+   m_current_widgets.push_back(&m_ipPortEdit);
 
 }
 void PortSettingDialog::clearDialog()
@@ -150,6 +168,54 @@ void PortSettingDialog::clearDialog()
       m_form.removeRow(item);
    }
    m_current_widgets.clear();
+}
+PortSettingDialog::Settings PortSettingDialog::convertGuiValues()
+{
+   PortSettingDialog::Settings result = {};
+   result.type = stringToPortType(m_portTypeBox.currentText());
+   result.baud_rate = m_baudRateEdit.text().toUInt();
+   result.data_bits = stringToDataBits(m_dataBitsEdit.currentText());
+   result.parity_bits = stringToParityBits(m_parityBitsEdit.currentText());
+   result.stop_bits = stringToStopBits(m_stopBitsEdit.currentText());
+   result.device = m_deviceNameEdit.text().toStdString();
+   result.ip_address = m_ipAddressEdit.text().toStdString();
+   result.port = m_ipPortEdit.text().toUInt();
+   result.port_name = m_portNameEdit.text().toStdString();
+
+   return (validateSettings(result, result.type)? result : Settings{});
+}
+bool PortSettingDialog::validateSettings(const PortSettingDialog::Settings& settings, PortType type)
+{
+   bool result = true;
+   if (type == PortType::SERIAL)
+   {
+      result &= validateBaudRate(settings.baud_rate);
+   }
+   else if (type == PortType::ETHERNET)
+   {
+      result &= validateIpAddress(settings.ip_address);
+      result &= validatePort(settings.port);
+   }
+   else
+   {
+      UT_Log(MAIN_GUI, ERROR, "Unknown port type %u", (uint8_t)settings.type);
+      result = false;
+   }
+   return result;
+}
+bool PortSettingDialog::validateBaudRate(uint32_t baudrate)
+{
+   return baudrate > 0;
+}
+bool PortSettingDialog::validateIpAddress(const std::string& ip_address)
+{
+   struct sockaddr_in sa;
+   int result = inet_pton(AF_INET, ip_address.c_str(), &(sa.sin_addr));
+   return result != 0;
+}
+bool PortSettingDialog::validatePort(uint32_t port)
+{
+   return (port > 0) && (port < 99999);
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {
