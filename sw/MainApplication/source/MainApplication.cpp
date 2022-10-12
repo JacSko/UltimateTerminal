@@ -5,7 +5,7 @@
 #include "Settings.h"
 #include "LoggerEngine.h"
 
-#include "PortSettingDialog.hpp"
+#include "PortSettingDialog.h"
 
 MainApplication::MainApplication(QWidget *parent)
     : QMainWindow(parent)
@@ -109,8 +109,8 @@ void MainApplication::onPortButtonClicked()
 }
 void MainApplication::onPortButtonContextMenuRequested()
 {
-   GUI::PortSettingDialog dialog;
-   dialog.showDialog(this, {});
+   PortSettingDialog dialog (this);
+   dialog.showDialog({});
 }
 void MainApplication::onUserButtonClicked()
 {
