@@ -12,7 +12,6 @@
 #include "Logger.h"
 
 #define DEF_PORT_TYPES     \
-   DEF_PORT_TYPE(UNKNOWN)  \
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \
 
@@ -39,7 +38,7 @@ class PortSettingDialog : public QObject
    Q_OBJECT
 
 public:
-   PortSettingDialog(QWidget* parent);
+   PortSettingDialog();
    ~PortSettingDialog();
 
 #undef DEF_PORT_TYPE
@@ -92,16 +91,21 @@ enum class StopBits
 
       operator std::string () const
       {
-         std::string result = "";
+         std::string result = "SETTINGS: ";
+         result += port_name + " ";
+         result += device + " ";
          result += toString(type) + " ";
+         result += std::to_string(baud_rate) + " ";
          result += toString(data_bits) + " ";
          result += toString(parity_bits) + " ";
-         result += toString(stop_bits);
+         result += toString(stop_bits) + " ";
+         result += ip_address + " ";
+         result += std::to_string(port);
          return result;
       }
    };
 
-   Settings showDialog(const Settings& current_settings);
+   bool showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
    static std::string toString(PortType);
    static std::string toString(DataBits);
    static std::string toString(ParityBits);
@@ -113,8 +117,8 @@ private:
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void clearDialog();
-   Settings convertGuiValues();
-   bool validateSettings(const Settings& settings, PortType type);
+   bool convertGuiValues(Settings& out_settings);
+   bool validateSettings(const Settings& settings);
    bool validateBaudRate(uint32_t baudrate);
    bool validateIpAddress(const std::string& ip_address);
    bool validatePort(uint32_t port);
@@ -123,20 +127,20 @@ private:
    ParityBits stringToParityBits(const QString& name);
    StopBits stringToStopBits(const QString& name);
 
+   QWidget* m_parent;
+   QDialog* m_dialog;
+   QFormLayout* m_form;
+   QComboBox* m_portTypeBox;
+   QDialogButtonBox* m_buttonBox;
 
-   QDialog m_dialog;
-   QFormLayout m_form;
-   QComboBox m_portTypeBox;
-   QDialogButtonBox m_buttonBox;
-
-   QLineEdit m_portNameEdit;
-   QLineEdit m_deviceNameEdit;
-   QLineEdit m_baudRateEdit;
-   QComboBox m_dataBitsEdit;
-   QComboBox m_parityBitsEdit;
-   QComboBox m_stopBitsEdit;
-   QLineEdit m_ipAddressEdit;
-   QLineEdit m_ipPortEdit;
+   QLineEdit* m_portNameEdit;
+   QLineEdit* m_deviceNameEdit;
+   QLineEdit* m_baudRateEdit;
+   QComboBox* m_dataBitsBox;
+   QComboBox* m_parityBitsBox;
+   QComboBox* m_stopBitsBox;
+   QLineEdit* m_ipAddressEdit;
+   QLineEdit* m_ipPortEdit;
 
    std::vector<QWidget*> m_current_widgets;
 public slots:

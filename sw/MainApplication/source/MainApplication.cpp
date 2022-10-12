@@ -109,9 +109,10 @@ void MainApplication::onPortButtonClicked()
 }
 void MainApplication::onPortButtonContextMenuRequested()
 {
-   PortSettingDialog dialog (this);
-   PortSettingDialog::Settings new_settings = dialog.showDialog({});
-   UT_Log(MAIN, LOW, "New settings: %s", std::string(new_settings).c_str());
+   PortSettingDialog dialog;
+   PortSettingDialog::Settings new_settings = {};
+   bool result = dialog.showDialog(this, {.type = PortSettingDialog::PortType::SERIAL, .port_name = "NAME", .baud_rate = 1234}, new_settings);
+   UT_Log(MAIN, LOW, "New settings: %s, result %d", std::string(new_settings).c_str(), result);
 }
 void MainApplication::onUserButtonClicked()
 {
