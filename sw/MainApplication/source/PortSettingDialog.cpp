@@ -3,26 +3,25 @@
 
 #undef DEF_PORT_TYPE
 #define DEF_PORT_TYPE(a) #a,
-std::array<std::string, (size_t)PortSettingDialog::PortType::PORT_TYPE_MAX> g_port_names = { DEF_PORT_TYPES };
+std::vector<std::string> g_port_names = { DEF_PORT_TYPES };
 #undef DEF_PORT_TYPE
 
 #undef DEF_DATA_BIT
 #define DEF_DATA_BIT(a) #a,
-std::array<std::string, (size_t)PortSettingDialog::DataBits::DATA_BIT_MAX> g_databits_names = { DEF_DATA_BITS };
+std::vector<std::string> g_databits_names = { DEF_DATA_BITS };
 #undef DEF_DATA_BIT
 
 #undef DEF_PARITY_BIT
 #define DEF_PARITY_BIT(a) #a,
-std::array<std::string, (size_t)PortSettingDialog::ParityBits::PARITY_BIT_MAX> g_paritybits_names = { DEF_PARITY_BITS };
+std::vector<std::string> g_paritybits_names = { DEF_PARITY_BITS };
 #undef DEF_PARITY_BIT
 
 #undef DEF_STOP_BIT
 #define DEF_STOP_BIT(a) #a,
-std::array<std::string, (size_t)PortSettingDialog::StopBits::STOP_BIT_MAX> g_stopbits_names = { DEF_STOP_BITS };
+std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 #undef DEF_STOP_BIT
 
 PortSettingDialog::PortSettingDialog():
-m_parent(nullptr),
 m_dialog(nullptr),
 m_form(nullptr),
 m_portTypeBox(nullptr),
@@ -41,10 +40,9 @@ PortSettingDialog::~PortSettingDialog()
 {
 
 }
-bool PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
+std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
 {
-   bool result = false;
-   m_parent = parent;
+   std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_form = new QFormLayout(m_dialog);
 
@@ -119,6 +117,13 @@ void PortSettingDialog::addDialogButtons()
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
 }
+void PortSettingDialog::addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values)
+{
+   for (const auto& name : values)
+   {
+      box->addItem(QString(name.c_str()));
+   }
+}
 void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
    clearDialog();
@@ -143,30 +148,21 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 
    QString databits_label = QString("Data Bits:");
    m_dataBitsBox = new QComboBox(m_dialog);
-   for (const auto& name : g_databits_names)
-   {
-      m_dataBitsBox->addItem(QString(name.c_str()));
-   }
+   addItemsToComboBox(m_dataBitsBox, g_databits_names);
    m_dataBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.data_bits).c_str()));
    form->insertRow(4, databits_label, m_dataBitsBox);
    m_current_widgets.push_back(m_dataBitsBox);
 
    QString paritybits_label = QString("Parity Bits:");
    m_parityBitsBox = new QComboBox(m_dialog);
-   for (const auto& name : g_paritybits_names)
-   {
-      m_parityBitsBox->addItem(QString(name.c_str()));
-   }
+   addItemsToComboBox(m_parityBitsBox, g_paritybits_names);
    m_parityBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.parity_bits).c_str()));
    form->insertRow(5, paritybits_label, m_parityBitsBox);
    m_current_widgets.push_back(m_parityBitsBox);
 
    QString stopbits_label = QString("Stop Bits:");
    m_stopBitsBox = new QComboBox(m_dialog);
-   for (const auto& name : g_stopbits_names)
-   {
-      m_stopBitsBox->addItem(QString(name.c_str()));
-   }
+   addItemsToComboBox(m_stopBitsBox, g_stopbits_names);
    m_stopBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.stop_bits).c_str()));
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);

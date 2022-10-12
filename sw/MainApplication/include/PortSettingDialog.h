@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <optional>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QDialogButtonBox>
@@ -91,21 +92,21 @@ enum class StopBits
 
       operator std::string () const
       {
-         std::string result = "SETTINGS: ";
-         result += port_name + " ";
-         result += device + " ";
-         result += toString(type) + " ";
-         result += std::to_string(baud_rate) + " ";
-         result += toString(data_bits) + " ";
-         result += toString(parity_bits) + " ";
-         result += toString(stop_bits) + " ";
-         result += ip_address + " ";
-         result += std::to_string(port);
+         std::string result = "";
+         result += "port name = " + port_name + "\n";
+         result += "device = " + device + "\n";
+         result += "type = " + toString(type) + "\n";
+         result += "baud rate = " + std::to_string(baud_rate) + "\n";
+         result += "data bits = " + toString(data_bits) + "\n";
+         result += "parity bits = " + toString(parity_bits) + "\n";
+         result += "stop bits = " + toString(stop_bits) + "\n";
+         result += "ip address = " + ip_address + "\n";
+         result += "ip port = " + std::to_string(port);
          return result;
       }
    };
 
-   bool showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
+   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
    static std::string toString(PortType);
    static std::string toString(DataBits);
    static std::string toString(ParityBits);
@@ -114,6 +115,7 @@ private:
 
    void addPortTypeComboBox(PortType current_selection = PortType::SERIAL);
    void addDialogButtons();
+   void addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values);
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void clearDialog();
@@ -127,7 +129,6 @@ private:
    ParityBits stringToParityBits(const QString& name);
    StopBits stringToStopBits(const QString& name);
 
-   QWidget* m_parent;
    QDialog* m_dialog;
    QFormLayout* m_form;
    QComboBox* m_portTypeBox;

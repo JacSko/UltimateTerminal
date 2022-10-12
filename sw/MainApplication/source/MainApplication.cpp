@@ -1,11 +1,11 @@
 #include "MainApplication.h"
 #include "ui_MainWindow.h"
+#include <QtWidgets/QMessageBox>
 
 #include "SettingsHandler.h"
 #include "Settings.h"
 #include "LoggerEngine.h"
 
-#include "PortSettingDialog.h"
 
 MainApplication::MainApplication(QWidget *parent)
     : QMainWindow(parent)
@@ -27,6 +27,16 @@ MainApplication::~MainApplication()
 {
     delete ui;
 }
+
+void MainApplication::setObjectNames()
+{
+   m_port_settings_map[ui->portButton_1] = {};
+   m_port_settings_map[ui->portButton_2] = {};
+   m_port_settings_map[ui->portButton_3] = {};
+   m_port_settings_map[ui->portButton_4] = {};
+   m_port_settings_map[ui->portButton_5] = {};
+}
+
 void MainApplication::connectSignalsToSlots()
 {
    connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
@@ -109,10 +119,27 @@ void MainApplication::onPortButtonClicked()
 }
 void MainApplication::onPortButtonContextMenuRequested()
 {
+   QObject* sen = sender();
+
+   PortSettingDialog::Settings& port_settings = m_port_settings_map[sen];
    PortSettingDialog dialog;
    PortSettingDialog::Settings new_settings = {};
-   bool result = dialog.showDialog(this, {.type = PortSettingDialog::PortType::SERIAL, .port_name = "NAME", .baud_rate = 1234}, new_settings);
-   UT_Log(MAIN, LOW, "New settings: %s, result %d", std::string(new_settings).c_str(), result);
+   std::optional<bool> result = dialog.showDialog(this, port_settings, new_settings);
+   if (result)
+   {
+      if (result.value())
+      {
+         port_settings = new_settings;
+      }
+      else
+      {
+         QMessageBox messageBox;
+         QString error_message = "Invalid port settings:\n";
+         error_message += QString(std::string(new_settings).c_str());
+         messageBox.critical(this,"Error", error_message);
+      }
+   }
+   UT_Log_If(result, MAIN, LOW, "New settings: %s, correct %u", std::string(new_settings).c_str(), result.value());
 }
 void MainApplication::onUserButtonClicked()
 {
