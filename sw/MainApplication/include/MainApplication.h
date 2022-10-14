@@ -7,13 +7,12 @@
 #include <vector>
 
 #include "ITimers.h"
-#include "PortSettingDialog.h"
+#include "PortHandler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-constexpr uint8_t NUMBER_OF_PORTS = 5;
 
 class MainApplication : public QMainWindow
 {
@@ -26,7 +25,7 @@ private:
     Ui::MainWindow *ui;
 
     std::unique_ptr<Utilities::ITimers> m_timers;
-    std::map<QObject*, PortSettingDialog::Settings> m_port_settings_map;
+    std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
 
     void setObjectNames();
     void connectSignalsToSlots();
@@ -37,10 +36,8 @@ public slots:
    void onClearButtonClicked();
 
    void onSendButtonClicked();
-   void onPortButtonClicked();
    void onUserButtonClicked();
    void onUserButtonContextMenuRequested();
-   void onPortButtonContextMenuRequested();
 
 };
 #endif

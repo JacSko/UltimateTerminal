@@ -33,18 +33,20 @@ m_dataBitsBox(nullptr),
 m_parityBitsBox(nullptr),
 m_stopBitsBox(nullptr),
 m_ipAddressEdit(nullptr),
-m_ipPortEdit(nullptr)
+m_ipPortEdit(nullptr),
+m_editable(true)
 {
 }
 PortSettingDialog::~PortSettingDialog()
 {
 
 }
-std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
+std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_form = new QFormLayout(m_dialog);
+   m_editable = allow_edit;
 
    addPortTypeComboBox(current_settings.type);
 
@@ -63,6 +65,7 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
 
    addDialogButtons();
 
+   m_dialog->setWindowModality(Qt::ApplicationModal);
    if (m_dialog->exec() == QDialog::Accepted)
    {
       UT_Log(MAIN_GUI, HIGH, "accepted, gathering new settings");
@@ -106,6 +109,7 @@ void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
    }
 
    m_portTypeBox->setCurrentText(QString(PortSettingDialog::toString(current_selection).c_str()));
+   m_portTypeBox->setDisabled(!m_editable);
    m_form->addRow(porttype_label, m_portTypeBox);
 
    QObject::connect(m_portTypeBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
@@ -131,18 +135,21 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
+   m_portNameEdit->setDisabled(!m_editable);
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
    QString device_label = QString("Device name:");
    m_deviceNameEdit = new QLineEdit(m_dialog);
    m_deviceNameEdit->setText(QString(settings.device.c_str()));
+   m_deviceNameEdit->setDisabled(!m_editable);
    form->insertRow(2, device_label, m_deviceNameEdit);
    m_current_widgets.push_back(m_deviceNameEdit);
 
    QString baudrate_label = QString("Baudrate:");
    m_baudRateEdit = new QLineEdit(m_dialog);
    m_baudRateEdit->setText(QString::number(settings.baud_rate));
+   m_baudRateEdit->setDisabled(!m_editable);
    form->insertRow(3, baudrate_label, m_baudRateEdit);
    m_current_widgets.push_back(m_baudRateEdit);
 
@@ -150,6 +157,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_dataBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_dataBitsBox, g_databits_names);
    m_dataBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.data_bits).c_str()));
+   m_dataBitsBox->setDisabled(!m_editable);
    form->insertRow(4, databits_label, m_dataBitsBox);
    m_current_widgets.push_back(m_dataBitsBox);
 
@@ -157,6 +165,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_parityBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_parityBitsBox, g_paritybits_names);
    m_parityBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.parity_bits).c_str()));
+   m_parityBitsBox->setDisabled(!m_editable);
    form->insertRow(5, paritybits_label, m_parityBitsBox);
    m_current_widgets.push_back(m_parityBitsBox);
 
@@ -164,6 +173,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_stopBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_stopBitsBox, g_stopbits_names);
    m_stopBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.stop_bits).c_str()));
+   m_stopBitsBox->setDisabled(!m_editable);
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);
 
@@ -175,24 +185,28 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
+   m_portNameEdit->setDisabled(!m_editable);
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
    QString device_label = QString("Device name:");
    m_deviceNameEdit = new QLineEdit(m_dialog);
    m_deviceNameEdit->setText(QString(settings.device.c_str()));
+   m_deviceNameEdit->setDisabled(!m_editable);
    form->insertRow(2, device_label, m_deviceNameEdit);
    m_current_widgets.push_back(m_deviceNameEdit);
 
    QString address_label = QString("IP Address:");
    m_ipAddressEdit = new QLineEdit(m_dialog);
    m_ipAddressEdit->setText(QString(settings.ip_address.c_str()));
+   m_ipAddressEdit->setDisabled(!m_editable);
    form->insertRow(3, address_label, m_ipAddressEdit);
    m_current_widgets.push_back(m_ipAddressEdit);
 
    QString port_label = QString("Port:");
    m_ipPortEdit = new QLineEdit(m_dialog);
    m_ipPortEdit->setText(QString::number(settings.port));
+   m_ipPortEdit->setDisabled(!m_editable);
    form->insertRow(4, port_label, m_ipPortEdit);
    m_current_widgets.push_back(m_ipPortEdit);
 

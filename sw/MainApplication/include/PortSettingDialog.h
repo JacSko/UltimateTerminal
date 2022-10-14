@@ -106,14 +106,14 @@ enum class StopBits
       }
    };
 
-   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
+   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
    static std::string toString(PortType);
    static std::string toString(DataBits);
    static std::string toString(ParityBits);
    static std::string toString(StopBits);
 private:
 
-   void addPortTypeComboBox(PortType current_selection = PortType::SERIAL);
+   void addPortTypeComboBox(PortType current_selection);
    void addDialogButtons();
    void addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values);
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
@@ -144,6 +144,7 @@ private:
    QLineEdit* m_ipPortEdit;
 
    std::vector<QWidget*> m_current_widgets;
+   bool m_editable;
 public slots:
    void onPortTypeChanged(const QString& port_name);
 

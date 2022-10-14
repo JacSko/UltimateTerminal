@@ -22,6 +22,11 @@ MainApplication::MainApplication(QWidget *parent)
     m_timers->start();
 
     connectSignalsToSlots();
+    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(new GUI::PortHandler(ui->portButton_1, *m_timers, this)));
+    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(new GUI::PortHandler(ui->portButton_2, *m_timers, this)));
+    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(new GUI::PortHandler(ui->portButton_3, *m_timers, this)));
+    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(new GUI::PortHandler(ui->portButton_4, *m_timers, this)));
+    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(new GUI::PortHandler(ui->portButton_5, *m_timers, this)));
 }
 MainApplication::~MainApplication()
 {
@@ -30,11 +35,6 @@ MainApplication::~MainApplication()
 
 void MainApplication::setObjectNames()
 {
-   m_port_settings_map[ui->portButton_1] = {};
-   m_port_settings_map[ui->portButton_2] = {};
-   m_port_settings_map[ui->portButton_3] = {};
-   m_port_settings_map[ui->portButton_4] = {};
-   m_port_settings_map[ui->portButton_5] = {};
 }
 
 void MainApplication::connectSignalsToSlots()
@@ -83,24 +83,6 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->userButton_9, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
    connect(ui->userButton_10, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
 
-   connect(ui->portButton_1, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-   connect(ui->portButton_2, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-   connect(ui->portButton_3, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-   connect(ui->portButton_4, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-   connect(ui->portButton_5, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-
-   ui->portButton_1->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->portButton_2->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->portButton_3->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->portButton_4->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->portButton_5->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-
-   connect(ui->portButton_1, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-   connect(ui->portButton_2, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-   connect(ui->portButton_3, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-   connect(ui->portButton_4, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-   connect(ui->portButton_5, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -113,33 +95,6 @@ void MainApplication::onClearButtonClicked()
 }
 void MainApplication::onSendButtonClicked()
 {
-}
-void MainApplication::onPortButtonClicked()
-{
-}
-void MainApplication::onPortButtonContextMenuRequested()
-{
-   QObject* sen = sender();
-
-   PortSettingDialog::Settings& port_settings = m_port_settings_map[sen];
-   PortSettingDialog dialog;
-   PortSettingDialog::Settings new_settings = {};
-   std::optional<bool> result = dialog.showDialog(this, port_settings, new_settings);
-   if (result)
-   {
-      if (result.value())
-      {
-         port_settings = new_settings;
-      }
-      else
-      {
-         QMessageBox messageBox;
-         QString error_message = "Invalid port settings:\n";
-         error_message += QString(std::string(new_settings).c_str());
-         messageBox.critical(this,"Error", error_message);
-      }
-   }
-   UT_Log_If(result, MAIN, LOW, "New settings: %s, correct %u", std::string(new_settings).c_str(), result.value());
 }
 void MainApplication::onUserButtonClicked()
 {
