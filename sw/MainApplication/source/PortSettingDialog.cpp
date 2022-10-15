@@ -117,6 +117,7 @@ void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
 void PortSettingDialog::addDialogButtons()
 {
    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, m_dialog);
+   m_buttonBox->setDisabled(!m_editable);
    m_form->addWidget(m_buttonBox);
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
@@ -189,25 +190,18 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
-   QString device_label = QString("Device name:");
-   m_deviceNameEdit = new QLineEdit(m_dialog);
-   m_deviceNameEdit->setText(QString(settings.device.c_str()));
-   m_deviceNameEdit->setDisabled(!m_editable);
-   form->insertRow(2, device_label, m_deviceNameEdit);
-   m_current_widgets.push_back(m_deviceNameEdit);
-
    QString address_label = QString("IP Address:");
    m_ipAddressEdit = new QLineEdit(m_dialog);
    m_ipAddressEdit->setText(QString(settings.ip_address.c_str()));
    m_ipAddressEdit->setDisabled(!m_editable);
-   form->insertRow(3, address_label, m_ipAddressEdit);
+   form->insertRow(2, address_label, m_ipAddressEdit);
    m_current_widgets.push_back(m_ipAddressEdit);
 
    QString port_label = QString("Port:");
    m_ipPortEdit = new QLineEdit(m_dialog);
    m_ipPortEdit->setText(QString::number(settings.port));
    m_ipPortEdit->setDisabled(!m_editable);
-   form->insertRow(4, port_label, m_ipPortEdit);
+   form->insertRow(3, port_label, m_ipPortEdit);
    m_current_widgets.push_back(m_ipPortEdit);
 
 }
@@ -230,6 +224,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
       out_settings.data_bits = stringToDataBits(m_dataBitsBox->currentText());
       out_settings.parity_bits = stringToParityBits(m_parityBitsBox->currentText());
       out_settings.stop_bits = stringToStopBits(m_stopBitsBox->currentText());
+      out_settings.device = m_deviceNameEdit->text().toStdString();
    }
    else if (out_settings.type == PortType::ETHERNET)
    {
@@ -237,7 +232,6 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
       out_settings.port = m_ipPortEdit->text().toUInt();
    }
 
-   out_settings.device = m_deviceNameEdit->text().toStdString();
    out_settings.port_name = m_portNameEdit->text().toStdString();
 
    bool result = validateSettings(out_settings)? true : false;

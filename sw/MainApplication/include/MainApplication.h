@@ -27,9 +27,9 @@ private:
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
 
-    void setObjectNames();
+    void onPortHandlerEvent(const GUI::PortHandler::PortHandlerEvent&);
     void connectSignalsToSlots();
-
+    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

@@ -10,23 +10,27 @@ namespace GUI
 
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
-PortHandler::PortHandler(QPushButton* object, Utilities::ITimers& timers, QWidget* parent):
+PortHandler::PortHandler(QPushButton* object, Utilities::ITimers& timers, PortHandlerListener listener, QWidget* parent):
 m_object(object),
 m_parent(parent),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
 m_timers(timers),
 m_socket(Drivers::SocketFactory::createClient()),
-m_timer_id(TIMERS_INVALID_ID)
+m_timer_id(TIMERS_INVALID_ID),
+m_listener(listener)
 {
    UT_Assert(object && "invalid QObject pointer");
    m_socket->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
-   setButtonColor(ButtonColor::DISCONNECTED);
+   setButtonState(ButtonState::DISCONNECTED);
+   notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
+
+   connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
 }
 PortHandler::~PortHandler()
 {
@@ -34,19 +38,35 @@ PortHandler::~PortHandler()
    m_timers.removeTimer(m_timer_id);
    m_timer_id = TIMERS_INVALID_ID;
    m_socket->disconnect();
-   setButtonColor(ButtonColor::DISCONNECTED);
+   setButtonState(ButtonState::DISCONNECTED);
+   notifyListeners(Event::DISCONNECTED);
+}
+void PortHandler::notifyListeners(Event event)
+{
+   if (m_listener) m_listener({m_settings.port_name, event, m_last_event.data, m_last_event.size});
 }
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
-   //another thread
-   if (ev == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
+   std::lock_guard<std::mutex> lock(m_event_mutex);
+   m_last_event = {ev, data, size};
+   emit portEvent();
+}
+void PortHandler::onPortEvent()
+{
+   std::lock_guard<std::mutex> lock(m_event_mutex);
+   if (m_last_event.event == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
    {
       m_socket->disconnect();
-      setButtonColor(ButtonColor::DISCONNECTED);
+      setButtonState(ButtonState::DISCONNECTED);
+      notifyListeners(Event::DISCONNECTED);
    }
-   else if (ev == Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
+   else if (m_last_event.event == Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
    {
-      UT_Log(MAIN_GUI, LOW, "got data, size %u", data.size());
+      notifyListeners(Event::NEW_DATA);
+   }
+   else
+   {
+      UT_Log(MAIN_GUI, ERROR, "Unknown event received %u", (uint8_t) m_last_event.event);
    }
 }
 void PortHandler::onTimeout(uint32_t timer_id)
@@ -105,6 +125,8 @@ void PortHandler::handleButtonClickEthernet()
    if (m_socket->isConnected())
    {
       m_socket->disconnect();
+      setButtonState(ButtonState::DISCONNECTED);
+      notifyListeners(Event::DISCONNECTED);
    }
    else
    {
@@ -118,24 +140,30 @@ void PortHandler::tryConnectToSocket()
    {
       UT_Log(MAIN_GUI, LOW, "Successfully connected to %s:%u", m_settings.ip_address.c_str(), m_settings.port);
       m_timers.stopTimer(m_timer_id);
-      setButtonColor(ButtonColor::CONNECTED);
+      setButtonState(ButtonState::CONNECTED);
+      notifyListeners(Event::CONNECTED);
    }
    else
    {
       UT_Log(MAIN_GUI, LOW, "Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
-      setButtonColor(ButtonColor::CONNECTING);
+      setButtonState(ButtonState::CONNECTING);
+      notifyListeners(Event::CONNECTING);
    }
 }
 
-void PortHandler::setButtonColor(ButtonColor color)
+void PortHandler::setButtonState(ButtonState state)
 {
-   static constexpr uint32_t stylesheet_buffer_size = 50;
-   char stylesheet [stylesheet_buffer_size] = {};
-   std::snprintf(stylesheet, stylesheet_buffer_size, "background: #%.6x;'", (uint32_t)color);
+   if(state != m_button_state)
+   {
+      static constexpr uint32_t stylesheet_buffer_size = 50;
+      char stylesheet [stylesheet_buffer_size] = {};
+      std::snprintf(stylesheet, stylesheet_buffer_size, "background-color: #%.6x", (uint32_t)state);
 
-   m_object->setStyleSheet(QString(stylesheet));
+      m_object->setStyleSheet(QString(stylesheet));
+      m_button_state = state;
+   }
 }
 
 };

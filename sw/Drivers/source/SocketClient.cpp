@@ -132,10 +132,7 @@ bool SocketClient::connect(DataMode mode, std::string ip_address, uint16_t port)
 }
 void SocketClient::disconnect()
 {
-   if (m_worker.isRunning())
-   {
-      m_worker.stop();
-   }
+   m_worker.stop();
    system_call::close(m_sock_fd);
    m_sock_fd = -1;
 }

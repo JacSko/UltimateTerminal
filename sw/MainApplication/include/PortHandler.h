@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <QtCore/QObject>
 #include "ISocketDriverFactory.h"
 #include "PortSettingDialog.h"
@@ -14,16 +16,43 @@ class PortHandler : public QObject,
 {
    Q_OBJECT
 public:
-   PortHandler(QPushButton* object, Utilities::ITimers& timer, QWidget* parent);
+   enum class Event
+   {
+      DISCONNECTED,
+      CONNECTING,
+      CONNECTED,
+      NEW_DATA,
+   };
+
+   struct PortHandlerEvent
+   {
+      const std::string& name;
+      Event event;
+      const std::vector<uint8_t>& data;
+      size_t size;
+   };
+
+   typedef std::function<void(const PortHandlerEvent&)> PortHandlerListener;
+   PortHandler(QPushButton* object, Utilities::ITimers& timer, PortHandlerListener listener, QWidget* parent);
    ~PortHandler();
 
+   void addListener(PortHandlerListener listener);
+   void removeListener(PortHandlerListener listener);
+   void notifyListeners(Event event);
 private:
 
-   enum class ButtonColor
+   enum class ButtonState
    {
       DISCONNECTED = 0xFF0000,
       CONNECTING = 0x0000FF,
       CONNECTED = 0x00FF00,
+   };
+
+   struct SocketClientEvent
+   {
+      Drivers::SocketClient::ClientEvent event;
+      std::vector<uint8_t> data;
+      size_t size;
    };
 
    QPushButton* m_object;
@@ -33,6 +62,11 @@ private:
    Utilities::ITimers& m_timers;
    std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
    int m_timer_id;
+   ButtonState m_button_state;
+   SocketClientEvent m_last_event;
+   std::mutex m_event_mutex;
+   PortHandlerListener m_listener;
+   std::mutex m_listener_mutex;
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onTimeout(uint32_t timer_id);
@@ -40,10 +74,13 @@ private:
    void handleNewSettings(const PortSettingDialog::Settings&);
    void handleButtonClickSerial();
    void handleButtonClickEthernet();
-   void setButtonColor(ButtonColor);
+   void setButtonState(ButtonState);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
+   void onPortEvent();
+signals:
+   void portEvent();
 };
 
 

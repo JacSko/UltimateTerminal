@@ -133,10 +133,10 @@ TEST_F(SocketClientFixture, client_connect_when_already_connected)
          });
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_TRUE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
    EXPECT_TRUE(m_test_subject->isConnected());
-   EXPECT_FALSE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
    m_test_subject->disconnect();
    EXPECT_FALSE(m_test_subject->isConnected());
 }
@@ -149,7 +149,7 @@ TEST_F(SocketClientFixture, cannot_create_socket)
     * ************************************************
     */
    EXPECT_CALL(*sys_call_mock, socket(AF_INET, SOCK_STREAM, _)).WillOnce(Return(TEST_RETURN_NOK));
-   EXPECT_FALSE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
 
 }
 
@@ -165,7 +165,7 @@ TEST_F(SocketClientFixture, client_cannot_set_sockopts)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_convert_ip_address_from_text_to_binary)
@@ -182,7 +182,7 @@ TEST_F(SocketClientFixture, client_convert_ip_address_from_text_to_binary)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_cannot_connect)
@@ -200,46 +200,7 @@ TEST_F(SocketClientFixture, client_cannot_connect)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
-}
-
-TEST_F(SocketClientFixture, client_write_to_server_header_mode)
-{
-   std::vector<uint8_t> TEST_SEND_DATA = {'e','d','c','b','a'};
-   std::vector<uint8_t> TEST_EXPECTED_DATA = {0x00, 0x00, 0x00, 0x05, 'e','d','c','b','a'};
-   /**
-    * <b>scenario</b>: Sending data to server.<br>
-    * <b>expected</b>: Header added at beginning, correct data sent.<br>
-    * ************************************************
-    */
-   EXPECT_CALL(*sys_call_mock, socket(AF_INET, SOCK_STREAM, _)).WillOnce(Return(TEST_SOCKET_FD));
-   EXPECT_CALL(*sys_call_mock, setsockopt(_,_,_,_,_)).WillOnce(Return(TEST_RETURN_OK));
-   EXPECT_CALL(*sys_call_mock, htons(_)).WillOnce(Return(TEST_PORT));
-   EXPECT_CALL(*sys_call_mock, inet_pton(AF_INET, _, _)).WillOnce(Return(TEST_RETURN_OK));
-   EXPECT_CALL(*sys_call_mock, connect(TEST_SOCKET_FD, _, _)).WillOnce(Return(0));
-   EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _,_, _))
-         .WillRepeatedly([](int, void *, size_t, int)->ssize_t
-         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
-            return TEST_RETURN_NOK;
-         });
-   EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
-
-   EXPECT_CALL(*sys_call_mock, send(TEST_SOCKET_FD,_,_,_)).WillOnce(Invoke([&](int, const void * data, size_t length, int flags) -> ssize_t
-         {
-            std::vector<uint8_t> send_data ((uint8_t*) data, ((uint8_t*) data + length));
-            EXPECT_THAT(send_data, ContainerEq(TEST_EXPECTED_DATA));
-            return length;
-         }));
-
-   EXPECT_TRUE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
-
-   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-   EXPECT_TRUE(m_test_subject->write(TEST_SEND_DATA, TEST_SEND_DATA.size()));
-
-   m_test_subject->disconnect();
-
+   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_write_to_server_delimiter_mode)
@@ -280,14 +241,14 @@ TEST_F(SocketClientFixture, client_write_to_server_delimiter_mode)
    m_test_subject->disconnect();
 }
 
-TEST_F(SocketClientFixture, client_read_from_server_header_mode)
+TEST_F(SocketClientFixture, client_read_from_server_delimiter_mode)
 {
 
-   std::vector<uint8_t> TEST_HEADER_DATA = {0x00, 0x00, 0x00, 0x05};
-   std::vector<uint8_t> TEST_RECEIVED_DATA = {'e','d','c','b','a'};
+   std::vector<uint8_t> TEST_RECEIVED_DATA = {'a','b','c','d','e','\n'};
+   std::vector<uint8_t> TEST_SEND_DATA = {'e','d','c','b','a','\n'};
    /**
     * <b>scenario</b>: Reading data from server.<br>
-    * <b>expected</b>: Reading divided into two phases - header reading, payload reading.<br>
+    * <b>expected</b>: Listener notified about new data only, when newline received.<br>
     * ************************************************
     */
    EXPECT_CALL(*sys_call_mock, socket(AF_INET, SOCK_STREAM, _)).WillOnce(Return(TEST_SOCKET_FD));
@@ -296,35 +257,33 @@ TEST_F(SocketClientFixture, client_read_from_server_header_mode)
    EXPECT_CALL(*sys_call_mock, inet_pton(AF_INET, _, _)).WillOnce(Return(TEST_RETURN_OK));
    EXPECT_CALL(*sys_call_mock, connect(TEST_SOCKET_FD, _, _)).WillOnce(Return(0));
    EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _,_, _))
-      .WillOnce([&](int, void * buffer, size_t len, int flags)->ssize_t
+   .WillOnce([&](int, void * buffer, size_t size, int)->ssize_t
+   {
+      /* simulate received data */
+      if (buffer)
       {
-         EXPECT_EQ(len, TEST_HEADER_DATA.size());
-         std::copy(TEST_HEADER_DATA.data(), TEST_HEADER_DATA.data() + TEST_HEADER_DATA.size(), (uint8_t*) buffer);
-         return TEST_HEADER_DATA.size();
-      })
-      .WillOnce([&](int, void * buffer, size_t length, int flags)->ssize_t
-      {
-         EXPECT_EQ(length, TEST_RECEIVED_DATA.size());
-         std::copy(TEST_RECEIVED_DATA.data(), TEST_RECEIVED_DATA.data() + TEST_RECEIVED_DATA.size(), (uint8_t*) buffer);
-         return TEST_RECEIVED_DATA.size();
-      })
-      .WillRepeatedly([](int, void *, size_t, int)->ssize_t
-      {
-         std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
-         return TEST_RETURN_NOK;
-      });
+         std::memcpy(buffer, TEST_RECEIVED_DATA.data(), TEST_RECEIVED_DATA.size());
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return TEST_RECEIVED_DATA.size();
+   })
+   .WillRepeatedly([](int, void *, size_t, int)->ssize_t
+   {
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return TEST_RETURN_NOK;
+   });
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
    EXPECT_CALL(*listener_mock, onClientEvent(ClientEvent::SERVER_DATA_RECV,_,_))
          .WillOnce(Invoke([&](Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>& buffer, size_t size)
          {
-            EXPECT_EQ(size, buffer.size());
+            EXPECT_THAT(buffer, ContainerEq(TEST_RECEIVED_DATA));
             EXPECT_EQ(size, TEST_RECEIVED_DATA.size());
          }));
 
    ClientListenerMockImpl listener;
    m_test_subject->addListener(&listener);
-   EXPECT_TRUE(m_test_subject->connect(DataMode::PAYLOAD_HEADER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
 
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -332,11 +291,11 @@ TEST_F(SocketClientFixture, client_read_from_server_header_mode)
 
 }
 
-TEST_F(SocketClientFixture, client_read_from_server_delimiter_mode)
+TEST_F(SocketClientFixture, client_read_empty_message_from_server)
 {
 
-   std::vector<uint8_t> TEST_RECEIVED_DATA = {'a','b','c','d','e','\n'};
-   std::vector<uint8_t> TEST_SEND_DATA = {'e','d','c','b','a','\n'};
+   std::vector<uint8_t> TEST_RECEIVED_DATA = {'\n'};
+   std::vector<uint8_t> TEST_SEND_DATA = {'\n'};
    /**
     * <b>scenario</b>: Reading data from server.<br>
     * <b>expected</b>: Listener notified about new data only, when newline received.<br>
