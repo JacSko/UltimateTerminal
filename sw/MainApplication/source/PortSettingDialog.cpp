@@ -1,5 +1,4 @@
 #include "PortSettingDialog.h"
-#include <arpa/inet.h>
 #include "QtWidgets/QColorDialog"
 
 #undef DEF_PORT_TYPE
@@ -274,41 +273,8 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_colorSelectionButton->palette().color(QPalette::Button).rgb();
-   bool result = validateSettings(out_settings)? true : false;
+   bool result = out_settings.areValid()? true : false;
    return result;
-}
-bool PortSettingDialog::validateSettings(const PortSettingDialog::Settings& settings)
-{
-   bool result = true;
-   if (settings.type == PortType::SERIAL)
-   {
-      result &= validateBaudRate(settings.baud_rate);
-   }
-   else if (settings.type == PortType::ETHERNET)
-   {
-      result &= validateIpAddress(settings.ip_address);
-      result &= validatePort(settings.port);
-   }
-   else
-   {
-      UT_Log(MAIN_GUI, ERROR, "Unknown port type %u", (uint8_t)settings.type);
-      result = false;
-   }
-   return result;
-}
-bool PortSettingDialog::validateBaudRate(uint32_t baudrate)
-{
-   return baudrate > 0;
-}
-bool PortSettingDialog::validateIpAddress(const std::string& ip_address)
-{
-   struct sockaddr_in sa;
-   int result = inet_pton(AF_INET, ip_address.c_str(), &(sa.sin_addr));
-   return result != 0;
-}
-bool PortSettingDialog::validatePort(uint32_t port)
-{
-   return (port > 0) && (port < 99999);
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <optional>
+#include <arpa/inet.h>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QDialogButtonBox>
@@ -79,8 +80,9 @@ enum class StopBits
 };
 #undef DEF_STOP_BIT
 
-   struct Settings
+   class Settings
    {
+   public:
       Settings():
       type(PortType::SERIAL),
       port_name(""),
@@ -141,6 +143,59 @@ enum class StopBits
          }
          return result;
       }
+      bool areValid()
+      {
+         bool result = true;
+         if (type == PortType::SERIAL)
+         {
+            result &= validateBaudRate(baud_rate);
+         }
+         else
+         {
+            result &= validateIpAddress(ip_address);
+            result &= validatePort(port);
+         }
+         return result;
+      }
+      std::vector<std::string> getErrorStrings()
+      {
+         return m_error_strings;
+      }
+   private:
+      bool validateBaudRate(uint32_t baudrate)
+      {
+         if (baudrate == 0)
+         {
+            std::string error = "Invalid baudrate: ";
+            error += std::to_string(baudrate);
+            m_error_strings.push_back(error);
+         }
+         return baudrate > 0;
+      }
+      bool validateIpAddress(const std::string& ip_address)
+      {
+         struct sockaddr_in sa;
+         int result = inet_pton(AF_INET, ip_address.c_str(), &(sa.sin_addr));
+         if (result == 0)
+         {
+            std::string error = "Invalid IP address: ";
+            error += ip_address;
+            m_error_strings.push_back(error);
+         }
+         return result != 0;
+      }
+      bool validatePort(uint32_t port)
+      {
+         if (port > 99999)
+         {
+            std::string error = "Invalid IP port: ";
+            error += std::to_string(port);
+            m_error_strings.push_back(error);
+         }
+         return port < 99999;
+      }
+
+      std::vector<std::string> m_error_strings;
    };
 
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
@@ -157,10 +212,6 @@ private:
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void clearDialog();
    bool convertGuiValues(Settings& out_settings);
-   bool validateSettings(const Settings& settings);
-   bool validateBaudRate(uint32_t baudrate);
-   bool validateIpAddress(const std::string& ip_address);
-   bool validatePort(uint32_t port);
    PortType stringToPortType(const QString& name);
    DataBits stringToDataBits(const QString& name);
    ParityBits stringToParityBits(const QString& name);

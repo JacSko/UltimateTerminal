@@ -91,10 +91,6 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setStyleSheet(QString(stylesheet));
 
-//   QPalette palette = m_summary_label->palette();
-//   palette.setColor(QPalette::Window, QColor(settings.trace_color));
-//   m_summary_label->setPalette(palette);
-//   m_summary_label->update();
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {
@@ -113,7 +109,12 @@ void PortHandler::onPortButtonContextMenuRequested()
       {
          QMessageBox messageBox;
          QString error_message = "Invalid port settings:\n";
-         error_message += QString(std::string(new_settings).c_str());
+         auto errors = new_settings.getErrorStrings();
+         for (const auto& error : errors)
+         {
+            error_message += error.c_str();
+            error_message += "\n";
+         }
          messageBox.critical(m_parent,"Error", error_message);
       }
    }
