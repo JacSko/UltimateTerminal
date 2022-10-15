@@ -79,6 +79,7 @@ private:
    void handleButtonClickSerial();
    void handleButtonClickEthernet();
    void setButtonState(ButtonState);
+   void setButtonName(const std::string name);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();

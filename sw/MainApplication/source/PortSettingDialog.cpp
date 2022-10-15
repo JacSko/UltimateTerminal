@@ -138,6 +138,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
+   m_portNameEdit->setMaxLength(20);
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
@@ -201,6 +202,7 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
+   m_portNameEdit->setMaxLength(20);
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 

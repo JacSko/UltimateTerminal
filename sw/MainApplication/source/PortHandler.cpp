@@ -25,6 +25,7 @@ m_listener(listener)
    m_socket->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
    setButtonState(ButtonState::DISCONNECTED);
+   setButtonName("PORT");
    notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
@@ -90,6 +91,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
    std::snprintf(stylesheet, 100, "background-color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color);
 
    m_summary_label->setStyleSheet(QString(stylesheet));
+   setButtonName(settings.port_name);
 
 }
 void PortHandler::onPortButtonContextMenuRequested()
@@ -184,6 +186,10 @@ void PortHandler::setButtonState(ButtonState state)
       m_object->setPalette(palette);
       m_object->update();
    }
+}
+void PortHandler::setButtonName(const std::string name)
+{
+      m_object->setText(QString(name.c_str()));
 }
 
 };
