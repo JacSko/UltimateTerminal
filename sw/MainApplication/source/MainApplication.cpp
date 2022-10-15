@@ -40,52 +40,6 @@ MainApplication::MainApplication(QWidget *parent)
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
 
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4");
-
-    addToTerminal("test", "test data1");
-    addToTerminal("test", "test data2");
-    addToTerminal("test", "test data3");
-    addToTerminal("test", "test data4", 0xFF0000);
-
 }
 MainApplication::~MainApplication()
 {
@@ -142,6 +96,7 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
 
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
+   connect(ui->textEdit, SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
 
    connect(ui->userButton_1, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
    connect(ui->userButton_2, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
@@ -197,10 +152,17 @@ void MainApplication::onSendButtonClicked()
 {
    std::string current_port = ui->portComboBox->currentText().toStdString();
    std::string data_to_send = ui->textEdit->text().toStdString();
-   if (ui->lineEndingComboBox->currentText() != "EMPTY")
+
+   if (ui->lineEndingComboBox->currentText() == "\\r\\n")
    {
-      data_to_send += ui->lineEndingComboBox->currentText().toStdString();
+      data_to_send += "\r\n";
    }
+   else if (ui->lineEndingComboBox->currentText() == "\\n")
+   {
+      data_to_send += '\n';
+   }
+
+
    for (const auto& handler : m_port_handlers)
    {
       if (handler->getName() == current_port)

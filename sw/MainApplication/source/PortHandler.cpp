@@ -10,6 +10,8 @@ namespace GUI
 
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
+static uint8_t PORT_ID = 0;
+
 PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timers, PortHandlerListener listener, QWidget* parent):
 m_object(object),
 m_summary_label(label),
@@ -21,11 +23,16 @@ m_socket(Drivers::SocketFactory::createClient()),
 m_timer_id(TIMERS_INVALID_ID),
 m_listener(listener)
 {
+   PORT_ID++;
+   m_port_id = PORT_ID;
+   UT_Log(MAIN_GUI, INFO, "Creating port handler for PORT%u", m_port_id);
+
    UT_Assert(object && "invalid QObject pointer");
    m_socket->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
    setButtonState(ButtonState::DISCONNECTED);
-   setButtonName("PORT");
+   setButtonName(std::string("PORT") + std::to_string(m_port_id));
+   m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
    notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
@@ -100,13 +107,19 @@ void PortHandler::onTimeout(uint32_t timer_id)
 void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 {
    m_settings = settings;
+   if (m_settings.port_name.empty())
+   {
+      /* override with default port name if not provided by user */
+      m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
+   }
+
    m_summary_label->setText(m_settings.shortSettingsString().c_str());
 
    char stylesheet [200];
    std::snprintf(stylesheet, 100, "background-color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color);
 
    m_summary_label->setStyleSheet(QString(stylesheet));
-   setButtonName(settings.port_name);
+   setButtonName(m_settings.port_name);
 
 }
 void PortHandler::onPortButtonContextMenuRequested()
@@ -120,7 +133,6 @@ void PortHandler::onPortButtonContextMenuRequested()
       {
          UT_Log(MAIN, LOW, "New settings: %s", std::string(new_settings).c_str(), result.value());
          handleNewSettings(new_settings);
-         m_settings = new_settings;
       }
       else
       {

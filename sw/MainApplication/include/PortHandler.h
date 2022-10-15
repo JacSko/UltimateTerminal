@@ -70,6 +70,7 @@ private:
    std::mutex m_event_mutex;
    PortHandlerListener m_listener;
    std::mutex m_listener_mutex;
+   uint8_t m_port_id;
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onTimeout(uint32_t timer_id);
