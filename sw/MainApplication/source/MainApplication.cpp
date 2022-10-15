@@ -195,6 +195,30 @@ void MainApplication::onClearButtonClicked()
 }
 void MainApplication::onSendButtonClicked()
 {
+   std::string current_port = ui->portComboBox->currentText().toStdString();
+   std::string data_to_send = ui->textEdit->text().toStdString();
+   if (ui->lineEndingComboBox->currentText() != "EMPTY")
+   {
+      data_to_send += ui->lineEndingComboBox->currentText().toStdString();
+   }
+   for (const auto& handler : m_port_handlers)
+   {
+      if (handler->getName() == current_port)
+      {
+         if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
+         {
+            addToTerminal(current_port, data_to_send);
+         }
+         else
+         {
+            std::string error = "Cannot send data to port ";
+            error += current_port;
+            UT_Log(MAIN, ERROR, "%s", error.c_str());
+            error += '\n';
+            addToTerminal(current_port, error);
+         }
+      }
+   }
 }
 void MainApplication::onUserButtonClicked()
 {
