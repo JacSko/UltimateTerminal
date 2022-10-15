@@ -121,6 +121,26 @@ enum class StopBits
          result += "ip port = " + std::to_string(port);
          return result;
       }
+
+      std::string shortSettingsString()
+      {
+         std::string result = "";
+         if (type == PortType::SERIAL)
+         {
+            result += port_name + "/";
+            result += device + "/";
+            result += std::string("SER") + "/";
+            result += std::to_string(baud_rate);
+         }
+         else
+         {
+            result += port_name + "/";
+            result += std::string("ETH") + "/";
+            result += ip_address + ":";
+            result += std::to_string(port);
+         }
+         return result;
+      }
    };
 
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);

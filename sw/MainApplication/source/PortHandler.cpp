@@ -10,8 +10,9 @@ namespace GUI
 
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
-PortHandler::PortHandler(QPushButton* object, Utilities::ITimers& timers, PortHandlerListener listener, QWidget* parent):
+PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timers, PortHandlerListener listener, QWidget* parent):
 m_object(object),
+m_summary_label(label),
 m_parent(parent),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
@@ -27,6 +28,8 @@ m_listener(listener)
    notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+   m_summary_label->setAutoFillBackground(true);
+   m_summary_label->setAlignment(Qt::AlignCenter);
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
 
@@ -81,6 +84,17 @@ void PortHandler::onTimeout(uint32_t timer_id)
 void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 {
    m_settings = settings;
+   m_summary_label->setText(m_settings.shortSettingsString().c_str());
+
+   char stylesheet [200];
+   std::snprintf(stylesheet, 100, "background-color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color);
+
+   m_summary_label->setStyleSheet(QString(stylesheet));
+
+//   QPalette palette = m_summary_label->palette();
+//   palette.setColor(QPalette::Window, QColor(settings.trace_color));
+//   m_summary_label->setPalette(palette);
+//   m_summary_label->update();
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {

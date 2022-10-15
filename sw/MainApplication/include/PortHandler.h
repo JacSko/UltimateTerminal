@@ -3,6 +3,8 @@
 #include <functional>
 
 #include <QtCore/QObject>
+#include <QtWidgets/QLabel>
+
 #include "ISocketDriverFactory.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"
@@ -34,7 +36,7 @@ public:
    };
 
    typedef std::function<void(const PortHandlerEvent&)> PortHandlerListener;
-   PortHandler(QPushButton* object, Utilities::ITimers& timer, PortHandlerListener listener, QWidget* parent);
+   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener listener, QWidget* parent);
    ~PortHandler();
 
    void addListener(PortHandlerListener listener);
@@ -57,6 +59,7 @@ private:
    };
 
    QPushButton* m_object;
+   QLabel* m_summary_label;
    QWidget* m_parent;
    PortSettingDialog::Settings m_settings;
    uint32_t m_connect_retry_period;
