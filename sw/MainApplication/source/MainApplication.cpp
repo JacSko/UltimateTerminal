@@ -11,7 +11,8 @@
 MainApplication::MainApplication(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),
-    m_timers(Utilities::ITimersFactory::create())
+    m_timers(Utilities::ITimersFactory::create()),
+    m_marker_index(0)
 {
     ui->setupUi(this);
 
@@ -178,6 +179,11 @@ void MainApplication::connectSignalsToSlots()
 }
 void MainApplication::onMarkerButtonClicked()
 {
+   m_marker_index++;
+   std::string log = "MARKER";
+   log += std::to_string(m_marker_index);
+   log += '\n';
+   addToTerminal("MARKER", log, 0xFF0055);
 }
 void MainApplication::onLoggingButtonClicked()
 {

@@ -26,6 +26,7 @@ private:
 
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
+    uint32_t m_marker_index;
 
     void onPortHandlerEvent(const GUI::PortHandler::PortHandlerEvent&);
     void connectSignalsToSlots();
