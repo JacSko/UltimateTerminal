@@ -49,6 +49,21 @@ void PortHandler::notifyListeners(Event event)
 {
    if (m_listener) m_listener({m_settings.port_name, m_settings.trace_color, event, m_last_event.data, m_last_event.size});
 }
+const std::string& PortHandler::getName()
+{
+   return m_settings.port_name;
+}
+bool PortHandler::write(const std::vector<uint8_t>& data, size_t size = 0)
+{
+   if (m_socket->isConnected())
+   {
+      return m_socket->write(data, size);
+   }
+   else
+   {
+      return false;
+   }
+}
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);

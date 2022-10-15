@@ -103,7 +103,6 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandler::PortHandlerEven
          ui->portComboBox->removeItem(index);
       }
    }
-
 }
 void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color)
 {

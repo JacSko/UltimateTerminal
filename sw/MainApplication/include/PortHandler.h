@@ -39,9 +39,8 @@ public:
    PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener listener, QWidget* parent);
    ~PortHandler();
 
-   void addListener(PortHandlerListener listener);
-   void removeListener(PortHandlerListener listener);
-   void notifyListeners(Event event);
+   const std::string& getName();
+   bool write(const std::vector<uint8_t>& data, size_t size = 0);
 private:
 
    enum class ButtonState
@@ -80,6 +79,7 @@ private:
    void handleButtonClickEthernet();
    void setButtonState(ButtonState);
    void setButtonName(const std::string name);
+   void notifyListeners(Event event);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
