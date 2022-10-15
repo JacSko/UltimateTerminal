@@ -1,5 +1,6 @@
 #include "PortSettingDialog.h"
 #include <arpa/inet.h>
+#include "QtWidgets/QColorDialog"
 
 #undef DEF_PORT_TYPE
 #define DEF_PORT_TYPE(a) #a,
@@ -34,6 +35,7 @@ m_parityBitsBox(nullptr),
 m_stopBitsBox(nullptr),
 m_ipAddressEdit(nullptr),
 m_ipPortEdit(nullptr),
+m_colorSelectionButton(nullptr),
 m_editable(true)
 {
 }
@@ -178,6 +180,19 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);
 
+   QString color_label = QString("Terminal color");
+   m_colorSelectionButton = new QPushButton(m_dialog);
+   m_colorSelectionButton->setText(QString("Click!"));
+   m_colorSelectionButton->setDisabled(!m_editable);
+   QPalette palette = m_colorSelectionButton->palette();
+   palette.setColor(QPalette::Button, QColor(settings.trace_color));
+   m_colorSelectionButton->setPalette(palette);
+   m_colorSelectionButton->update();
+   form->insertRow(7, color_label, m_colorSelectionButton);
+   m_current_widgets.push_back(m_colorSelectionButton);
+   QObject::connect(m_colorSelectionButton, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
+
+
 }
 void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
@@ -203,6 +218,31 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    m_ipPortEdit->setDisabled(!m_editable);
    form->insertRow(3, port_label, m_ipPortEdit);
    m_current_widgets.push_back(m_ipPortEdit);
+
+   QString color_label = QString("Terminal color");
+   m_colorSelectionButton = new QPushButton(m_dialog);
+   m_colorSelectionButton->setText(QString("Click!"));
+   m_colorSelectionButton->setDisabled(!m_editable);
+   QPalette palette = m_colorSelectionButton->palette();
+   palette.setColor(QPalette::Button, QColor(settings.trace_color));
+   m_colorSelectionButton->setPalette(palette);
+   m_colorSelectionButton->update();
+   form->insertRow(4, color_label, m_colorSelectionButton);
+   m_current_widgets.push_back(m_colorSelectionButton);
+   QObject::connect(m_colorSelectionButton, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
+
+}
+void PortSettingDialog::onColorButtonClicked()
+{
+   QColor color = QColorDialog::getColor(QColor(0xFF0000), m_dialog, "test title");
+
+   if (color.isValid())
+   {
+      QPalette palette = m_colorSelectionButton->palette();
+      palette.setColor(QPalette::Button, color);
+      m_colorSelectionButton->setPalette(palette);
+      m_colorSelectionButton->update();
+   }
 
 }
 void PortSettingDialog::clearDialog()
@@ -233,7 +273,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
    }
 
    out_settings.port_name = m_portNameEdit->text().toStdString();
-
+   out_settings.trace_color = m_colorSelectionButton->palette().color(QPalette::Button).rgb();
    bool result = validateSettings(out_settings)? true : false;
    return result;
 }

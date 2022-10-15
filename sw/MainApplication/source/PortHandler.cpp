@@ -43,7 +43,7 @@ PortHandler::~PortHandler()
 }
 void PortHandler::notifyListeners(Event event)
 {
-   if (m_listener) m_listener({m_settings.port_name, event, m_last_event.data, m_last_event.size});
+   if (m_listener) m_listener({m_settings.port_name, m_settings.trace_color, event, m_last_event.data, m_last_event.size});
 }
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
@@ -157,12 +157,10 @@ void PortHandler::setButtonState(ButtonState state)
 {
    if(state != m_button_state)
    {
-      static constexpr uint32_t stylesheet_buffer_size = 50;
-      char stylesheet [stylesheet_buffer_size] = {};
-      std::snprintf(stylesheet, stylesheet_buffer_size, "background-color: #%.6x", (uint32_t)state);
-
-      m_object->setStyleSheet(QString(stylesheet));
-      m_button_state = state;
+      QPalette palette = m_object->palette();
+      palette.setColor(QPalette::Button, QColor((uint32_t)state));
+      m_object->setPalette(palette);
+      m_object->update();
    }
 }
 

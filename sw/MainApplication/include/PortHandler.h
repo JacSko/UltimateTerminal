@@ -27,6 +27,7 @@ public:
    struct PortHandlerEvent
    {
       const std::string& name;
+      uint32_t trace_color;
       Event event;
       const std::vector<uint8_t>& data;
       size_t size;

@@ -7,6 +7,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
 
@@ -80,6 +81,21 @@ enum class StopBits
 
    struct Settings
    {
+      Settings():
+      type(PortType::SERIAL),
+      port_name(""),
+      device(""),
+      baud_rate(0),
+      data_bits(DataBits::BITS5),
+      parity_bits(ParityBits::EVEN),
+      stop_bits(StopBits::ONE),
+      ip_address("127.0.0.1"),
+      port(1234),
+      trace_color(0xFFFFFF)
+      {
+
+      }
+
       PortType type;
       std::string port_name;
       std::string device;
@@ -89,6 +105,7 @@ enum class StopBits
       StopBits stop_bits;
       std::string ip_address;
       uint32_t port;
+      uint32_t trace_color;
 
       operator std::string () const
       {
@@ -142,11 +159,13 @@ private:
    QComboBox* m_stopBitsBox;
    QLineEdit* m_ipAddressEdit;
    QLineEdit* m_ipPortEdit;
+   QPushButton* m_colorSelectionButton;
 
    std::vector<QWidget*> m_current_widgets;
    bool m_editable;
 public slots:
    void onPortTypeChanged(const QString& port_name);
+   void onColorButtonClicked();
 
 };
 
