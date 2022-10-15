@@ -127,6 +127,12 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
    ui->terminalView->addItem(item);
    ui->terminalView->scrollToBottom();
 
+   if(ui->terminalView->count() >= 10000)
+   {
+      UT_Log(MAIN, MEDIUM, "Reached maximum lines, cleaning trace view");
+      ui->terminalView->clear();
+   }
+
 }
 void MainApplication::connectSignalsToSlots()
 {
@@ -178,6 +184,8 @@ void MainApplication::onLoggingButtonClicked()
 }
 void MainApplication::onClearButtonClicked()
 {
+   UT_Log(MAIN, MEDIUM, "Clearing requested");
+   ui->terminalView->clear();
 }
 void MainApplication::onSendButtonClicked()
 {
