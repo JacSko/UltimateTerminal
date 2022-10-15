@@ -91,6 +91,19 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandler::PortHandlerEven
    {
       addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.trace_color);
    }
+   else if (event.event == GUI::PortHandler::Event::CONNECTED)
+   {
+      ui->portComboBox->addItem(QString(event.name.c_str()));
+   }
+   else if (event.event == GUI::PortHandler::Event::DISCONNECTED)
+   {
+      int index = ui->portComboBox->findText(event.name.c_str());
+      if (index != -1)
+      {
+         ui->portComboBox->removeItem(index);
+      }
+   }
+
 }
 void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color)
 {
@@ -102,6 +115,8 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
                                    ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec, millis,
                                    data.c_str());
+   // remove last character (it is newline, this will be added by QListWidget)
+   new_line.chop(1);
    QListWidgetItem* item = new QListWidgetItem();
    item->setText(new_line);
    item->setBackground(QColor(rgb_color));
