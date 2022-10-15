@@ -86,7 +86,7 @@ void PortHandler::onPortButtonContextMenuRequested()
 {
    PortSettingDialog dialog;
    PortSettingDialog::Settings new_settings = {};
-   std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, !m_socket->isConnected());
+   std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, m_button_state == ButtonState::DISCONNECTED);
    if (result)
    {
       if (result.value())
@@ -128,6 +128,12 @@ void PortHandler::handleButtonClickEthernet()
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
+   else if (m_button_state == ButtonState::CONNECTING)
+   {
+      m_timers.stopTimer(m_timer_id);
+      setButtonState(ButtonState::DISCONNECTED);
+      notifyListeners(Event::DISCONNECTED);
+   }
    else
    {
       tryConnectToSocket();
@@ -157,6 +163,7 @@ void PortHandler::setButtonState(ButtonState state)
 {
    if(state != m_button_state)
    {
+      m_button_state = state;
       QPalette palette = m_object->palette();
       palette.setColor(QPalette::Button, QColor((uint32_t)state));
       m_object->setPalette(palette);
