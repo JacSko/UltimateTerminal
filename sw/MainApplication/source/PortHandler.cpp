@@ -53,7 +53,7 @@ const std::string& PortHandler::getName()
 {
    return m_settings.port_name;
 }
-bool PortHandler::write(const std::vector<uint8_t>& data, size_t size = 0)
+bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    if (m_socket->isConnected())
    {

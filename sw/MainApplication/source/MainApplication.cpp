@@ -35,6 +35,11 @@ MainApplication::MainApplication(QWidget *parent)
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
 
+    ui->lineEndingComboBox->addItem("\\r\\n");
+    ui->lineEndingComboBox->addItem("\\n");
+    ui->lineEndingComboBox->addItem("EMPTY");
+
+
     addToTerminal("test", "test data1");
     addToTerminal("test", "test data2");
     addToTerminal("test", "test data3");
