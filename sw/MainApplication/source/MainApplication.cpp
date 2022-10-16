@@ -7,12 +7,12 @@
 #include "Settings.h"
 #include "LoggerEngine.h"
 
-
-MainApplication::MainApplication(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow),
-    m_timers(Utilities::ITimersFactory::create()),
-    m_marker_index(0)
+MainApplication::MainApplication(QWidget *parent):
+QMainWindow(parent),
+ui(new Ui::MainWindow),
+m_timers(Utilities::ITimersFactory::create()),
+m_marker_index(0),
+m_filelogging({})
 {
     ui->setupUi(this);
 
@@ -25,6 +25,8 @@ MainApplication::MainApplication(QWidget *parent)
     m_timers->start();
 
     connectSignalsToSlots();
+    setButtonColor(ui->loggingButton, Qt::red);
+
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
@@ -74,6 +76,13 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
                                    ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec, millis,
                                    data.c_str());
+
+   if (m_filelogging.is_running)
+   {
+      m_filelogging.file_stream << new_line.toStdString();
+      m_filelogging.file_stream.flush();
+   }
+
    // remove last character (it is newline, this will be added by QListWidget)
    new_line.chop(1);
    QListWidgetItem* item = new QListWidgetItem();
@@ -92,7 +101,6 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 void MainApplication::connectSignalsToSlots()
 {
    connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
-   connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
 
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
@@ -131,6 +139,10 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->userButton_9, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
    connect(ui->userButton_10, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
 
+   ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+   connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
+   connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
+
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -142,6 +154,36 @@ void MainApplication::onMarkerButtonClicked()
 }
 void MainApplication::onLoggingButtonClicked()
 {
+   if (!m_filelogging.is_running)
+   {
+      m_filelogging.file_stream.open(m_filelogging.settings.getPath(), std::ios::out);
+      if (m_filelogging.file_stream)
+      {
+         m_filelogging.is_running = true;
+         setButtonColor(ui->loggingButton, Qt::green);
+      }
+   }
+   else
+   {
+      m_filelogging.file_stream.close();
+      m_filelogging.is_running = false;
+      setButtonColor(ui->loggingButton, Qt::red);
+   }
+}
+void MainApplication::onLoggingButtonContextMenuRequested()
+{
+   LoggingSettingDialog dialog;
+   LoggingSettingDialog::Settings new_settings = {};
+   auto result = dialog.showDialog(this, m_filelogging.settings, new_settings, !m_filelogging.is_running);
+   if (result)
+   {
+      if (result.value())
+      {
+         UT_Log(MAIN, LOW, "got new logging settings: auto %u, file:%s/%s", new_settings.use_default_name, new_settings.file_path.c_str(), new_settings.file_name.c_str());
+         m_filelogging.settings = new_settings;
+      }
+   }
+
 }
 void MainApplication::onClearButtonClicked()
 {
@@ -188,3 +230,12 @@ void MainApplication::onUserButtonClicked()
 void MainApplication::onUserButtonContextMenuRequested()
 {
 }
+
+void MainApplication::setButtonColor(QPushButton* button, QColor color)
+{
+   QPalette palette = button->palette();
+   palette.setColor(QPalette::Button, color);
+   button->setPalette(palette);
+   button->update();
+}
+

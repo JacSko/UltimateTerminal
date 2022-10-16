@@ -2,3 +2,4 @@
 2. UserButtons implementation
 3. UserButton must implement some functions like wait(), maybe even 'for' loops?
 4. Commands that are executed on port open event, maybe even close?
+5. LoggingSettingDialog::Settings::getPath() should not use hardcoded slash (it is OS specific, but not needed until windows support ready).

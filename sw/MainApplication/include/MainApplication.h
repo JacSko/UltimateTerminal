@@ -8,6 +8,7 @@
 
 #include "ITimers.h"
 #include "PortHandler.h"
+#include "LoggingSettingDialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,15 +23,23 @@ public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
 private:
-    Ui::MainWindow *ui;
+    struct FileLogging
+    {
+       bool is_running;
+       LoggingSettingDialog::Settings settings;
+       std::ofstream file_stream;
+    };
 
+    Ui::MainWindow *ui;
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
     uint32_t m_marker_index;
+    FileLogging m_filelogging;
 
     void onPortHandlerEvent(const GUI::PortHandler::PortHandlerEvent&);
     void connectSignalsToSlots();
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
+    void setButtonColor(QPushButton* button, QColor color);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();
@@ -39,6 +48,7 @@ public slots:
    void onSendButtonClicked();
    void onUserButtonClicked();
    void onUserButtonContextMenuRequested();
+   void onLoggingButtonContextMenuRequested();
 
 };
 #endif
