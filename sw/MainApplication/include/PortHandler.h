@@ -6,6 +6,7 @@
 #include <QtWidgets/QLabel>
 
 #include "ISocketDriverFactory.h"
+#include "ISerialDriver.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"
 
@@ -14,6 +15,7 @@ namespace GUI
 
 class PortHandler : public QObject,
                     public Drivers::SocketClient::ClientListener,
+                    public Drivers::Serial::SerialListener,
                     public Utilities::ITimerClient
 {
    Q_OBJECT
@@ -64,6 +66,7 @@ private:
    uint32_t m_connect_retry_period;
    Utilities::ITimers& m_timers;
    std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
+   std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
    int m_timer_id;
    ButtonState m_button_state;
    SocketClientEvent m_last_event;
@@ -73,6 +76,7 @@ private:
    uint8_t m_port_id;
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
+   void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onTimeout(uint32_t timer_id);
    void tryConnectToSocket();
    void handleNewSettings(const PortSettingDialog::Settings&);

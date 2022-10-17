@@ -7,6 +7,7 @@
 #include "stdint.h"
 #include <string>
 #include <vector>
+#include <memory>
 #include <functional>
 
 namespace Drivers
@@ -22,6 +23,37 @@ enum class DriverEvent
 enum class DataMode
 {
    NEW_LINE_DELIMITER,  /**< Client waits for newline char, then notifies listeners about new data */
+};
+
+enum class ParityType
+{
+   NONE,
+   EVEN,
+   ODD
+};
+
+enum class StopBitType
+{
+   ONE = 1,
+   TWO
+};
+
+enum class DataBitType
+{
+   _5BITS = 5,
+   _6BITS,
+   _7BITS,
+   _8BITS
+};
+
+struct Settings
+{
+   std::string device;
+   uint32_t baudRate;
+   DataMode mode;
+   ParityType parityBits;
+   StopBitType stopBits;
+   DataBitType dataBits;
 };
 
 class SerialListener
@@ -41,13 +73,14 @@ public:
 class ISerialDriver
 {
 public:
+   static std::unique_ptr<ISerialDriver> create();
    /**
     * @brief Opens a serial port.
     * @param[in] mode - server mode
     * @param[in] device - path to device
     * @return true if connected successfully, otherwise false.
     */
-   virtual bool open(DataMode mode, std::string device) = 0;
+   virtual bool open(DataMode mode, const Settings& settings) = 0;
    /**
     * @brief Disconnects client from server.
     * @return void.

@@ -20,6 +20,7 @@ m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
 m_timers(timers),
 m_socket(Drivers::SocketFactory::createClient()),
+m_serial(Drivers::Serial::ISerialDriver::create()),
 m_timer_id(TIMERS_INVALID_ID),
 m_listener(listener)
 {
@@ -29,6 +30,7 @@ m_listener(listener)
 
    UT_Assert(object && "invalid QObject pointer");
    m_socket->addListener(this);
+   m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
    setButtonState(ButtonState::DISCONNECTED);
    setButtonName(std::string("PORT") + std::to_string(m_port_id));
@@ -76,6 +78,10 @@ void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_last_event = {ev, data, size};
    emit portEvent();
+}
+void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
+{
+
 }
 void PortHandler::onPortEvent()
 {
@@ -161,7 +167,33 @@ void PortHandler::onPortButtonClicked()
 }
 void PortHandler::handleButtonClickSerial()
 {
-   UT_Log(MAIN_GUI, ERROR, "not implemented");
+   UT_Assert(m_serial && "Serial client not created");
+   if (m_serial->isOpened())
+   {
+      m_serial->close();
+      setButtonState(ButtonState::DISCONNECTED);
+      notifyListeners(Event::DISCONNECTED);
+   }
+   else
+   {
+      Drivers::Serial::Settings serialSettings = {};
+      serialSettings.baudRate = m_settings.baud_rate;
+      serialSettings.dataBits = Drivers::Serial::DataBitType::_8BITS;
+      serialSettings.parityBits = Drivers::Serial::ParityType::NONE;
+      serialSettings.stopBits = Drivers::Serial::StopBitType::ONE;
+      serialSettings.device = m_settings.device;
+
+      if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, serialSettings))
+      {
+         setButtonState(ButtonState::CONNECTED);
+         notifyListeners(Event::CONNECTED);
+         UT_Log(MAIN_GUI, LOW, "Serial port opened");
+      }
+      else
+      {
+         UT_Log(MAIN_GUI, LOW, "Cannot open serial");
+      }
+   }
 }
 void PortHandler::handleButtonClickEthernet()
 {
