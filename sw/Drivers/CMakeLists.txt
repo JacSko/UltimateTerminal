@@ -3,6 +3,7 @@ add_library(Drivers
    source/SocketServer.cpp
    source/ISocketDriverFactory.cpp
    source/ClientHandler.cpp
+   source/SerialDriver.cpp
 )
 target_include_directories(Drivers PUBLIC public/ PRIVATE include/)
 target_link_libraries(Drivers PRIVATE Logger Utilities)
