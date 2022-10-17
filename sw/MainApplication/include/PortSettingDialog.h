@@ -65,7 +65,7 @@ enum class PortType
             result += port_name + "/";
             result += serialSettings.device + "/";
             result += std::string("SER") + "/";
-            result += std::to_string(serialSettings.baudRate);
+            result += serialSettings.baudRate.toName();
          }
          else
          {
@@ -79,11 +79,7 @@ enum class PortType
       bool areValid()
       {
          bool result = true;
-         if (type == PortType::SERIAL)
-         {
-            result &= validateBaudRate(serialSettings.baudRate);
-         }
-         else
+         if (type == PortType::ETHERNET)
          {
             result &= validateIpAddress(ip_address);
             result &= validatePort(port);
@@ -95,16 +91,6 @@ enum class PortType
          return m_error_strings;
       }
    private:
-      bool validateBaudRate(uint32_t baudrate)
-      {
-         if (baudrate == 0)
-         {
-            std::string error = "Invalid baudrate: ";
-            error += std::to_string(baudrate);
-            m_error_strings.push_back(error);
-         }
-         return baudrate > 0;
-      }
       bool validateIpAddress(const std::string& ip_address)
       {
          struct sockaddr_in sa;
@@ -151,7 +137,7 @@ private:
 
    QLineEdit* m_portNameEdit;
    QLineEdit* m_deviceNameEdit;
-   QLineEdit* m_baudRateEdit;
+   QComboBox* m_baudRateBox;
    QComboBox* m_dataBitsBox;
    QComboBox* m_parityBitsBox;
    QComboBox* m_stopBitsBox;

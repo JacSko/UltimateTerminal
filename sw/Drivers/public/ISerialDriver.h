@@ -25,6 +25,25 @@ enum class DataMode
    NEW_LINE_DELIMITER,  /**< Client waits for newline char, then notifies listeners about new data */
 };
 
+#define DEF_BAUD_RATES          \
+   DEF_BAUD_RATE(BR_50)         \
+   DEF_BAUD_RATE(BR_75)         \
+   DEF_BAUD_RATE(BR_110)        \
+   DEF_BAUD_RATE(BR_134)        \
+   DEF_BAUD_RATE(BR_150)        \
+   DEF_BAUD_RATE(BR_200)        \
+   DEF_BAUD_RATE(BR_300)        \
+   DEF_BAUD_RATE(BR_600)        \
+   DEF_BAUD_RATE(BR_1200)       \
+   DEF_BAUD_RATE(BR_1800)       \
+   DEF_BAUD_RATE(BR_2400)       \
+   DEF_BAUD_RATE(BR_4800)       \
+   DEF_BAUD_RATE(BR_9600)       \
+   DEF_BAUD_RATE(BR_19200)      \
+   DEF_BAUD_RATE(BR_38400)      \
+   DEF_BAUD_RATE(BR_57600)      \
+   DEF_BAUD_RATE(BR_115200)     \
+
 #define DEF_DATA_BITS      \
    DEF_DATA_BIT(FIVE)      \
    DEF_DATA_BIT(SIX)       \
@@ -40,6 +59,14 @@ enum class DataMode
    DEF_STOP_BIT(ONE)       \
    DEF_STOP_BIT(TWO)       \
 
+#undef DEF_BAUD_RATE
+#define DEF_BAUD_RATE(name) name,
+enum class BaudRate
+{
+   DEF_BAUD_RATES
+   BAUDRATE_MAX
+};
+#undef DEF_BAUD_RATE
 
 #undef DEF_PARITY_BIT
 #define DEF_PARITY_BIT(name) name,
@@ -83,7 +110,7 @@ public:
 struct Settings
 {
    std::string device = "/dev/ttyUSB1";
-   uint32_t baudRate = 115200;
+   EnumValue<BaudRate> baudRate = BaudRate::BR_115200;
    DataMode mode = DataMode::NEW_LINE_DELIMITER;
    EnumValue<ParityType> parityBits = ParityType::NONE;
    EnumValue<StopBitType> stopBits = StopBitType::ONE;

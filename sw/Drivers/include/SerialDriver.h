@@ -25,6 +25,11 @@ private:
 
    void receivingThread();
    void notifyListeners(DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
+   void setCommonValues(struct termios& termios);
+   void setBaudrates(BaudRate, struct termios& termios);
+   void setDataBits(DataBitType, struct termios& termios);
+   void setParityBits(ParityType, struct termios& termios);
+   void setStopBits(StopBitType, struct termios& termios);
    Utilities::ThreadWorker m_worker;
    std::vector<uint8_t> m_recv_buffer;
    uint32_t m_recv_buffer_idx;

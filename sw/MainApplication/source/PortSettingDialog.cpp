@@ -28,7 +28,7 @@ m_portTypeBox(nullptr),
 m_buttonBox(nullptr),
 m_portNameEdit(nullptr),
 m_deviceNameEdit(nullptr),
-m_baudRateEdit(nullptr),
+m_baudRateBox(nullptr),
 m_dataBitsBox(nullptr),
 m_parityBitsBox(nullptr),
 m_stopBitsBox(nullptr),
@@ -135,15 +135,25 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_current_widgets.push_back(m_deviceNameEdit);
 
    QString baudrate_label = QString("Baudrate:");
-   m_baudRateEdit = new QLineEdit(m_dialog);
-   m_baudRateEdit->setText(QString::number(settings.serialSettings.baudRate));
-   m_baudRateEdit->setDisabled(!m_editable);
-   form->insertRow(3, baudrate_label, m_baudRateEdit);
-   m_current_widgets.push_back(m_baudRateEdit);
+   m_baudRateBox = new QComboBox(m_dialog);
+   for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::BaudRate::BAUDRATE_MAX; i++)
+   {
+      Drivers::Serial::EnumValue<Drivers::Serial::BaudRate> item = (Drivers::Serial::BaudRate)i;
+      m_baudRateBox->addItem(QString(item.toName().c_str()));
+   }
+   m_baudRateBox->setCurrentText(QString(settings.serialSettings.baudRate.toName().c_str()));
+   m_baudRateBox->setDisabled(!m_editable);
+   form->insertRow(3, baudrate_label, m_baudRateBox);
+   m_current_widgets.push_back(m_baudRateBox);
 
    QString databits_label = QString("Data Bits:");
    m_dataBitsBox = new QComboBox(m_dialog);
-   addItemsToComboBox(m_dataBitsBox, g_databits_names);
+   for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::DataBitType::DATA_BIT_MAX; i++)
+   {
+      Drivers::Serial::EnumValue<Drivers::Serial::DataBitType> item = (Drivers::Serial::DataBitType)i;
+      m_dataBitsBox->addItem(QString(item.toName().c_str()));
+   }
+
    m_dataBitsBox->setCurrentText(QString(settings.serialSettings.dataBits.toName().c_str()));
    m_dataBitsBox->setDisabled(!m_editable);
    form->insertRow(4, databits_label, m_dataBitsBox);
@@ -151,7 +161,11 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 
    QString paritybits_label = QString("Parity Bits:");
    m_parityBitsBox = new QComboBox(m_dialog);
-   addItemsToComboBox(m_parityBitsBox, g_paritybits_names);
+   for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::ParityType::PARITY_BIT_MAX; i++)
+   {
+      Drivers::Serial::EnumValue<Drivers::Serial::ParityType> item = (Drivers::Serial::ParityType)i;
+      m_parityBitsBox->addItem(QString(item.toName().c_str()));
+   }
    m_parityBitsBox->setCurrentText(QString(settings.serialSettings.parityBits.toName().c_str()));
    m_parityBitsBox->setDisabled(!m_editable);
    form->insertRow(5, paritybits_label, m_parityBitsBox);
@@ -159,7 +173,11 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 
    QString stopbits_label = QString("Stop Bits:");
    m_stopBitsBox = new QComboBox(m_dialog);
-   addItemsToComboBox(m_stopBitsBox, g_stopbits_names);
+   for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::StopBitType::STOP_BIT_MAX; i++)
+   {
+      Drivers::Serial::EnumValue<Drivers::Serial::StopBitType> item = (Drivers::Serial::StopBitType)i;
+      m_stopBitsBox->addItem(QString(item.toName().c_str()));
+   }
    m_stopBitsBox->setCurrentText(QString(settings.serialSettings.stopBits.toName().c_str()));
    m_stopBitsBox->setDisabled(!m_editable);
    form->insertRow(6, stopbits_label, m_stopBitsBox);
@@ -245,8 +263,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 
    if (out_settings.type == PortType::SERIAL)
    {
-      out_settings.serialSettings.baudRate = m_baudRateEdit->text().toUInt();
-      std::string text = m_baudRateEdit->text().toStdString();
+      out_settings.serialSettings.baudRate.fromName(m_baudRateBox->currentText().toStdString());
       out_settings.serialSettings.dataBits.fromName(m_dataBitsBox->currentText().toStdString());
       out_settings.serialSettings.parityBits.fromName(m_parityBitsBox->currentText().toStdString());
       out_settings.serialSettings.stopBits.fromName(m_stopBitsBox->currentText().toStdString());
