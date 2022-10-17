@@ -10,5 +10,6 @@
   "Logger_group_MAIN_GUI": "HIGH",
   "Logger_group_SETTINGS": "HIGH",
   "Logger_group_UTILITIES": "HIGH",
-  "Logger_group_SOCK_DRV": "HIGH"
+  "Logger_group_SOCK_DRV": "HIGH",
+  "Logger_group_SERIAL_DRV": "HIGH"
 }

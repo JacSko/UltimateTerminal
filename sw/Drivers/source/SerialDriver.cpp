@@ -150,7 +150,7 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
 {
    bool result = false;
    m_mode = mode;
-   UT_Log(MAIN, INFO, "Opening serial port %s with baudrate %u, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
+   UT_Log(SERIAL_DRV, INFO, "Opening serial port %s with baudrate %u, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
          settings.stopBits.toName().c_str(), settings.dataBits.toName().c_str());
    m_fd = ::open(settings.device.c_str(), O_RDWR);
    if (m_fd >= 0)
@@ -168,21 +168,21 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          {
             result = true;
             m_worker.start(SERIAL_THREAD_START_TIMEOUT);
-            UT_Log(MAIN, LOW, "Successfully opened %s!", settings.device.c_str());
+            UT_Log(SERIAL_DRV, LOW, "Successfully opened %s!", settings.device.c_str());
          }
          else
          {
-            UT_Log(MAIN, LOW, "Cannot tcsetattr(), error %s(%d)", strerror(errno), errno);
+            UT_Log(SERIAL_DRV, ERROR, "Cannot tcsetattr(), error %s(%d)", strerror(errno), errno);
          }
       }
       else
       {
-         UT_Log(MAIN, LOW, "Cannot tcgetattr(), error %s(%d)", strerror(errno), errno);
+         UT_Log(SERIAL_DRV, ERROR, "Cannot tcgetattr(), error %s(%d)", strerror(errno), errno);
       }
    }
    else
    {
-      UT_Log(MAIN, LOW, "Cannot open %s, error %s(%d)", settings.device.c_str(), strerror(errno), errno);
+      UT_Log(SERIAL_DRV, ERROR, "Cannot open %s, error %s(%d)", settings.device.c_str(), strerror(errno), errno);
    }
 
    return result;
@@ -304,7 +304,7 @@ void SerialDriver::receivingThread()
       }
       else if(recv_bytes == -1)
       {
-         UT_Log(MAIN, LOW, "Cannot read(), error %s(%d)", strerror(errno), errno);
+         UT_Log(SERIAL_DRV, ERROR, "Cannot read(), error %s(%d)", strerror(errno), errno);
          break;
       }
    }

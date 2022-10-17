@@ -67,9 +67,10 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
+   UT_Log(MAIN_GUI, INFO, "setting dialog show for [%s] edit possible: %u", current_settings.port_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "accepted, gathering new settings");
+      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
    }
 
@@ -238,7 +239,7 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
 }
 void PortSettingDialog::onColorButtonClicked()
 {
-   QColor color = QColorDialog::getColor(QColor(0xFF0000), m_dialog, "test title");
+   QColor color = QColorDialog::getColor(QColor(0xFF0000), m_dialog, "Select color");
 
    if (color.isValid())
    {
@@ -282,7 +283,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {
-   UT_Log(MAIN_GUI, ERROR, "new port type %s, rendering", name.toStdString().c_str());
+   UT_Log(MAIN_GUI, LOW, "new port type %s, rendering", name.toStdString().c_str());
 
    if (stringToPortType(name) == PortType::SERIAL)
    {

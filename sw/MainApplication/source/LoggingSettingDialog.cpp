@@ -59,9 +59,10 @@ std::optional<bool> LoggingSettingDialog::showDialog(QWidget* parent, const Sett
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
+   UT_Log(MAIN_GUI, INFO, "logging dialog show");
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "accepted, gathering new settings");
+      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
    }
 

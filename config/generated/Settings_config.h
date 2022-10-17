@@ -21,6 +21,7 @@
    DEF_SETTING_GROUP(Logger_group_SETTINGS, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_UTILITIES, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_SOCK_DRV, std::string, "HIGH") \
+   DEF_SETTING_GROUP(Logger_group_SERIAL_DRV, std::string, "HIGH") \
 
 
 #endif
