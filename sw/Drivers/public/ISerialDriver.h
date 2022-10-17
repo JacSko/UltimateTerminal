@@ -25,35 +25,69 @@ enum class DataMode
    NEW_LINE_DELIMITER,  /**< Client waits for newline char, then notifies listeners about new data */
 };
 
+#define DEF_DATA_BITS      \
+   DEF_DATA_BIT(FIVE)      \
+   DEF_DATA_BIT(SIX)       \
+   DEF_DATA_BIT(SEVEN)     \
+   DEF_DATA_BIT(EIGHT)     \
+
+#define DEF_PARITY_BITS    \
+   DEF_PARITY_BIT(NONE)    \
+   DEF_PARITY_BIT(EVEN)    \
+   DEF_PARITY_BIT(ODD)     \
+
+#define DEF_STOP_BITS      \
+   DEF_STOP_BIT(ONE)       \
+   DEF_STOP_BIT(TWO)       \
+
+
+#undef DEF_PARITY_BIT
+#define DEF_PARITY_BIT(name) name,
 enum class ParityType
 {
-   NONE,
-   EVEN,
-   ODD
+   DEF_PARITY_BITS
+   PARITY_BIT_MAX
 };
+#undef DEF_PARITY_BIT
 
+#undef DEF_STOP_BIT
+#define DEF_STOP_BIT(name) name,
 enum class StopBitType
 {
-   ONE = 1,
-   TWO
+   DEF_STOP_BITS
+   STOP_BIT_MAX
 };
+#undef DEF_STOP_BIT
 
+#define DEF_DATA_BIT(name) name,
 enum class DataBitType
 {
-   _5BITS = 5,
-   _6BITS,
-   _7BITS,
-   _8BITS
+   DEF_DATA_BITS
+   DATA_BIT_MAX
 };
+#undef DEF_DATA_BIT
+
+template<typename T>
+class EnumValue
+{
+public:
+   EnumValue(T val):
+   value(val)
+   {}
+   std::string toName() const;
+   T fromName(const std::string& name);
+   T value;
+};
+
 
 struct Settings
 {
-   std::string device;
-   uint32_t baudRate;
-   DataMode mode;
-   ParityType parityBits;
-   StopBitType stopBits;
-   DataBitType dataBits;
+   std::string device = "";
+   uint32_t baudRate = 115200;
+   DataMode mode = DataMode::NEW_LINE_DELIMITER;
+   EnumValue<ParityType> parityBits = ParityType::NONE;
+   EnumValue<StopBitType> stopBits = StopBitType::ONE;
+   EnumValue<DataBitType> dataBits = DataBitType::EIGHT;
 };
 
 class SerialListener

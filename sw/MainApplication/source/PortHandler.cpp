@@ -26,7 +26,7 @@ m_listener(listener)
 {
    PORT_ID++;
    m_port_id = PORT_ID;
-   UT_Log(MAIN_GUI, INFO, "Creating port handler for PORT%u", m_port_id);
+   UT_Log(MAIN, INFO, "Creating port handler for PORT%u", m_port_id);
 
    UT_Assert(object && "invalid QObject pointer");
    m_socket->addListener(this);
@@ -98,7 +98,7 @@ void PortHandler::onPortEvent()
    }
    else
    {
-      UT_Log(MAIN_GUI, ERROR, "Unknown event received %u", (uint8_t) m_last_event.event);
+      UT_Log(MAIN, ERROR, "Unknown event received %u", (uint8_t) m_last_event.event);
    }
 }
 void PortHandler::onTimeout(uint32_t timer_id)
@@ -106,7 +106,7 @@ void PortHandler::onTimeout(uint32_t timer_id)
    // another thread
    if (timer_id == m_timer_id)
    {
-      UT_Log(MAIN_GUI, LOW, "Retrying connect...");
+      UT_Log(MAIN, LOW, "Retrying connect...");
       tryConnectToSocket();
    }
 }
@@ -121,7 +121,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setText(m_settings.shortSettingsString().c_str());
 
-   char stylesheet [200];
+   char stylesheet [100];
    std::snprintf(stylesheet, 100, "background-color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color);
 
    m_summary_label->setStyleSheet(QString(stylesheet));
@@ -137,7 +137,6 @@ void PortHandler::onPortButtonContextMenuRequested()
    {
       if (result.value())
       {
-         UT_Log(MAIN, LOW, "New settings: %s", std::string(new_settings).c_str(), result.value());
          handleNewSettings(new_settings);
       }
       else
@@ -177,21 +176,20 @@ void PortHandler::handleButtonClickSerial()
    else
    {
       Drivers::Serial::Settings serialSettings = {};
-      serialSettings.baudRate = m_settings.baud_rate;
-      serialSettings.dataBits = Drivers::Serial::DataBitType::_8BITS;
+      serialSettings.baudRate = m_settings.serialSettings.baudRate;
+      serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
       serialSettings.parityBits = Drivers::Serial::ParityType::NONE;
       serialSettings.stopBits = Drivers::Serial::StopBitType::ONE;
-      serialSettings.device = m_settings.device;
+      serialSettings.device = m_settings.serialSettings.device;
 
       if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, serialSettings))
       {
          setButtonState(ButtonState::CONNECTED);
          notifyListeners(Event::CONNECTED);
-         UT_Log(MAIN_GUI, LOW, "Serial port opened");
       }
       else
       {
-         UT_Log(MAIN_GUI, LOW, "Cannot open serial");
+         UT_Log(MAIN, ERROR, "Cannot open serial");
       }
    }
 }
@@ -215,26 +213,24 @@ void PortHandler::handleButtonClickEthernet()
       tryConnectToSocket();
    }
 }
-
 void PortHandler::tryConnectToSocket()
 {
    if(m_socket->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, m_settings.ip_address, m_settings.port))
    {
-      UT_Log(MAIN_GUI, LOW, "Successfully connected to %s:%u", m_settings.ip_address.c_str(), m_settings.port);
+      UT_Log(MAIN, LOW, "Successfully connected to %s:%u", m_settings.ip_address.c_str(), m_settings.port);
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTED);
       notifyListeners(Event::CONNECTED);
    }
    else
    {
-      UT_Log(MAIN_GUI, LOW, "Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
+      UT_Log(MAIN, LOW, "Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTING);
       notifyListeners(Event::CONNECTING);
    }
 }
-
 void PortHandler::setButtonState(ButtonState state)
 {
    if(state != m_button_state)

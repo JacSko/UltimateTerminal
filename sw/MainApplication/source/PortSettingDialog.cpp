@@ -84,21 +84,6 @@ std::string PortSettingDialog::toString(PortType type)
    UT_Assert(type < PortType::PORT_TYPE_MAX && "Invalid port type");
    return g_port_names[(size_t)type];
 }
-std::string PortSettingDialog::toString(DataBits data)
-{
-   UT_Assert(data < DataBits::DATA_BIT_MAX && "Invalid data bits");
-   return g_databits_names[(size_t)data];
-}
-std::string PortSettingDialog::toString(ParityBits parity)
-{
-   UT_Assert(parity < ParityBits::PARITY_BIT_MAX && "Invalid parity bits");
-   return g_paritybits_names[(size_t)parity];
-}
-std::string PortSettingDialog::toString(StopBits stop)
-{
-   UT_Assert(stop < StopBits::STOP_BIT_MAX && "Invalid stop bits");
-   return g_stopbits_names[(size_t)stop];
-}
 void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
 {
    QString porttype_label = QString("Port type:");
@@ -144,14 +129,14 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 
    QString device_label = QString("Device name:");
    m_deviceNameEdit = new QLineEdit(m_dialog);
-   m_deviceNameEdit->setText(QString(settings.device.c_str()));
+   m_deviceNameEdit->setText(QString(settings.serialSettings.device.c_str()));
    m_deviceNameEdit->setDisabled(!m_editable);
    form->insertRow(2, device_label, m_deviceNameEdit);
    m_current_widgets.push_back(m_deviceNameEdit);
 
    QString baudrate_label = QString("Baudrate:");
    m_baudRateEdit = new QLineEdit(m_dialog);
-   m_baudRateEdit->setText(QString::number(settings.baud_rate));
+   m_baudRateEdit->setText(QString::number(settings.serialSettings.baudRate));
    m_baudRateEdit->setDisabled(!m_editable);
    form->insertRow(3, baudrate_label, m_baudRateEdit);
    m_current_widgets.push_back(m_baudRateEdit);
@@ -159,7 +144,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    QString databits_label = QString("Data Bits:");
    m_dataBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_dataBitsBox, g_databits_names);
-   m_dataBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.data_bits).c_str()));
+   m_dataBitsBox->setCurrentText(QString(settings.serialSettings.dataBits.toName().c_str()));
    m_dataBitsBox->setDisabled(!m_editable);
    form->insertRow(4, databits_label, m_dataBitsBox);
    m_current_widgets.push_back(m_dataBitsBox);
@@ -167,7 +152,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    QString paritybits_label = QString("Parity Bits:");
    m_parityBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_parityBitsBox, g_paritybits_names);
-   m_parityBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.parity_bits).c_str()));
+   m_parityBitsBox->setCurrentText(QString(settings.serialSettings.parityBits.toName().c_str()));
    m_parityBitsBox->setDisabled(!m_editable);
    form->insertRow(5, paritybits_label, m_parityBitsBox);
    m_current_widgets.push_back(m_parityBitsBox);
@@ -175,7 +160,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    QString stopbits_label = QString("Stop Bits:");
    m_stopBitsBox = new QComboBox(m_dialog);
    addItemsToComboBox(m_stopBitsBox, g_stopbits_names);
-   m_stopBitsBox->setCurrentText(QString(PortSettingDialog::toString(settings.stop_bits).c_str()));
+   m_stopBitsBox->setCurrentText(QString(settings.serialSettings.stopBits.toName().c_str()));
    m_stopBitsBox->setDisabled(!m_editable);
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);
@@ -260,12 +245,12 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 
    if (out_settings.type == PortType::SERIAL)
    {
-      out_settings.baud_rate = m_baudRateEdit->text().toUInt();
+      out_settings.serialSettings.baudRate = m_baudRateEdit->text().toUInt();
       std::string text = m_baudRateEdit->text().toStdString();
-      out_settings.data_bits = stringToDataBits(m_dataBitsBox->currentText());
-      out_settings.parity_bits = stringToParityBits(m_parityBitsBox->currentText());
-      out_settings.stop_bits = stringToStopBits(m_stopBitsBox->currentText());
-      out_settings.device = m_deviceNameEdit->text().toStdString();
+      out_settings.serialSettings.dataBits.fromName(m_dataBitsBox->currentText().toStdString());
+      out_settings.serialSettings.parityBits.fromName(m_parityBitsBox->currentText().toStdString());
+      out_settings.serialSettings.stopBits.fromName(m_stopBitsBox->currentText().toStdString());
+      out_settings.serialSettings.device = m_deviceNameEdit->text().toStdString();
    }
    else if (out_settings.type == PortType::ETHERNET)
    {
@@ -301,41 +286,5 @@ PortSettingDialog::PortType PortSettingDialog::stringToPortType(const QString& n
    else
    {
       return PortSettingDialog::PortType::PORT_TYPE_MAX;
-   }
-}
-PortSettingDialog::DataBits PortSettingDialog::stringToDataBits(const QString& name)
-{
-   auto it = std::find(g_databits_names.begin(), g_databits_names.end(), name.toStdString());
-   if (it != g_databits_names.end())
-   {
-      return ((PortSettingDialog::DataBits)std::distance(g_databits_names.begin(), it));
-   }
-   else
-   {
-      return PortSettingDialog::DataBits::DATA_BIT_MAX;
-   }
-}
-PortSettingDialog::ParityBits PortSettingDialog::stringToParityBits(const QString& name)
-{
-   auto it = std::find(g_paritybits_names.begin(), g_paritybits_names.end(), name.toStdString());
-   if (it != g_paritybits_names.end())
-   {
-      return ((PortSettingDialog::ParityBits)std::distance(g_paritybits_names.begin(), it));
-   }
-   else
-   {
-      return PortSettingDialog::ParityBits::PARITY_BIT_MAX;
-   }
-}
-PortSettingDialog::StopBits PortSettingDialog::stringToStopBits(const QString& name)
-{
-   auto it = std::find(g_stopbits_names.begin(), g_stopbits_names.end(), name.toStdString());
-   if (it != g_stopbits_names.end())
-   {
-      return ((PortSettingDialog::StopBits)std::distance(g_stopbits_names.begin(), it));
-   }
-   else
-   {
-      return PortSettingDialog::StopBits::STOP_BIT_MAX;
    }
 }

@@ -15,6 +15,86 @@ constexpr uint32_t SERIAL_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERIAL_MAX_PAYLOAD_LENGTH = 4096;
 constexpr char DATA_DELIMITER = '\n';
 
+#undef DEF_DATA_BIT
+#define DEF_DATA_BIT(a) #a,
+std::vector<std::string> g_databits_names = { DEF_DATA_BITS };
+#undef DEF_DATA_BIT
+
+#undef DEF_PARITY_BIT
+#define DEF_PARITY_BIT(a) #a,
+std::vector<std::string> g_paritybits_names = { DEF_PARITY_BITS };
+#undef DEF_PARITY_BIT
+
+#undef DEF_STOP_BIT
+#define DEF_STOP_BIT(a) #a,
+std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
+#undef DEF_STOP_BIT
+
+template<typename T>
+std::string EnumValue<T>::toName() const
+{
+   return "";
+}
+template<>
+std::string EnumValue<ParityType>::toName() const
+{
+   UT_Assert(value < ParityType::PARITY_BIT_MAX);
+   return g_paritybits_names[(size_t)value];
+}
+template<>
+std::string EnumValue<StopBitType>::toName() const
+{
+   UT_Assert(value < StopBitType::STOP_BIT_MAX);
+   return g_stopbits_names[(size_t)value];
+}
+template<>
+std::string EnumValue<DataBitType>::toName() const
+{
+   UT_Assert(value < DataBitType::DATA_BIT_MAX);
+   return g_databits_names[(size_t)value];
+}
+
+template<typename T>
+T EnumValue<T>::fromName(const std::string& name)
+{
+   return {};
+}
+template<>
+ParityType EnumValue<ParityType>::fromName(const std::string& name)
+{
+   value = ParityType::PARITY_BIT_MAX;
+   auto it = std::find(g_paritybits_names.begin(), g_paritybits_names.end(), name);
+   if (it != g_paritybits_names.end())
+   {
+      value = (ParityType)(std::distance(g_paritybits_names.begin(), it));
+   }
+   return value;
+}
+template<>
+StopBitType EnumValue<StopBitType>::fromName(const std::string& name)
+{
+   value = StopBitType::STOP_BIT_MAX;
+   auto it = std::find(g_stopbits_names.begin(), g_stopbits_names.end(), name);
+   if (it != g_stopbits_names.end())
+   {
+      value = (StopBitType)(std::distance(g_stopbits_names.begin(), it));
+   }
+   return value;
+}
+template<>
+DataBitType EnumValue<DataBitType>::fromName(const std::string& name)
+{
+   value = DataBitType::DATA_BIT_MAX;
+   auto it = std::find(g_databits_names.begin(), g_databits_names.end(), name);
+   if (it != g_databits_names.end())
+   {
+      value =  (DataBitType)(std::distance(g_databits_names.begin(), it));
+   }
+   return value;
+}
+
+
+
 std::unique_ptr<ISerialDriver> ISerialDriver::create()
 {
    return std::unique_ptr<ISerialDriver>(new SerialDriver());
@@ -57,7 +137,7 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          tty.c_cc[VTIME] = 1;
 
          /* set parity */
-         switch(settings.parityBits)
+         switch(settings.parityBits.value)
          {
          case ParityType::NONE:
             tty.c_cflag &= ~PARENB;
@@ -75,7 +155,7 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          }
 
          /* set stopbits */
-         switch(settings.stopBits)
+         switch(settings.stopBits.value)
          {
          case StopBitType::ONE:
             tty.c_cflag &= ~CSTOPB;
@@ -88,18 +168,18 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          }
 
          /* set databits */
-         switch(settings.dataBits)
+         switch(settings.dataBits.value)
          {
-         case DataBitType::_5BITS:
+         case DataBitType::FIVE:
             tty.c_cflag |= CS5;
             break;
-         case DataBitType::_6BITS:
+         case DataBitType::SIX:
             tty.c_cflag |= CS6;
             break;
-         case DataBitType::_7BITS:
+         case DataBitType::SEVEN:
             tty.c_cflag |= CS7;
             break;
-         case DataBitType::_8BITS:
+         case DataBitType::EIGHT:
             tty.c_cflag |= CS8;
             break;
          default:

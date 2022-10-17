@@ -13,28 +13,11 @@
 #include <QtWidgets/QLineEdit>
 
 #include "Logger.h"
+#include "ISerialDriver.h"
 
 #define DEF_PORT_TYPES     \
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \
-
-#define DEF_DATA_BITS      \
-   DEF_DATA_BIT(BITS5)     \
-   DEF_DATA_BIT(BITS6)     \
-   DEF_DATA_BIT(BITS7)     \
-   DEF_DATA_BIT(BITS8)     \
-
-#define DEF_PARITY_BITS    \
-   DEF_PARITY_BIT(NONE)    \
-   DEF_PARITY_BIT(EVEN)    \
-   DEF_PARITY_BIT(ODD)     \
-   DEF_PARITY_BIT(MARK)    \
-   DEF_PARITY_BIT(SPACE)   \
-
-#define DEF_STOP_BITS      \
-   DEF_STOP_BIT(ONE)       \
-   DEF_STOP_BIT(TWO)       \
-
 
 class PortSettingDialog : public QObject
 {
@@ -53,44 +36,13 @@ enum class PortType
 };
 #undef DEF_PORT_TYPE
 
-#undef DEF_DATA_BIT
-#define DEF_DATA_BIT(name) name,
-enum class DataBits
-{
-   DEF_DATA_BITS
-   DATA_BIT_MAX
-};
-#undef DEF_DATA_BIT
-
-#undef DEF_PARITY_BIT
-#define DEF_PARITY_BIT(name) name,
-enum class ParityBits
-{
-   DEF_PARITY_BITS
-   PARITY_BIT_MAX
-};
-#undef DEF_PARITY_BIT
-
-#undef DEF_STOP_BIT
-#define DEF_STOP_BIT(name) name,
-enum class StopBits
-{
-   DEF_STOP_BITS
-   STOP_BIT_MAX
-};
-#undef DEF_STOP_BIT
-
    class Settings
    {
    public:
       Settings():
       type(PortType::SERIAL),
       port_name(""),
-      device(""),
-      baud_rate(0),
-      data_bits(DataBits::BITS5),
-      parity_bits(ParityBits::EVEN),
-      stop_bits(StopBits::ONE),
+      serialSettings({}),
       ip_address("127.0.0.1"),
       port(1234),
       trace_color(0xFFFFFF)
@@ -98,31 +50,12 @@ enum class StopBits
 
       }
 
-      PortType type;
-      std::string port_name;
-      std::string device;
-      uint32_t baud_rate;
-      DataBits data_bits;
-      ParityBits parity_bits;
-      StopBits stop_bits;
+      PortType type = PortType::SERIAL;
+      std::string port_name = "";
+      Drivers::Serial::Settings serialSettings;
       std::string ip_address;
       uint32_t port;
       uint32_t trace_color;
-
-      operator std::string () const
-      {
-         std::string result = "";
-         result += "port name = " + port_name + "\n";
-         result += "device = " + device + "\n";
-         result += "type = " + toString(type) + "\n";
-         result += "baud rate = " + std::to_string(baud_rate) + "\n";
-         result += "data bits = " + toString(data_bits) + "\n";
-         result += "parity bits = " + toString(parity_bits) + "\n";
-         result += "stop bits = " + toString(stop_bits) + "\n";
-         result += "ip address = " + ip_address + "\n";
-         result += "ip port = " + std::to_string(port);
-         return result;
-      }
 
       std::string shortSettingsString()
       {
@@ -130,9 +63,9 @@ enum class StopBits
          if (type == PortType::SERIAL)
          {
             result += port_name + "/";
-            result += device + "/";
+            result += serialSettings.device + "/";
             result += std::string("SER") + "/";
-            result += std::to_string(baud_rate);
+            result += std::to_string(serialSettings.baudRate);
          }
          else
          {
@@ -148,7 +81,7 @@ enum class StopBits
          bool result = true;
          if (type == PortType::SERIAL)
          {
-            result &= validateBaudRate(baud_rate);
+            result &= validateBaudRate(serialSettings.baudRate);
          }
          else
          {
@@ -200,9 +133,6 @@ enum class StopBits
 
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
    static std::string toString(PortType);
-   static std::string toString(DataBits);
-   static std::string toString(ParityBits);
-   static std::string toString(StopBits);
 private:
 
    void addPortTypeComboBox(PortType current_selection);
@@ -213,9 +143,6 @@ private:
    void clearDialog();
    bool convertGuiValues(Settings& out_settings);
    PortType stringToPortType(const QString& name);
-   DataBits stringToDataBits(const QString& name);
-   ParityBits stringToParityBits(const QString& name);
-   StopBits stringToStopBits(const QString& name);
 
    QDialog* m_dialog;
    QFormLayout* m_form;
