@@ -59,6 +59,13 @@ private:
       size_t size;
    };
 
+   struct SerialPortEvent
+   {
+      Drivers::Serial::DriverEvent event;
+      std::vector<uint8_t> data;
+      size_t size;
+   };
+
    QPushButton* m_object;
    QLabel* m_summary_label;
    QWidget* m_parent;
@@ -70,6 +77,7 @@ private:
    int m_timer_id;
    ButtonState m_button_state;
    SocketClientEvent m_last_event;
+   SerialPortEvent m_last_serial_event;
    std::mutex m_event_mutex;
    PortHandlerListener m_listener;
    std::mutex m_listener_mutex;
@@ -84,13 +92,15 @@ private:
    void handleButtonClickEthernet();
    void setButtonState(ButtonState);
    void setButtonName(const std::string name);
-   void notifyListeners(Event event);
+   void notifyListeners(Event event, const std::vector<uint8_t>& data = {}, size_t size = 0);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
    void onPortEvent();
+   void onSerialPortEvent();
 signals:
    void portEvent();
+   void serialPortEvent();
 };
 
 
