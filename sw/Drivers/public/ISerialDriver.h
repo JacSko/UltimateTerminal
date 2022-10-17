@@ -82,7 +82,7 @@ public:
 
 struct Settings
 {
-   std::string device = "";
+   std::string device = "/dev/ttyUSB1";
    uint32_t baudRate = 115200;
    DataMode mode = DataMode::NEW_LINE_DELIMITER;
    EnumValue<ParityType> parityBits = ParityType::NONE;

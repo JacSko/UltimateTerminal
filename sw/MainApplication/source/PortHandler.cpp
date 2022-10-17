@@ -175,14 +175,7 @@ void PortHandler::handleButtonClickSerial()
    }
    else
    {
-      Drivers::Serial::Settings serialSettings = {};
-      serialSettings.baudRate = m_settings.serialSettings.baudRate;
-      serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
-      serialSettings.parityBits = Drivers::Serial::ParityType::NONE;
-      serialSettings.stopBits = Drivers::Serial::StopBitType::ONE;
-      serialSettings.device = m_settings.serialSettings.device;
-
-      if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, serialSettings))
+      if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, m_settings.serialSettings))
       {
          setButtonState(ButtonState::CONNECTED);
          notifyListeners(Event::CONNECTED);

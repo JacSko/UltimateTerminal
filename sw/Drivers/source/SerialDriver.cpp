@@ -133,8 +133,8 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
          tty.c_oflag &= ~OPOST;
          tty.c_oflag &= ~ONLCR;
-         tty.c_cc[VMIN] = 1;
-         tty.c_cc[VTIME] = 1;
+         tty.c_cc[VMIN] = 0;
+         tty.c_cc[VTIME] = 5; /* block for max 500ms*/
 
          /* set parity */
          switch(settings.parityBits.value)
@@ -214,6 +214,7 @@ void SerialDriver::close()
 {
    ::close(m_fd);
    m_fd = -1;
+   m_worker.stop();
 }
 bool SerialDriver::isOpened()
 {
@@ -247,13 +248,10 @@ void SerialDriver::receivingThread()
          }
          while(is_next_new_line);
       }
-      else
+      else if(recv_bytes == -1)
       {
-         if(recv_bytes == -1)
-         {
-            UT_Log(MAIN, LOW, "Cannot read(), error %s(%d)", strerror(errno), errno);
-            return;
-         }
+         UT_Log(MAIN, LOW, "Cannot read(), error %s(%d)", strerror(errno), errno);
+         break;
       }
    }
 }
