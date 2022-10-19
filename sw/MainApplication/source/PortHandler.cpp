@@ -41,9 +41,9 @@ m_listener(listener)
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    m_summary_label->setAutoFillBackground(true);
    m_summary_label->setAlignment(Qt::AlignCenter);
+
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
-
    connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
    connect(this, SIGNAL(serialPortEvent()), this, SLOT(onSerialPortEvent()));
 }
@@ -61,6 +61,21 @@ PortHandler::~PortHandler()
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
 {
    if (m_listener) m_listener({m_settings.port_name, m_settings.trace_color, event, data, size});
+}
+PortHandler::Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
+{
+   if (event == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
+   {
+      return PortHandler::Event::DISCONNECTED;
+   }
+   else
+   {
+      return PortHandler::Event::NEW_DATA;
+   }
+}
+PortHandler::Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent event)
+{
+   return PortHandler::Event::NEW_DATA;
 }
 const std::string& PortHandler::getName()
 {
@@ -84,39 +99,31 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_last_event = {ev, data, size};
+   m_last_event = {m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size};
    emit portEvent();
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_last_serial_event = {ev, data, size};
-   emit serialPortEvent();
+   m_last_event = {m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size};
+   emit portEvent();
 }
 void PortHandler::onPortEvent()
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   if (m_last_event.event == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
+   if (m_last_event.event == PortHandler::Event::DISCONNECTED)
    {
       m_socket->disconnect();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
-   else if (m_last_event.event == Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
+   else if (m_last_event.event == PortHandler::Event::NEW_DATA)
    {
       notifyListeners(Event::NEW_DATA, m_last_event.data, m_last_event.size);
    }
    else
    {
       UT_Log(MAIN, ERROR, "Unknown event received %u", (uint8_t) m_last_event.event);
-   }
-}
-void PortHandler::onSerialPortEvent()
-{
-   std::lock_guard<std::mutex> lock(m_event_mutex);
-   if (m_last_serial_event.event == Drivers::Serial::DriverEvent::DATA_RECV)
-   {
-      notifyListeners(Event::NEW_DATA,m_last_serial_event.data, m_last_serial_event.size);
    }
 }
 void PortHandler::onTimeout(uint32_t timer_id)

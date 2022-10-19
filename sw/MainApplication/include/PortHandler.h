@@ -30,10 +30,10 @@ public:
 
    struct PortHandlerEvent
    {
-      const std::string& name;
+      std::string name;
       uint32_t trace_color;
       Event event;
-      const std::vector<uint8_t>& data;
+      std::vector<uint8_t> data;
       size_t size;
    };
 
@@ -52,20 +52,6 @@ private:
       CONNECTED = 0x00FF00,
    };
 
-   struct SocketClientEvent
-   {
-      Drivers::SocketClient::ClientEvent event;
-      std::vector<uint8_t> data;
-      size_t size;
-   };
-
-   struct SerialPortEvent
-   {
-      Drivers::Serial::DriverEvent event;
-      std::vector<uint8_t> data;
-      size_t size;
-   };
-
    QPushButton* m_object;
    QLabel* m_summary_label;
    QWidget* m_parent;
@@ -76,8 +62,7 @@ private:
    std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
    int m_timer_id;
    ButtonState m_button_state;
-   SocketClientEvent m_last_event;
-   SerialPortEvent m_last_serial_event;
+   PortHandlerEvent m_last_event;
    std::mutex m_event_mutex;
    PortHandlerListener m_listener;
    std::mutex m_listener_mutex;
@@ -93,14 +78,14 @@ private:
    void setButtonState(ButtonState);
    void setButtonName(const std::string name);
    void notifyListeners(Event event, const std::vector<uint8_t>& data = {}, size_t size = 0);
+   Event toPortHandlerEvent(Drivers::SocketClient::ClientEvent);
+   Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
    void onPortEvent();
-   void onSerialPortEvent();
 signals:
    void portEvent();
-   void serialPortEvent();
 };
 
 
