@@ -32,9 +32,10 @@ m_listener(listener)
    m_socket->addListener(this);
    m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
+
+   m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
    setButtonState(ButtonState::DISCONNECTED);
    setButtonName(std::string("PORT") + std::to_string(m_port_id));
-   m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
    notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
@@ -49,9 +50,11 @@ m_listener(listener)
 PortHandler::~PortHandler()
 {
    m_socket->removeListener(this);
+   m_serial->removeListener(this);
    m_timers.removeTimer(m_timer_id);
    m_timer_id = TIMERS_INVALID_ID;
    m_socket->disconnect();
+   m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
    notifyListeners(Event::DISCONNECTED);
 }
@@ -68,6 +71,10 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
    if (m_socket->isConnected())
    {
       return m_socket->write(data, size);
+   }
+   else if (m_serial->isOpened())
+   {
+      return m_serial->write(data, size);
    }
    else
    {
@@ -160,7 +167,7 @@ void PortHandler::onPortButtonContextMenuRequested()
             error_message += error.c_str();
             error_message += "\n";
          }
-         messageBox.critical(m_parent,"Error", error_message);
+         messageBox.critical(m_parent,"%s Error", m_settings.port_name.c_str(), error_message);
       }
    }
 }
@@ -248,7 +255,7 @@ void PortHandler::setButtonState(ButtonState state)
 }
 void PortHandler::setButtonName(const std::string name)
 {
-      m_object->setText(QString(name.c_str()));
+   m_object->setText(QString(name.c_str()));
 }
 
 };
