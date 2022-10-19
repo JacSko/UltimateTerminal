@@ -212,9 +212,12 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
 }
 void SerialDriver::close()
 {
-   ::close(m_fd);
-   m_fd = -1;
-   m_worker.stop();
+   if (isOpened())
+   {
+      ::close(m_fd);
+      m_fd = -1;
+      m_worker.stop();
+   }
 }
 bool SerialDriver::isOpened()
 {
