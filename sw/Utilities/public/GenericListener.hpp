@@ -24,6 +24,12 @@ public:
       }
    }
 
+   void removeAllListeners()
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_listeners.clear();;
+   }
+
 protected:
 
    void notifyChange(std::function<void(LISTENER_TYPE*)> function)

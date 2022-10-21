@@ -12,7 +12,7 @@ constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
 static uint8_t PORT_ID = 0;
 
-PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timers, PortHandlerListener listener, QWidget* parent):
+PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timers, PortHandlerListener* listener, QWidget* parent):
 m_object(object),
 m_summary_label(label),
 m_parent(parent),
@@ -21,14 +21,14 @@ m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
 m_timers(timers),
 m_socket(Drivers::SocketFactory::createClient()),
 m_serial(Drivers::Serial::ISerialDriver::create()),
-m_timer_id(TIMERS_INVALID_ID),
-m_listener(listener)
+m_timer_id(TIMERS_INVALID_ID)
 {
    PORT_ID++;
    m_port_id = PORT_ID;
    UT_Log(MAIN, INFO, "Creating port handler for PORT%u", m_port_id);
 
    UT_Assert(object && "invalid QObject pointer");
+   GenericListener::addListener(*listener);
    m_socket->addListener(this);
    m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
@@ -49,6 +49,7 @@ m_listener(listener)
 }
 PortHandler::~PortHandler()
 {
+   GenericListener::removeAllListeners();
    m_socket->removeListener(this);
    m_serial->removeListener(this);
    m_timers.removeTimer(m_timer_id);
@@ -60,22 +61,22 @@ PortHandler::~PortHandler()
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
 {
-   if (m_listener) m_listener({m_settings.port_name, m_settings.trace_color, event, data, size});
+   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_name, m_settings.trace_color, event, data, size});});
 }
-PortHandler::Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
+Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
 {
    if (event == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
    {
-      return PortHandler::Event::DISCONNECTED;
+      return Event::DISCONNECTED;
    }
    else
    {
-      return PortHandler::Event::NEW_DATA;
+      return Event::NEW_DATA;
    }
 }
-PortHandler::Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent event)
+Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent event)
 {
-   return PortHandler::Event::NEW_DATA;
+   return Event::NEW_DATA;
 }
 const std::string& PortHandler::getName()
 {
@@ -111,13 +112,13 @@ void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vect
 void PortHandler::onPortEvent()
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   if (m_last_event.event == PortHandler::Event::DISCONNECTED)
+   if (m_last_event.event == Event::DISCONNECTED)
    {
       m_socket->disconnect();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
-   else if (m_last_event.event == PortHandler::Event::NEW_DATA)
+   else if (m_last_event.event == Event::NEW_DATA)
    {
       notifyListeners(Event::NEW_DATA, m_last_event.data, m_last_event.size);
    }

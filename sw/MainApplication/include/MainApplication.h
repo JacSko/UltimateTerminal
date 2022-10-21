@@ -15,7 +15,8 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 
-class MainApplication : public QMainWindow
+class MainApplication : public QMainWindow,
+                        public GUI::PortHandlerListener
 {
     Q_OBJECT
 
@@ -36,7 +37,7 @@ private:
     uint32_t m_marker_index;
     FileLogging m_filelogging;
 
-    void onPortHandlerEvent(const GUI::PortHandler::PortHandlerEvent&);
+    void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
     void setButtonColor(QPushButton* button, QColor color);

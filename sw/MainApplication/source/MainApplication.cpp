@@ -28,15 +28,15 @@ m_filelogging({})
     setButtonColor(ui->loggingButton, Qt::red);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
+          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
+          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, *m_timers, this, this)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
+          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, *m_timers, this, this)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
+          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, *m_timers, this, this)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, std::bind(&MainApplication::onPortHandlerEvent, this, std::placeholders::_1), this)));
+          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, this, this)));
 
     ui->lineEndingComboBox->addItem("\\r\\n");
     ui->lineEndingComboBox->addItem("\\n");
@@ -47,17 +47,17 @@ MainApplication::~MainApplication()
 {
     delete ui;
 }
-void MainApplication::onPortHandlerEvent(const GUI::PortHandler::PortHandlerEvent& event)
+void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
-   if (event.event == GUI::PortHandler::Event::NEW_DATA)
+   if (event.event == GUI::Event::NEW_DATA)
    {
       addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.trace_color);
    }
-   else if (event.event == GUI::PortHandler::Event::CONNECTED)
+   else if (event.event == GUI::Event::CONNECTED)
    {
       ui->portComboBox->addItem(QString(event.name.c_str()));
    }
-   else if (event.event == GUI::PortHandler::Event::DISCONNECTED)
+   else if (event.event == GUI::Event::DISCONNECTED)
    {
       int index = ui->portComboBox->findText(event.name.c_str());
       if (index != -1)

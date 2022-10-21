@@ -5,6 +5,7 @@
 #include <QtCore/QObject>
 #include <QtWidgets/QLabel>
 
+#include "GenericListener.hpp"
 #include "ISocketDriverFactory.h"
 #include "ISerialDriver.h"
 #include "PortSettingDialog.h"
@@ -13,32 +14,39 @@
 namespace GUI
 {
 
+enum class Event
+{
+   DISCONNECTED,
+   CONNECTING,
+   CONNECTED,
+   NEW_DATA,
+};
+
+struct PortHandlerEvent
+{
+   std::string name;
+   uint32_t trace_color;
+   Event event;
+   std::vector<uint8_t> data;
+   size_t size;
+};
+
+class PortHandlerListener
+{
+public:
+   virtual ~PortHandlerListener(){};
+   virtual void onPortHandlerEvent(const PortHandlerEvent&) = 0;
+};
+
 class PortHandler : public QObject,
+                    public GenericListener<PortHandlerListener>,
                     public Drivers::SocketClient::ClientListener,
                     public Drivers::Serial::SerialListener,
                     public Utilities::ITimerClient
 {
    Q_OBJECT
 public:
-   enum class Event
-   {
-      DISCONNECTED,
-      CONNECTING,
-      CONNECTED,
-      NEW_DATA,
-   };
-
-   struct PortHandlerEvent
-   {
-      std::string name;
-      uint32_t trace_color;
-      Event event;
-      std::vector<uint8_t> data;
-      size_t size;
-   };
-
-   typedef std::function<void(const PortHandlerEvent&)> PortHandlerListener;
-   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener listener, QWidget* parent);
+   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent);
    ~PortHandler();
 
    const std::string& getName();
@@ -64,7 +72,6 @@ private:
    ButtonState m_button_state;
    PortHandlerEvent m_last_event;
    std::mutex m_event_mutex;
-   PortHandlerListener m_listener;
    std::mutex m_listener_mutex;
    uint8_t m_port_id;
 
