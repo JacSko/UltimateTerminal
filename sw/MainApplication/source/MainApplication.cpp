@@ -42,10 +42,18 @@ m_filelogging({})
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
 
+    if (!m_persistence.restore(SETTING_GET_STRING(Persistence_filePath)))
+    {
+       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
+    }
 }
 MainApplication::~MainApplication()
 {
-    delete ui;
+   if (!m_persistence.save(SETTING_GET_STRING(Persistence_filePath)))
+   {
+      UT_Log(MAIN, ERROR, "Cannot write persistence!");
+   }
+   delete ui;
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
@@ -238,4 +246,3 @@ void MainApplication::setButtonColor(QPushButton* button, QColor color)
    button->setPalette(palette);
    button->update();
 }
-

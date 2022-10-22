@@ -11,6 +11,7 @@
 #define SETTING_GROUPS\
    DEF_SETTING_GROUP(Settings_reloadOnFileChange, bool, true) \
    DEF_SETTING_GROUP(Settings_fileCheckPeriod, uint32_t, 5000) \
+   DEF_SETTING_GROUP(Persistence_filePath, std::string, "/home/jskowronek/projects/UltimateTerminal/build/persistence.bin") \
    DEF_SETTING_GROUP(Logger_supportFileLogging, bool, false) \
    DEF_SETTING_GROUP(Logger_supportStdoutLogging, bool, true) \
    DEF_SETTING_GROUP(Logger_supportSocketLogging, bool, false) \

@@ -45,7 +45,6 @@ m_timer_id(TIMERS_INVALID_ID)
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
    connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
-   connect(this, SIGNAL(serialPortEvent()), this, SLOT(onSerialPortEvent()));
 }
 PortHandler::~PortHandler()
 {

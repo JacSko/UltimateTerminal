@@ -1,6 +1,7 @@
 {
   "Settings_reloadOnFileChange": true,
   "Settings_fileCheckPeriod": 5000,
+  "Persistence_filePath": "/home/jskowronek/projects/UltimateTerminal/build/persistence.bin",
   "Logger_supportFileLogging": false,
   "Logger_supportStdoutLogging": true,
   "Logger_supportSocketLogging": false,
