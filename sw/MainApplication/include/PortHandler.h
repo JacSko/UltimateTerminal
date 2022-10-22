@@ -10,6 +10,7 @@
 #include "ISerialDriver.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"
+#include "PersistenceHandler.hpp"
 
 namespace GUI
 {
@@ -42,11 +43,12 @@ class PortHandler : public QObject,
                     public GenericListener<PortHandlerListener>,
                     public Drivers::SocketClient::ClientListener,
                     public Drivers::Serial::SerialListener,
-                    public Utilities::ITimerClient
+                    public Utilities::ITimerClient,
+                    public Persistence::PersistenceListener
 {
    Q_OBJECT
 public:
-   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent);
+   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence);
    ~PortHandler();
 
    const std::string& getName();
@@ -74,6 +76,7 @@ private:
    std::mutex m_event_mutex;
    std::mutex m_listener_mutex;
    uint8_t m_port_id;
+   Persistence::PersistenceHandler& m_persistence;
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
@@ -87,6 +90,9 @@ private:
    void notifyListeners(Event event, const std::vector<uint8_t>& data = {}, size_t size = 0);
    Event toPortHandlerEvent(Drivers::SocketClient::ClientEvent);
    Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
+   void onPersistenceRead(const std::vector<uint8_t>& data) override;
+   void onPersistenceWrite(std::vector<uint8_t>& data) override;
+   void serialize(std::vector<uint8_t>& buffer, const PortSettingDialog::Settings& item);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();

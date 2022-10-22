@@ -28,15 +28,15 @@ m_filelogging({})
     setButtonColor(ui->loggingButton, Qt::red);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this)));
+          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, *m_timers, this, this)));
+          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, *m_timers, this, this)));
+          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, *m_timers, this, this)));
+          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, this, this)));
+          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, this, this, m_persistence)));
 
     ui->lineEndingComboBox->addItem("\\r\\n");
     ui->lineEndingComboBox->addItem("\\n");
