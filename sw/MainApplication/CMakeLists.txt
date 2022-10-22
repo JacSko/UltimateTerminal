@@ -1,11 +1,13 @@
 add_library(MainApplication STATIC 
    source/MainApplication.cpp
    source/PortSettingDialog.cpp
+   source/CommandButtonDialog.cpp
    source/LoggingSettingDialog.cpp
    source/PortHandler.cpp
    ../gui/MainWindow.ui
    include/MainApplication.h
    include/PortSettingDialog.h
+   include/CommandButtonDialog.h
    include/LoggingSettingDialog.h
    include/PortHandler.h
 )
