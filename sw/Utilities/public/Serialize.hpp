@@ -6,10 +6,7 @@
 #include <iostream>
 
 template<typename ITEM_TYPE>
-static void serialize(std::vector<uint8_t>& buffer, ITEM_TYPE item)
-{
-   printf("SERIALIZE ERROR!\n");
-}
+static void serialize(std::vector<uint8_t>& buffer, ITEM_TYPE item);
 
 static void serialize(std::vector<uint8_t>& buffer, bool item)
 {
@@ -61,10 +58,7 @@ static void serialize(std::vector<uint8_t>& buffer, const std::string& item)
 
 
 template<typename ITEM_TYPE>
-static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, ITEM_TYPE& item)
-{
-   printf("DESERIALIZE ERROR!\n");
-}
+static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, ITEM_TYPE& item);
 
 static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, bool& item)
 {
