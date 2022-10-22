@@ -107,6 +107,7 @@ static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, in
 
 static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, std::string& item)
 {
+   item.clear();
    uint32_t string_length = 0;
    char c;
    deserialize(buffer, offset, string_length);
