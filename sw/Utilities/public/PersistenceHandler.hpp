@@ -8,13 +8,13 @@ namespace Persistence
 class PersistenceListener
 {
 public:
-   PersistenceListener(const std::string& name):
-   m_name(name){};
+   PersistenceListener(){};
    virtual ~PersistenceListener(){};
 
    virtual void onPersistenceRead(const std::vector<uint8_t>& data) = 0;
    virtual void onPersistenceWrite(std::vector<uint8_t>& data) = 0;
    const std::string& getName() {return m_name;};
+   void setName(const std::string& name){ m_name = name;};
 private:
    std::string m_name;
 };
@@ -51,7 +51,13 @@ public:
                /* get block data */
                std::vector<uint8_t> data (it, it + data_size);
                it += data_size;
-               GenericListener::notifyChange([&](PersistenceListener* l){ l->onPersistenceRead(data);});
+               GenericListener::notifyChange([&](PersistenceListener* l)
+                     {
+                        if (l->getName() == name)
+                        {
+                           l->onPersistenceRead(data);
+                        }
+                     });
             }
             result = true;
          }
