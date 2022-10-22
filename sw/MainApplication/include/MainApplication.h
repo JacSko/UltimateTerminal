@@ -17,7 +17,8 @@ QT_END_NAMESPACE
 
 
 class MainApplication : public QMainWindow,
-                        public GUI::PortHandlerListener
+                        public GUI::PortHandlerListener,
+                        public Persistence::PersistenceListener
 {
     Q_OBJECT
 
@@ -43,7 +44,8 @@ private:
     void connectSignalsToSlots();
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
     void setButtonColor(QPushButton* button, QColor color);
-
+    void onPersistenceRead(const std::vector<uint8_t>& data);
+    void onPersistenceWrite(std::vector<uint8_t>& data);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

@@ -6,6 +6,7 @@
 #include "SettingsHandler.h"
 #include "Settings.h"
 #include "LoggerEngine.h"
+#include "Serialize.hpp"
 
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
@@ -16,11 +17,13 @@ m_filelogging({})
 {
     ui->setupUi(this);
 
+    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
+    m_persistence.addListener(*this);
+
     Settings::SettingsHandler::create();
     Settings::SettingsHandler::get()->start(CONFIG_FILE_PATH, m_timers.get());
     LoggerEngine::get()->startFrontends();
     Settings::SettingsHandler::get()->printSettings();
-
 
     m_timers->start();
 
@@ -53,6 +56,8 @@ MainApplication::~MainApplication()
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }
+
+   m_persistence.removeListener(*this);
    delete ui;
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
@@ -104,7 +109,6 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       UT_Log(MAIN, MEDIUM, "Reached maximum lines, cleaning trace view");
       ui->terminalView->clear();
    }
-
 }
 void MainApplication::connectSignalsToSlots()
 {
@@ -245,4 +249,17 @@ void MainApplication::setButtonColor(QPushButton* button, QColor color)
    palette.setColor(QPalette::Button, color);
    button->setPalette(palette);
    button->update();
+}
+void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
+{
+   uint32_t offset = 0;
+   ::deserialize(data, offset, m_filelogging.settings.file_path);
+   ::deserialize(data, offset, m_filelogging.settings.file_name);
+   ::deserialize(data, offset, m_filelogging.settings.use_default_name);
+}
+void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
+{
+   ::serialize(data, m_filelogging.settings.file_path);
+   ::serialize(data, m_filelogging.settings.file_name);
+   ::serialize(data, m_filelogging.settings.use_default_name);
 }
