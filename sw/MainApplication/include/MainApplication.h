@@ -27,6 +27,7 @@ public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
 private:
+
     struct FileLogging
     {
        bool is_running;
@@ -41,17 +42,21 @@ private:
     uint32_t m_marker_index;
     FileLogging m_filelogging;
     Persistence::PersistenceHandler m_persistence;
+    bool m_scrolling_active;
+    uint32_t m_scroll_default_color;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
     bool sendToPort(const std::string&);
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
     void setButtonColor(QPushButton* button, QColor color);
+    void setScrolling(bool active);
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();
+   void onScrollButtonClicked();
    void onClearButtonClicked();
    void onSendButtonClicked();
    void onLoggingButtonContextMenuRequested();

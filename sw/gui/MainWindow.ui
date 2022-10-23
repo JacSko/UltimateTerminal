@@ -280,6 +280,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="scrollButton">
+        <property name="text">
+         <string>SCROLL</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>

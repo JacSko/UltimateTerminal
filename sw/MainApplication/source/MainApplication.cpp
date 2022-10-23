@@ -13,9 +13,12 @@ QMainWindow(parent),
 ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
 m_marker_index(0),
-m_filelogging({})
+m_filelogging({}),
+m_scrolling_active(false)
 {
     ui->setupUi(this);
+
+    m_scroll_default_color = ui->scrollButton->palette().color(QPalette::Button).rgb();
 
     Persistence::PersistenceListener::setName("MAIN_APPLICATION");
     m_persistence.addListener(*this);
@@ -29,6 +32,7 @@ m_filelogging({})
 
     connectSignalsToSlots();
     setButtonColor(ui->loggingButton, Qt::red);
+    setScrolling(true);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this, m_persistence)));
@@ -123,7 +127,10 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
    item->setText(new_line);
    item->setBackground(QColor(rgb_color));
    ui->terminalView->addItem(item);
-   ui->terminalView->scrollToBottom();
+   if (m_scrolling_active)
+   {
+      ui->terminalView->scrollToBottom();
+   }
 
    if(ui->terminalView->count() >= 10000)
    {
@@ -143,6 +150,7 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
 
+   connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -169,6 +177,10 @@ void MainApplication::onLoggingButtonClicked()
       m_filelogging.is_running = false;
       setButtonColor(ui->loggingButton, Qt::red);
    }
+}
+void MainApplication::onScrollButtonClicked()
+{
+   setScrolling(!m_scrolling_active);
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
@@ -236,16 +248,33 @@ void MainApplication::setButtonColor(QPushButton* button, QColor color)
    button->setPalette(palette);
    button->update();
 }
+void MainApplication::setScrolling(bool active)
+{
+   m_scrolling_active = active;
+   if(m_scrolling_active)
+   {
+      setButtonColor(ui->scrollButton, Qt::green);
+   }
+   else
+   {
+      setButtonColor(ui->scrollButton, QColor(m_scroll_default_color));
+   }
+}
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    uint32_t offset = 0;
    ::deserialize(data, offset, m_filelogging.settings.file_path);
    ::deserialize(data, offset, m_filelogging.settings.file_name);
    ::deserialize(data, offset, m_filelogging.settings.use_default_name);
+   ::deserialize(data, offset, m_scrolling_active);
+
+   setScrolling(m_scrolling_active);
+
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 {
    ::serialize(data, m_filelogging.settings.file_path);
    ::serialize(data, m_filelogging.settings.file_name);
    ::serialize(data, m_filelogging.settings.use_default_name);
+   ::serialize(data, m_scrolling_active);
 }
