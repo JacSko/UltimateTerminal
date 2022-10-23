@@ -41,6 +41,27 @@ m_filelogging({})
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, this, this, m_persistence)));
 
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_1, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_2, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_3, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_4, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_5, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_6, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_7, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_8, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_9, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+    m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(ui->userButton_10, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+
     ui->lineEndingComboBox->addItem("\\r\\n");
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
@@ -118,39 +139,6 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
    connect(ui->textEdit, SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
 
-   connect(ui->userButton_1, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_2, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_3, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_4, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_5, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_6, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_7, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_8, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_9, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(ui->userButton_10, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-
-   ui->userButton_1->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_2->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_3->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_4->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_5->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_6->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_7->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_8->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_9->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   ui->userButton_10->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-
-   connect(ui->userButton_1, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_2, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_3, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_4, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_5, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_6, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_7, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_8, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_9, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-   connect(ui->userButton_10, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
-
    ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
@@ -202,11 +190,11 @@ void MainApplication::onClearButtonClicked()
    UT_Log(MAIN, MEDIUM, "Clearing requested");
    ui->terminalView->clear();
 }
-void MainApplication::onSendButtonClicked()
+bool MainApplication::sendToPort(const std::string& string)
 {
+   bool result = false;
    std::string current_port = ui->portComboBox->currentText().toStdString();
-   std::string data_to_send = ui->textEdit->text().toStdString();
-
+   std::string data_to_send = string;
    if (ui->lineEndingComboBox->currentText() == "\\r\\n")
    {
       data_to_send += "\r\n";
@@ -216,13 +204,13 @@ void MainApplication::onSendButtonClicked()
       data_to_send += '\n';
    }
 
-
    for (const auto& handler : m_port_handlers)
    {
       if (handler->getName() == current_port)
       {
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
+            result = true;
             addToTerminal(current_port, data_to_send);
          }
          else
@@ -235,14 +223,12 @@ void MainApplication::onSendButtonClicked()
          }
       }
    }
+   return result;
 }
-void MainApplication::onUserButtonClicked()
+void MainApplication::onSendButtonClicked()
 {
+   (void)sendToPort(ui->textEdit->text().toStdString());
 }
-void MainApplication::onUserButtonContextMenuRequested()
-{
-}
-
 void MainApplication::setButtonColor(QPushButton* button, QColor color)
 {
    QPalette palette = button->palette();

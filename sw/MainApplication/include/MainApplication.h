@@ -10,6 +10,7 @@
 #include "PortHandler.h"
 #include "LoggingSettingDialog.h"
 #include "PersistenceHandler.hpp"
+#include "UserButtonHandler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -36,12 +37,14 @@ private:
     Ui::MainWindow *ui;
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
+    std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
     uint32_t m_marker_index;
     FileLogging m_filelogging;
     Persistence::PersistenceHandler m_persistence;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
+    bool sendToPort(const std::string&);
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
     void setButtonColor(QPushButton* button, QColor color);
     void onPersistenceRead(const std::vector<uint8_t>& data);
@@ -50,10 +53,7 @@ public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();
    void onClearButtonClicked();
-
    void onSendButtonClicked();
-   void onUserButtonClicked();
-   void onUserButtonContextMenuRequested();
    void onLoggingButtonContextMenuRequested();
 
 };
