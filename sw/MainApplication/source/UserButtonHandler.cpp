@@ -29,6 +29,7 @@ m_writer(writer)
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(object, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
+   m_object->setCheckable(true);
 }
 UserButtonHandler::~UserButtonHandler()
 {
@@ -62,7 +63,9 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
 }
 void UserButtonHandler::onUserButtonClicked()
 {
-   /* TODO keep button pressed */
+   UT_Log(MAIN, LOW, "Sending commands");
+   m_object->setChecked(true);
+   m_object->repaint();
    if (m_writer)
    {
       for (auto& command : m_settings.commands)
@@ -70,7 +73,9 @@ void UserButtonHandler::onUserButtonClicked()
          m_writer(command);
       }
    }
-   /* release button */
+   m_object->setChecked(false);
+   m_object->repaint();
+   UT_Log(MAIN, LOW, "Commands sent");
 }
 void UserButtonHandler::setButtonName(const std::string name)
 {
