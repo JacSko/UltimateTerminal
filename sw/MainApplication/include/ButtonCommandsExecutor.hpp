@@ -15,36 +15,50 @@ namespace GUI
 class ButtonCommandsExecutor : public Utilities::ThreadWorker
 {
 public:
-   ButtonCommandsExecutor(std::function<bool(const std::string&)> writer, const std::string& raw_text):
-   Utilities::ThreadWorker(std::bind(&ButtonCommandsExecutor::runAll, this), "CmdExec"),
+   ButtonCommandsExecutor(std::function<bool(const std::string&)> writer, std::function<void(bool)> callback):
+   Utilities::ThreadWorker(std::bind(&ButtonCommandsExecutor::threadLoop, this), "CmdExec"),
    m_writer(writer),
-   m_raw_text(raw_text),
-   m_use_thread(false),
-   m_isError(false)
+   m_callback(callback),
+   m_isActive(false)
    {
-      createCommands();
+      start(1000);
    }
    ~ButtonCommandsExecutor()
    {
       Utilities::ThreadWorker::stop();
    }
-   void execute(std::function<void(bool)> callback)
+   void execute()
    {
-      m_callback = callback;
-      m_isError = false;
-      if (m_use_thread)
-      {
-         m_isError = !start(1000);
-      }
-      else
-      {
-         runAll();
-         if (callback) callback(!m_isError);
-      }
+      UT_Log(MAIN, HIGH, "starting execution");
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_isActive = true;
+      m_cond_var.notify_all();
    }
-   const std::string& getText()
+   int parseCommands(const std::string& text)
    {
-      return m_raw_text;
+      std::lock_guard<std::mutex> lock(m_mutex);
+      int result = 0;
+      if (!m_isActive)
+      {
+         m_commands.clear();
+         m_raw_text = text;
+         std::stringstream ss(m_raw_text);
+         std::string command;
+         while(std::getline(ss, command, '\n'))
+         {
+            if(isSpecialCommand(command))
+            {
+               addSpecialCommand(command);
+            }
+            else
+            {
+               m_commands.push_back([this, command]()->bool { return m_writer(command);});
+            }
+         }
+         result = m_commands.size();
+         UT_Log(MAIN, LOW, "created %u commands", m_commands.size());
+      }
+      return result;
    }
 private:
    bool isSpecialCommand(const std::string& command)
@@ -61,54 +75,50 @@ private:
          if (matches[1] == "__wait")
          {
             uint32_t time = std::stoi(matches[2]);
-            m_use_thread = true;
             m_commands.push_back([time]()->bool {std::this_thread::sleep_for(std::chrono::milliseconds(time)); return true;});
          }
       }
    }
-   void createCommands()
+   void threadLoop()
    {
-      std::stringstream ss(m_raw_text);
-      std::string command;
-      while(std::getline(ss, command, '\n'))
+      while(Utilities::ThreadWorker::isRunning())
       {
-         if(isSpecialCommand(command))
+         bool activated = false;
          {
-            addSpecialCommand(command);
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_isActive = false;
+            activated = m_cond_var.wait_for(lock, std::chrono::milliseconds(200), [&](){return m_isActive;});
          }
-         else
-         {
-            command += '\n';
-            m_commands.push_back([this, command]()->bool { return m_writer(command);});
-         }
-      }
-      UT_Log(MAIN, LOW, "created %u commands", m_commands.size());
-   }
 
-   void runAll()
-   {
-      std::vector<std::function<bool()>>::iterator it = m_commands.begin();
-      while (it != m_commands.end())
-      {
-         if (*it)
+         std::vector<std::function<bool()>>::iterator it = m_commands.begin();
+         if (activated)
          {
-            m_isError = !(*it)();
-            if (m_isError)
+            while (it != m_commands.end() && m_isActive && Utilities::ThreadWorker::isRunning())
             {
-               break;
+               if (*it)
+               {
+                  if (!(*it)())
+                  {
+                     break;
+                  }
+               }
+               it++;
+            }
+            if (m_callback)
+            {
+               m_callback(it == m_commands.end());
             }
          }
-         it++;
       }
-      m_callback(!m_isError);
    }
 
    std::string m_raw_text;
    std::function<bool(const std::string&)> m_writer;
    std::vector<std::function<bool()>> m_commands;
-   bool m_use_thread;
    std::function<void(bool)> m_callback;
-   std::atomic<bool> m_isError;
+   bool m_isActive;
+   std::condition_variable m_cond_var;
+   std::mutex m_mutex;
 };
 
 }

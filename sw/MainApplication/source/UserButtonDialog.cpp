@@ -60,14 +60,5 @@ bool UserButtonDialog::convertGuiValues(Settings& out_settings)
 {
    out_settings.button_name = m_buttonNameEdit->text().toStdString();
    out_settings.raw_commands = m_commandEdit->toPlainText().toStdString();
-   out_settings.commands.clear();
-
-   std::stringstream ss(out_settings.raw_commands);
-   std::string command;
-   while(std::getline(ss, command, '\n'))
-   {
-      out_settings.commands.push_back(command);
-   }
-   UT_Log(MAIN_GUI, HIGH, "got %u commands", out_settings.commands.size());
    return true;
 }

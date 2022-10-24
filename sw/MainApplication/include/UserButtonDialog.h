@@ -23,7 +23,6 @@ public:
    {
       std::string button_name;
       std::string raw_commands;
-      std::vector<std::string> commands;
    };
 
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
