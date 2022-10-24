@@ -24,3 +24,7 @@ target_link_libraries(MainApplication
    Logger
    Utilities
 )
+
+if (UNIT_TESTS)
+   add_subdirectory(test)
+endif()
