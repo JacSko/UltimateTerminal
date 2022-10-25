@@ -1,5 +1,6 @@
 add_library(Utilities
-            source/TimersImpl.cpp)
+            source/TimersImpl.cpp
+            source/PersistenceHandler.cpp)
 target_include_directories(Utilities PUBLIC public/ PRIVATE include/)
 target_link_libraries(Utilities PRIVATE Logger ThreadWorker)
 
