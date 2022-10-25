@@ -9,7 +9,7 @@
 #include "ITimers.h"
 #include "PortHandler.h"
 #include "LoggingSettingDialog.h"
-#include "PersistenceHandler.hpp"
+#include "PersistenceHandler.h"
 #include "UserButtonHandler.h"
 
 QT_BEGIN_NAMESPACE

@@ -10,7 +10,7 @@
 #include "ISerialDriver.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"
-#include "PersistenceHandler.hpp"
+#include "PersistenceHandler.h"
 
 namespace GUI
 {

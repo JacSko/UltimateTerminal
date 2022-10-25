@@ -4,7 +4,7 @@
 
 #include "GenericListener.hpp"
 #include "UserButtonDialog.h"
-#include "PersistenceHandler.hpp"
+#include "PersistenceHandler.h"
 #include "ButtonCommandsExecutor.hpp"
 namespace GUI
 {
