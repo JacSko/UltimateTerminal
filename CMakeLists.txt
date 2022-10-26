@@ -21,9 +21,8 @@ add_definitions(-DCONFIG_FILE_PATH={"${CMAKE_SOURCE_DIR}/config/system_config.js
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/sw/gui)
-
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 #########################################
 #  Main executable
 #########################################

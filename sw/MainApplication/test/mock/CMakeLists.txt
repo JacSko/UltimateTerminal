@@ -1,2 +1,0 @@
-add_library(QtMocks INTERFACE)
-target_include_directories(QtMocks INTERFACE QtMocks)
