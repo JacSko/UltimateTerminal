@@ -1,0 +1,10 @@
+#pragma once
+
+#include <string>
+
+class QString
+{
+public:
+   QString(const char*){};
+   std::string toStdString(){}
+};

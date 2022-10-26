@@ -1,0 +1,12 @@
+#pragma once
+#include <QtWidgets/QWidget>
+
+class QFormLayout : public QWidget
+{
+public:
+   QFormLayout(){};
+   QFormLayout(QDialog*&){};
+   
+   void addRow(QWidget *widget){};
+   void addWidget(QWidget *w){};
+};

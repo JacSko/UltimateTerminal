@@ -1,0 +1,10 @@
+#pragma once
+
+#define Q_OBJECT
+
+class QWidget
+{
+public:
+   void setEnabled(bool){}
+   void setDisabled(bool){};
+};

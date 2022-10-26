@@ -1,3 +1,4 @@
+#include <QtCore/QString>
 #include "UserButtonDialog.h"
 #include "Logger.h"
 #include <sstream>

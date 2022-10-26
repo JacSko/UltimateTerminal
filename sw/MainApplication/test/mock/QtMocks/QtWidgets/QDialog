@@ -1,0 +1,17 @@
+#pragma once
+
+#include <QtWidgets/QWidget>
+#include <QtCore/QNamespace>
+
+
+class QDialog : public QWidget
+{
+public:
+   QDialog(){};
+   QDialog(QWidget*&){};
+   
+   enum DialogCode { Rejected, Accepted };
+   
+   void setWindowModality(Qt::WindowModality windowModality){}
+   virtual int exec(){};
+};
