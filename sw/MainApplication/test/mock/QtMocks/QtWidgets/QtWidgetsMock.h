@@ -10,6 +10,7 @@ struct QtWidgetsMock
 {
    MOCK_METHOD0(QDialog_new, void*());
    MOCK_METHOD0(QDialog_exec, int());
+   MOCK_METHOD1(QDialog_setWindowModality, void(Qt::WindowModality));
 
    MOCK_METHOD0(QFormLayout_new, void*());
    MOCK_METHOD1(QFormLayout_addRow, void(QWidget*));
@@ -48,10 +49,11 @@ public:
 
    QDialog(){};
    QDialog(QWidget*&){};
+   virtual ~QDialog(){};
 
    void* operator new(size_t size);
    void operator delete(void*){};
-   void setWindowModality(Qt::WindowModality windowModality){}
+   void setWindowModality(Qt::WindowModality windowModality);
    virtual int exec();
 };
 

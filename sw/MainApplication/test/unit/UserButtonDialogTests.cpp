@@ -69,6 +69,9 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text()).WillOnce(Return(new_button_name.c_str()));
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_toPlainText()).WillOnce(Return(current_settings.raw_commands.c_str()));
 
+   /* dialog should be modal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
+
    /* dialog accepted by user */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Accepted));
 
@@ -124,6 +127,9 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.button_name));
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(current_settings.raw_commands));
 
+   /* dialog should be modal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
+
    /* dialog rejected by user */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Rejected));
 
@@ -178,6 +184,9 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
    /* expect correct values on GUI */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.button_name));
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(current_settings.raw_commands));
+
+   /* dialog should be modal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
 
    /* dialog rejected by user */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Rejected));
