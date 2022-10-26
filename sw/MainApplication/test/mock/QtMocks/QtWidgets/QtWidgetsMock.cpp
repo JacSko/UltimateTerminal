@@ -59,7 +59,7 @@ void QLineEdit::setText(const QString & text)
 }
 QString QLineEdit::text()
 {
-   return g_widgets_mock->QLineEdit_text();
+   return QString(g_widgets_mock->QLineEdit_text().c_str());
 }
 
 void* QTextEdit::operator new(size_t)
@@ -72,10 +72,19 @@ void QTextEdit::setText(const QString & text)
 }
 QString QTextEdit::toPlainText()
 {
-   return g_widgets_mock->QTextEdit_toPlainText();
+   return QString(g_widgets_mock->QTextEdit_toPlainText().c_str());
 }
 
 void* QDialogButtonBox::operator new(size_t)
 {
    return g_widgets_mock->QDialogButtonBox_new();
+}
+
+void QWidget::setEnabled(bool enabled)
+{
+   g_widgets_mock->QWidget_setEnabled(enabled);
+}
+void QWidget::setDisabled(bool disabled)
+{
+   g_widgets_mock->QWidget_setDisabled(disabled);
 }

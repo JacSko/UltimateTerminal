@@ -24,6 +24,9 @@ struct QtWidgetsMock
    MOCK_METHOD0(QTextEdit_toPlainText, QString());
 
    MOCK_METHOD0(QDialogButtonBox_new, void*());
+
+   MOCK_METHOD1(QWidget_setEnabled, void(bool));
+   MOCK_METHOD1(QWidget_setDisabled, void(bool));
 };
 
 void QtWidgetsMock_init();
@@ -34,8 +37,8 @@ QtWidgetsMock* QtWidgetsMock_get();
 class QWidget
 {
 public:
-   void setEnabled(bool){}
-   void setDisabled(bool){}
+   void setEnabled(bool);
+   void setDisabled(bool);
 };
 
 class QDialog : public QWidget
