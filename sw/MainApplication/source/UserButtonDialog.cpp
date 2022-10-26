@@ -14,7 +14,6 @@ m_editable(true)
 }
 UserButtonDialog::~UserButtonDialog()
 {
-
 }
 std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {

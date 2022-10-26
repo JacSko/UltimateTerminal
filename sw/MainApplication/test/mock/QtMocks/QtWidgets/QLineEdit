@@ -1,13 +1,2 @@
 #pragma once
-#include <QtWidgets/QWidget>
-#include <QtCore/QString>
-
-class QLineEdit : public QWidget
-{
-public:
-   QLineEdit(){};
-   QLineEdit(QDialog*&){};
-   
-   void setText(const QString &){}
-   QString text(){};
-};
+#include "QtWidgetsMock.h"

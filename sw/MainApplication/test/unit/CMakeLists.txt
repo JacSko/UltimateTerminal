@@ -19,6 +19,7 @@ add_test(NAME ButtonCommandExecutorTests COMMAND ButtonCommandExecutorTests)
 add_executable(UserButtonDialogTests
             UserButtonDialogTests.cpp
             ../../source/UserButtonDialog.cpp
+            ../mock/QtMocks/QtWidgets/QtWidgetsMock.cpp
 )
 
 target_include_directories(UserButtonDialogTests PUBLIC

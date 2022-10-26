@@ -1,12 +1,2 @@
 #pragma once
-
-#include <QtWidgets/QWidget>
-
-#define SIGNAL(arg) 0
-#define SLOT(arg) 0
-
-class QObject
-{
-public:
-   void connect(QWidget*, int, QWidget*, int){};
-};
+#include "QtCoreMock.h"

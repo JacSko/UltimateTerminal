@@ -1,12 +1,2 @@
 #pragma once
-#include <QtWidgets/QWidget>
-#include <QtCore/QString>
-
-class QTextEdit : public QWidget
-{
-public:
-   QTextEdit(QWidget *parent = nullptr){}
-   
-   void setText(const QString &){};
-   QString toPlainText(){};
-};
+#include "QtWidgetsMock.h"
