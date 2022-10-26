@@ -1,3 +1,4 @@
+#include <QtCore/QString>
 #include "UserButtonDialog.h"
 #include "Logger.h"
 #include <sstream>
@@ -13,7 +14,6 @@ m_editable(true)
 }
 UserButtonDialog::~UserButtonDialog()
 {
-
 }
 std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
@@ -51,7 +51,7 @@ std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings
 void UserButtonDialog::addDialogButtons()
 {
    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, m_dialog);
-   m_buttonBox->setDisabled(!m_editable);
+   m_buttonBox->setEnabled(m_editable);
    m_form->addWidget(m_buttonBox);
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));

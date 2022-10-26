@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <optional>
+#include <vector>
 
 #include <QtCore/QObject>
 #include <QtWidgets/QDialog>
