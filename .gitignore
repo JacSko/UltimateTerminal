@@ -1,4 +1,6 @@
 /*build*/*
 .*
 !/.gitignore
+/doc/html
+/doc/latex
 *.pdf

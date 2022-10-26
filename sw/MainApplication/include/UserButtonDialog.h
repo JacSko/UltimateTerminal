@@ -1,5 +1,24 @@
 #pragma once
 
+/**
+ * @file UserButtonDialog.h
+ *
+ * @brief
+ *    Dialog class to allow user to change button data.
+ *
+ * @details
+ *    Dialog contains two fields - Button Name and Command Edit. First allows to set the name of the button, second allows to enter custom commands.
+ *    To show dialog to user, call showDialog() method (this is blocking until user reaction).
+ *    It is possible to control fields editability by bool allow_edit.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
+
+/* =============================
+ *   Includes of standard headers
+ * =============================*/
 #include <stdint.h>
 #include <optional>
 #include <vector>
@@ -18,15 +37,31 @@ class UserButtonDialog : public QObject
 
 public:
    UserButtonDialog();
-   ~UserButtonDialog();
+   virtual ~UserButtonDialog();
 
+   /** @brief Settings to store data from dialog fields */
    struct Settings
    {
-      std::string button_name;
-      std::string raw_commands;
+      std::string button_name;   /**< Name of the button. */
+      std::string raw_commands;  /**< Commands in raw format, e.g. "CMD1\nCMD2"*/
       std::vector<std::string> commands;
    };
 
+   /**
+    * @brief Shows dialog windows to user. This dialog allows to change button name and respective commands.
+    *
+    * Function is blocking until user press any control button (OK, Cancel, Exit).
+    * Presents current_settings on startup, fields editability is controlled by allow_edit boolean.
+    * If dialog was accepted by the user, the new settings are written to out_settings.
+    *
+    * @param[in] parent - parent QWidget for this dialog.
+    * @param[in] current_settings - settings to be presented on startup
+    * @param[out] out_settings - new settings read from dialog, filled only if user accepted the window.
+    * @param[in] allow_edit - if set to false, then all fields are disabled and cannot be edited.
+    *
+    * @return Optional value. If user accepted the dialog, the value is not empty and contains result of the data validation.
+    *                         If user declined the dialog, the empty value is returned.
+    */
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
 private:
    QDialog* m_dialog;

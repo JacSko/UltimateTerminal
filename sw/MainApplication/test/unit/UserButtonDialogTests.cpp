@@ -7,6 +7,22 @@
 #include "UserButtonDialog.h"
 #include "Logger.h"
 
+/**
+ * @file UserButtonDialogTests.cpp
+ *
+ * @brief
+ *    Dialog class to allow user to change button data.
+ *
+ * @details
+ *    Dialog contains two fields - Button Name and Command Edit. First allows to set the name of the button, second allows to enter custom commands.
+ *    To show dialog to user, call showDialog() method (this is blocking until user reaction).
+ *    It is possible to control fields editability by bool allow_edit.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
+
 using namespace ::testing;
 
 struct UserButtonDialogTests : public testing::Test
@@ -24,6 +40,7 @@ struct UserButtonDialogTests : public testing::Test
 TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
 {
    /**
+    * @test
     * <b>scenario</b>: Dialog created and show to the user <br>
     * <b>expected</b>: -> Current settings should be correctly presented to user.
     *                  -> User changed one of the fields, accepted the dialog.
