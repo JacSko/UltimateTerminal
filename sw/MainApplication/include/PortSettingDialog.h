@@ -15,6 +15,24 @@
 #include "Logger.h"
 #include "ISerialDriver.h"
 
+/**
+ * @file PortSettingDialogTests.cpp
+ *
+ * @brief
+ *    Dialog class that allows user to enter the port connection details.
+ *
+ * @details
+ *    Dialog contains multiple field, are created dynamically basing on port type (SERIAL, ETHERNET).
+ *    Current settings are presented to the user, their editability is configurable using allow_edit argument during showDialog() call.
+ *    All settings are validated when user accepts dialog box. When user rejects, no settings change takes place.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
+
+
+
 #define DEF_PORT_TYPES     \
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \

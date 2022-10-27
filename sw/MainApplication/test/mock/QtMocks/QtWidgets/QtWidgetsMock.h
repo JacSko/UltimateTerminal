@@ -3,6 +3,7 @@
 
 #include <QtCore/QNamespace>
 #include <QtCore/QString>
+#include <QtCore/QtCoreMock.h>
 
 #define Q_OBJECT
 
@@ -34,8 +35,27 @@ void QtWidgetsMock_init();
 void QtWidgetsMock_deinit();
 QtWidgetsMock* QtWidgetsMock_get();
 
+typedef unsigned int QRgb;
 
-class QWidget
+class QColor
+{
+public:
+   QColor(uint32_t color){};
+   bool isValid();
+   QRgb rgb() const;
+};
+
+class QPalette
+{
+public:
+   enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
+   enum ColorRole { Button, };
+   void setColor(ColorRole acr, const QColor &acolor);
+   const QColor& color(ColorRole cr) const;
+
+};
+
+class QWidget : public QObject
 {
 public:
    void setEnabled(bool);
@@ -80,7 +100,10 @@ public:
    void* operator new(size_t);
    void operator delete(void*){};
    void addRow(QWidget *widget);
+   void addRow(const QString&, QWidget *widget);
    void addWidget(QWidget *w);
+   void insertRow(int row, const QString &labelText, QWidget *field);
+   void removeRow(QWidget *widget);
 };
 
 
@@ -93,6 +116,7 @@ public:
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &);
+   void setMaxLength(int);
    QString text();
 };
 
@@ -107,4 +131,44 @@ public:
    void setText(const QString &);
    QString toPlainText();
 };
+
+class QPushButton : public QWidget
+{
+public:
+   QPushButton(QWidget *parent = nullptr){}
+
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void setText(const QString &text);
+   const QPalette& palette();
+   void setPalette(const QPalette &);
+   void update();
+};
+
+class QComboBox : public QWidget
+{
+public:
+   QComboBox(QWidget *parent = nullptr){}
+
+   void* operator new(size_t);
+   void operator delete(void*){};
+
+   void addItem(const QString&);
+   void setCurrentText(const QString&);
+   QString currentText() const;
+};
+
+class QColorDialog : public QWidget
+{
+public:
+   QColorDialog(QWidget *parent = nullptr){}
+
+   void* operator new(size_t);
+   void operator delete(void*){};
+   static QColor getColor(const QColor &initial = Qt::white,
+                              QWidget *parent = nullptr,
+                              const QString &title = QString());
+};
+
+
 
