@@ -1,11 +1,21 @@
 #pragma once
-
+#include <gmock/gmock.h>
 #include <string>
 
-#define SIGNAL(arg) 0
-#define SLOT(arg) 0
+#define SIGNAL(arg) #arg
+#define SLOT(arg) #arg
 
 class QWidget;
+
+
+struct QtCoreMock
+{
+   MOCK_METHOD4(QObject_connect, void(QWidget*, std::string, QWidget*, std::string));
+};
+
+void QtCoreMock_init();
+void QtCoreMock_deinit();
+QtCoreMock* QtCoreMock_get();
 
 namespace Qt
 {
@@ -26,7 +36,7 @@ enum Orientation {
 class QObject
 {
 public:
-   void connect(QWidget*, int, QWidget*, int){};
+   void connect(QWidget*, const char*, QWidget*, const char*);
 };
 
 class QString : public std::string

@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "QtWidgets/QtWidgetsMock.h"
+#include "QtCore/QtCoreMock.h"
 
 #include "UserButtonDialog.h"
 #include "Logger.h"
@@ -29,10 +30,12 @@ struct UserButtonDialogTests : public testing::Test
 {
    void SetUp()
    {
+      QtCoreMock_init();
       QtWidgetsMock_init();
    }
    void TearDown()
    {
+      QtCoreMock_deinit();
       QtWidgetsMock_deinit();
    }
 };
@@ -77,6 +80,9 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
 
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
    /* editable widgets should be enabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
 
@@ -142,6 +148,10 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
 
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
+
    /* editable widgets should be disabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
 
@@ -202,6 +212,10 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* editable widgets should be disabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(false)).Times(3);

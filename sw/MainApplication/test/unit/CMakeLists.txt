@@ -20,6 +20,7 @@ add_executable(UserButtonDialogTests
             UserButtonDialogTests.cpp
             ../../source/UserButtonDialog.cpp
             ../mock/QtMocks/QtWidgets/QtWidgetsMock.cpp
+            ../mock/QtMocks/QtCore/QtCoreMock.cpp
 )
 
 target_include_directories(UserButtonDialogTests PUBLIC
