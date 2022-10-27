@@ -25,57 +25,62 @@ QtWidgetsMock* QtWidgetsMock_get()
    UT_Assert(g_widgets_mock && "Create widgets mock first!");
    return g_widgets_mock;
 }
-
 void* QDialog::operator new(size_t)
 {
    return g_widgets_mock->QDialog_new();
 }
-
 int QDialog::exec()
 {
    return g_widgets_mock->QDialog_exec();
 }
-
 void QDialog::setWindowModality(Qt::WindowModality windowModality)
 {
    g_widgets_mock->QDialog_setWindowModality(windowModality);
 }
-
 void* QFormLayout::operator new(size_t)
 {
    return g_widgets_mock->QFormLayout_new();
 }
-
 void QFormLayout::addRow(QWidget* widget)
 {
    g_widgets_mock->QFormLayout_addRow(widget);
 }
-
 void QFormLayout::addWidget(QWidget* widget)
 {
    g_widgets_mock->QFormLayout_addWidget(widget);
 }
-
+void QFormLayout::addRow(const QString& text, QWidget *widget)
+{
+   g_widgets_mock->QFormLayout_addRow(text, widget);
+}
+void QFormLayout::insertRow(int row, const QString &labelText, QWidget *field)
+{
+   g_widgets_mock->QFormLayout_insertRow(row, labelText, field);
+}
+void QFormLayout::removeRow(QWidget *widget)
+{
+   g_widgets_mock->QFormLayout_removeRow(widget);
+}
 void* QLineEdit::operator new(size_t)
 {
    return g_widgets_mock->QLineEdit_new();
 }
-
 void QLineEdit::setText(const QString & text)
 {
    g_widgets_mock->QLineEdit_setText(text.toStdString());
 }
-
+void QLineEdit::setMaxLength(int length)
+{
+   g_widgets_mock->QLineEdit_setMaxLength(length);
+}
 QString QLineEdit::text()
 {
    return QString(g_widgets_mock->QLineEdit_text().c_str());
 }
-
 void* QTextEdit::operator new(size_t)
 {
    return g_widgets_mock->QTextEdit_new();
 }
-
 void QTextEdit::setText(const QString & text)
 {
    g_widgets_mock->QTextEdit_setText(text.toStdString());
@@ -85,18 +90,71 @@ QString QTextEdit::toPlainText()
 {
    return QString(g_widgets_mock->QTextEdit_toPlainText().c_str());
 }
-
 void* QDialogButtonBox::operator new(size_t)
 {
    return g_widgets_mock->QDialogButtonBox_new();
 }
-
 void QWidget::setEnabled(bool enabled)
 {
    g_widgets_mock->QWidget_setEnabled(enabled);
 }
-
 void QWidget::setDisabled(bool disabled)
 {
    g_widgets_mock->QWidget_setDisabled(disabled);
+}
+void* QComboBox::operator new(size_t)
+{
+   return g_widgets_mock->QComboBox_new();
+}
+void QComboBox::addItem(const QString& text)
+{
+   g_widgets_mock->QComboBox_addItem(text);
+}
+void QComboBox::setCurrentText(const QString& text)
+{
+   g_widgets_mock->QComboBox_setCurrentText(text);
+}
+QString QComboBox::currentText() const
+{
+   return g_widgets_mock->QComboBox_currentText();
+}
+void* QPushButton::operator new(size_t)
+{
+   return g_widgets_mock->QPushButton_new();
+}
+void QPushButton::setText(const QString &text)
+{
+   g_widgets_mock->QPushButton_setText(text);
+}
+const QPalette& QPushButton::palette()
+{
+   return g_widgets_mock->QPushButton_palette();
+}
+void QPushButton::setPalette(const QPalette & palette)
+{
+   g_widgets_mock->QPushButton_setPalette(palette);
+}
+void QPushButton::update()
+{
+   g_widgets_mock->QPushButton_update();
+}
+void QPalette::setColor(ColorRole acr, const QColor & color)
+{
+   g_widgets_mock->QPalette_setColor(acr, color);
+}
+const QColor& QPalette::color(ColorRole cr) const
+{
+   return g_widgets_mock->QPalette_color(cr);
+}
+void* QColorDialog::operator new(size_t)
+{
+   return g_widgets_mock->QColorDialog_new();
+}
+QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QString &title)
+{
+   return g_widgets_mock->QColorDialog_getColor(initial, parent, title);
+}
+bool QColor::isValid()
+{
+   return g_widgets_mock->QColor_isValid();
 }

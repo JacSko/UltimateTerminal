@@ -3,9 +3,26 @@
 #include <optional>
 
 #include "QtWidgets/QtWidgetsMock.h"
+#include "QtCore/QtCoreMock.h"
 
 #include "UserButtonDialog.h"
 #include "Logger.h"
+
+/**
+ * @file UserButtonDialogTests.cpp
+ *
+ * @brief
+ *    Dialog class to allow user to change button data.
+ *
+ * @details
+ *    Dialog contains two fields - Button Name and Command Edit. First allows to set the name of the button, second allows to enter custom commands.
+ *    To show dialog to user, call showDialog() method (this is blocking until user reaction).
+ *    It is possible to control fields editability by bool allow_edit.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
 
 using namespace ::testing;
 
@@ -13,10 +30,12 @@ struct UserButtonDialogTests : public testing::Test
 {
    void SetUp()
    {
+      QtCoreMock_init();
       QtWidgetsMock_init();
    }
    void TearDown()
    {
+      QtCoreMock_deinit();
       QtWidgetsMock_deinit();
    }
 };
@@ -24,10 +43,13 @@ struct UserButtonDialogTests : public testing::Test
 TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
 {
    /**
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> User changed one of the fields, accepted the dialog.
-    *                  -> New settings should be returned. <br>
+    * @test
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       User changed one of the fields, accepted the dialog.<br>
+    *       New settings should be returned. <br>
     * ************************************************
     */
    QDialog test_dialog;
@@ -58,6 +80,9 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
 
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
    /* editable widgets should be enabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
 
@@ -85,11 +110,14 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
 TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
 {
    /**
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> User changed one of the fields, but declined the dialog.
-    *                  -> Empty settings returned.
-    *                  -> std::optional does not contain the value <br>
+    * @test
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       User changed one of the fields, but declined the dialog.<br>
+    *       Empty settings returned.<br>
+    *       std::optional does not contain the value <br>
     * ************************************************
     */
    QDialog test_dialog;
@@ -119,6 +147,10 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* editable widgets should be disabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
@@ -143,11 +175,14 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
 TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
 {
    /**
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> All elements shall be not editable.
-    *                  -> Empty settings returned.
-    *                  -> std::optional does not contain the value <br>
+    * @test
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       All elements shall be not editable.<br>
+    *       Empty settings returned.<br>
+    *       std::optional does not contain the value <br>
     * ************************************************
     */
    QDialog test_dialog;
@@ -177,6 +212,10 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+
+   /* all signals connected */
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* editable widgets should be disabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(false)).Times(3);
