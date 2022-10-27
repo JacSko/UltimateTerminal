@@ -41,10 +41,12 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
 {
    /**
     * @test
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> User changed one of the fields, accepted the dialog.
-    *                  -> New settings should be returned. <br>
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       User changed one of the fields, accepted the dialog.<br>
+    *       New settings should be returned. <br>
     * ************************************************
     */
    QDialog test_dialog;
@@ -102,11 +104,14 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
 TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
 {
    /**
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> User changed one of the fields, but declined the dialog.
-    *                  -> Empty settings returned.
-    *                  -> std::optional does not contain the value <br>
+    * @test
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       User changed one of the fields, but declined the dialog.<br>
+    *       Empty settings returned.<br>
+    *       std::optional does not contain the value <br>
     * ************************************************
     */
    QDialog test_dialog;
@@ -160,11 +165,14 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
 TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
 {
    /**
-    * <b>scenario</b>: Dialog created and show to the user <br>
-    * <b>expected</b>: -> Current settings should be correctly presented to user.
-    *                  -> All elements shall be not editable.
-    *                  -> Empty settings returned.
-    *                  -> std::optional does not contain the value <br>
+    * @test
+    * <b>scenario</b>: <br>
+    *       Dialog created and show to the user <br>
+    * <b>expected</b>: <br>
+    *       Current settings should be correctly presented to user.<br>
+    *       All elements shall be not editable.<br>
+    *       Empty settings returned.<br>
+    *       std::optional does not contain the value <br>
     * ************************************************
     */
    QDialog test_dialog;

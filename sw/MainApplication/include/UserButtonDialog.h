@@ -39,12 +39,11 @@ public:
    UserButtonDialog();
    virtual ~UserButtonDialog();
 
-   /** @brief Settings to store data from dialog fields */
+   /** @brief Stores data from dialog fields */
    struct Settings
    {
       std::string button_name;   /**< Name of the button. */
       std::string raw_commands;  /**< Commands in raw format, e.g. "CMD1\nCMD2"*/
-      std::vector<std::string> commands;
    };
 
    /**
@@ -59,8 +58,9 @@ public:
     * @param[out] out_settings - new settings read from dialog, filled only if user accepted the window.
     * @param[in] allow_edit - if set to false, then all fields are disabled and cannot be edited.
     *
-    * @return Optional value. If user accepted the dialog, the value is not empty and contains result of the data validation.
-    *                         If user declined the dialog, the empty value is returned.
+    * @return If user accepted the dialog, the resulting value is not empty and contains result of the data validation.
+    * @return If user declined the dialog, the empty value is returned.
+    *
     */
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
 private:
