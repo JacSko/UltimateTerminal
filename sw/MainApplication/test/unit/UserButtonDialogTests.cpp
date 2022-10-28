@@ -76,29 +76,30 @@ TEST_F(UserButtonDialogTests, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
 
    /* all GUI widgets added to layout */
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_linedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_textedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
    /* editable widgets should be enabled */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
-
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_linedit, true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_textedit, true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_buttonbox, true));
    /* expect correct values on GUI */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.button_name));
-   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(current_settings.raw_commands));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_linedit, current_settings.button_name));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(&test_textedit, current_settings.raw_commands));
 
    /* user entered the new button name */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text()).WillOnce(Return(new_button_name.c_str()));
-   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_toPlainText()).WillOnce(Return(current_settings.raw_commands.c_str()));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_linedit)).WillOnce(Return(new_button_name.c_str()));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_toPlainText(&test_textedit)).WillOnce(Return(current_settings.raw_commands.c_str()));
 
    /* dialog should be modal */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
    /* dialog accepted by user */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Accepted));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
 
    std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings, true);
 
@@ -144,26 +145,28 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_rejected_by_user)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
 
    /* all GUI widgets added to layout */
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_linedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_textedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* editable widgets should be disabled */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(true)).Times(3);
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_linedit, true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_textedit, true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_buttonbox, true));
 
    /* expect correct values on GUI */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.button_name));
-   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(current_settings.raw_commands));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_linedit, current_settings.button_name));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(&test_textedit, current_settings.raw_commands));
 
    /* dialog should be modal */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
    /* dialog rejected by user */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Rejected));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Rejected));
 
    std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings, true);
 
@@ -209,26 +212,28 @@ TEST_F(UserButtonDialogTests, dialog_presented_but_not_editable)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
 
    /* all GUI widgets added to layout */
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_linedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_textedit));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_linedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_textedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* editable widgets should be disabled */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(false)).Times(3);
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_linedit, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_textedit, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_buttonbox, false));
 
    /* expect correct values on GUI */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.button_name));
-   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(current_settings.raw_commands));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_linedit, current_settings.button_name));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(&test_textedit, current_settings.raw_commands));
 
    /* dialog should be modal */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
    /* dialog rejected by user */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Rejected));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Rejected));
 
    std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings, false);
 

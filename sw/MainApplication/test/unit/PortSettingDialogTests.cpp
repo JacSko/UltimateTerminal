@@ -78,48 +78,51 @@ TEST_F(PortSettingDialogFixture, current_settings_presentation)
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color));
 
    /* all possible settings should be added to porttype combobox */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(QString("SERIAL")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(QString("ETHERNET")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(QString("ETHERNET")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(_, &test_porttype));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("SERIAL")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("ETHERNET")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_porttype, QString("ETHERNET")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_porttype));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_porttype,_,_,_));
 
    /* created field with port name */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.port_name));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setMaxLength(20));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(_,_, &test_portname));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_portname, current_settings.port_name));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setMaxLength(&test_portname, 20));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout, _,_, &test_portname));
    /* created field with IP address */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(current_settings.ip_address));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(_,_, &test_ipaddress));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_ipaddress, current_settings.ip_address));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout, _,_, &test_ipaddress));
    /* created field with IP port */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(QString::number(current_settings.port)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(_,_, &test_ipport));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_ipport, QString::number(current_settings.port)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout, _,_, &test_ipport));
    /* created field with color selection */
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(QString("Click!")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette()).WillOnce(ReturnRef(test_palette));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPalette_setColor(_,_));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setPalette(_));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_update());
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(_,_, &test_color));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color, QString("Click!")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette(&test_color)).WillOnce(Return(test_palette));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setPalette(&test_color, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_update(&test_color));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color,_,_,_));
 
    /* button box creation */
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(Qt::ApplicationModal));
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec()).WillOnce(Return(QDialog::Rejected));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Rejected));
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(false)).Times(6);
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_porttype, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_buttonbox, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_portname, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipaddress, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipport, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_color, false));
 
 
    /* expect widgets remove when closing dialogs */
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_portname));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_ipaddress));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_ipport));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_color));
-
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_portname));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipaddress));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipport));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color));
 
    PortSettingDialog test_subject;
    test_subject.showDialog(nullptr, current_settings, new_settings, true);
