@@ -153,6 +153,8 @@ private:
    QComboBox* m_portTypeBox;
    QDialogButtonBox* m_buttonBox;
 
+   Settings m_current_settings;
+
    QLineEdit* m_portNameEdit;
    QLineEdit* m_deviceNameEdit;
    QComboBox* m_baudRateBox;

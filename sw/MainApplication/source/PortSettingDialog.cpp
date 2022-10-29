@@ -44,6 +44,7 @@ PortSettingDialog::~PortSettingDialog()
 }
 std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
+   m_current_settings = current_settings;
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_form = new QFormLayout(m_dialog);
@@ -118,6 +119,7 @@ void PortSettingDialog::addItemsToComboBox(QComboBox* box, const std::vector<std
 }
 void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
+   UT_Log(MAIN, LOW, "rendering serial view");
    clearDialog();
 
    QString portname_label = QString("Port name:");
@@ -200,6 +202,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 }
 void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
+   UT_Log(MAIN, LOW, "rendering ethernet view");
    clearDialog();
 
    QString portname_label = QString("Port name:");
@@ -287,11 +290,11 @@ void PortSettingDialog::onPortTypeChanged(const QString & name)
 
    if (stringToPortType(name) == PortType::SERIAL)
    {
-      renderSerialView(m_dialog, m_form);
+      renderSerialView(m_dialog, m_form, m_current_settings);
    }
    else
    {
-      renderEthernetView(m_dialog, m_form);
+      renderEthernetView(m_dialog, m_form, m_current_settings);
    }
 }
 PortSettingDialog::PortType PortSettingDialog::stringToPortType(const QString& name)
