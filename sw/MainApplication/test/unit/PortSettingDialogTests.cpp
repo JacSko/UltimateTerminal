@@ -24,6 +24,12 @@ using namespace ::testing;
 struct TestParam
 {
    bool accepted;
+   friend std::ostream& operator<<(std::ostream& ost, const TestParam& param)
+   {
+      ost << "Test with settings -> accepted " << param.accepted << std::endl;
+      return ost;
+   }
+
 };
 
 struct PortSettingDialogParam : public testing::TestWithParam<TestParam>
