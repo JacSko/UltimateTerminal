@@ -22,12 +22,17 @@ public:
 private:
    QRgb color;
 };
-//TODO should not be mocked, only palette() and setPalette should be mocked!
 class QPalette
 {
 public:
    enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
    enum ColorRole { Button, };
+   QPalette(ColorRole cr, QColor color):
+   current_role(cr),
+   current_color(color)
+   {
+
+   }
    void setColor(ColorRole acr, const QColor& acolor)
    {
       current_role = acr;

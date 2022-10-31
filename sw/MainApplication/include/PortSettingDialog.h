@@ -68,6 +68,22 @@ enum class PortType
 
       }
 
+      Settings(PortType type,
+               const std::string& name,
+               const Drivers::Serial::Settings& serial,
+               const std::string& ip_address,
+               uint32_t port,
+               uint32_t trace_color):
+      type(type),
+      port_name(name),
+      serialSettings(serial),
+      ip_address(ip_address),
+      port(port),
+      trace_color(trace_color)
+      {
+
+      }
+
       PortType type = PortType::SERIAL;
       std::string port_name = "";
       Drivers::Serial::Settings serialSettings;
@@ -75,7 +91,7 @@ enum class PortType
       uint32_t port;
       uint32_t trace_color;
 
-      std::string shortSettingsString()
+      std::string shortSettingsString() const
       {
          std::string result = "";
          if (type == PortType::SERIAL)
