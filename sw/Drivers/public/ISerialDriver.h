@@ -9,6 +9,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include "EnumValue.hpp"
+
 
 namespace Drivers
 {
@@ -93,19 +95,6 @@ enum class DataBitType
    DATA_BIT_MAX
 };
 #undef DEF_DATA_BIT
-
-template<typename T>
-class EnumValue
-{
-public:
-   EnumValue(T val):
-   value(val)
-   {}
-   std::string toName() const;
-   T fromName(const std::string& name);
-   T value;
-};
-
 
 struct Settings
 {

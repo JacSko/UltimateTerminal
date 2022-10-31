@@ -278,7 +278,7 @@ TEST_P(PortSettingDialogParam, some_test)
    /* All port types added to combobox */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("SERIAL")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("ETHERNET")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_porttype, QString(PortSettingDialog::toString(current_settings.type).c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_porttype, QString(current_settings.type.toName().c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_porttype));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_porttype,_,_,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_porttype,!editable));
@@ -408,7 +408,7 @@ TEST_P(PortSettingDialogParam, some_test)
             {
                if (current_settings.type != user_settings.type)
                {
-                  test_subject.onPortTypeChanged(PortSettingDialog::toString(user_settings.type).c_str());
+                  test_subject.onPortTypeChanged(QString(user_settings.type.toName().c_str()));
                }
                return dialog_accepted? QDialog::Accepted : QDialog::Rejected;
             }));

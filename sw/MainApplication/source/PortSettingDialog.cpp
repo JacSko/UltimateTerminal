@@ -21,6 +21,24 @@ std::vector<std::string> g_paritybits_names = { DEF_PARITY_BITS };
 std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 #undef DEF_STOP_BIT
 
+template<>
+std::string EnumValue<PortSettingDialog::PortType>::toName() const
+{
+   UT_Assert(value < PortSettingDialog::PortType::PORT_TYPE_MAX);
+   return g_port_names[(size_t)value];
+}
+template<>
+PortSettingDialog::PortType EnumValue<PortSettingDialog::PortType>::fromName(const std::string& name)
+{
+   value = PortSettingDialog::PortType::PORT_TYPE_MAX;
+   auto it = std::find(g_port_names.begin(), g_port_names.end(), name);
+   if (it != g_port_names.end())
+   {
+      value = (PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
+   }
+   return value;
+}
+
 PortSettingDialog::PortSettingDialog():
 m_dialog(nullptr),
 m_form(nullptr),
@@ -50,7 +68,7 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
 
-   addPortTypeComboBox(current_settings.type);
+   addPortTypeComboBox(current_settings.type.value);
 
    if (current_settings.type == PortType::SERIAL)
    {
@@ -141,7 +159,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_baudRateBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::BaudRate::BAUDRATE_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::BaudRate> item = (Drivers::Serial::BaudRate)i;
+      EnumValue<Drivers::Serial::BaudRate> item = (Drivers::Serial::BaudRate)i;
       m_baudRateBox->addItem(QString(item.toName().c_str()));
    }
    m_baudRateBox->setCurrentText(QString(settings.serialSettings.baudRate.toName().c_str()));
@@ -153,7 +171,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_dataBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::DataBitType::DATA_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::DataBitType> item = (Drivers::Serial::DataBitType)i;
+      EnumValue<Drivers::Serial::DataBitType> item = (Drivers::Serial::DataBitType)i;
       m_dataBitsBox->addItem(QString(item.toName().c_str()));
    }
 
@@ -166,7 +184,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_parityBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::ParityType::PARITY_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::ParityType> item = (Drivers::Serial::ParityType)i;
+      EnumValue<Drivers::Serial::ParityType> item = (Drivers::Serial::ParityType)i;
       m_parityBitsBox->addItem(QString(item.toName().c_str()));
    }
    m_parityBitsBox->setCurrentText(QString(settings.serialSettings.parityBits.toName().c_str()));
@@ -178,7 +196,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_stopBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::StopBitType::STOP_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::StopBitType> item = (Drivers::Serial::StopBitType)i;
+      EnumValue<Drivers::Serial::StopBitType> item = (Drivers::Serial::StopBitType)i;
       m_stopBitsBox->addItem(QString(item.toName().c_str()));
    }
    m_stopBitsBox->setCurrentText(QString(settings.serialSettings.stopBits.toName().c_str()));

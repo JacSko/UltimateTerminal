@@ -84,7 +84,7 @@ enum class PortType
 
       }
 
-      PortType type = PortType::SERIAL;
+      EnumValue<PortType> type = PortType::SERIAL;
       std::string port_name = "";
       Drivers::Serial::Settings serialSettings;
       std::string ip_address;

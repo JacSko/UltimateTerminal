@@ -278,6 +278,7 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    std::string databits_name;
    std::string paritybits_name;
    std::string stopbits_name;
+   std::string porttype_name;
 
    ::deserialize(data, offset, new_settings.ip_address);
    ::deserialize(data, offset, new_settings.port);
@@ -289,12 +290,13 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, paritybits_name);
    ::deserialize(data, offset, stopbits_name);
    ::deserialize(data, offset, new_settings.trace_color);
-   ::deserialize(data, offset, (uint8_t&)new_settings.type);
+   ::deserialize(data, offset, porttype_name);
 
    new_settings.serialSettings.baudRate.fromName(baudrate_name);
    new_settings.serialSettings.dataBits.fromName(databits_name);
    new_settings.serialSettings.parityBits.fromName(paritybits_name);
    new_settings.serialSettings.stopBits.fromName(stopbits_name);
+   new_settings.type.fromName(porttype_name);
 
    if (new_settings.areValid())
    {
@@ -329,7 +331,7 @@ void PortHandler::serialize(std::vector<uint8_t>& buffer, const PortSettingDialo
    ::serialize(buffer, m_settings.serialSettings.parityBits.toName());
    ::serialize(buffer, m_settings.serialSettings.stopBits.toName());
    ::serialize(buffer, m_settings.trace_color);
-   ::serialize(buffer, (uint8_t)m_settings.type);
+   ::serialize(buffer, m_settings.type.toName());
 }
 
 
