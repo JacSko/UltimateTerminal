@@ -35,19 +35,19 @@ std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(MAIN_GUI, INFO, "Command button dialog opened");
+   UT_Log(GUI_DIALOG, INFO, "Command button dialog opened for [%s], edit possible %u", current_settings.button_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
+      UT_Log(GUI_DIALOG, LOW, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
    }
 
    delete m_form;
    delete m_dialog;
+   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
 
    return result;
 }
-
 void UserButtonDialog::addDialogButtons()
 {
    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, m_dialog);
@@ -62,12 +62,6 @@ bool UserButtonDialog::convertGuiValues(Settings& out_settings)
    out_settings.raw_commands = m_commandEdit->toPlainText().toStdString();
    out_settings.commands.clear();
 
-   std::stringstream ss(out_settings.raw_commands);
-   std::string command;
-   while(std::getline(ss, command, '\n'))
-   {
-      out_settings.commands.push_back(command);
-   }
-   UT_Log(MAIN_GUI, HIGH, "got %u commands", out_settings.commands.size());
+   UT_Log(GUI_DIALOG, HIGH, "got name %s and raw commands %s", out_settings.button_name.c_str(), out_settings.raw_commands.c_str());
    return true;
 }

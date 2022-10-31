@@ -88,17 +88,17 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(MAIN_GUI, INFO, "setting dialog show for [%s] edit possible: %u", current_settings.port_name.c_str(), allow_edit);
+   UT_Log(GUI_DIALOG, INFO, "%s for [%s] edit possible: %u", __func__, current_settings.port_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
+      UT_Log(GUI_DIALOG, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
    }
 
    clearDialog();
    delete m_form;
    delete m_dialog;
-
+   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
    return result;
 }
 void PortSettingDialog::addPortTypeComboBox(const EnumValue<PortType>& current_selection)
@@ -116,6 +116,8 @@ void PortSettingDialog::addPortTypeComboBox(const EnumValue<PortType>& current_s
    m_form->addRow(porttype_label, m_portTypeBox);
 
    QObject::connect(m_portTypeBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
+
+   UT_Log(GUI_DIALOG, HIGH, "adding %s combobox with %u items", porttype_label.toStdString().c_str(), g_port_names.size());
 }
 void PortSettingDialog::addDialogButtons()
 {
@@ -124,17 +126,12 @@ void PortSettingDialog::addDialogButtons()
    m_form->addWidget(m_buttonBox);
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
-}
-void PortSettingDialog::addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values)
-{
-   for (const auto& name : values)
-   {
-      box->addItem(QString(name.c_str()));
-   }
+
+   UT_Log(GUI_DIALOG, HIGH, "%s", __func__);
 }
 void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
-   UT_Log(MAIN, LOW, "rendering serial view");
+   UT_Log(GUI_DIALOG, LOW, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    QString portname_label = QString("Port name:");
@@ -217,7 +214,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 }
 void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
-   UT_Log(MAIN, LOW, "rendering ethernet view");
+   UT_Log(GUI_DIALOG, LOW, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    QString portname_label = QString("Port name:");
@@ -257,6 +254,8 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
 }
 void PortSettingDialog::onColorButtonClicked()
 {
+   UT_Log(GUI_DIALOG, LOW, "color button clicked, current RGB #.6x", m_current_settings.trace_color);
+
    QColor color = QColorDialog::getColor(QColor(0xFF0000), m_dialog, "Select color");
 
    if (color.isValid())
@@ -265,11 +264,12 @@ void PortSettingDialog::onColorButtonClicked()
       palette.setColor(QPalette::Button, color);
       m_colorSelectionButton->setPalette(palette);
       m_colorSelectionButton->update();
+      UT_Log(GUI_DIALOG, LOW, "color dialog accepted, new RGB #.6x", color.rgb());
    }
-
 }
 void PortSettingDialog::clearDialog()
 {
+   UT_Log(GUI_DIALOG, MEDIUM, "removing %u widgets from GUI", m_current_widgets.size());
    for (auto item : m_current_widgets)
    {
       m_form->removeRow(item);
@@ -279,6 +279,7 @@ void PortSettingDialog::clearDialog()
 bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 {
    out_settings.type.fromName(m_portTypeBox->currentText().toStdString());
+   UT_Log(GUI_DIALOG, MEDIUM, "collecting settings for %s", out_settings.type.toName().c_str());
 
    if (out_settings.type == PortType::SERIAL)
    {
@@ -297,6 +298,8 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_colorSelectionButton->palette().color(QPalette::Button).rgb();
    bool result = out_settings.areValid()? true : false;
+   UT_Log_If(!out_settings.areValid(), GUI_DIALOG, ERROR, "got invalid settings from GUI: %s", out_settings.shortSettingsString().c_str());
+
    return result;
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)

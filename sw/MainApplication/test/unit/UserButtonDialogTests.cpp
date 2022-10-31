@@ -52,22 +52,6 @@ struct UserButtonDialogParam : public testing::TestWithParam<TestParam>
    }
 };
 
-
-//TODO remove
-struct UserButtonDialogTests : public testing::Test
-{
-   void SetUp()
-   {
-      QtCoreMock_init();
-      QtWidgetsMock_init();
-   }
-   void TearDown()
-   {
-      QtCoreMock_deinit();
-      QtWidgetsMock_deinit();
-   }
-};
-
 TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
 {
    /**

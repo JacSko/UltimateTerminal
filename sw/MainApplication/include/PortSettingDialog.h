@@ -154,7 +154,6 @@ private:
 
    void addPortTypeComboBox(const EnumValue<PortType>& current_selection);
    void addDialogButtons();
-   void addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values);
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void clearDialog();
