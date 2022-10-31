@@ -49,6 +49,7 @@ target_link_libraries(PortSettingDialogTests PUBLIC
         gtest_main
         gmock_main
         Logger
+        SettingsHandler
         Utilities
         QtMocks
 )

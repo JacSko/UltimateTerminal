@@ -64,9 +64,7 @@ enum class PortType
       ip_address("127.0.0.1"),
       port(1234),
       trace_color(0xFFFFFF)
-      {
-
-      }
+      {}
 
       Settings(PortType type,
                const std::string& name,
@@ -80,12 +78,10 @@ enum class PortType
       ip_address(ip_address),
       port(port),
       trace_color(trace_color)
-      {
+      {}
 
-      }
-
-      EnumValue<PortType> type = PortType::SERIAL;
-      std::string port_name = "";
+      EnumValue<PortType> type;
+      std::string port_name;
       Drivers::Serial::Settings serialSettings;
       std::string ip_address;
       uint32_t port;
@@ -139,30 +135,30 @@ enum class PortType
       }
       bool validatePort(uint32_t port)
       {
-         if (port > 99999)
+         if (port > MAX_IPPORT_VALUE)
          {
             std::string error = "Invalid IP port: ";
             error += std::to_string(port);
             m_error_strings.push_back(error);
          }
-         return port < 99999;
+         return (port >= MIN_IPPORT_VALUE) && (port <= MAX_IPPORT_VALUE);
       }
 
+      static const uint32_t MIN_IPPORT_VALUE = 1;
+      static const uint32_t MAX_IPPORT_VALUE = 99999;
       std::vector<std::string> m_error_strings;
    };
 
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
-   static std::string toString(PortType);
 private:
 
-   void addPortTypeComboBox(PortType current_selection);
+   void addPortTypeComboBox(const EnumValue<PortType>& current_selection);
    void addDialogButtons();
    void addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values);
    void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
    void clearDialog();
    bool convertGuiValues(Settings& out_settings);
-   PortType stringToPortType(const QString& name);
 
    QDialog* m_dialog;
    QFormLayout* m_form;

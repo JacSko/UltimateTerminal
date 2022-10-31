@@ -9,6 +9,9 @@ public:
    EnumValue(T val):
    value(val)
    {}
+   EnumValue(const std::string& name):
+   value(fromName(name))
+   {}
    std::string toName() const;
    T fromName(const std::string& name);
    T value;

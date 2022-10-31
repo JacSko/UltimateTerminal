@@ -1,3 +1,5 @@
+#include "Settings.h"
+
 #include "PortSettingDialog.h"
 #include "QtWidgets/QColorDialog"
 
@@ -68,7 +70,7 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
 
-   addPortTypeComboBox(current_settings.type.value);
+   addPortTypeComboBox(current_settings.type);
 
    if (current_settings.type == PortType::SERIAL)
    {
@@ -99,12 +101,7 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
 
    return result;
 }
-std::string PortSettingDialog::toString(PortType type)
-{
-   UT_Assert(type < PortType::PORT_TYPE_MAX && "Invalid port type");
-   return g_port_names[(size_t)type];
-}
-void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
+void PortSettingDialog::addPortTypeComboBox(const EnumValue<PortType>& current_selection)
 {
    QString porttype_label = QString("Port type:");
    m_portTypeBox = new QComboBox(m_dialog);
@@ -114,7 +111,7 @@ void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
       m_portTypeBox->addItem(QString(name.c_str()));
    }
 
-   m_portTypeBox->setCurrentText(QString(PortSettingDialog::toString(current_selection).c_str()));
+   m_portTypeBox->setCurrentText(QString(current_selection.toName().c_str()));
    m_portTypeBox->setDisabled(!m_editable);
    m_form->addRow(porttype_label, m_portTypeBox);
 
@@ -144,7 +141,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
-   m_portNameEdit->setMaxLength(20);
+   m_portNameEdit->setMaxLength(SETTING_GET_U32(PortSettingDialog_maxLineEditLength));
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
@@ -227,7 +224,7 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
-   m_portNameEdit->setMaxLength(20);
+   m_portNameEdit->setMaxLength(SETTING_GET_U32(PortSettingDialog_maxLineEditLength));
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
@@ -281,7 +278,7 @@ void PortSettingDialog::clearDialog()
 }
 bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 {
-   out_settings.type = stringToPortType(m_portTypeBox->currentText());
+   out_settings.type.fromName(m_portTypeBox->currentText().toStdString());
 
    if (out_settings.type == PortType::SERIAL)
    {
@@ -306,24 +303,12 @@ void PortSettingDialog::onPortTypeChanged(const QString & name)
 {
    UT_Log(MAIN_GUI, LOW, "new port type %s, rendering", name.toStdString().c_str());
 
-   if (stringToPortType(name) == PortType::SERIAL)
+   if (EnumValue<PortType>(name.toStdString()) == PortType::SERIAL)
    {
       renderSerialView(m_dialog, m_form, m_current_settings);
    }
    else
    {
       renderEthernetView(m_dialog, m_form, m_current_settings);
-   }
-}
-PortSettingDialog::PortType PortSettingDialog::stringToPortType(const QString& name)
-{
-   auto it = std::find(g_port_names.begin(), g_port_names.end(), name.toStdString());
-   if (it != g_port_names.end())
-   {
-      return ((PortSettingDialog::PortType)std::distance(g_port_names.begin(), it));
-   }
-   else
-   {
-      return PortSettingDialog::PortType::PORT_TYPE_MAX;
    }
 }
