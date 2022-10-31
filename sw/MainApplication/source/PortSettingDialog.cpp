@@ -1,3 +1,5 @@
+#include "Settings.h"
+
 #include "PortSettingDialog.h"
 #include "QtWidgets/QColorDialog"
 
@@ -20,6 +22,24 @@ std::vector<std::string> g_paritybits_names = { DEF_PARITY_BITS };
 #define DEF_STOP_BIT(a) #a,
 std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 #undef DEF_STOP_BIT
+
+template<>
+std::string EnumValue<PortSettingDialog::PortType>::toName() const
+{
+   UT_Assert(value < PortSettingDialog::PortType::PORT_TYPE_MAX);
+   return g_port_names[(size_t)value];
+}
+template<>
+PortSettingDialog::PortType EnumValue<PortSettingDialog::PortType>::fromName(const std::string& name)
+{
+   value = PortSettingDialog::PortType::PORT_TYPE_MAX;
+   auto it = std::find(g_port_names.begin(), g_port_names.end(), name);
+   if (it != g_port_names.end())
+   {
+      value = (PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
+   }
+   return value;
+}
 
 PortSettingDialog::PortSettingDialog():
 m_dialog(nullptr),
@@ -44,6 +64,7 @@ PortSettingDialog::~PortSettingDialog()
 }
 std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
+   m_current_settings = current_settings;
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_form = new QFormLayout(m_dialog);
@@ -67,25 +88,20 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(MAIN_GUI, INFO, "setting dialog show for [%s] edit possible: %u", current_settings.port_name.c_str(), allow_edit);
+   UT_Log(GUI_DIALOG, INFO, "%s for [%s] edit possible: %u", __func__, current_settings.port_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
+      UT_Log(GUI_DIALOG, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
    }
 
    clearDialog();
    delete m_form;
    delete m_dialog;
-
+   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
    return result;
 }
-std::string PortSettingDialog::toString(PortType type)
-{
-   UT_Assert(type < PortType::PORT_TYPE_MAX && "Invalid port type");
-   return g_port_names[(size_t)type];
-}
-void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
+void PortSettingDialog::addPortTypeComboBox(const EnumValue<PortType>& current_selection)
 {
    QString porttype_label = QString("Port type:");
    m_portTypeBox = new QComboBox(m_dialog);
@@ -95,11 +111,13 @@ void PortSettingDialog::addPortTypeComboBox(PortType current_selection)
       m_portTypeBox->addItem(QString(name.c_str()));
    }
 
-   m_portTypeBox->setCurrentText(QString(PortSettingDialog::toString(current_selection).c_str()));
+   m_portTypeBox->setCurrentText(QString(current_selection.toName().c_str()));
    m_portTypeBox->setDisabled(!m_editable);
    m_form->addRow(porttype_label, m_portTypeBox);
 
    QObject::connect(m_portTypeBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
+
+   UT_Log(GUI_DIALOG, HIGH, "adding %s combobox with %u items", porttype_label.toStdString().c_str(), g_port_names.size());
 }
 void PortSettingDialog::addDialogButtons()
 {
@@ -108,23 +126,19 @@ void PortSettingDialog::addDialogButtons()
    m_form->addWidget(m_buttonBox);
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
-}
-void PortSettingDialog::addItemsToComboBox(QComboBox* box, const std::vector<std::string>& values)
-{
-   for (const auto& name : values)
-   {
-      box->addItem(QString(name.c_str()));
-   }
+
+   UT_Log(GUI_DIALOG, HIGH, "%s", __func__);
 }
 void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
+   UT_Log(GUI_DIALOG, LOW, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
-   m_portNameEdit->setMaxLength(20);
+   m_portNameEdit->setMaxLength(SETTING_GET_U32(PortSettingDialog_maxLineEditLength));
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
@@ -139,7 +153,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_baudRateBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::BaudRate::BAUDRATE_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::BaudRate> item = (Drivers::Serial::BaudRate)i;
+      EnumValue<Drivers::Serial::BaudRate> item = (Drivers::Serial::BaudRate)i;
       m_baudRateBox->addItem(QString(item.toName().c_str()));
    }
    m_baudRateBox->setCurrentText(QString(settings.serialSettings.baudRate.toName().c_str()));
@@ -151,7 +165,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_dataBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::DataBitType::DATA_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::DataBitType> item = (Drivers::Serial::DataBitType)i;
+      EnumValue<Drivers::Serial::DataBitType> item = (Drivers::Serial::DataBitType)i;
       m_dataBitsBox->addItem(QString(item.toName().c_str()));
    }
 
@@ -164,7 +178,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_parityBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::ParityType::PARITY_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::ParityType> item = (Drivers::Serial::ParityType)i;
+      EnumValue<Drivers::Serial::ParityType> item = (Drivers::Serial::ParityType)i;
       m_parityBitsBox->addItem(QString(item.toName().c_str()));
    }
    m_parityBitsBox->setCurrentText(QString(settings.serialSettings.parityBits.toName().c_str()));
@@ -176,7 +190,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
    m_stopBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::StopBitType::STOP_BIT_MAX; i++)
    {
-      Drivers::Serial::EnumValue<Drivers::Serial::StopBitType> item = (Drivers::Serial::StopBitType)i;
+      EnumValue<Drivers::Serial::StopBitType> item = (Drivers::Serial::StopBitType)i;
       m_stopBitsBox->addItem(QString(item.toName().c_str()));
    }
    m_stopBitsBox->setCurrentText(QString(settings.serialSettings.stopBits.toName().c_str()));
@@ -200,13 +214,14 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 }
 void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
 {
+   UT_Log(GUI_DIALOG, LOW, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
    m_portNameEdit->setDisabled(!m_editable);
-   m_portNameEdit->setMaxLength(20);
+   m_portNameEdit->setMaxLength(SETTING_GET_U32(PortSettingDialog_maxLineEditLength));
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
@@ -239,6 +254,8 @@ void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, c
 }
 void PortSettingDialog::onColorButtonClicked()
 {
+   UT_Log(GUI_DIALOG, LOW, "color button clicked, current RGB #.6x", m_current_settings.trace_color);
+
    QColor color = QColorDialog::getColor(QColor(0xFF0000), m_dialog, "Select color");
 
    if (color.isValid())
@@ -247,11 +264,12 @@ void PortSettingDialog::onColorButtonClicked()
       palette.setColor(QPalette::Button, color);
       m_colorSelectionButton->setPalette(palette);
       m_colorSelectionButton->update();
+      UT_Log(GUI_DIALOG, LOW, "color dialog accepted, new RGB #.6x", color.rgb());
    }
-
 }
 void PortSettingDialog::clearDialog()
 {
+   UT_Log(GUI_DIALOG, MEDIUM, "removing %u widgets from GUI", m_current_widgets.size());
    for (auto item : m_current_widgets)
    {
       m_form->removeRow(item);
@@ -260,7 +278,8 @@ void PortSettingDialog::clearDialog()
 }
 bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 {
-   out_settings.type = stringToPortType(m_portTypeBox->currentText());
+   out_settings.type.fromName(m_portTypeBox->currentText().toStdString());
+   UT_Log(GUI_DIALOG, MEDIUM, "collecting settings for %s", out_settings.type.toName().c_str());
 
    if (out_settings.type == PortType::SERIAL)
    {
@@ -279,30 +298,20 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_colorSelectionButton->palette().color(QPalette::Button).rgb();
    bool result = out_settings.areValid()? true : false;
+   UT_Log_If(!out_settings.areValid(), GUI_DIALOG, ERROR, "got invalid settings from GUI: %s", out_settings.shortSettingsString().c_str());
+
    return result;
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {
    UT_Log(MAIN_GUI, LOW, "new port type %s, rendering", name.toStdString().c_str());
 
-   if (stringToPortType(name) == PortType::SERIAL)
+   if (EnumValue<PortType>(name.toStdString()) == PortType::SERIAL)
    {
-      renderSerialView(m_dialog, m_form);
+      renderSerialView(m_dialog, m_form, m_current_settings);
    }
    else
    {
-      renderEthernetView(m_dialog, m_form);
-   }
-}
-PortSettingDialog::PortType PortSettingDialog::stringToPortType(const QString& name)
-{
-   auto it = std::find(g_port_names.begin(), g_port_names.end(), name.toStdString());
-   if (it != g_port_names.end())
-   {
-      return ((PortSettingDialog::PortType)std::distance(g_port_names.begin(), it));
-   }
-   else
-   {
-      return PortSettingDialog::PortType::PORT_TYPE_MAX;
+      renderEthernetView(m_dialog, m_form, m_current_settings);
    }
 }

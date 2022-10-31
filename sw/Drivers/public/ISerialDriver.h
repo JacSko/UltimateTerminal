@@ -9,6 +9,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include "EnumValue.hpp"
+
 
 namespace Drivers
 {
@@ -94,27 +96,39 @@ enum class DataBitType
 };
 #undef DEF_DATA_BIT
 
-template<typename T>
-class EnumValue
-{
-public:
-   EnumValue(T val):
-   value(val)
-   {}
-   std::string toName() const;
-   T fromName(const std::string& name);
-   T value;
-};
-
-
 struct Settings
 {
-   std::string device = "/dev/ttyUSB1";
-   EnumValue<BaudRate> baudRate = BaudRate::BR_115200;
-   DataMode mode = DataMode::NEW_LINE_DELIMITER;
-   EnumValue<ParityType> parityBits = ParityType::NONE;
-   EnumValue<StopBitType> stopBits = StopBitType::ONE;
-   EnumValue<DataBitType> dataBits = DataBitType::EIGHT;
+   Settings():
+   device("/dev/ttyUSB1"),
+   baudRate(BaudRate::BR_115200),
+   mode(DataMode::NEW_LINE_DELIMITER),
+   parityBits(ParityType::NONE),
+   stopBits(StopBitType::ONE),
+   dataBits(DataBitType::EIGHT)
+   {
+
+   }
+   Settings(const std::string& device_path,
+            Drivers::Serial::DataMode mode,
+            Drivers::Serial::BaudRate baud,
+            Drivers::Serial::ParityType paritybits,
+            Drivers::Serial::StopBitType stopbits,
+            Drivers::Serial::DataBitType databits):
+   device(device_path),
+   baudRate(baud),
+   mode(mode),
+   parityBits(paritybits),
+   stopBits(stopbits),
+   dataBits(databits)
+   {
+
+   }
+   std::string device;
+   EnumValue<BaudRate> baudRate;
+   DataMode mode;
+   EnumValue<ParityType> parityBits;
+   EnumValue<StopBitType> stopBits;
+   EnumValue<DataBitType> dataBits;
 };
 
 class SerialListener
