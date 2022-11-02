@@ -5,7 +5,8 @@
 #define SIGNAL(arg) #arg
 #define SLOT(arg) #arg
 #define slots
-
+#define signals public
+#define emit
 
 class QWidget;
 class QObject;
@@ -54,6 +55,14 @@ enum GlobalColor {
     darkMagenta,
     darkYellow,
     transparent
+};
+
+enum ContextMenuPolicy {
+    NoContextMenu,
+    DefaultContextMenu,
+    ActionsContextMenu,
+    CustomContextMenu,
+    PreventContextMenu
 };
 
 }

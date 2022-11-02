@@ -2,9 +2,9 @@
 #include "gmock/gmock.h"
 #include <optional>
 #include "UserButtonHandler.h"
+#include "UserButtonDialogMock.h"
 #include "Logger.h"
-#include "QPushButtonMock.hpp"
-#include "PersistenceHandlerFake.h"
+#include <QtWidgets/QPushButton>
 
 namespace GUI
 {
@@ -28,13 +28,20 @@ struct ButtonCommandExecutorTests : public testing::Test
 {
    void SetUp()
    {
+      QtWidgetsMock_init();
       g_writer_mock = new WriterMock();
    }
    void TearDown()
    {
       delete g_writer_mock;
+      QtWidgetsMock_deinit();
    }
 };
+
+void UserButtonHandler::commandsFinished()
+{
+
+}
 
 TEST_F(ButtonCommandExecutorTests, executing_one_command)
 {
@@ -43,9 +50,9 @@ TEST_F(ButtonCommandExecutorTests, executing_one_command)
     * <b>expected</b>: Thread not started, callback called.<br>
     * ************************************************
     */
-   QPushButtonMock btn_mock;
-   Persistence::PersistenceHandlerFake pers_fake;
-   UserButtonHandler handler (btn_mock, nullptr, pers_fake, {});
+   QPushButton btn_mock;
+   Persistence::PersistenceHandler pers_fake;
+   UserButtonHandler handler (&btn_mock, nullptr, pers_fake, {});
 }
 
 }

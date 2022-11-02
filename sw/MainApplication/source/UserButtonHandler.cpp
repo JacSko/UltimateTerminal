@@ -1,4 +1,3 @@
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <optional>
 #include <sstream>

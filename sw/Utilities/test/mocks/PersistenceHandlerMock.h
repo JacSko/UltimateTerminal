@@ -1,42 +1,51 @@
 #pragma once
 #include <vector>
-#include <GenericListener.hpp>
+#include "PersistenceHandler.h"
 
 namespace Persistence
 {
 
-class PersistenceListener
+struct PersistenceHandlerMock
 {
-public:
-   PersistenceListener(){};
-   virtual ~PersistenceListener(){};
-
-   virtual void onPersistenceRead(const std::vector<uint8_t>& data) = 0;
-   virtual void onPersistenceWrite(std::vector<uint8_t>& data) = 0;
-   const std::string& getName() {return m_name;};
-   void setName(const std::string& name){ m_name = name;};
-private:
-   std::string m_name;
+   MOCK_METHOD1(restore, bool(const std::string&));
+   MOCK_METHOD1(save, bool(const std::string&));
 };
 
-/* size of each persistence block is stored on 4 bytes */
-constexpr uint8_t PERSISTENCE_DATA_BLOCK_SIZE = 4;
+PersistenceHandlerMock* g_pers_handler_mock;
 
-class PersistenceHandlerFake : public GenericListener<PersistenceListener>
+void PersistenceHandlerMock_init()
 {
-public:
-
-   bool restore(const std::string& file_name)
+   if (!g_pers_handler_mock)
    {
-      return true;
+      g_pers_handler_mock = new PersistenceHandlerMock();
    }
+}
 
-   bool save(const std::string& file_name)
+void PersistenceHandlerMock_deinit()
+{
+   if (g_pers_handler_mock)
    {
-      return true;
+      delete g_pers_handler_mock;
+      g_pers_handler_mock = nullptr;
    }
-};
+}
 
+PersistenceHandlerMock* PersistenceHandlerMock_get()
+{
+   UT_Assert(g_pers_handler_mock && "Create persistence handler mock first!");
+   return g_pers_handler_mock;
+}
+
+bool PersistenceHandler::restore(const std::string& file_name)
+{
+   return g_pers_handler_mock->restore(file_name);
+}
+bool PersistenceHandler::save(const std::string& file_name)
+{
+   return g_pers_handler_mock->save(file_name);
+}
 
 
 }
+
+

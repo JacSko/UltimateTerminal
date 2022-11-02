@@ -138,6 +138,22 @@ void QPushButton::update()
 {
    g_widgets_mock->QPushButton_update(this);
 }
+void QPushButton::setContextMenuPolicy(Qt::ContextMenuPolicy policy)
+{
+   g_widgets_mock->QPushButton_setContextMenuPolicy(this, policy);
+}
+void QPushButton::setCheckable(bool value)
+{
+   g_widgets_mock->QPushButton_setCheckable(this, value);
+}
+void QPushButton::setChecked(bool value)
+{
+   g_widgets_mock->QPushButton_setChecked(this, value);
+}
+void QPushButton::repaint()
+{
+   g_widgets_mock->QPushButton_repaint(this);
+}
 void* QColorDialog::operator new(size_t)
 {
    return g_widgets_mock->QColorDialog_new();

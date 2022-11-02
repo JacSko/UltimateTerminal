@@ -134,6 +134,11 @@ public:
    QPalette palette();
    void setPalette(const QPalette &);
    void update();
+   void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
+   void setCheckable(bool);
+   void setChecked(bool);
+   void repaint();
+
 };
 
 class QComboBox : public QWidget
@@ -158,7 +163,6 @@ public:
                               QWidget *parent = nullptr,
                               const QString &title = QString());
 };
-
 
 struct QtWidgetsMock
 {
@@ -192,6 +196,10 @@ struct QtWidgetsMock
    MOCK_METHOD1(QPushButton_palette, QPalette (QPushButton*));
    MOCK_METHOD2(QPushButton_setPalette, void(QPushButton*, const QPalette&));
    MOCK_METHOD1(QPushButton_update, void(QPushButton*));
+   MOCK_METHOD2(QPushButton_setContextMenuPolicy, void(QPushButton*, Qt::ContextMenuPolicy));
+   MOCK_METHOD2(QPushButton_setCheckable, void(QPushButton*, bool));
+   MOCK_METHOD2(QPushButton_setChecked, void(QPushButton*, bool));
+   MOCK_METHOD1(QPushButton_repaint, void(QPushButton*));
 
    MOCK_METHOD0(QDialogButtonBox_new, void*());
 

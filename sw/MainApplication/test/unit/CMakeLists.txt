@@ -54,3 +54,25 @@ target_link_libraries(PortSettingDialogTests PUBLIC
         QtMocks
 )
 add_test(NAME PortSettingDialogTests COMMAND PortSettingDialogTests)
+
+#####################################################################################
+
+add_executable(UserButtonHandlerTests
+            UserButtonHandlerTests.cpp
+            ../../source/UserButtonHandler.cpp
+)
+
+target_include_directories(UserButtonHandlerTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(UserButtonHandlerTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        Utilities
+        UtilitiesMocks
+        QtMocks
+)
+add_test(NAME UserButtonHandlerTests COMMAND UserButtonHandlerTests)
