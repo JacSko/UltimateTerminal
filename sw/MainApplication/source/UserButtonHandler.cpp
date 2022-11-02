@@ -46,7 +46,7 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
 {
    UserButtonDialog dialog;
    UserButtonDialog::Settings new_settings = {};
-   /* TODO block editing when commands are ongoing */
+
    std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, true);
    if (result)
    {
@@ -58,8 +58,9 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
 }
 void UserButtonHandler::onUserButtonClicked()
 {
-   UT_Log(MAIN, HIGH, "Sending commands");
+   UT_Log(MAIN, HIGH, "Sending commands for button %s [%s]", getName().c_str(), m_settings.button_name.c_str());
    m_object->setChecked(true);
+   m_object->setDisabled(true);
    m_object->repaint();
 
    m_executor.execute();
@@ -93,6 +94,7 @@ void UserButtonHandler::onCommandExecutionEvent(bool result)
 void UserButtonHandler::onCommandsFinished()
 {
    m_object->setChecked(false);
+   m_object->setDisabled(false);
    m_object->repaint();
 }
 
