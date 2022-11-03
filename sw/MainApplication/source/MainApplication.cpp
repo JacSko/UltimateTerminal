@@ -220,7 +220,7 @@ void MainApplication::onScrollButtonClicked()
 void MainApplication::onTraceScrollButtonClicked()
 {
    m_trace_scrolling_active = !m_trace_scrolling_active;
-   if(m_scrolling_active)
+   if(m_trace_scrolling_active)
    {
       setButtonColor(ui->traceScrollButton, Qt::green);
    }
