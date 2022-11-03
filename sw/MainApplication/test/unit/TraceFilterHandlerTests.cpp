@@ -26,6 +26,7 @@ struct UserButtonHandlerFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::red)));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, false));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_line_edit)).WillOnce(Return(QPalette(QPalette::ColorRole::Base, test_default_color)));
       m_test_subject.reset(new TraceFilterHandler(&test_parent, &test_line_edit, &test_button, fake_persistence));
 
       Mock::VerifyAndClearExpectations(QtCoreMock_get());
@@ -43,6 +44,7 @@ struct UserButtonHandlerFixture : public testing::Test
    QPushButton test_button;
    QDialog test_parent;
    Persistence::PersistenceHandler fake_persistence;
+   QColor test_default_color = 0x00DEAD;
 };
 
 TEST_F(UserButtonHandlerFixture, filtering_requested_when_not_active)
@@ -255,6 +257,7 @@ TEST_F(UserButtonHandlerFixture, persistence_write_and_read)
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&new_test_button, QPalette(QPalette::ColorRole::Button, Qt::red)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&new_test_button));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&new_test_line_edit, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&new_test_line_edit)).WillOnce(Return(QPalette(QPalette::ColorRole::Base, test_default_color)));
    std::unique_ptr<TraceFilterHandler> new_test_subject = std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(&test_parent, &new_test_line_edit, &new_test_button, fake_persistence));
 
    /* expectations to be met when restoring from persistence */

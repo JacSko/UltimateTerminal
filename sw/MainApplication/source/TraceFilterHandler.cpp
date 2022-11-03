@@ -29,6 +29,7 @@ m_persistence(persistence)
    m_button->setCheckable(true);
    m_line_edit->setDisabled(false);
    setButtonColor(Qt::red);
+   m_color = m_line_edit->palette().color(QPalette::Base);
 
    UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
 }
