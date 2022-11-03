@@ -45,6 +45,7 @@ private:
     FileLogging m_filelogging;
     Persistence::PersistenceHandler m_persistence;
     bool m_scrolling_active;
+    bool m_trace_scrolling_active;
     uint32_t m_scroll_default_color;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
@@ -60,6 +61,8 @@ public slots:
    void onLoggingButtonClicked();
    void onScrollButtonClicked();
    void onClearButtonClicked();
+   void onTraceScrollButtonClicked();
+   void onTraceClearButtonClicked();
    void onSendButtonClicked();
    void onLoggingButtonContextMenuRequested();
 

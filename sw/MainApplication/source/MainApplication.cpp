@@ -14,7 +14,8 @@ ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
 m_marker_index(0),
 m_filelogging({}),
-m_scrolling_active(false)
+m_scrolling_active(false),
+m_trace_scrolling_active(false)
 {
     ui->setupUi(this);
 
@@ -73,7 +74,6 @@ m_scrolling_active(false)
     m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_5, ui->traceFilterButton_5, m_persistence)));
     m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_6, ui->traceFilterButton_6, m_persistence)));
     m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_7, ui->traceFilterButton_7, m_persistence)));
-
 
     ui->lineEndingComboBox->addItem("\\r\\n");
     ui->lineEndingComboBox->addItem("\\n");
@@ -136,21 +136,46 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
    item->setText(new_line);
    item->setBackground(QColor(rgb_color));
    ui->terminalView->addItem(item);
+
+   for (auto& filter : m_trace_filter_handlers)
+   {
+      std::optional<uint32_t> color = filter->tryMatch(data);
+      if (color.has_value())
+      {
+         QListWidgetItem* item = new QListWidgetItem();
+         item->setText(new_line);
+         item->setBackground(QColor(color.value()));
+         ui->traceViw->addItem(item);
+      }
+   }
+
    if (m_scrolling_active)
    {
       ui->terminalView->scrollToBottom();
    }
 
+   if (m_trace_scrolling_active)
+   {
+      ui->traceViw->scrollToBottom();
+   }
+
    if(ui->terminalView->count() >= 10000)
    {
-      UT_Log(MAIN, MEDIUM, "Reached maximum lines, cleaning trace view");
+      UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
       ui->terminalView->clear();
+   }
+
+   if(ui->traceViw->count() >= 10000)
+   {
+      UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
+      ui->traceViw->clear();
    }
 }
 void MainApplication::connectSignalsToSlots()
 {
    connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
+   connect(ui->traceClearButton, SIGNAL(clicked()), this, SLOT(onTraceClearButtonClicked()));
 
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
    connect(ui->textEdit, SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
@@ -160,6 +185,7 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
 
    connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
+   connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -190,6 +216,23 @@ void MainApplication::onLoggingButtonClicked()
 void MainApplication::onScrollButtonClicked()
 {
    setScrolling(!m_scrolling_active);
+}
+void MainApplication::onTraceScrollButtonClicked()
+{
+   m_trace_scrolling_active = !m_trace_scrolling_active;
+   if(m_scrolling_active)
+   {
+      setButtonColor(ui->traceScrollButton, Qt::green);
+   }
+   else
+   {
+      setButtonColor(ui->traceScrollButton, QColor(m_scroll_default_color));
+   }
+}
+void MainApplication::onTraceClearButtonClicked()
+{
+   UT_Log(MAIN, MEDIUM, "Clearing trace window requested");
+   ui->traceViw->clear();
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {

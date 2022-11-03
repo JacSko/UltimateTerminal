@@ -6,5 +6,5 @@
 6. Embedded window with custmizable traces (regexp)
 7. Button colors should be customizable via json file
 8. PortSettingHandler unit tests missing
-
 9. TraceFilterHandlerTests - add parametrized test for persistence restoration
+10. UserButtonHandlerTests - sometimes gets stuck 

@@ -297,22 +297,22 @@ TEST_P(PortSettingDialogParam, some_test)
    {
       /* created field with color selection */
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!"))).Times(2);
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setPalette(&test_color_button, _)).Times(2);
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_update(&test_color_button)).Times(2);
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, _)).Times(2);
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_color_button)).Times(2);
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button)).Times(2);
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_)).Times(2);
 
       if (dialog_accepted)
       {
          /* dialog accepted, context switch expected so 3 color readouts */
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
                                                                                    .WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
                                                                                    .WillOnce(Return(QPalette(QPalette::ColorRole::Button, user_settings.trace_color)));
       }
       else
       {
          /* dialog accepted, context switch expected so 2 color readouts */
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
                                                                                    .WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)));
       }
 
@@ -360,21 +360,21 @@ TEST_P(PortSettingDialogParam, some_test)
    {
       /* created field with color selection */
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!")));
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setPalette(&test_color_button, _));
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_update(&test_color_button));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, _));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_color_button));
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_));
 
       if (dialog_accepted)
       {
          /* dialog accepted, no context switch so only 2 color readouts */
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)))
                                                                                    .WillOnce(Return(QPalette(QPalette::ColorRole::Button, user_settings.trace_color)));
       }
       else
       {
          /* dialog accepted, context switch expected so 2 color readouts */
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)));
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_color_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, current_settings.trace_color)));
       }
    }
 
