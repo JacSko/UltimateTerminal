@@ -45,15 +45,10 @@ std::optional<uint32_t> TraceFilterHandler::tryMatch(const std::string& text)
          UT_Log(TRACE_FILTER, HIGH, "Found match for filer %s", getName().c_str());
          return m_color.rgb();
       }
-      else
-      {
-         printf("not matched!\n");
-      }
       return {};
    }
    else
    {
-      printf("not enabled!\n");
       return {};
    }
 }
