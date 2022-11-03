@@ -73,6 +73,10 @@ void QLineEdit::setMaxLength(int length)
 {
    g_widgets_mock->QLineEdit_setMaxLength(this, length);
 }
+void QLineEdit::setContextMenuPolicy(Qt::ContextMenuPolicy policy)
+{
+   g_widgets_mock->QLineEdit_setContextMenuPolicy(this, policy);
+}
 QString QLineEdit::text()
 {
    return QString(g_widgets_mock->QLineEdit_text(this).c_str());
@@ -102,6 +106,10 @@ void QWidget::setDisabled(bool disabled)
 {
    g_widgets_mock->QWidget_setDisabled(this, disabled);
 }
+bool QWidget::isEnabled()
+{
+   return g_widgets_mock->QWidget_isEnabled(this);
+}
 void* QComboBox::operator new(size_t)
 {
    return g_widgets_mock->QComboBox_new();
@@ -126,17 +134,17 @@ void QPushButton::setText(const QString &text)
 {
    g_widgets_mock->QPushButton_setText(this, text);
 }
-QPalette QPushButton::palette()
+QPalette QWidget::palette()
 {
-   return g_widgets_mock->QPushButton_palette(this);
+   return g_widgets_mock->QWidget_palette(this);
 }
-void QPushButton::setPalette(const QPalette & palette)
+void QWidget::setPalette(const QPalette & palette)
 {
-   g_widgets_mock->QPushButton_setPalette(this, palette);
+   g_widgets_mock->QWidget_setPalette(this, palette);
 }
-void QPushButton::update()
+void QWidget::update()
 {
-   g_widgets_mock->QPushButton_update(this);
+   g_widgets_mock->QWidget_update(this);
 }
 void QPushButton::setContextMenuPolicy(Qt::ContextMenuPolicy policy)
 {
@@ -161,8 +169,4 @@ void* QColorDialog::operator new(size_t)
 QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QString &title)
 {
    return g_widgets_mock->QColorDialog_getColor(initial, parent, title);
-}
-bool QColor::isValid()
-{
-   return g_widgets_mock->QColor_isValid(this);
 }

@@ -13,5 +13,6 @@
   "Logger_group_UTILITIES": "HIGH",
   "Logger_group_SOCK_DRV": "HIGH",
   "Logger_group_SERIAL_DRV": "HIGH",
+  "Logger_group_TRACE_FILTER": "HIGH",
   "PortSettingDialog_maxLineEditLength": 30
 }

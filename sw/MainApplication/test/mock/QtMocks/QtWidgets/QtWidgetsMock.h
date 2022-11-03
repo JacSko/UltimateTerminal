@@ -12,21 +12,26 @@ typedef unsigned int QRgb;
 class QColor
 {
 public:
-   QColor() : color(0){};
-   QColor(uint32_t color):color(color){};
-   bool isValid();
+   QColor() : color(0), valid(false){};
+   QColor(uint32_t color):color(color), valid(true){};
+   bool isValid(){return valid;};
    QRgb rgb() const
    {
       return color;
    }
+   bool operator==(const QColor& rhs) const
+   {
+      return (rhs.color == color);
+   }
 private:
    QRgb color;
+   bool valid;
 };
 class QPalette
 {
 public:
    enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
-   enum ColorRole { Button, };
+   enum ColorRole { Button, Base};
    QPalette(ColorRole cr, QColor color):
    current_role(cr),
    current_color(color)
@@ -49,6 +54,10 @@ public:
          return QColor(0);
       }
    }
+   bool operator==(const QPalette& lhs) const
+   {
+      return (lhs.current_color == current_color) && (lhs.current_role == current_role);
+   }
 private:
    ColorRole current_role;
    QColor current_color;
@@ -59,6 +68,10 @@ class QWidget : public QObject
 public:
    void setEnabled(bool);
    void setDisabled(bool);
+   bool isEnabled();
+   QPalette palette();
+   void setPalette(const QPalette &);
+   void update();
 };
 
 class QDialog : public QWidget
@@ -111,6 +124,7 @@ public:
    void operator delete(void*){};
    void setText(const QString &);
    void setMaxLength(int);
+   void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
    QString text();
 };
 
@@ -131,9 +145,6 @@ public:
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &text);
-   QPalette palette();
-   void setPalette(const QPalette &);
-   void update();
    void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
    void setCheckable(bool);
    void setChecked(bool);
@@ -181,6 +192,7 @@ struct QtWidgetsMock
    MOCK_METHOD2(QLineEdit_setText, void(QLineEdit*, const std::string&));
    MOCK_METHOD1(QLineEdit_text, QString(QLineEdit*));
    MOCK_METHOD2(QLineEdit_setMaxLength, void(QLineEdit*, int));
+   MOCK_METHOD2(QLineEdit_setContextMenuPolicy, void(QLineEdit*, Qt::ContextMenuPolicy));
 
    MOCK_METHOD0(QTextEdit_new, void*());
    MOCK_METHOD2(QTextEdit_setText, void(QTextEdit*, const std::string&));
@@ -193,9 +205,6 @@ struct QtWidgetsMock
 
    MOCK_METHOD0(QPushButton_new, void*());
    MOCK_METHOD2(QPushButton_setText, void(QPushButton*, const QString&));
-   MOCK_METHOD1(QPushButton_palette, QPalette (QPushButton*));
-   MOCK_METHOD2(QPushButton_setPalette, void(QPushButton*, const QPalette&));
-   MOCK_METHOD1(QPushButton_update, void(QPushButton*));
    MOCK_METHOD2(QPushButton_setContextMenuPolicy, void(QPushButton*, Qt::ContextMenuPolicy));
    MOCK_METHOD2(QPushButton_setCheckable, void(QPushButton*, bool));
    MOCK_METHOD2(QPushButton_setChecked, void(QPushButton*, bool));
@@ -205,11 +214,14 @@ struct QtWidgetsMock
 
    MOCK_METHOD2(QWidget_setEnabled, void(QWidget*, bool));
    MOCK_METHOD2(QWidget_setDisabled, void(QWidget*, bool));
+   MOCK_METHOD1(QWidget_isEnabled, bool(QWidget*));
+   MOCK_METHOD1(QWidget_palette, QPalette (QWidget*));
+   MOCK_METHOD2(QWidget_setPalette, void(QWidget*, const QPalette&));
+   MOCK_METHOD1(QWidget_update, void(QWidget*));
 
    MOCK_METHOD0(QColorDialog_new, void*());
    MOCK_METHOD3(QColorDialog_getColor, QColor(const QColor&, QWidget*, const QString&));
 
-   MOCK_METHOD1(QColor_isValid, bool(QColor*));
 };
 
 void QtWidgetsMock_init();

@@ -76,3 +76,25 @@ target_link_libraries(UserButtonHandlerTests PUBLIC
         QtMocks
 )
 add_test(NAME UserButtonHandlerTests COMMAND UserButtonHandlerTests)
+
+#####################################################################################
+
+add_executable(TraceFilterHandlerTests
+            TraceFilterHandlerTests.cpp
+            ../../source/TraceFilterHandler.cpp
+)
+
+target_include_directories(TraceFilterHandlerTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(TraceFilterHandlerTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        Utilities
+        UtilitiesMocks
+        QtMocks
+)
+add_test(NAME TraceFilterHandlerTests COMMAND TraceFilterHandlerTests)

@@ -1,6 +1,9 @@
 1. Command input should have a dropdown menu with recent commands
-2. UserButton must implement some functions like wait(), maybe even 'for' loops?
+2. DONE - UserButton must implement some functions like wait(), maybe even 'for' loops?
 3. Commands that are executed on port open event, maybe even close?
 4. LoggingSettingDialog::Settings::getPath() should not use hardcoded slash (it is OS specific, but not needed until windows support ready).
 5. DONE - Button to stop scrolling to latest trace in command window
-6. External window with custmizable traces (regexp)
+6. Embedded window with custmizable traces (regexp)
+7. Button colors should be customizable via json file
+8. PortSettingHandler unit tests missing
+9. TraceFilterHandlerTests - add parametrized test for persistence restoration
