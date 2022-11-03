@@ -37,6 +37,7 @@ target_link_libraries(UltimateTerminal
 )
 
 else()
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs -ftest-coverage -fno-exceptions -fPIC -O0")
    enable_testing()
    set(UNIT_TESTS ON)
    add_definitions(-DUNIT_TESTS)
