@@ -11,6 +11,7 @@
 #include "LoggingSettingDialog.h"
 #include "PersistenceHandler.h"
 #include "UserButtonHandler.h"
+#include "TraceFilterHandler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,6 +40,7 @@ private:
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
     std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
+    std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
     uint32_t m_marker_index;
     FileLogging m_filelogging;
     Persistence::PersistenceHandler m_persistence;
