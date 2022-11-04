@@ -9,6 +9,7 @@
 #include "ThreadWorker.h"
 
 constexpr uint32_t THREAD_START_TIMEOUT = 1000;
+constexpr uint32_t MAXIMUM_WAIT_TIME = 500;
 
 namespace GUI
 {
@@ -78,9 +79,21 @@ private:
          UT_Log(MAIN_GUI, HIGH, "got %u matches", matches.size());
          if (matches[1] == "__wait")
          {
-            uint32_t time = std::stoi(matches[2]);
-            m_commands.push_back([time]()->bool {std::this_thread::sleep_for(std::chrono::milliseconds(time)); return true;});
+            divideWaitTime(std::stoi(matches[2]));
          }
+      }
+   }
+   void divideWaitTime(uint32_t time)
+   {
+      while (time)
+      {
+         uint32_t timeout = MAXIMUM_WAIT_TIME;
+         if (time < MAXIMUM_WAIT_TIME)
+         {
+            timeout = time % MAXIMUM_WAIT_TIME;
+         }
+         time -= timeout;
+         m_commands.push_back([timeout]()->bool {std::this_thread::sleep_for(std::chrono::milliseconds(timeout)); return true;});
       }
    }
    void threadLoop()
