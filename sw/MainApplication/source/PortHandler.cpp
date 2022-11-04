@@ -65,6 +65,7 @@ PortHandler::~PortHandler()
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
 {
+   UT_Log(MAIN, LOW, "Notifying listeners - id %u[%s] event %u", m_port_id, m_settings.port_name.c_str(), (uint8_t)event);
    GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_name, m_settings.trace_color, event, data, size});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
@@ -109,6 +110,7 @@ void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
+   UT_Log(MAIN, HIGH, "new event %u", (uint8_t)ev);
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_last_event = {m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size};
    emit portEvent();
@@ -156,7 +158,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);
-
+   UT_Log(MAIN, LOW, "got new settings - id %u[%s] settings %s", m_port_id, m_settings.port_name, m_settings.shortSettingsString().c_str());
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {
@@ -197,16 +199,20 @@ void PortHandler::onPortButtonClicked()
 void PortHandler::handleButtonClickSerial()
 {
    UT_Assert(m_serial && "Serial client not created");
+
    if (m_serial->isOpened())
    {
+      UT_Log(MAIN, LOW, "trying to close serial port");
       m_serial->close();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else
    {
+      UT_Log(MAIN, LOW, "trying to open serial port");
       if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, m_settings.serialSettings))
       {
+         UT_Log(MAIN, LOW, "serial port opened correctly");
          setButtonState(ButtonState::CONNECTED);
          notifyListeners(Event::CONNECTED);
       }
@@ -221,18 +227,21 @@ void PortHandler::handleButtonClickEthernet()
    UT_Assert(m_socket && "Socket client not created");
    if (m_socket->isConnected())
    {
+      UT_Log(MAIN, LOW, "trying to disconnet socket");
       m_socket->disconnect();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else if (m_button_state == ButtonState::CONNECTING)
    {
+      UT_Log(MAIN, LOW, "aborting connection attempts!");
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else
    {
+      UT_Log(MAIN, LOW, "trying to connect server");
       tryConnectToSocket();
    }
 }
@@ -256,14 +265,12 @@ void PortHandler::tryConnectToSocket()
 }
 void PortHandler::setButtonState(ButtonState state)
 {
-   if(state != m_button_state)
-   {
-      m_button_state = state;
-      QPalette palette = m_object->palette();
-      palette.setColor(QPalette::Button, QColor((uint32_t)state));
-      m_object->setPalette(palette);
-      m_object->update();
-   }
+   UT_Log(MAIN, LOW, "setting button state %.6x", (uint32_t)state);
+   m_button_state = state;
+   QPalette palette = m_object->palette();
+   palette.setColor(QPalette::Button, QColor((uint32_t)state));
+   m_object->setPalette(palette);
+   m_object->update();
 }
 void PortHandler::setButtonName(const std::string name)
 {
