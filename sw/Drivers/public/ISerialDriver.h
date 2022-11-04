@@ -96,6 +96,31 @@ enum class DataBitType
 };
 #undef DEF_DATA_BIT
 
+}
+}
+
+template<>
+std::string EnumValue<Drivers::Serial::BaudRate>::toName() const;
+template<>
+std::string EnumValue<Drivers::Serial::ParityType>::toName() const;
+template<>
+std::string EnumValue<Drivers::Serial::StopBitType>::toName() const;
+template<>
+std::string EnumValue<Drivers::Serial::DataBitType>::toName() const;
+template<>
+Drivers::Serial::BaudRate EnumValue<Drivers::Serial::BaudRate>::fromName(const std::string& name);
+template<>
+Drivers::Serial::ParityType EnumValue<Drivers::Serial::ParityType>::fromName(const std::string& name);
+template<>
+Drivers::Serial::StopBitType EnumValue<Drivers::Serial::StopBitType>::fromName(const std::string& name);
+template<>
+Drivers::Serial::DataBitType EnumValue<Drivers::Serial::DataBitType>::fromName(const std::string& name);
+
+namespace Drivers
+{
+namespace Serial
+{
+
 struct Settings
 {
    Settings():

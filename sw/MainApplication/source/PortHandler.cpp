@@ -45,6 +45,7 @@ m_persistence(persistence)
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    m_summary_label->setAutoFillBackground(true);
    m_summary_label->setAlignment(Qt::AlignCenter);
+   m_summary_label->setText(m_settings.shortSettingsString().c_str());
 
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
@@ -61,7 +62,6 @@ PortHandler::~PortHandler()
    m_socket->disconnect();
    m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
-   notifyListeners(Event::DISCONNECTED);
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
 {
@@ -172,14 +172,14 @@ void PortHandler::onPortButtonContextMenuRequested()
       else
       {
          QMessageBox messageBox;
-         QString error_message = "Invalid port settings:\n";
+         QString error_message = "";
          auto errors = new_settings.getErrorStrings();
          for (const auto& error : errors)
          {
             error_message += error.c_str();
             error_message += "\n";
          }
-         messageBox.critical(m_parent,"%s Error", m_settings.port_name.c_str(), error_message);
+         messageBox.critical(m_parent,"Error", error_message, "OK");
       }
    }
 }

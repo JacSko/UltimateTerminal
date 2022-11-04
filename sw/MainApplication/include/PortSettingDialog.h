@@ -109,6 +109,7 @@ enum class PortType
       bool areValid()
       {
          bool result = true;
+         m_error_strings.clear();
          if (type == PortType::ETHERNET)
          {
             result &= validateIpAddress(ip_address);

@@ -25,6 +25,7 @@ target_link_libraries(MainApplication
    SettingsHandler
    Logger
    Utilities
+   Drivers
 )
 
 if (UNIT_TESTS)

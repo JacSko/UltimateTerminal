@@ -1,4 +1,5 @@
 if (UNIT_TESTS)
    add_subdirectory(unit)
    add_subdirectory(integration)
+   add_subdirectory(mock)
 endif()

@@ -170,3 +170,33 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
 {
    return g_widgets_mock->QColorDialog_getColor(initial, parent, title);
 }
+void* QMessageBox::operator new(size_t)
+{
+   return g_widgets_mock->QMessageBox_new();
+}
+int QMessageBox::critical(QWidget *parent, const QString &title,
+                        const QString& text,
+                        const QString& button0Text)
+{
+   return g_widgets_mock->QMessageBox_critical(this, parent, title, text, button0Text);
+}
+void* QLabel::operator new(size_t)
+{
+   return g_widgets_mock->QLabel_new();
+}
+void QLabel::setAutoFillBackground(bool enabled)
+{
+   g_widgets_mock->QLabel_setAutoFillBackground(this, enabled);
+}
+void QLabel::setAlignment(Qt::AlignmentFlag alignment)
+{
+   g_widgets_mock->QLabel_setAlignment(this, alignment);
+}
+void QLabel::setText(const QString & text)
+{
+   g_widgets_mock->QLabel_setText(this, text);
+}
+void QLabel::setStyleSheet(const QString& styleSheet)
+{
+   g_widgets_mock->QLabel_setStyleSheet(this, styleSheet);
+}

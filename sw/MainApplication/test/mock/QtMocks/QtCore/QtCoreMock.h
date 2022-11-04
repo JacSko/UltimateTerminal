@@ -65,6 +65,25 @@ enum ContextMenuPolicy {
     PreventContextMenu
 };
 
+enum AlignmentFlag {
+    AlignLeft = 0x0001,
+    AlignLeading = AlignLeft,
+    AlignRight = 0x0002,
+    AlignTrailing = AlignRight,
+    AlignHCenter = 0x0004,
+    AlignJustify = 0x0008,
+    AlignAbsolute = 0x0010,
+    AlignHorizontal_Mask = AlignLeft | AlignRight | AlignHCenter | AlignJustify | AlignAbsolute,
+
+    AlignTop = 0x0020,
+    AlignBottom = 0x0040,
+    AlignVCenter = 0x0080,
+    AlignBaseline = 0x0100,
+    AlignVertical_Mask = AlignTop | AlignBottom | AlignVCenter | AlignBaseline,
+
+    AlignCenter = AlignVCenter | AlignHCenter
+};
+
 }
 
 class QObject

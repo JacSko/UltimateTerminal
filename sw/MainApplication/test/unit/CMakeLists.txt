@@ -98,3 +98,26 @@ target_link_libraries(TraceFilterHandlerTests PUBLIC
         QtMocks
 )
 add_test(NAME TraceFilterHandlerTests COMMAND TraceFilterHandlerTests)
+
+#####################################################################################
+
+add_executable(PortHandlerTests
+            PortHandlerTests.cpp
+            ../../source/PortHandler.cpp
+)
+
+target_include_directories(PortHandlerTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(PortHandlerTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        Utilities
+        UtilitiesMocks
+        QtMocks
+        DriversMocks
+)
+add_test(NAME PortHandlerTests COMMAND PortHandlerTests)

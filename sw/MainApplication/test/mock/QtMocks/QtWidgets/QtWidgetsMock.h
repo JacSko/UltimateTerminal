@@ -175,6 +175,29 @@ public:
                               const QString &title = QString());
 };
 
+class QMessageBox : public QWidget
+{
+public:
+   QMessageBox(){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+   int critical(QWidget *parent, const QString &title,
+                           const QString& text,
+                           const QString& button0Text);
+};
+
+class QLabel : public QWidget
+{
+public:
+   QLabel(){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void setAutoFillBackground(bool enabled);
+   void setAlignment(Qt::AlignmentFlag);
+   void setText(const QString &);
+   void setStyleSheet(const QString& styleSheet);
+};
+
 struct QtWidgetsMock
 {
    MOCK_METHOD0(QDialog_new, void*());
@@ -222,6 +245,14 @@ struct QtWidgetsMock
    MOCK_METHOD0(QColorDialog_new, void*());
    MOCK_METHOD3(QColorDialog_getColor, QColor(const QColor&, QWidget*, const QString&));
 
+   MOCK_METHOD0(QMessageBox_new, void*());
+   MOCK_METHOD5(QMessageBox_critical, int(QMessageBox*, QWidget*, const QString&, const QString&, const QString&));
+
+   MOCK_METHOD0(QLabel_new, void*());
+   MOCK_METHOD2(QLabel_setAutoFillBackground, void(QLabel*, bool));
+   MOCK_METHOD2(QLabel_setAlignment, void(QLabel*, Qt::AlignmentFlag));
+   MOCK_METHOD2(QLabel_setText, void(QLabel*, const QString&));
+   MOCK_METHOD2(QLabel_setStyleSheet, void(QLabel*, const QString&));
 };
 
 void QtWidgetsMock_init();
