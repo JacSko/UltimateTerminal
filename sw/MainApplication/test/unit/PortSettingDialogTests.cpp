@@ -7,6 +7,7 @@
 
 #include "PortSettingDialog.h"
 #include "Logger.h"
+#include "SerialDriverMock.h"
 
 /**
  * @file PortSettingDialogTests.cpp

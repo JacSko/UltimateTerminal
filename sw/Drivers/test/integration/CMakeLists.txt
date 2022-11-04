@@ -14,5 +14,6 @@ target_link_libraries(SocketDriverIntegrationTests PUBLIC
         gmock_main
         Logger
         Utilities
+        Drivers
 )
 add_test(NAME SocketDriverIntegrationTests COMMAND SocketDriverIntegrationTests)

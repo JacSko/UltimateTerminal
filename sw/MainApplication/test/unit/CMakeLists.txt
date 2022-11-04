@@ -52,6 +52,7 @@ target_link_libraries(PortSettingDialogTests PUBLIC
         SettingsHandler
         Utilities
         QtMocks
+        DriversMocks
 )
 add_test(NAME PortSettingDialogTests COMMAND PortSettingDialogTests)
 
