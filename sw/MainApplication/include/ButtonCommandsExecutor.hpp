@@ -8,6 +8,7 @@
 #include "Logger.h"
 #include "ThreadWorker.h"
 
+constexpr uint32_t THREAD_START_TIMEOUT = 1000;
 
 namespace GUI
 {
@@ -21,7 +22,10 @@ public:
    m_callback(callback),
    m_isActive(false)
    {
-      start(1000);
+      if (!start(THREAD_START_TIMEOUT))
+      {
+         UT_Log(MAIN, ERROR, "cannot start thread!");
+      }
    }
    ~ButtonCommandsExecutor()
    {
@@ -29,7 +33,7 @@ public:
    }
    void execute()
    {
-      UT_Log(MAIN, HIGH, "starting execution");
+      UT_Log(MAIN, LOW, "starting execution");
       std::lock_guard<std::mutex> lock(m_mutex);
       m_isActive = true;
       m_cond_var.notify_all();
@@ -86,14 +90,13 @@ private:
          bool activated = false;
          {
             std::unique_lock<std::mutex> lock(m_mutex);
-            m_isActive = false;
             activated = m_cond_var.wait_for(lock, std::chrono::milliseconds(200), [&](){return m_isActive;});
          }
 
-         std::vector<std::function<bool()>>::iterator it = m_commands.begin();
          if (activated)
          {
-            while (it != m_commands.end() && m_isActive && Utilities::ThreadWorker::isRunning())
+            std::vector<std::function<bool()>>::iterator it = m_commands.begin();
+            while (it != m_commands.end() && Utilities::ThreadWorker::isRunning())
             {
                if (*it)
                {
@@ -104,9 +107,14 @@ private:
                }
                it++;
             }
-            if (m_callback)
+
             {
-               m_callback(it == m_commands.end());
+               std::lock_guard<std::mutex> lock(m_mutex);
+               m_isActive = false;
+               if (m_callback)
+               {
+                  m_callback(it == m_commands.end());
+               }
             }
          }
       }
