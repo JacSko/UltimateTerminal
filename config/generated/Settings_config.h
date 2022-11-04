@@ -24,6 +24,7 @@
    DEF_SETTING_GROUP(Logger_group_SOCK_DRV, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_SERIAL_DRV, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_TRACE_FILTER, std::string, "HIGH") \
+   DEF_SETTING_GROUP(Logger_group_PORT_HANDLER, std::string, "HIGH") \
    DEF_SETTING_GROUP(PortSettingDialog_maxLineEditLength, uint32_t, 30) \
 
 

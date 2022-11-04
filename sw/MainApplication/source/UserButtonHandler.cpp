@@ -18,7 +18,7 @@ m_persistence(persistence),
 m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, std::placeholders::_1))
 {
    USER_BUTTON_ID++;
-   UT_Log(MAIN, INFO, "Creating user button handler for button %u", USER_BUTTON_ID);
+   UT_Log(USER_BTN_HANDLER, INFO, "Creating user button handler for button %u", USER_BUTTON_ID);
 
    UT_Assert(object && "invalid QObject pointer");
 
@@ -39,7 +39,7 @@ void UserButtonHandler::handleNewSettings(const UserButtonDialog::Settings& sett
 {
    m_settings = settings;
    int count = m_executor.parseCommands(m_settings.raw_commands);
-   UT_Log(MAIN, HIGH, "processed %d commands", count);
+   UT_Log(USER_BTN_HANDLER, HIGH, "processed %d commands", count);
    setButtonName(m_settings.button_name);
 }
 void UserButtonHandler::onUserButtonContextMenuRequested()
@@ -58,7 +58,7 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
 }
 void UserButtonHandler::onUserButtonClicked()
 {
-   UT_Log(MAIN, HIGH, "Sending commands for button %s [%s]", getName().c_str(), m_settings.button_name.c_str());
+   UT_Log(USER_BTN_HANDLER, HIGH, "Sending commands for button %s [%s]", getName().c_str(), m_settings.button_name.c_str());
    m_object->setChecked(true);
    m_object->setDisabled(true);
    m_object->repaint();
@@ -88,7 +88,7 @@ void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 void UserButtonHandler::onCommandExecutionEvent(bool result)
 {
    emit commandsFinished();
-   UT_Log(MAIN, LOW, "Commands executed %scorrectly", result? "" : "not ");
+   UT_Log(USER_BTN_HANDLER, LOW, "Commands executed %scorrectly", result? "" : "not ");
 }
 
 void UserButtonHandler::onCommandsFinished()
