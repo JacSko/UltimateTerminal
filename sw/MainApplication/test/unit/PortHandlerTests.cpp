@@ -68,6 +68,12 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*g_serial_mock, addListener(_));
       m_test_subject.reset(new PortHandler(&test_button, &test_label, timer_mock, &listener_mock, nullptr, fake_persistence));
 
+      Mock::VerifyAndClearExpectations(g_socket_mock);
+      Mock::VerifyAndClearExpectations(g_serial_mock);
+      Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
+      Mock::VerifyAndClearExpectations(QtCoreMock_get());
+      Mock::VerifyAndClearExpectations(&timer_mock);
+      Mock::VerifyAndClearExpectations(&listener_mock);
    }
    void TearDown()
    {
@@ -76,6 +82,9 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*g_serial_mock, removeListener(_));
       EXPECT_CALL(*g_socket_mock, disconnect());
       EXPECT_CALL(*g_serial_mock, close());
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_ON_COLOR)));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_OFF_COLOR))));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
       m_test_subject.reset(nullptr);
       PortSettingDialogMock_deinit();
       QtWidgetsMock_deinit();
@@ -96,16 +105,64 @@ void PortHandler::portEvent()
    onPortEvent();
 }
 
-TEST_F(PortHandlerFixture, empty_commands_list_when_execution_requested)
+TEST_F(PortHandlerFixture, connecting_with_default_settings)
 {
    /**
-    * <b>scenario</b>: User requested to send commands, but no commands entered by user <br>
-    * <b>expected</b>: Button should be deactivated on command execution start.<br>
-    *                  No commands sent <br>
-    *                  Button should be activated on command execution finish. <br>
+    * <b>scenario</b>: User requested to connect, but the port settings are default <br>
+    * <b>expected</b>: Connection to serial port shall be requested. <br>
+    *                  Button color shall be changed to green. <br>
     * ************************************************
     */
 
+   GUI::PortHandlerEvent receivied_event;
+
+   EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
+   EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
+
+   m_test_subject->onPortButtonClicked();
+
+   EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
+   EXPECT_THAT(receivied_event.name, HasSubstr("PORT"));
+   EXPECT_EQ(receivied_event.size, 0);
+}
+
+TEST_F(PortHandlerFixture, settings_change_and_serial_port_connection)
+{
+   /**
+    * <b>scenario</b>: User changed the connection settings, request the connection and starts data exchange, then closed.<br>
+    * <b>expected</b>: Connection to serial port shall be requested. <br>
+    *                  Button color shall be changed to green. <br>
+    * ************************************************
+    */
+
+   GUI::PortHandlerEvent receivied_event;
+   PortSettingDialog::Settings user_settings;
+   user_settings.type = PortSettingDialog::PortType::SERIAL;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
+   /* settings change requested */
+
+   m_test_subject->onPortButtonContextMenuRequested();
+
+   /* port opening */
+   EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
+   EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
+
+   m_test_subject->onPortButtonClicked();
+
+   EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
+   EXPECT_THAT(receivied_event.name, HasSubstr("PORT"));
+   EXPECT_EQ(receivied_event.size, 0);
 }
 
 }
