@@ -167,6 +167,8 @@ public:
 class QObject
 {
 public:
+   QObject(){}
+   QObject(QWidget*){}
    void connect(QObject* source, const char* signal_name, QObject* dest, const char* slot_name);
    QString objectName();
    void setObjectName(const QString&);

@@ -139,10 +139,10 @@ target_link_libraries(MainApplicationTests PUBLIC
         gtest_main
         gmock_main
         Logger
-        Utilities
+        UtilitiesIf
         UtilitiesMocks
         QtMocks
-        DriversMocks
         SettingsHandler
+        ThreadWorker
 )
 add_test(NAME MainApplicationTests COMMAND MainApplicationTests)

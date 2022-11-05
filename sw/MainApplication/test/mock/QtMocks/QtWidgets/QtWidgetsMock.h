@@ -131,13 +131,11 @@ class QMainWindow : public QWidget
 public:
    QMainWindow(){}
    QMainWindow(QWidget*){}
-   void* operator new(size_t);
-   void operator delete(void*){};
    void resize(int w, int h){};
    void setCentralWidget(QWidget *widget){};
    void setMenuBar(QMenuBar *menubar){};
    void setStatusBar(QStatusBar *statusbar){};
-   void setWindowTitle(const QString &){};
+   void setWindowTitle(const QString & title){};
 };
 
 class QDialog : public QWidget
@@ -302,8 +300,6 @@ class QGridLayout : public QLayout
 public:
    QGridLayout(){};
    QGridLayout(QWidget*){};
-   void* operator new(size_t);
-   void operator delete(void*){};
 };
 
 class QVBoxLayout : public QLayout
@@ -311,8 +307,6 @@ class QVBoxLayout : public QLayout
 public:
    QVBoxLayout(){};
    QVBoxLayout(QWidget*){};
-   void* operator new(size_t);
-   void operator delete(void*){};
 };
 
 class QSplitter : public QWidget
@@ -320,8 +314,6 @@ class QSplitter : public QWidget
 public:
    QSplitter(){};
    QSplitter(QWidget*){}
-   void* operator new(size_t);
-   void operator delete(void*){};
    void setOrientation(Qt::Orientation){};
    void addWidget(QWidget *widget){};
 
@@ -439,10 +431,6 @@ struct QtWidgetsMock
    MOCK_METHOD1(QListWidget_clear, void(QListWidget*));
 
    MOCK_METHOD0(QCheckBox_new, void*());
-   MOCK_METHOD0(QMainWindow_new, void*());
-   MOCK_METHOD0(QGridLayout_new, void*());
-   MOCK_METHOD0(QVBoxLayout_new, void*());
-   MOCK_METHOD0(QSplitter_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());
    MOCK_METHOD0(QStatusBar_new, void*());
 };

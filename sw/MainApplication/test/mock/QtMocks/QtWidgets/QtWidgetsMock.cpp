@@ -240,22 +240,6 @@ void* QCheckBox::operator new(size_t)
 {
    return g_widgets_mock->QCheckBox_new();
 }
-void* QMainWindow::operator new(size_t)
-{
-   return g_widgets_mock->QMainWindow_new();
-}
-void* QGridLayout::operator new(size_t)
-{
-   return g_widgets_mock->QGridLayout_new();
-}
-void* QVBoxLayout::operator new(size_t)
-{
-   return g_widgets_mock->QVBoxLayout_new();
-}
-void* QSplitter::operator new(size_t)
-{
-   return g_widgets_mock->QSplitter_new();
-}
 void* QListWidget::operator new(size_t)
 {
    return g_widgets_mock->QListWidget_new();

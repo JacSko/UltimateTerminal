@@ -11,5 +11,6 @@ target_link_libraries(TimersImplTests PUBLIC
         gtest_main
         gmock_main
         Logger
+        ThreadWorker
 )
 add_test(NAME TimersImplTests COMMAND TimersImplTests)

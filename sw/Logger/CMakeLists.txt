@@ -11,4 +11,4 @@ add_library(Logger ${LOGGER_SOURCES})
 
 target_include_directories(Logger PUBLIC public/ include/)
 
-target_link_libraries(Logger PRIVATE Utilities SettingsHandler PUBLIC DriversIf)
+target_link_libraries(Logger PRIVATE UtilitiesIf SettingsHandler PUBLIC DriversIf)
