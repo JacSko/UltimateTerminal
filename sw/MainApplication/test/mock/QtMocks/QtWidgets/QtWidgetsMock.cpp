@@ -126,6 +126,14 @@ QString QComboBox::currentText()
 {
    return g_widgets_mock->QComboBox_currentText(this);
 }
+int QComboBox::findText(const QString &text)
+{
+   return g_widgets_mock->QComboBox_findText(this, text);
+}
+void QComboBox::removeItem(int index)
+{
+   g_widgets_mock->QComboBox_removeItem(this, index);
+}
 void* QPushButton::operator new(size_t)
 {
    return g_widgets_mock->QPushButton_new();
@@ -200,3 +208,65 @@ void QLabel::setStyleSheet(const QString& styleSheet)
 {
    g_widgets_mock->QLabel_setStyleSheet(this, styleSheet);
 }
+void* QListWidgetItem::operator new(size_t)
+{
+   return g_widgets_mock->QListWidgetItem_new();
+}
+void QListWidgetItem::setText(const QString &atext)
+{
+   g_widgets_mock->QListWidgetItem_setText(this, atext);
+}
+void QListWidgetItem::setBackground(const QColor &color)
+{
+   g_widgets_mock->QListWidgetItem_setBackground(this, color);
+}
+void QListWidget::addItem(QListWidgetItem *aitem)
+{
+   g_widgets_mock->QListWidget_addItem(this, aitem);
+}
+void QListWidget::scrollToBottom()
+{
+   g_widgets_mock->QListWidget_scrollToBottom(this);
+}
+int QListWidget::count()
+{
+   return g_widgets_mock->QListWidget_count(this);
+}
+void QListWidget::clear()
+{
+   g_widgets_mock->QListWidget_clear(this);
+}
+void* QCheckBox::operator new(size_t)
+{
+   return g_widgets_mock->QCheckBox_new();
+}
+void* QMainWindow::operator new(size_t)
+{
+   return g_widgets_mock->QMainWindow_new();
+}
+void* QGridLayout::operator new(size_t)
+{
+   return g_widgets_mock->QGridLayout_new();
+}
+void* QVBoxLayout::operator new(size_t)
+{
+   return g_widgets_mock->QVBoxLayout_new();
+}
+void* QSplitter::operator new(size_t)
+{
+   return g_widgets_mock->QSplitter_new();
+}
+void* QListWidget::operator new(size_t)
+{
+   return g_widgets_mock->QListWidget_new();
+}
+void* QMenuBar::operator new(size_t)
+{
+   return g_widgets_mock->QMenuBar_new();
+}
+void* QStatusBar::operator new(size_t)
+{
+   return g_widgets_mock->QStatusBar_new();
+}
+
+

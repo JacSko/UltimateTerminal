@@ -122,3 +122,27 @@ target_link_libraries(PortHandlerTests PUBLIC
         DriversMocks
 )
 add_test(NAME PortHandlerTests COMMAND PortHandlerTests)
+
+#####################################################################################
+
+add_executable(MainApplicationTests
+            MainApplicationTests.cpp
+            ../../source/MainApplication.cpp
+)
+
+target_include_directories(MainApplicationTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(MainApplicationTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        Utilities
+        UtilitiesMocks
+        QtMocks
+        DriversMocks
+        SettingsHandler
+)
+add_test(NAME MainApplicationTests COMMAND MainApplicationTests)

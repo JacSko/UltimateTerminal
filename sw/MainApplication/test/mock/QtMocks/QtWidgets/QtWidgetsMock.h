@@ -8,6 +8,9 @@
 #define Q_OBJECT
 
 typedef unsigned int QRgb;
+class QMenuBar;
+class QStatusBar;
+
 
 class QColor
 {
@@ -63,15 +66,78 @@ private:
    QColor current_color;
 };
 
+class QSizePolicy
+{
+public:
+   enum Policy {
+       Fixed = 0,
+       Minimum,
+       Maximum,
+       Preferred,
+       MinimumExpanding,
+       Expanding,
+       Ignored
+   };
+   enum ControlType {
+       DefaultType      = 0x00000001,
+       ButtonBox        = 0x00000002,
+       CheckBox         = 0x00000004,
+       ComboBox         = 0x00000008,
+       Frame            = 0x00000010,
+       GroupBox         = 0x00000020,
+       Label            = 0x00000040,
+       Line             = 0x00000080,
+       LineEdit         = 0x00000100,
+       PushButton       = 0x00000200,
+       RadioButton      = 0x00000400,
+       Slider           = 0x00000800,
+       SpinBox          = 0x00001000,
+       TabWidget        = 0x00002000,
+       ToolButton       = 0x00004000
+   };
+   QSizePolicy(){}
+   QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType){}
+   void setHorizontalStretch(int stretchFactor){};
+   void setVerticalStretch(int stretchFactor){};
+   void setHeightForWidth(bool b){};
+   bool hasHeightForWidth(){return true;}
+};
+
+class QRect
+{
+public:
+   QRect(int a, int b, int c, int d){}
+};
+
 class QWidget : public QObject
 {
 public:
+   QWidget(){};
+   QWidget(QObject*){};
    void setEnabled(bool);
    void setDisabled(bool);
    bool isEnabled();
    QPalette palette();
    void setPalette(const QPalette &);
    void update();
+   void setSizePolicy(QSizePolicy){};
+   QSizePolicy sizePolicy(){return {};};
+   void setGeometry(const QRect &){};
+
+};
+
+class QMainWindow : public QWidget
+{
+public:
+   QMainWindow(){}
+   QMainWindow(QWidget*){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void resize(int w, int h){};
+   void setCentralWidget(QWidget *widget){};
+   void setMenuBar(QMenuBar *menubar){};
+   void setStatusBar(QStatusBar *statusbar){};
+   void setWindowTitle(const QString &){};
 };
 
 class QDialog : public QWidget
@@ -120,6 +186,7 @@ class QLineEdit : public QWidget
 public:
    QLineEdit(){};
    QLineEdit(QDialog*&){};
+   QLineEdit(QWidget*&){};
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &);
@@ -162,6 +229,8 @@ public:
    void addItem(const QString&);
    void setCurrentText(const QString&);
    QString currentText();
+   int findText(const QString &text);
+   void removeItem(int index);
 };
 
 class QColorDialog : public QWidget
@@ -190,6 +259,7 @@ class QLabel : public QWidget
 {
 public:
    QLabel(){}
+   QLabel(QWidget*){}
    void* operator new(size_t);
    void operator delete(void*){};
    void setAutoFillBackground(bool enabled);
@@ -197,6 +267,108 @@ public:
    void setText(const QString &);
    void setStyleSheet(const QString& styleSheet);
 };
+
+class QCheckBox : public QWidget
+{
+public:
+   QCheckBox(){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+};
+
+class QLayout : public QObject
+{
+public:
+   enum SizeConstraint {
+       SetDefaultConstraint,
+       SetNoConstraint,
+       SetMinimumSize,
+       SetFixedSize,
+       SetMaximumSize,
+       SetMinAndMaxSize
+   };
+
+   QLayout(){}
+   void setSizeConstraint(SizeConstraint){};
+   void addWidget(QWidget *, int row, int column, int rowSpan, int columnSpan, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void addWidget(QWidget *, int stretch = 0, Qt::AlignmentFlag alignment = Qt::AlignmentFlag::AlignCenter){};
+   void addLayout(QLayout *layout, int stretch = 0){};
+   void addLayout(QLayout *, int row, int column, int rowSpan, int columnSpan, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void setContentsMargins(int left, int top, int right, int bottom){};
+};
+
+class QGridLayout : public QLayout
+{
+public:
+   QGridLayout(){};
+   QGridLayout(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+};
+
+class QVBoxLayout : public QLayout
+{
+public:
+   QVBoxLayout(){};
+   QVBoxLayout(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+};
+
+class QSplitter : public QWidget
+{
+public:
+   QSplitter(){};
+   QSplitter(QWidget*){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void setOrientation(Qt::Orientation){};
+   void addWidget(QWidget *widget){};
+
+};
+
+class QListWidgetItem : public QWidget
+{
+public:
+   QListWidgetItem(){};
+   QListWidgetItem(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void setText(const QString &atext);
+   void setBackground(const QColor &color);
+};
+class QListWidget : public QWidget
+{
+public:
+   QListWidget(){};
+   QListWidget(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void addItem(QListWidgetItem *aitem);
+   void scrollToBottom();
+   int count();
+   void clear();
+
+};
+
+class QMenuBar : public QWidget
+{
+public:
+   QMenuBar(){};
+   QMenuBar(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+};
+
+class QStatusBar : public QWidget
+{
+public:
+   QStatusBar(){};
+   QStatusBar(QWidget*){};
+   void* operator new(size_t);
+   void operator delete(void*){};
+};
+
 
 struct QtWidgetsMock
 {
@@ -225,6 +397,8 @@ struct QtWidgetsMock
    MOCK_METHOD2(QComboBox_addItem, void(QComboBox*, const QString&));
    MOCK_METHOD2(QComboBox_setCurrentText, void(QComboBox*, const QString&));
    MOCK_METHOD1(QComboBox_currentText, QString(QComboBox*));
+   MOCK_METHOD2(QComboBox_findText, int(QComboBox*, const QString&));
+   MOCK_METHOD2(QComboBox_removeItem, void(QComboBox*, int));
 
    MOCK_METHOD0(QPushButton_new, void*());
    MOCK_METHOD2(QPushButton_setText, void(QPushButton*, const QString&));
@@ -253,6 +427,24 @@ struct QtWidgetsMock
    MOCK_METHOD2(QLabel_setAlignment, void(QLabel*, Qt::AlignmentFlag));
    MOCK_METHOD2(QLabel_setText, void(QLabel*, const QString&));
    MOCK_METHOD2(QLabel_setStyleSheet, void(QLabel*, const QString&));
+
+   MOCK_METHOD0(QListWidgetItem_new, void*());
+   MOCK_METHOD2(QListWidgetItem_setText, void(QListWidgetItem*, const QString&));
+   MOCK_METHOD2(QListWidgetItem_setBackground, void(QListWidgetItem*, const QColor&));
+
+   MOCK_METHOD0(QListWidget_new, void*());
+   MOCK_METHOD2(QListWidget_addItem, void(QListWidget*, QListWidgetItem*));
+   MOCK_METHOD1(QListWidget_scrollToBottom, void(QListWidget*));
+   MOCK_METHOD1(QListWidget_count, int(QListWidget*));
+   MOCK_METHOD1(QListWidget_clear, void(QListWidget*));
+
+   MOCK_METHOD0(QCheckBox_new, void*());
+   MOCK_METHOD0(QMainWindow_new, void*());
+   MOCK_METHOD0(QGridLayout_new, void*());
+   MOCK_METHOD0(QVBoxLayout_new, void*());
+   MOCK_METHOD0(QSplitter_new, void*());
+   MOCK_METHOD0(QMenuBar_new, void*());
+   MOCK_METHOD0(QStatusBar_new, void*());
 };
 
 void QtWidgetsMock_init();

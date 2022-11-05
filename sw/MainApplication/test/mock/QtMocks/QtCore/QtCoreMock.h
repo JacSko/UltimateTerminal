@@ -1,19 +1,82 @@
 #pragma once
 #include <gmock/gmock.h>
 #include <string>
+#include <cstdarg>
 
 #define SIGNAL(arg) #arg
 #define SLOT(arg) #arg
 #define slots
 #define signals public
 #define emit
+#define QT_BEGIN_NAMESPACE
+#define QT_END_NAMESPACE
 
 class QWidget;
 class QObject;
 
+
+class QString : public std::string
+{
+public:
+   QString():
+   std::string()
+   {
+   };
+   QString(const char* str):
+   std::string(str)
+   {
+   };
+
+   static QString number(int value)
+   {
+      return QString(std::to_string(value).c_str());
+   }
+   std::string toStdString() const
+   {
+      return *this;
+   }
+   unsigned int toUInt()
+   {
+      return std::stoi(*this);
+   }
+   bool isEmpty()
+   {
+      return std::string::empty();
+   }
+   static QString fromUtf8(const char* data)
+   {
+      return QString(data);
+   }
+   QString asprintf(const char* fmt, ...)
+   {
+      int idx = 0;
+      char buffer [1024];
+      va_list va;
+      va_start(va, fmt);
+      idx += vsprintf(buffer + idx, fmt, va);
+      va_end(va);
+      buffer[idx] = 0x00;
+      return QString(buffer);
+   }
+   void chop(int count)
+   {
+      if (count >= size())
+      {
+         std::string("");
+      }
+      else
+      {
+         erase(size() - count, count);
+      }
+   }
+
+};
+
 struct QtCoreMock
 {
    MOCK_METHOD4(QObject_connect, void(QObject*, std::string, QObject*, std::string));
+   MOCK_METHOD1(QObject_objectName, QString(QObject*));
+   MOCK_METHOD2(QObject_setObjectName, void(QObject*, const QString&));
 };
 
 void QtCoreMock_init();
@@ -85,36 +148,26 @@ enum AlignmentFlag {
 };
 
 }
+class QCoreApplication
+{
+public:
+   static QString translate(const char * context,
+                            const char * key,
+                            const char * disambiguation = nullptr,
+                            int n = -1){return QString(key);};
+};
+
+
+class QMetaObject
+{
+public:
+   static void connectSlotsByName(QObject *o){};
+};
 
 class QObject
 {
 public:
    void connect(QObject* source, const char* signal_name, QObject* dest, const char* slot_name);
-};
-
-class QString : public std::string
-{
-public:
-   QString():
-   std::string()
-   {
-   };
-   QString(const char* str):
-   std::string(str)
-   {
-   };
-
-   static QString number(int value)
-   {
-      return QString(std::to_string(value).c_str());
-   }
-   std::string toStdString() const
-   {
-      return *this;
-   }
-   unsigned int toUInt()
-   {
-      return std::stoi(*this);
-}
-
+   QString objectName();
+   void setObjectName(const QString&);
 };

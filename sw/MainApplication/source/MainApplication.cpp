@@ -1,7 +1,6 @@
 #include "MainApplication.h"
 #include "ui_MainWindow.h"
 #include <QtWidgets/QMessageBox>
-#include <QtGui/QColor>
 
 #include "SettingsHandler.h"
 #include "Settings.h"
