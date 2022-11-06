@@ -87,12 +87,9 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_new()).WillOnce(Return(&test_status_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(_,_)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(_,_)).Times(AtLeast(1));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(_)).WillRepeatedly(Return(QPalette(QPalette::ColorRole::Button, 0)));
 
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_logging_button));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_scroll_button));
 
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));

@@ -142,17 +142,9 @@ void QPushButton::setText(const QString &text)
 {
    g_widgets_mock->QPushButton_setText(this, text);
 }
-QPalette QWidget::palette()
-{
-   return g_widgets_mock->QWidget_palette(this);
-}
 void QWidget::setPalette(const QPalette & palette)
 {
    g_widgets_mock->QWidget_setPalette(this, palette);
-}
-void QWidget::update()
-{
-   g_widgets_mock->QWidget_update(this);
 }
 void QPushButton::setContextMenuPolicy(Qt::ContextMenuPolicy policy)
 {

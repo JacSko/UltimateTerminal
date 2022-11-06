@@ -117,9 +117,9 @@ public:
    void setEnabled(bool);
    void setDisabled(bool);
    bool isEnabled();
-   QPalette palette();
+   QPalette palette(){return {QPalette::Button, Qt::red};}
    void setPalette(const QPalette &);
-   void update();
+   void update(){};
    void setSizePolicy(QSizePolicy){};
    QSizePolicy sizePolicy(){return {};};
    void setGeometry(const QRect &){};
@@ -404,9 +404,7 @@ struct QtWidgetsMock
    MOCK_METHOD2(QWidget_setEnabled, void(QWidget*, bool));
    MOCK_METHOD2(QWidget_setDisabled, void(QWidget*, bool));
    MOCK_METHOD1(QWidget_isEnabled, bool(QWidget*));
-   MOCK_METHOD1(QWidget_palette, QPalette (QWidget*));
    MOCK_METHOD2(QWidget_setPalette, void(QWidget*, const QPalette&));
-   MOCK_METHOD1(QWidget_update, void(QWidget*));
 
    MOCK_METHOD0(QColorDialog_new, void*());
    MOCK_METHOD3(QColorDialog_getColor, QColor(const QColor&, QWidget*, const QString&));

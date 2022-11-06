@@ -63,9 +63,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onPortButtonContextMenuRequested")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, HasSubstr("portEvent"), _, HasSubstr("onPortEvent")));
       EXPECT_CALL(timer_mock, createTimer(_,_)).WillOnce(Return(TEST_TIMER_ID));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, 0)));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_OFF_COLOR))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
       EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, AllOf(HasSubstr("PORT"), HasSubstr("//dev/ttyUSB1/SER/BR_115200"))));
 
@@ -87,9 +85,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*g_serial_mock, removeListener(_));
       EXPECT_CALL(*g_socket_mock, disconnect());
       EXPECT_CALL(*g_serial_mock, close());
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_ON_COLOR)));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_OFF_COLOR))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
       m_test_subject.reset(nullptr);
       PortSettingDialogMock_deinit();
       QtWidgetsMock_deinit();
@@ -126,9 +122,7 @@ TEST_F(PortHandlerFixture, connecting_with_default_settings)
 
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
    EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
 
    m_test_subject->onPortButtonClicked();
@@ -181,9 +175,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
       EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
       EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    }
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
    m_test_subject->onPortButtonClicked();
 
@@ -241,9 +233,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
       EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(true));
       EXPECT_CALL(*g_socket_mock, disconnect());
    }
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_ON_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_OFF_COLOR))));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
    m_test_subject->onPortButtonClicked();
 
@@ -294,9 +284,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
       EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
       EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    }
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
    m_test_subject->onPortButtonClicked();
 
@@ -321,9 +309,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
       EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(true));
       EXPECT_CALL(*g_socket_mock, disconnect());
    }
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillOnce(Return(QPalette(QPalette::ColorRole::Button, BUTTON_ON_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_OFF_COLOR))));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
    m_test_subject->onPortButtonClicked();
 
@@ -415,9 +401,7 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
          }));
 
    /* expect button color change while trying to connect */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillRepeatedly(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_CONNECTING_COLOR)))).Times(AtLeast(1));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button)).Times(AtLeast(1));
 
    /* expect button color change on successfull connection */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
@@ -492,9 +476,7 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
 
    /* expect button color change while trying to connect */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_palette(&test_button)).WillRepeatedly(Return(QPalette(QPalette::ColorRole::Button, BUTTON_OFF_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_CONNECTING_COLOR)))).Times(AtLeast(1));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_update(&test_button)).Times(AtLeast(1));
    m_test_subject->onPortButtonClicked();
 
    /* expect notification via listener */
