@@ -7,6 +7,8 @@
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 
+constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
+
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
@@ -129,8 +131,24 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       m_filelogging.file_stream.flush();
    }
 
-   // remove last character (it is newline, this will be added by QListWidget)
-   new_line.chop(1);
+   // remove trailing newline
+   if (new_line.back() == '\n')
+   {
+      new_line.chop(1);
+   }
+
+   if(ui->terminalView->count() >= 10000)
+   {
+      UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
+      ui->terminalView->clear();
+   }
+
+   if(ui->traceViw->count() >= 10000)
+   {
+      UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
+      ui->traceViw->clear();
+   }
+
    QListWidgetItem* item = new QListWidgetItem();
    item->setText(new_line);
    item->setBackground(QColor(rgb_color));
@@ -158,17 +176,6 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       ui->traceViw->scrollToBottom();
    }
 
-   if(ui->terminalView->count() >= 10000)
-   {
-      UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
-      ui->terminalView->clear();
-   }
-
-   if(ui->traceViw->count() >= 10000)
-   {
-      UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
-      ui->traceViw->clear();
-   }
 }
 void MainApplication::connectSignalsToSlots()
 {
@@ -192,7 +199,7 @@ void MainApplication::onMarkerButtonClicked()
    std::string log = "MARKER";
    log += std::to_string(m_marker_index);
    log += '\n';
-   addToTerminal("MARKER", log, 0xFF0055);
+   addToTerminal("MARKER", log, TRACE_MARKER_COLOR);
 }
 void MainApplication::onLoggingButtonClicked()
 {
