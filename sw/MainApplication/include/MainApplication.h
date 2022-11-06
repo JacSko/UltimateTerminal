@@ -12,6 +12,7 @@
 #include "PersistenceHandler.h"
 #include "UserButtonHandler.h"
 #include "TraceFilterHandler.h"
+#include "IFileLogger.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,21 +29,14 @@ public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
 private:
-
-    struct FileLogging
-    {
-       bool is_running;
-       LoggingSettingDialog::Settings settings;
-       std::ofstream file_stream;
-    };
-
     Ui::MainWindow *ui;
     std::unique_ptr<Utilities::ITimers> m_timers;
+    std::unique_ptr<IFileLogger> m_file_logger;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
     std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
     std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
     uint32_t m_marker_index;
-    FileLogging m_filelogging;
+    LoggingSettingDialog::Settings m_file_logger_settings;
     Persistence::PersistenceHandler m_persistence;
     bool m_scrolling_active;
     bool m_trace_scrolling_active;

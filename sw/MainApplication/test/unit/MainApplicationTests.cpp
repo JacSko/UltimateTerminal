@@ -10,14 +10,20 @@
 #include "LoggingSettingDialogMock.h"
 #include "ITimersMock.h"
 #include "PersistenceHandlerMock.h"
+#include "IFileLoggerMock.h"
 
 using namespace ::testing;
 
 Utilities::ITimersMock* g_timers_mock;
+IFileLoggerMock* g_logger_mock;
 
 std::unique_ptr<Utilities::ITimers> Utilities::ITimersFactory::create()
 {
    return std::unique_ptr<ITimers>(g_timers_mock);
+}
+std::unique_ptr<IFileLogger> IFileLogger::create()
+{
+   return std::unique_ptr<IFileLogger>(g_logger_mock);
 }
 
 
@@ -32,6 +38,7 @@ struct MainApplicationFixture : public testing::Test
       LoggingSettingDialogMock_init();
       Persistence::PersistenceHandlerMock_init();
       g_timers_mock = new Utilities::ITimersMock;
+      g_logger_mock = new IFileLoggerMock;
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_objectName(_)).WillOnce(Return(QString("")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_setObjectName(_, _)).Times(AtLeast(1));
@@ -227,6 +234,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
@@ -241,6 +249,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
@@ -254,6 +263,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_terminal_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
@@ -284,6 +294,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
 //   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<uint32_t>()));
    m_test_subject->onMarkerButtonClicked();
@@ -296,6 +307,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
 //   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER2")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER2"))).WillRepeatedly(Return(std::optional<uint32_t>()));
    m_test_subject->onMarkerButtonClicked();

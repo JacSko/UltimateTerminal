@@ -6,6 +6,7 @@ add_library(MainApplication STATIC
    source/PortHandler.cpp
    source/UserButtonHandler.cpp
    source/TraceFilterHandler.cpp
+   source/FileLogger.cpp
    ../gui/MainWindow.ui
    include/MainApplication.h
    include/PortSettingDialog.h

@@ -13,8 +13,8 @@ MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
+m_file_logger(IFileLogger::create()),
 m_marker_index(0),
-m_filelogging({}),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
 {
@@ -125,11 +125,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
                                    ts->tm_hour, ts->tm_min, ts->tm_sec, millis,
                                    data.c_str());
 
-   if (m_filelogging.is_running)
-   {
-      m_filelogging.file_stream << new_line.toStdString();
-      m_filelogging.file_stream.flush();
-   }
+   m_file_logger->putLog(new_line.toStdString());
 
    // remove trailing newline
    if (new_line.back() == '\n')
@@ -203,19 +199,16 @@ void MainApplication::onMarkerButtonClicked()
 }
 void MainApplication::onLoggingButtonClicked()
 {
-   if (!m_filelogging.is_running)
+   if (!m_file_logger->isActive())
    {
-      m_filelogging.file_stream.open(m_filelogging.settings.getPath(), std::ios::out);
-      if (m_filelogging.file_stream)
+      if (m_file_logger->openFile(m_file_logger_settings.getPath()))
       {
-         m_filelogging.is_running = true;
          setButtonColor(ui->loggingButton, Qt::green);
       }
    }
    else
    {
-      m_filelogging.file_stream.close();
-      m_filelogging.is_running = false;
+      m_file_logger->closeFile();
       setButtonColor(ui->loggingButton, Qt::red);
    }
 }
@@ -244,16 +237,15 @@ void MainApplication::onLoggingButtonContextMenuRequested()
 {
    LoggingSettingDialog dialog;
    LoggingSettingDialog::Settings new_settings = {};
-   auto result = dialog.showDialog(this, m_filelogging.settings, new_settings, !m_filelogging.is_running);
+   auto result = dialog.showDialog(this, m_file_logger_settings, new_settings, !m_file_logger->isActive());
    if (result)
    {
       if (result.value())
       {
          UT_Log(MAIN, LOW, "got new logging settings: auto %u, file:%s/%s", new_settings.use_default_name, new_settings.file_path.c_str(), new_settings.file_name.c_str());
-         m_filelogging.settings = new_settings;
+         m_file_logger_settings = new_settings;
       }
    }
-
 }
 void MainApplication::onClearButtonClicked()
 {
@@ -321,9 +313,9 @@ void MainApplication::setScrolling(bool active)
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    uint32_t offset = 0;
-   ::deserialize(data, offset, m_filelogging.settings.file_path);
-   ::deserialize(data, offset, m_filelogging.settings.file_name);
-   ::deserialize(data, offset, m_filelogging.settings.use_default_name);
+   ::deserialize(data, offset, m_file_logger_settings.file_path);
+   ::deserialize(data, offset, m_file_logger_settings.file_name);
+   ::deserialize(data, offset, m_file_logger_settings.use_default_name);
    ::deserialize(data, offset, m_scrolling_active);
 
    setScrolling(m_scrolling_active);
@@ -331,8 +323,8 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 {
-   ::serialize(data, m_filelogging.settings.file_path);
-   ::serialize(data, m_filelogging.settings.file_name);
-   ::serialize(data, m_filelogging.settings.use_default_name);
+   ::serialize(data, m_file_logger_settings.file_path);
+   ::serialize(data, m_file_logger_settings.file_name);
+   ::serialize(data, m_file_logger_settings.use_default_name);
    ::serialize(data, m_scrolling_active);
 }
