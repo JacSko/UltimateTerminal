@@ -148,7 +148,7 @@ enum AlignmentFlag {
 };
 
 }
-class QCoreApplication
+class QApplication
 {
 public:
    static QString translate(const char * context,
