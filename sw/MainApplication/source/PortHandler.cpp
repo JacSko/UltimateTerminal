@@ -105,32 +105,37 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_last_event = {m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size};
+   m_events.push({m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
    emit portEvent();
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    UT_Log(PORT_HANDLER, HIGH, "new event %u", (uint8_t)ev);
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_last_event = {m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size};
+   m_events.push({m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
    emit portEvent();
 }
 void PortHandler::onPortEvent()
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   if (m_last_event.event == Event::DISCONNECTED)
+   while (m_events.size())
    {
-      m_socket->disconnect();
-      setButtonState(ButtonState::DISCONNECTED);
-      notifyListeners(Event::DISCONNECTED);
-   }
-   else if (m_last_event.event == Event::NEW_DATA)
-   {
-      notifyListeners(Event::NEW_DATA, m_last_event.data, m_last_event.size);
-   }
-   else
-   {
-      UT_Log(PORT_HANDLER, ERROR, "Unknown event received %u", (uint8_t) m_last_event.event);
+      PortHandlerEvent& event = m_events.front();
+      if (event.event == Event::DISCONNECTED)
+      {
+         m_socket->disconnect();
+         setButtonState(ButtonState::DISCONNECTED);
+         notifyListeners(Event::DISCONNECTED);
+      }
+      else if (event.event == Event::NEW_DATA)
+      {
+         notifyListeners(Event::NEW_DATA, event.data, event.size);
+      }
+      else
+      {
+         UT_Log(PORT_HANDLER, ERROR, "Unknown event received %u", (uint8_t) event.event);
+      }
+      m_events.pop();
    }
 }
 void PortHandler::onTimeout(uint32_t timer_id)

@@ -185,23 +185,31 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    EXPECT_TRUE(receivied_event.data.empty());
    EXPECT_EQ(receivied_event.size, 0);
 
-   /* data received from serial port */
+   /* data received from port, three events */
    const std::vector<uint8_t> event_data = {'a', 'b', 'c', '\r', '\n', 'd', 'e', 'f', 'n'};
-   EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event))
+                                                    .WillOnce(SaveArg<0>(&receivied_event))
+                                                    .WillOnce(SaveArg<0>(&receivied_event));
 
    if (user_settings.type == PortSettingDialog::PortType::SERIAL)
    {
       Drivers::Serial::DriverEvent event = Drivers::Serial::DriverEvent::DATA_RECV;
+      /* force three events with new data */
+      ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
+      ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
       ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
    }
    else
    {
       Drivers::SocketClient::ClientEvent event = Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV;
+      /* force three events with new data */
+      ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
+      ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
       ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
    }
    m_test_subject->onPortEvent();
 
-   /* expect notification via listener */
+   /* check last notification via listener */
    EXPECT_EQ(receivied_event.event, GUI::Event::NEW_DATA);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_THAT(receivied_event.data, ContainerEq(event_data));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <queue>
 
 #include <QtCore/QObject>
 #include <QtWidgets/QLabel>
@@ -72,7 +73,7 @@ private:
    std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
    int m_timer_id;
    ButtonState m_button_state;
-   PortHandlerEvent m_last_event;
+   std::queue<PortHandlerEvent> m_events;
    std::mutex m_event_mutex;
    std::mutex m_listener_mutex;
    uint8_t m_port_id;
