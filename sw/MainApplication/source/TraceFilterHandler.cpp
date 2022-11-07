@@ -26,6 +26,7 @@ m_persistence(persistence)
    m_line_edit->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(m_button, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onContextMenuRequested()));
    connect(m_line_edit, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onContextMenuRequested()));
+   connect(m_line_edit, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
    m_button->setCheckable(true);
    m_line_edit->setDisabled(false);
    setButtonColor(Qt::red);

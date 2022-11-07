@@ -9,7 +9,7 @@
 
 using namespace ::testing;
 
-struct UserButtonHandlerFixture : public testing::Test
+struct TraceFilterHandlerTests : public testing::Test
 {
    void SetUp()
    {
@@ -19,6 +19,7 @@ struct UserButtonHandlerFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("clicked"), _, HasSubstr("onButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onContextMenuRequested")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_line_edit, HasSubstr("customContextMenuRequested"), _, HasSubstr("onContextMenuRequested")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_line_edit, HasSubstr("returnPressed"), _, HasSubstr("onButtonClicked")));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_button, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setContextMenuPolicy(&test_line_edit, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&test_button, true));
@@ -44,7 +45,7 @@ struct UserButtonHandlerFixture : public testing::Test
    QColor test_default_color = 0x00DEAD;
 };
 
-TEST_F(UserButtonHandlerFixture, filtering_requested_when_not_active)
+TEST_F(TraceFilterHandlerTests, filtering_requested_when_not_active)
 {
    /**
     * <b>scenario</b>: Trace filter is disabled, but filtering was requested <br>
@@ -57,7 +58,7 @@ TEST_F(UserButtonHandlerFixture, filtering_requested_when_not_active)
 
 }
 
-TEST_F(UserButtonHandlerFixture, enabling_filter)
+TEST_F(TraceFilterHandlerTests, enabling_filter)
 {
    /**
     * <b>scenario</b>: Trace filter is disabled, user requested to change the color, then filter was activated and correct text was tested <br>
@@ -93,7 +94,7 @@ TEST_F(UserButtonHandlerFixture, enabling_filter)
 
 }
 
-TEST_F(UserButtonHandlerFixture, disabling_filter)
+TEST_F(TraceFilterHandlerTests, disabling_filter)
 {
    /**
     * <b>scenario</b>: Trace filter is disabled, user requested to change the color, then filter was activated and correct text was tested. <br>
@@ -143,7 +144,7 @@ TEST_F(UserButtonHandlerFixture, disabling_filter)
 
 }
 
-TEST_F(UserButtonHandlerFixture, color_change_requesting_when_filter_active)
+TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
 {
    /**
     * <b>scenario</b>: Trace filter is disabled, user requested to change the color, then filter was activated and correct text was tested <br>
@@ -186,7 +187,7 @@ TEST_F(UserButtonHandlerFixture, color_change_requesting_when_filter_active)
 
 }
 
-TEST_F(UserButtonHandlerFixture, persistence_write_and_read)
+TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
 {
    /**
     * <b>scenario</b>: Persistence write and read sequence to verify data serialization <br>
@@ -229,6 +230,7 @@ TEST_F(UserButtonHandlerFixture, persistence_write_and_read)
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_button, HasSubstr("clicked"), _, HasSubstr("onButtonClicked")));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onContextMenuRequested")));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_line_edit, HasSubstr("customContextMenuRequested"), _, HasSubstr("onContextMenuRequested")));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_line_edit, HasSubstr("returnPressed"), _, HasSubstr("onButtonClicked")));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&new_test_button, Qt::ContextMenuPolicy::CustomContextMenu));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setContextMenuPolicy(&new_test_line_edit, Qt::ContextMenuPolicy::CustomContextMenu));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&new_test_button, true));
