@@ -156,6 +156,9 @@ public:
                             const char * disambiguation = nullptr,
                             int n = -1){return QString(key);};
 };
+class QCoreApplication : public QApplication
+{
+};
 
 
 class QMetaObject

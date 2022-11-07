@@ -641,18 +641,10 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
     * <b>expected</b>: PortHandler shall be asked about write <br>
     * ************************************************
     */
-   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
-   constexpr uint8_t TEST_PORT_INDEX = 3;
    const std::string PORT_HANDLER_NAME = "NAME1";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "\n";
-   GUI::PortHandlerEvent port_open_event;
-   port_open_event.name = "PORT_NAME";
-   port_open_event.event = GUI::Event::CONNECTED;
    QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_close_event;
-   port_close_event.name = "PORT_NAME";
-   port_close_event.event = GUI::Event::DISCONNECTED;
 
    /* no port opened, so combobox shall be empty*/
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
@@ -673,19 +665,11 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
     *                  Data shall be added to terminal view. <br>
     * ************************************************
     */
-   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
-   constexpr uint8_t TEST_PORT_INDEX = 3;
    const std::string PORT_HANDLER_NAME = "NAME1";
    const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "\\n";
-   GUI::PortHandlerEvent port_open_event;
-   port_open_event.name = "PORT_NAME";
-   port_open_event.event = GUI::Event::CONNECTED;
    QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_close_event;
-   port_close_event.name = "PORT_NAME";
-   port_close_event.event = GUI::Event::DISCONNECTED;
 
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
@@ -694,7 +678,8 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    /* size to write should be 1 byte more because \n is added */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(_,DATA_TO_SEND.size() + 1)).WillOnce(Return(true));
+   std::string data_payload = DATA_TO_SEND + '\n';
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
 
    /* writing data to terminal */
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
@@ -711,5 +696,82 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    m_test_subject->onSendButtonClicked();
 }
 
-//TODO test with empty line ending
-//TODO test with porthandler write fail
+TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user with empty line ending. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Data shall be added to terminal view. <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "EMPTY";
+   QListWidgetItem terminal_item;
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   /* size to write should be 1 byte more because \n is added */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()),DATA_TO_SEND.size())).WillOnce(Return(true));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<uint32_t>()));
+
+   m_test_subject->onSendButtonClicked();
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port_failed)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user with empty line ending, but write to port fails. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Error information shall be added to terminal. <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "EMPTY";
+   QListWidgetItem terminal_item;
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   /* size to write should be 1 byte more because \n is added */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("Cannot send data to port")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<uint32_t>()));
+
+   m_test_subject->onSendButtonClicked();
+}
