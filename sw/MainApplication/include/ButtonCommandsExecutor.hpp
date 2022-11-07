@@ -23,10 +23,7 @@ public:
    m_callback(callback),
    m_isActive(false)
    {
-      if (!start(THREAD_START_TIMEOUT))
-      {
-         UT_Log(MAIN, ERROR, "cannot start thread!");
-      }
+
    }
    ~ButtonCommandsExecutor()
    {

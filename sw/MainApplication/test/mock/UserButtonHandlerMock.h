@@ -24,5 +24,9 @@ void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
 
 }
+bool UserButtonHandler::startThread()
+{
+   return true;
+}
 
 }

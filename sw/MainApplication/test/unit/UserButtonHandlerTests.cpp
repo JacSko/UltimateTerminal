@@ -43,6 +43,7 @@ struct UserButtonHandlerFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&test_button, true));
 
       m_test_subject.reset(new UserButtonHandler(&test_button, nullptr, fake_persistence, WriterFunction));
+      m_test_subject->startThread();
 
    }
    void TearDown()
@@ -75,14 +76,24 @@ TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
     *                  Button should be activated on command execution finish. <br>
     * ************************************************
     */
+   std::atomic<bool> test_wait (true);
+
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, false)).WillOnce(Invoke([&](QWidget*, bool)
+         {
+            test_wait = false;
+         }));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, false));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_repaint(&test_button)).Times(2);
    EXPECT_CALL(*g_writer_mock, write(_)).Times(0);
 
    m_test_subject->onUserButtonClicked();
+
+   while(test_wait)
+   {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+   }
 
 }
 

@@ -10,6 +10,7 @@ namespace GUI
 {
 
 static uint8_t USER_BUTTON_ID = 0;
+const uint32_t THREAD_START_TIMEOUT = 1000;
 
 UserButtonHandler::UserButtonHandler(QPushButton* object, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
 m_object(object),
@@ -34,6 +35,10 @@ m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, 
 UserButtonHandler::~UserButtonHandler()
 {
    m_persistence.removeListener(*this);
+}
+bool UserButtonHandler::startThread()
+{
+   return m_executor.start(THREAD_START_TIMEOUT);
 }
 void UserButtonHandler::handleNewSettings(const UserButtonDialog::Settings& settings)
 {

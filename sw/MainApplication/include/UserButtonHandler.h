@@ -16,7 +16,7 @@ class UserButtonHandler : public QObject,
 public:
    UserButtonHandler(QPushButton* object, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
    ~UserButtonHandler();
-
+   bool startThread();
 private:
 
    QPushButton* m_object;

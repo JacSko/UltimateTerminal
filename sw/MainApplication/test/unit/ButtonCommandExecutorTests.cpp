@@ -5,7 +5,7 @@
 #include "Logger.h"
 namespace GUI
 {
-
+constexpr uint32_t THREAD_START_TIMEOUT = 1000;
 using namespace ::testing;
 
 struct WriterMock
@@ -50,6 +50,7 @@ TEST_F(ButtonCommandExecutorTests, no_commands_execution)
             condition_variable.notify_all();
          };
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.execute();
 
    std::unique_lock<std::mutex> lock(mutex);
@@ -78,6 +79,7 @@ TEST_F(ButtonCommandExecutorTests, executing_one_command)
          };
    std::string raw_commands_text = "command1";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -109,6 +111,7 @@ TEST_F(ButtonCommandExecutorTests, executing_more_than_one_command)
          };
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -141,6 +144,7 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
          };
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true))
@@ -192,6 +196,7 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_added)
          };
    std::string raw_commands_text = "command1\n__wait(100)\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -228,6 +233,7 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_started_and_aborted)
          };
    std::string raw_commands_text = "command1\n__wait(10000)\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
+   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));

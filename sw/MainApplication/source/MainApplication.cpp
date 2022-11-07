@@ -80,6 +80,11 @@ m_trace_scrolling_active(false)
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
 
+    for (auto& handler : m_user_button_handlers)
+    {
+       handler->startThread();
+    }
+
     if (!m_persistence.restore(SETTING_GET_STRING(Persistence_filePath)))
     {
        UT_Log(MAIN, ERROR, "Cannot restore persistence!");
