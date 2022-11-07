@@ -97,6 +97,7 @@ struct MainApplicationFixture : public testing::Test
 
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
 
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));
@@ -230,7 +231,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
@@ -245,7 +246,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-   //   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
@@ -258,7 +259,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-   //   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(TEST_MAX_TRACE_NUMBER));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_terminal_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
@@ -291,7 +292,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("MARKER1")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_MARKER_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
@@ -304,7 +305,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("MARKER2")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_MARKER_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER2")));
@@ -367,7 +368,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("MARKER1")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_MARKER_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
@@ -380,7 +381,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
@@ -460,3 +461,255 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
 
 }
 
+TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activation)
+{
+   /**
+    * <b>scenario</b>: Scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
+    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
+    *                  scrollToBottom() shall not be called when adding new trace. <br>
+    *                  Button should be green when scrolling enabled. <br>
+    *                  scrollToBottom() shall be called when adding new trace. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   GUI::PortHandlerEvent port_data_event;
+   port_data_event.name = "PORT_NAME";
+   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.trace_color = TEST_TRACE_COLOR;
+   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
+   port_data_event.size = port_data_event.data.size();
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+
+
+   /* user requested to disable scrolling */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+   m_test_subject->onScrollButtonClicked();
+
+   /* port opening */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+
+   /* writing data */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* user requested to enable scrolling */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onScrollButtonClicked();
+
+   /* writing data */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* closing port */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_port_box, TEST_PORT_INDEX));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+
+}
+
+TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
+{
+   /**
+    * <b>scenario</b>: Trace scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
+    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
+    *                  scrollToBottom() shall not be called when adding new trace. <br>
+    *                  Button should be green when scrolling enabled. <br>
+    *                  scrollToBottom() shall be called when adding new trace. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint32_t TEST_FILER_COLOR = 0x999999;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   QListWidgetItem trace_item;
+   GUI::PortHandlerEvent port_data_event;
+   port_data_event.name = "PORT_NAME";
+   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.trace_color = TEST_TRACE_COLOR;
+   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
+   port_data_event.size = port_data_event.data.size();
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+
+
+   /* user requested to disable scrolling */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+   m_test_subject->onTraceScrollButtonClicked();
+
+   /* port opening */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+
+   /* writing data */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item)).WillOnce(Return(&trace_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&trace_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&trace_item, QColor(TEST_FILER_COLOR)));
+   /* trace view shall not be scrolled, by terminal view MUST be scrolled */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<uint32_t>(TEST_FILER_COLOR)))
+                                                                               .WillRepeatedly(Return(std::optional<uint32_t>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* user requested to enable scrolling */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onTraceScrollButtonClicked();
+
+   /* writing data */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item)).WillOnce(Return(&trace_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&trace_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&trace_item, QColor(TEST_FILER_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<uint32_t>(TEST_FILER_COLOR)))
+                                                                               .WillRepeatedly(Return(std::optional<uint32_t>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* closing port */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_port_box, TEST_PORT_INDEX));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+
+}
+
+TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
+{
+   /**
+    * <b>scenario</b>: User requested to clear trace view and terminal view. <br>
+    * <b>expected</b>: clear() method called on terminal view. <br>
+    *                  clear() method called on trace view. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_terminal_view));
+   m_test_subject->onClearButtonClicked();
+   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_trace_view));
+   m_test_subject->onTraceClearButtonClicked();
+   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
+
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
+{
+   /**
+    * <b>scenario</b>: No port opened, data send requested by user. <br>
+    * <b>expected</b>: PortHandler shall be asked about write <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "\n";
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+
+   /* no port opened, so combobox shall be empty*/
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
+   m_test_subject->onSendButtonClicked();
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Data shall be added to terminal view. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "\\n";
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   /* size to write should be 1 byte more because \n is added */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(_,DATA_TO_SEND.size() + 1)).WillOnce(Return(true));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<uint32_t>()));
+
+   m_test_subject->onSendButtonClicked();
+}
+
+//TODO test with empty line ending
+//TODO test with porthandler write fail

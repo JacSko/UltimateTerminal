@@ -48,6 +48,7 @@ private:
     void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color = 0xFFFFFF);
     void setButtonColor(QPushButton* button, QColor color);
     void setScrolling(bool active);
+    void setTraceScrolling(bool active);
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
 public slots:

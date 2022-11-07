@@ -35,6 +35,7 @@ m_trace_scrolling_active(false)
     connectSignalsToSlots();
     setButtonColor(ui->loggingButton, Qt::red);
     setScrolling(true);
+    setTraceScrolling(true);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this, m_persistence)));
@@ -223,15 +224,7 @@ void MainApplication::onScrollButtonClicked()
 }
 void MainApplication::onTraceScrollButtonClicked()
 {
-   m_trace_scrolling_active = !m_trace_scrolling_active;
-   if(m_trace_scrolling_active)
-   {
-      setButtonColor(ui->traceScrollButton, Qt::green);
-   }
-   else
-   {
-      setButtonColor(ui->traceScrollButton, QColor(m_scroll_default_color));
-   }
+   setTraceScrolling(!m_trace_scrolling_active);
 }
 void MainApplication::onTraceClearButtonClicked()
 {
@@ -262,11 +255,13 @@ bool MainApplication::sendToPort(const std::string& string)
    bool result = false;
    std::string current_port = ui->portComboBox->currentText().toStdString();
    std::string data_to_send = string;
-   if (ui->lineEndingComboBox->currentText() == "\\r\\n")
+
+   std::string current_ending = ui->lineEndingComboBox->currentText().toStdString();
+   if (current_ending == "\\r\\n")
    {
       data_to_send += "\r\n";
    }
-   else if (ui->lineEndingComboBox->currentText() == "\\n")
+   else if (current_ending == "\\n")
    {
       data_to_send += '\n';
    }
@@ -313,6 +308,18 @@ void MainApplication::setScrolling(bool active)
    else
    {
       setButtonColor(ui->scrollButton, QColor(m_scroll_default_color));
+   }
+}
+void MainApplication::setTraceScrolling(bool active)
+{
+   m_trace_scrolling_active = active;
+   if(m_trace_scrolling_active)
+   {
+      setButtonColor(ui->traceScrollButton, Qt::green);
+   }
+   else
+   {
+      setButtonColor(ui->traceScrollButton, QColor(m_scroll_default_color));
    }
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)

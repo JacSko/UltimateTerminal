@@ -11,11 +11,12 @@ typedef unsigned int QRgb;
 class QMenuBar;
 class QStatusBar;
 
+constexpr uint32_t DEFAULT_APP_COLOR = 0xDEAD;
 
 class QColor
 {
 public:
-   QColor() : color(0), valid(false){};
+   QColor() : color(DEFAULT_APP_COLOR), valid(false){};
    QColor(uint32_t color):color(color), valid(true){};
    bool isValid(){return valid;};
    QRgb rgb() const
@@ -54,7 +55,7 @@ public:
       }
       else
       {
-         return QColor(0);
+         return QColor(DEFAULT_APP_COLOR);
       }
    }
    bool operator==(const QPalette& lhs) const
@@ -117,7 +118,7 @@ public:
    void setEnabled(bool);
    void setDisabled(bool);
    bool isEnabled();
-   QPalette palette(){return {QPalette::Button, Qt::red};}
+   QPalette palette(){return {QPalette::Button, DEFAULT_APP_COLOR};}
    void setPalette(const QPalette &);
    void update(){};
    void setSizePolicy(QSizePolicy){};
