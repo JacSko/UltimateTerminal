@@ -314,3 +314,149 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
 
 }
 
+TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
+{
+   /**
+    * <b>scenario</b>: Logging to file requested by user with predefined filename then stopped, when logging is active user requested to change the name <br>
+    * <b>expected</b>: File for logging shall be opened <br>
+    *                  Button shall be in green color. <br>
+    *                  New trace shall be added to terminal and to the file as well as markers. <br>
+    *                  LoggingSettingDialog shall be shown, but with disabled editing. <br>
+    *                  File shall be closed. <br>
+    *                  Button shall be in red color. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   GUI::PortHandlerEvent port_data_event;
+   port_data_event.name = "PORT_NAME";
+   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.trace_color = TEST_TRACE_COLOR;
+   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
+   port_data_event.size = port_data_event.data.size();
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+   LoggingSettingDialog::Settings logger_settings;
+   logger_settings.file_name = "some_log.txt";
+   logger_settings.file_path = "/home/user";
+   logger_settings.use_default_name = false;
+
+   /* port opening */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+
+   /* user requested to change the logging file */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(logger_settings), Return(std::optional<bool>(true))));
+   m_test_subject->onLoggingButtonContextMenuRequested();
+
+   /* requesting file logging */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*g_logger_mock, openFile("/home/user/some_log.txt")).WillOnce(Return(true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onLoggingButtonClicked();
+
+   /* first marker added */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("MARKER1")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_MARKER_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<uint32_t>()));
+   m_test_subject->onMarkerButtonClicked();
+
+   /* adding item with newline at the end */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
+//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)); TODO
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<uint32_t>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* user requested to change the logging file, it should not be possible when logging is active */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,false)).WillOnce(Return(std::optional<bool>(false)));
+   m_test_subject->onLoggingButtonContextMenuRequested();
+
+   /* closing port */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_port_box, TEST_PORT_INDEX));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+
+   /* closing file logging */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
+   EXPECT_CALL(*g_logger_mock, closeFile());
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
+   m_test_subject->onLoggingButtonClicked();
+
+}
+
+TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
+{
+   /**
+    * <b>scenario</b>: Logging to file requested by user while no port has been opened, then port was opened, closed, and filelogging was disabled <br>
+    * <b>expected</b>: File for logging shall be opened <br>
+    *                  Button shall be in green color. <br>
+    *                  File shall be closed. <br>
+    *                  Button shall be in red color. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
+   constexpr uint8_t TEST_PORT_INDEX = 3;
+   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.event = GUI::Event::DISCONNECTED;
+   LoggingSettingDialog::Settings logger_settings;
+   logger_settings.file_name = "some_log.txt";
+   logger_settings.file_path = "/home/user";
+   logger_settings.use_default_name = false;
+
+
+   /* user requested to change the logging file */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(logger_settings), Return(std::optional<bool>(true))));
+   m_test_subject->onLoggingButtonContextMenuRequested();
+
+   /* requesting file logging */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*g_logger_mock, openFile("/home/user/some_log.txt")).WillOnce(Return(true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onLoggingButtonClicked();
+
+   /* port opening */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+
+   /* closing port */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_port_box, TEST_PORT_INDEX));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+
+   /* closing file logging */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
+   EXPECT_CALL(*g_logger_mock, closeFile());
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
+   m_test_subject->onLoggingButtonClicked();
+
+}
+
