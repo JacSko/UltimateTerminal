@@ -36,7 +36,8 @@ m_persistence(persistence)
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
 
    m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
-   Persistence::PersistenceListener::setName(m_settings.port_name);
+   m_settings.native_name = m_settings.port_name;
+   Persistence::PersistenceListener::setName(m_settings.native_name);
    m_persistence.addListener(*this);
    setButtonState(ButtonState::DISCONNECTED);
    setButtonName(std::string("PORT") + std::to_string(m_port_id));
@@ -87,6 +88,11 @@ const std::string& PortHandler::getName()
 {
    return m_settings.port_name;
 }
+const std::string& PortHandler::getNativeName()
+{
+   return m_settings.native_name;
+}
+
 bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    if (m_socket->isConnected())

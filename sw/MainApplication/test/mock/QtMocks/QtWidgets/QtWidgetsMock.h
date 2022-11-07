@@ -149,6 +149,7 @@ public:
    void* operator new(size_t size);
    void operator delete(void*){};
    void setWindowModality(Qt::WindowModality windowModality);
+   void setWindowTitle(const QString&);
    virtual int exec();
 };
 
@@ -221,6 +222,16 @@ public:
 class QComboBox : public QWidget
 {
 public:
+   enum InsertPolicy {
+       NoInsert,
+       InsertAtTop,
+       InsertAtCurrent,
+       InsertAtBottom,
+       InsertAfterCurrent,
+       InsertBeforeCurrent,
+       InsertAlphabetically
+   };
+
    QComboBox(QWidget *parent = nullptr){}
 
    void* operator new(size_t);
@@ -230,6 +241,10 @@ public:
    QString currentText();
    int findText(const QString &text);
    void removeItem(int index);
+   void setEditable(bool){}
+   void setInsertPolicy(InsertPolicy policy){}
+   QLineEdit* lineEdit(){return nullptr;}
+   int count();
 };
 
 class QColorDialog : public QWidget
@@ -368,6 +383,7 @@ struct QtWidgetsMock
    MOCK_METHOD0(QDialog_new, void*());
    MOCK_METHOD1(QDialog_exec, int(QDialog*));
    MOCK_METHOD2(QDialog_setWindowModality, void(QDialog*, Qt::WindowModality));
+   MOCK_METHOD2(QDialog_setWindowTitle, void(QDialog*,const QString&));
 
    MOCK_METHOD0(QFormLayout_new, void*());
    MOCK_METHOD2(QFormLayout_addRow, void(QFormLayout*, QWidget*));
@@ -392,6 +408,7 @@ struct QtWidgetsMock
    MOCK_METHOD1(QComboBox_currentText, QString(QComboBox*));
    MOCK_METHOD2(QComboBox_findText, int(QComboBox*, const QString&));
    MOCK_METHOD2(QComboBox_removeItem, void(QComboBox*, int));
+   MOCK_METHOD1(QComboBox_count, int(QComboBox*));
 
    MOCK_METHOD0(QPushButton_new, void*());
    MOCK_METHOD2(QPushButton_setText, void(QPushButton*, const QString&));

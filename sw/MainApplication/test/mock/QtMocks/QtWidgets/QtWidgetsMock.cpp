@@ -37,6 +37,10 @@ void QDialog::setWindowModality(Qt::WindowModality windowModality)
 {
    g_widgets_mock->QDialog_setWindowModality(this, windowModality);
 }
+void QDialog::setWindowTitle(const QString& text)
+{
+   g_widgets_mock->QDialog_setWindowTitle(this, text);
+}
 void* QFormLayout::operator new(size_t)
 {
    return g_widgets_mock->QFormLayout_new();
@@ -125,6 +129,10 @@ void QComboBox::setCurrentText(const QString& text)
 QString QComboBox::currentText()
 {
    return g_widgets_mock->QComboBox_currentText(this);
+}
+int QComboBox::count()
+{
+   return g_widgets_mock->QComboBox_count(this);
 }
 int QComboBox::findText(const QString &text)
 {

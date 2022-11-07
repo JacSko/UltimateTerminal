@@ -60,6 +60,7 @@ enum class PortType
       Settings():
       type(PortType::SERIAL),
       port_name(""),
+      native_name(""),
       serialSettings({}),
       ip_address("127.0.0.1"),
       port(1234),
@@ -67,6 +68,7 @@ enum class PortType
       {}
 
       Settings(PortType type,
+               const std::string n_name,
                const std::string& name,
                const Drivers::Serial::Settings& serial,
                const std::string& ip_address,
@@ -74,6 +76,7 @@ enum class PortType
                uint32_t trace_color):
       type(type),
       port_name(name),
+      native_name(n_name),
       serialSettings(serial),
       ip_address(ip_address),
       port(port),
@@ -82,6 +85,7 @@ enum class PortType
 
       EnumValue<PortType> type;
       std::string port_name;
+      std::string native_name;
       Drivers::Serial::Settings serialSettings;
       std::string ip_address;
       uint32_t port;

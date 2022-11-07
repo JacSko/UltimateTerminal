@@ -51,6 +51,7 @@ private:
     void setTraceScrolling(bool active);
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
+    void addtoCommandHistory(QComboBox* item, const QString& text);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

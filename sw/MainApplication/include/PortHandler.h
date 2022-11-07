@@ -53,6 +53,7 @@ public:
    ~PortHandler();
 
    const std::string& getName();
+   const std::string& getNativeName();
    bool write(const std::vector<uint8_t>& data, size_t size = 0);
 private:
 

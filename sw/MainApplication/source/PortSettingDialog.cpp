@@ -70,6 +70,8 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
 
+   std::string window_title = current_settings.native_name + " Settings";
+   m_dialog->setWindowTitle(QString(window_title.c_str()));
    addPortTypeComboBox(current_settings.type);
 
    if (current_settings.type == PortType::SERIAL)

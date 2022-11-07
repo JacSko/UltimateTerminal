@@ -8,6 +8,7 @@
 #include "Serialize.hpp"
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
+constexpr uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
 
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
@@ -145,10 +146,10 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       ui->terminalView->clear();
    }
 
-   if(ui->traceViw->count() >= 10000)
+   if(ui->traceView->count() >= 10000)
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
-      ui->traceViw->clear();
+      ui->traceView->clear();
    }
 
    QListWidgetItem* item = new QListWidgetItem();
@@ -164,7 +165,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
          QListWidgetItem* item = new QListWidgetItem();
          item->setText(new_line);
          item->setBackground(QColor(color.value()));
-         ui->traceViw->addItem(item);
+         ui->traceView->addItem(item);
       }
    }
 
@@ -175,7 +176,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 
    if (m_trace_scrolling_active)
    {
-      ui->traceViw->scrollToBottom();
+      ui->traceView->scrollToBottom();
    }
 
 }
@@ -186,7 +187,7 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->traceClearButton, SIGNAL(clicked()), this, SLOT(onTraceClearButtonClicked()));
 
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
-   connect(ui->textEdit, SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
+   connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
 
    ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
@@ -229,7 +230,7 @@ void MainApplication::onTraceScrollButtonClicked()
 void MainApplication::onTraceClearButtonClicked()
 {
    UT_Log(MAIN, MEDIUM, "Clearing trace window requested");
-   ui->traceViw->clear();
+   ui->traceView->clear();
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
@@ -289,7 +290,9 @@ bool MainApplication::sendToPort(const std::string& string)
 }
 void MainApplication::onSendButtonClicked()
 {
-   (void)sendToPort(ui->textEdit->text().toStdString());
+   QString text = ui->textEdit->currentText();
+   addtoCommandHistory(ui->textEdit, text);
+   (void)sendToPort(text.toStdString());
 }
 void MainApplication::setButtonColor(QPushButton* button, QColor color)
 {
@@ -345,4 +348,16 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_scrolling_active);
    ::serialize(data, m_trace_scrolling_active);
    ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
+}
+
+void MainApplication::addtoCommandHistory(QComboBox* item, const QString& text)
+{
+   if (!text.empty())
+   {
+      item->addItem(text);
+      while(ui->textEdit->count() > MAX_COMMANDS_HISTORY_ITEMS)
+      {
+         ui->textEdit->removeItem(ui->textEdit->count() - 1);
+      }
+   }
 }
