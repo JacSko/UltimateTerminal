@@ -324,14 +324,18 @@ void MainApplication::setTraceScrolling(bool active)
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {
+   std::string line_ending;
    uint32_t offset = 0;
    ::deserialize(data, offset, m_file_logger_settings.file_path);
    ::deserialize(data, offset, m_file_logger_settings.file_name);
    ::deserialize(data, offset, m_file_logger_settings.use_default_name);
    ::deserialize(data, offset, m_scrolling_active);
+   ::deserialize(data, offset, m_trace_scrolling_active);
+   ::deserialize(data, offset, line_ending);
 
    setScrolling(m_scrolling_active);
-
+   setTraceScrolling(m_trace_scrolling_active);
+   ui->lineEndingComboBox->setCurrentText(QString(line_ending.c_str()));
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 {
@@ -339,4 +343,6 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_file_logger_settings.file_name);
    ::serialize(data, m_file_logger_settings.use_default_name);
    ::serialize(data, m_scrolling_active);
+   ::serialize(data, m_trace_scrolling_active);
+   ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
 }

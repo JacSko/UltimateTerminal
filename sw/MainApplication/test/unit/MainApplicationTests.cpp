@@ -775,3 +775,55 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
 
    m_test_subject->onSendButtonClicked();
 }
+
+TEST_F(MainApplicationFixture, persistence_write_and_read)
+{
+   /**
+    * <b>scenario</b>: Persistence write and read sequence to verify data serialization <br>
+    * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
+    * ************************************************
+    */
+   std::vector<uint8_t> data_buffer;
+   std::string current_ending = "\\n";
+   LoggingSettingDialog::Settings old_logger_settings;
+   old_logger_settings.file_name = "old file";
+   old_logger_settings.file_path = "old path";
+   old_logger_settings.use_default_name = true;
+   LoggingSettingDialog::Settings new_logger_settings;
+   new_logger_settings.file_name = "new file";
+   new_logger_settings.file_path = "new path";
+   new_logger_settings.use_default_name = true;
+
+   /* replace all persistent data, to get known state */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(old_logger_settings), Return(std::optional<bool>(true))));
+   m_test_subject->onLoggingButtonContextMenuRequested();
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+   m_test_subject->onScrollButtonClicked();
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+   m_test_subject->onTraceScrollButtonClicked();
+   /* expectations before write */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(current_ending.c_str())));
+   ASSERT_EQ(data_buffer.size(), 0);
+   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
+   EXPECT_THAT(data_buffer.size(), Gt(0));
+
+
+   /* replace all persistent data, to make sure that has been restored from persistence correctly */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(new_logger_settings), Return(std::optional<bool>(true))));
+   m_test_subject->onLoggingButtonContextMenuRequested();
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onScrollButtonClicked();
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   m_test_subject->onTraceScrollButtonClicked();
+
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_line_ending_box, QString(current_ending.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
+
+   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
+
+}
+
