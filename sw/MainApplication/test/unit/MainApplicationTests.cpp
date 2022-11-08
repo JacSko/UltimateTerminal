@@ -666,7 +666,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
    m_test_subject->onSendButtonClicked();
 }
 
@@ -690,7 +690,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    /* size to write should be 1 byte more because \n is added */
    std::string data_payload = DATA_TO_SEND + '\n';
@@ -732,7 +732,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    /* size to write should be 1 byte more because \n is added */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()),DATA_TO_SEND.size())).WillOnce(Return(true));
@@ -773,7 +773,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    /* size to write should be 1 byte more because \n is added */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
@@ -868,7 +868,7 @@ TEST_F(MainApplicationFixture, command_history_item_removing)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillRepeatedly(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(port_open_event.name));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(port_open_event.name));
    /* size to write should be 1 byte more because \n is added */
    std::string data_payload = DATA_TO_SEND + '\n';
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillRepeatedly(Return(true));
@@ -890,6 +890,110 @@ TEST_F(MainApplicationFixture, command_history_item_removing)
    {
       m_test_subject->onSendButtonClicked();
    }
+}
+
+TEST_F(MainApplicationFixture, command_history_reloading)
+{
+   /**
+    * <b>scenario</b>: Two ports opened, data sent to both of them, should be added correctly to history. Then user changed the current port, correct commands should be restored. <br>
+    * <b>expected</b>: Newly opened ports added to combobox. <br>
+    *                  Initial commands sent successfully to both of them, added to history.<br>
+    *                  On current port switch, commands for new port shall be restored to combobox. <br>
+    * ************************************************
+    */
+
+   const std::string LINE_ENDING = "\\n";
+   const std::string EMPTY_PORT_NAME = "";
+   GUI::PortHandlerEvent open_port_1;
+   open_port_1.name = "PORT_NAME1";
+   open_port_1.port_id = 1;
+   open_port_1.event = GUI::Event::CONNECTED;
+   std::string port1_command1 = "port1_command1";
+   std::string port1_command2 = "port1_command2";
+   std::string port1_command3 = "port1_command3";
+   GUI::PortHandlerEvent open_port_2;
+   open_port_2.name = "PORT_NAME2";
+   open_port_2.port_id = 2;
+   open_port_2.event = GUI::Event::CONNECTED;
+   std::string port2_command1 = "port2_command1";
+   std::string port2_command2 = "port2_command2";
+   std::string port2_command3 = "port2_command3";
+   QListWidgetItem terminal_item;
+
+   /* common expectations */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(_)).WillRepeatedly(Return(std::optional<uint32_t>()));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(_,_)).WillRepeatedly(Return(true));
+   EXPECT_CALL(*g_logger_mock, putLog(_)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillRepeatedly(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, _)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillRepeatedly(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillRepeatedly(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _)).Times(AtLeast(1));
+
+
+   /* open two ports */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(open_port_1.name.c_str())));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(open_port_1);
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(open_port_2.name.c_str())));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(open_port_2);
+
+   /* start writing data to PORT_NAME1 */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(open_port_1.name.c_str())))
+                                                                           .WillOnce(Return(QString(open_port_1.name.c_str())))
+                                                                           .WillOnce(Return(QString(open_port_1.name.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(port1_command1.c_str())))
+                                                                            .WillOnce(Return(QString(port1_command2.c_str())))
+                                                                            .WillOnce(Return(QString(port1_command3.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(Invoke([&](uint8_t id)->const std::string&
+         {
+            if (id == 1) return open_port_1.name;
+            if (id == 2) return open_port_2.name;
+            return EMPTY_PORT_NAME;
+         }));
+
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command1.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command2.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command3.c_str())));
+
+   /* send commands for PORT_NAME 1*/
+   m_test_subject->onSendButtonClicked();
+   m_test_subject->onSendButtonClicked();
+   m_test_subject->onSendButtonClicked();
+
+   /* user selected the PORT_NAME2 */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_itemText(&test_port_box, 0)).WillOnce(Return(QString(open_port_2.name.c_str())));
+   m_test_subject->onCurrentPortSelectionChanged(0);
+
+   /* start writing data to PORT_NAME2 */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(open_port_2.name.c_str())))
+                                                                           .WillOnce(Return(QString(open_port_2.name.c_str())))
+                                                                           .WillOnce(Return(QString(open_port_2.name.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(port2_command1.c_str())))
+                                                                            .WillOnce(Return(QString(port2_command2.c_str())))
+                                                                            .WillOnce(Return(QString(port2_command3.c_str())));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command1.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command2.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command3.c_str())));
+
+   /* send commands for PORT_NAME 2*/
+   m_test_subject->onSendButtonClicked();
+   m_test_subject->onSendButtonClicked();
+   m_test_subject->onSendButtonClicked();
+
+   /* user switched back to PORT_NAME1, expect history restoration */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command1.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command2.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command3.c_str())));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_itemText(&test_port_box, 0)).WillOnce(Return(QString(open_port_1.name.c_str())));
+   m_test_subject->onCurrentPortSelectionChanged(0);
 }
 
 

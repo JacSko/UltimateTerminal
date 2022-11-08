@@ -213,13 +213,16 @@ void MainApplication::onLoggingButtonClicked()
 {
    if (!m_file_logger->isActive())
    {
+      UT_Log(MAIN, LOW, "enabling file logging");
       if (m_file_logger->openFile(m_file_logger_settings.getPath()))
       {
+         UT_Log(MAIN, LOW, "file opened, logging started");
          setButtonColor(ui->loggingButton, Qt::green);
       }
    }
    else
    {
+      UT_Log(MAIN, LOW, "stopping file logging");
       m_file_logger->closeFile();
       setButtonColor(ui->loggingButton, Qt::red);
    }
@@ -241,12 +244,13 @@ void MainApplication::onLoggingButtonContextMenuRequested()
 {
    LoggingSettingDialog dialog;
    LoggingSettingDialog::Settings new_settings = {};
+   UT_Log(MAIN, MEDIUM, "Opening log setting dialog with settings %s %u", m_file_logger_settings.getPath().c_str(), m_file_logger_settings.use_default_name);
    auto result = dialog.showDialog(this, m_file_logger_settings, new_settings, !m_file_logger->isActive());
    if (result)
    {
       if (result.value())
       {
-         UT_Log(MAIN, LOW, "got new logging settings: auto %u, file:%s/%s", new_settings.use_default_name, new_settings.file_path.c_str(), new_settings.file_name.c_str());
+         UT_Log(MAIN, LOW, "got new logging settings: auto %u, file:%s", new_settings.use_default_name, new_settings.getPath().c_str());
          m_file_logger_settings = new_settings;
       }
    }
@@ -260,6 +264,16 @@ void MainApplication::onCurrentPortSelectionChanged(int index)
 {
    std::string port_name = ui->portComboBox->itemText(index).toStdString();
    UT_Log(MAIN, LOW, "Selected port changed, idx %u, name %s", (uint8_t) index, port_name.c_str());
+
+   uint8_t port_id = portNameToId(port_name);
+   std::vector<std::string>& commands_history = m_commands_history[port_id];
+   ui->textEdit->clear();
+
+   for (const std::string& command : commands_history)
+   {
+      ui->textEdit->insertItem(0, QString(command.c_str()));
+   }
+   ui->textEdit->lineEdit()->clear();
 }
 bool MainApplication::sendToPort(const std::string& string)
 {
@@ -267,7 +281,7 @@ bool MainApplication::sendToPort(const std::string& string)
    std::string port_name = ui->portComboBox->currentText().toStdString();
    uint8_t port_id = portNameToId(port_name);
    std::string data_to_send = string;
-
+   UT_Log(MAIN, HIGH, "Trying to send data to port %u[%s] - %s", port_id, port_name.c_str(), string.c_str());
    std::string current_ending = ui->lineEndingComboBox->currentText().toStdString();
    if (current_ending == "\\r\\n")
    {
@@ -302,6 +316,7 @@ bool MainApplication::sendToPort(const std::string& string)
 }
 void MainApplication::onSendButtonClicked()
 {
+   UT_Log(MAIN, LOW, "Send button clicked");
    (void)sendToPort(ui->textEdit->currentText().toStdString());
 }
 void MainApplication::setButtonColor(QPushButton* button, QColor color)
@@ -313,6 +328,7 @@ void MainApplication::setButtonColor(QPushButton* button, QColor color)
 }
 void MainApplication::setScrolling(bool active)
 {
+   UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
    m_scrolling_active = active;
    if(m_scrolling_active)
    {
@@ -325,6 +341,7 @@ void MainApplication::setScrolling(bool active)
 }
 void MainApplication::setTraceScrolling(bool active)
 {
+   UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
    m_trace_scrolling_active = active;
    if(m_trace_scrolling_active)
    {

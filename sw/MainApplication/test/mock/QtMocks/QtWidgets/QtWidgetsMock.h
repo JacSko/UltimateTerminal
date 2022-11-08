@@ -193,6 +193,7 @@ public:
    void setMaxLength(int);
    void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
    QString text();
+   void clear(){}
 };
 
 class QTextEdit : public QWidget
@@ -247,6 +248,7 @@ public:
    QLineEdit* lineEdit(){return nullptr;}
    void insertItem(int index, const QString&text);
    int count();
+   void clear(){}
 };
 
 class QColorDialog : public QWidget

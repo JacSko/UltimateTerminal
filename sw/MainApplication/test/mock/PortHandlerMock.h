@@ -8,17 +8,19 @@ namespace GUI
 
 struct PortHandlerMock
 {
-   MOCK_METHOD0(getName,const std::string&());
+   MOCK_METHOD1(getName,const std::string&(uint8_t id));
    MOCK_METHOD2(write, bool(const std::vector<uint8_t>& data, size_t size));
 };
 
 PortHandlerMock* g_port_handler_mock;
+static uint8_t PORT_ID = 0;
 
 void PortHandlerMock_init()
 {
    if (!g_port_handler_mock)
    {
       g_port_handler_mock = new PortHandlerMock();
+      PORT_ID = 0;
    }
 }
 void PortHandlerMock_deinit()
@@ -35,10 +37,14 @@ PortHandlerMock* PortHandlerMock_get()
    return g_port_handler_mock;
 }
 
+
 PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence)
 :m_persistence(persistence),
  m_timers(timer)
-{}
+{
+   PORT_ID++;
+   m_settings.port_id = PORT_ID;
+}
 PortHandler::~PortHandler()
 {}
 
@@ -49,7 +55,7 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 
 const std::string& PortHandler::getName()
 {
-   return PortHandlerMock_get()->getName();
+   return PortHandlerMock_get()->getName(m_settings.port_id);
 }
 
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size){};
