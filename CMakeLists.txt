@@ -13,7 +13,7 @@ endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-add_definitions(-DCONFIG_FILE_PATH={"${CMAKE_SOURCE_DIR}/config/system_config.json"})
+add_definitions(-DCONFIG_FILE_PATH={"${CMAKE_SOURCE_DIR}/config/system_config.json"} -DAPPLICATION_VERSION={"${PROJECT_VERSION}"})
 
 #########################################
 #  QT related settings

@@ -164,7 +164,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);
-   UT_Log(PORT_HANDLER, LOW, "got new settings - id %u[%s] settings %s", m_settings.port_id, m_settings.port_name, m_settings.shortSettingsString().c_str());
+   UT_Log(PORT_HANDLER, LOW, "got new settings - id %u[%s] settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {

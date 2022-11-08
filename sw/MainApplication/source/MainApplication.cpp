@@ -25,12 +25,13 @@ m_trace_scrolling_active(false)
 
     Persistence::PersistenceListener::setName("MAIN_APPLICATION");
     m_persistence.addListener(*this);
-
     Settings::SettingsHandler::create();
     Settings::SettingsHandler::get()->start(CONFIG_FILE_PATH, m_timers.get());
     LoggerEngine::get()->startFrontends();
-    Settings::SettingsHandler::get()->printSettings();
 
+    UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
+
+    Settings::SettingsHandler::get()->printSettings();
     m_timers->start();
 
     connectSignalsToSlots();
