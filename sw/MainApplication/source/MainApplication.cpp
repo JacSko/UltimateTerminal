@@ -110,7 +110,9 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
    }
    else if (event.event == GUI::Event::CONNECTED)
    {
+      m_port_id_name_map[event.port_id] = event.name;
       ui->portComboBox->addItem(QString(event.name.c_str()));
+      UT_Log(MAIN, INFO, "Port opened: %u [%s]", event.port_id, event.name.c_str());
    }
    else if (event.event == GUI::Event::DISCONNECTED)
    {
@@ -119,6 +121,8 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
       {
          ui->portComboBox->removeItem(index);
       }
+      m_port_id_name_map[event.port_id] = "";
+      UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
    }
 }
 void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color)

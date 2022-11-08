@@ -5,6 +5,7 @@
 #include "QtWidgets/QLabel"
 #include "QtWidgets/QPushButton"
 #include <vector>
+#include <map>
 
 #include "ITimers.h"
 #include "PortHandler.h"
@@ -41,6 +42,7 @@ private:
     bool m_scrolling_active;
     bool m_trace_scrolling_active;
     uint32_t m_scroll_default_color;
+    std::map<uint8_t,std::string> m_port_id_name_map;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
