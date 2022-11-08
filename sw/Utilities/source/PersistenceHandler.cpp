@@ -1,10 +1,17 @@
 #include <sstream>
 #include <fstream>
+#include <numeric>
 #include "PersistenceHandler.h"
+#include "Serialize.hpp"
+#include "Logger.h"
 
 namespace Persistence
 {
 
+/* size of each persistence block is stored on 4 bytes */
+constexpr uint8_t PERSISTENCE_DATA_BLOCK_SIZE = 4;
+/* persistence checksum size */
+constexpr uint8_t PERSISTENCE_CHECKSUM_SIZE = 4;
 
 bool PersistenceHandler::restore(const std::string& file_name)
 {
@@ -19,27 +26,32 @@ bool PersistenceHandler::restore(const std::string& file_name)
          std::vector<uint8_t> buffer;
          buffer.resize(file_size);
          file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-         auto it = buffer.begin();
-         while (it != buffer.end())
+         if (validateChecksum(buffer))
          {
-            /* get block name */
-            std::string name ((char*)&(*it));
-            it += name.size() + 1;
-            /* get block size */
-            uint32_t data_size = decodeSize(it);
-            it += PERSISTENCE_DATA_BLOCK_SIZE;
-            /* get block data */
-            std::vector<uint8_t> data (it, it + data_size);
-            it += data_size;
-            GenericListener::notifyChange([&](PersistenceListener* l)
-                  {
-                     if (l->getName() == name)
+            auto it = buffer.begin();
+            while (it != (buffer.end() - PERSISTENCE_CHECKSUM_SIZE))
+            {
+               /* get block name */
+               std::string name ((char*)&(*it));
+               it += name.size() + 1;
+               /* get block size */
+               uint32_t offset = std::distance(buffer.begin(), it);
+               uint32_t data_size = 0;
+               ::deserialize(buffer, offset, data_size);
+               it += PERSISTENCE_DATA_BLOCK_SIZE;
+               /* get block data */
+               std::vector<uint8_t> data (it, it + data_size);
+               it += data_size;
+               GenericListener::notifyChange([&](PersistenceListener* l)
                      {
-                        l->onPersistenceRead(data);
-                     }
-                  });
+                        if (l->getName() == name)
+                        {
+                           l->onPersistenceRead(data);
+                        }
+                     });
+            }
+            result = true;
          }
-         result = true;
       }
    }
    return result;
@@ -62,32 +74,17 @@ bool PersistenceHandler::save(const std::string& file_name)
                /* put NULL char to indicate string end */
                out_buffer.push_back(0x00);
                /* put block size on 4 bytes */
-               encodeSize(out_buffer, (uint32_t)temp_buffer.size());
+               ::serialize(out_buffer, (uint32_t)temp_buffer.size());
                /* insert serialized block data */
                out_buffer.insert(out_buffer.end(), temp_buffer.begin(), temp_buffer.end());
             });
+      addChecksum(out_buffer);
       file.write(reinterpret_cast<char*>(out_buffer.data()), out_buffer.size());
       file.flush();
       file.close();
       result = true;
    }
    return result;
-}
-uint32_t PersistenceHandler::decodeSize(std::vector<uint8_t>::iterator block)
-{
-   uint32_t result = 0;
-   result = (0xFF000000 & (static_cast<uint32_t>(*(block+3) << 24))) |
-            (0x00FF0000 & (static_cast<uint32_t>(*(block+2) << 16))) |
-            (0x0000FF00 & (static_cast<uint32_t>(*(block+1) << 8))) |
-            (0x000000FF & static_cast<uint32_t>(*(block)));
-   return result;
-}
-void PersistenceHandler::encodeSize(std::vector<uint8_t>& buffer, uint32_t size)
-{
-   buffer.push_back(static_cast<uint8_t>(0x000000FF & size));
-   buffer.push_back(static_cast<uint8_t>(0x0000FF00 & size));
-   buffer.push_back(static_cast<uint8_t>(0x00FF0000 & size));
-   buffer.push_back(static_cast<uint8_t>(0xFF000000 & size));
 }
 uint32_t PersistenceHandler::getFileSize(std::istream& file)
 {
@@ -96,4 +93,22 @@ uint32_t PersistenceHandler::getFileSize(std::istream& file)
    file.seekg(0, std::ios::beg);
    return result;
 }
+void PersistenceHandler::addChecksum(std::vector<uint8_t>& data)
+{
+   uint32_t checksum = std::accumulate(data.begin(), data.end(), 0);
+   UT_Log(MAIN, LOW, "writing checksum %.4x", checksum);
+   ::serialize(data, checksum);
+}
+bool PersistenceHandler::validateChecksum(const std::vector<uint8_t>& data)
+{
+   uint32_t offset = data.size() - PERSISTENCE_CHECKSUM_SIZE;
+   uint32_t read_checksum = 0;
+   uint32_t real_checksum = std::accumulate(data.begin(), data.end() - PERSISTENCE_CHECKSUM_SIZE, 0);
+   ::deserialize(data, offset, read_checksum);
+   UT_Log(MAIN, LOW, "checksum read %.4x, checksum calculated %.4x", read_checksum, real_checksum);
+
+   return read_checksum == real_checksum;
+}
+
+
 }
