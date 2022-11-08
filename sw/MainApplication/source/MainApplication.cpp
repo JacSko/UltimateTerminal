@@ -8,7 +8,6 @@
 #include "Serialize.hpp"
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
-constexpr uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
 
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
@@ -265,7 +264,8 @@ void MainApplication::onCurrentPortSelectionChanged(int index)
 bool MainApplication::sendToPort(const std::string& string)
 {
    bool result = false;
-   std::string current_port = ui->portComboBox->currentText().toStdString();
+   std::string port_name = ui->portComboBox->currentText().toStdString();
+   uint8_t port_id = portNameToId(port_name);
    std::string data_to_send = string;
 
    std::string current_ending = ui->lineEndingComboBox->currentText().toStdString();
@@ -280,20 +280,21 @@ bool MainApplication::sendToPort(const std::string& string)
 
    for (const auto& handler : m_port_handlers)
    {
-      if (handler->getName() == current_port)
+      if (handler->getName() == port_name)
       {
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(current_port, data_to_send);
+            addToTerminal(port_name, data_to_send);
+            addToCommandHistory(port_id, string);
          }
          else
          {
             std::string error = "Cannot send data to port ";
-            error += current_port;
+            error += port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(current_port, error);
+            addToTerminal(port_name, error);
          }
       }
    }
@@ -301,9 +302,7 @@ bool MainApplication::sendToPort(const std::string& string)
 }
 void MainApplication::onSendButtonClicked()
 {
-   QString text = ui->textEdit->currentText();
-   addtoCommandHistory(ui->textEdit, text);
-   (void)sendToPort(text.toStdString());
+   (void)sendToPort(ui->textEdit->currentText().toStdString());
 }
 void MainApplication::setButtonColor(QPushButton* button, QColor color)
 {
@@ -361,14 +360,31 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
 }
 
-void MainApplication::addtoCommandHistory(QComboBox* item, const QString& text)
+void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& text)
 {
-   if (!text.isEmpty())
+   if (!text.empty())
    {
-      item->addItem(text);
-      while(ui->textEdit->count() > MAX_COMMANDS_HISTORY_ITEMS)
+      /* insert item at the top of combobox */
+      ui->textEdit->insertItem(0, QString(text.c_str()));
+      /* put in history */
+      std::vector<std::string>& history = m_commands_history[port_id];
+      history.push_back(text);
+      while(history.size() >= MAX_COMMANDS_HISTORY_ITEMS)
       {
-         ui->textEdit->removeItem(ui->textEdit->count() - 1);
+         ui->textEdit->removeItem(history.size());
+         history.erase(history.begin());
       }
+   }
+}
+uint8_t MainApplication::portNameToId(const std::string& name)
+{
+   auto result = std::find_if(m_port_id_name_map.begin(), m_port_id_name_map.end(), [&](const auto& obj){return obj.second == name;});
+   if (result != m_port_id_name_map.end())
+   {
+      return result->first;
+   }
+   else
+   {
+      return 0;
    }
 }

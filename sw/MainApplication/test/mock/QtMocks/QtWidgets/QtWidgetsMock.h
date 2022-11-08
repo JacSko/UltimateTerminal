@@ -245,6 +245,7 @@ public:
    void setEditable(bool){}
    void setInsertPolicy(InsertPolicy policy){}
    QLineEdit* lineEdit(){return nullptr;}
+   void insertItem(int index, const QString&text);
    int count();
 };
 
@@ -409,6 +410,7 @@ struct QtWidgetsMock
    MOCK_METHOD1(QComboBox_currentText, QString(QComboBox*));
    MOCK_METHOD2(QComboBox_findText, int(QComboBox*, const QString&));
    MOCK_METHOD2(QComboBox_itemText, QString(QComboBox*, int));
+   MOCK_METHOD3(QComboBox_insertItem, void(QComboBox*, int, const QString&));
    MOCK_METHOD2(QComboBox_removeItem, void(QComboBox*, int));
    MOCK_METHOD1(QComboBox_count, int(QComboBox*));
 

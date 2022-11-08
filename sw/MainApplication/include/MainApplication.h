@@ -29,6 +29,8 @@ class MainApplication : public QMainWindow,
 public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
+
+    static const uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<Utilities::ITimers> m_timers;
@@ -43,6 +45,7 @@ private:
     bool m_trace_scrolling_active;
     uint32_t m_scroll_default_color;
     std::map<uint8_t,std::string> m_port_id_name_map;
+    std::map<uint8_t, std::vector<std::string>> m_commands_history;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
@@ -53,7 +56,8 @@ private:
     void setTraceScrolling(bool active);
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
-    void addtoCommandHistory(QComboBox* item, const QString& text);
+    void addToCommandHistory(uint8_t port_id, const std::string& text);
+    uint8_t portNameToId(const std::string& name);
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

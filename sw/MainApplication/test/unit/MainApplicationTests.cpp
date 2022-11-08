@@ -665,8 +665,6 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillOnce(Return(0));
    /* different name to not match empty name from combobox */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
    m_test_subject->onSendButtonClicked();
@@ -709,8 +707,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<uint32_t>()));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillOnce(Return(0));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
 
    m_test_subject->onSendButtonClicked();
 }
@@ -751,8 +748,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<uint32_t>()));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillOnce(Return(0));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
 
    m_test_subject->onSendButtonClicked();
 }
@@ -793,8 +789,6 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<uint32_t>()));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillOnce(Return(0));
 
    m_test_subject->onSendButtonClicked();
 }
@@ -850,53 +844,52 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
 
 }
 
-TEST_F(MainApplicationFixture, command_history_adding_and_removing)
+TEST_F(MainApplicationFixture, command_history_item_removing)
 {
    /**
-    * <b>scenario</b>: Sending command to port <br>
-    * <b>expected</b>: Currently set command added to QComboBox history.<br>
-    *                  If history limit has been reached, the oldest item is removed. <br>
+    * <b>scenario</b>: Port opened, command history is full, removing the oldest items started. <br>
+    * <b>expected</b>: Last items shall be removed from combobox. <br>
     * ************************************************
     */
-   const std::string PORT_HANDLER_NAME = "NAME1";
+
    const std::string DATA_TO_SEND = "some command to send";
-   const std::string LINE_ENDING = "\n";
+   const std::string LINE_ENDING = "\\n";
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.port_id = 2;
+   port_open_event.event = GUI::Event::CONNECTED;
    QListWidgetItem terminal_item;
-   uint32_t items_count = 103;
 
-   /* empty command shall not be added */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString("")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
-   m_test_subject->onSendButtonClicked();
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(port_open_event.name.c_str())));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
 
-   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
+   /* start writing data to this port */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillRepeatedly(Return(QString(port_open_event.name.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillRepeatedly(Return(QString(DATA_TO_SEND.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(port_open_event.name));
+   /* size to write should be 1 byte more because \n is added */
+   std::string data_payload = DATA_TO_SEND + '\n';
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillRepeatedly(Return(true));
 
-   /* sending first command, items limit not reached */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillOnce(Return(1));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
-   m_test_subject->onSendButtonClicked();
-
-   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
-
-   /* sending second command, simulate full history */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_text_edit, QString(DATA_TO_SEND.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_text_edit)).WillRepeatedly(Invoke([&](QComboBox*)->int{return items_count;})); // full history exceeded by 3 items, expect removing
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_text_edit, _)).WillRepeatedly(Invoke([&](QComboBox*, int item)
-         {
-            items_count--;
-            EXPECT_EQ(item, items_count);
-         }));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName()).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
-   m_test_subject->onSendButtonClicked();
+   /* writing data to terminal */
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillRepeatedly(Return(&terminal_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND))).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillRepeatedly(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillRepeatedly(Return(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _)).Times(AtLeast(1));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND))).Times(AtLeast(1));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<uint32_t>()));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str()))).Times(AtLeast(1));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_text_edit, _)).Times(AtLeast(1));
+   for (uint8_t i = 0; i < MainApplication::MAX_COMMANDS_HISTORY_ITEMS + 10; i++)
+   {
+      m_test_subject->onSendButtonClicked();
+   }
 }
 
 

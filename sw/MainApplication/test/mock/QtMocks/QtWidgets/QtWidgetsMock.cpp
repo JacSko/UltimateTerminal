@@ -142,6 +142,10 @@ QString QComboBox::itemText(int idx)
 {
    return g_widgets_mock->QComboBox_itemText(this, idx);
 }
+void QComboBox::insertItem(int idx, const QString& text)
+{
+   g_widgets_mock->QComboBox_insertItem(this, idx, text);
+}
 void QComboBox::removeItem(int index)
 {
    g_widgets_mock->QComboBox_removeItem(this, index);
