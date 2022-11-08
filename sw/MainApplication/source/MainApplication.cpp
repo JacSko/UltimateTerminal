@@ -363,6 +363,29 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, m_trace_scrolling_active);
    ::deserialize(data, offset, line_ending);
 
+   uint8_t ports_count;
+   ::deserialize(data, offset, ports_count);
+   for (uint8_t i = 0; i < ports_count; i++)
+   {
+      uint8_t port_id;
+      uint32_t commands_size;
+      std::vector<std::string> port_commands;
+      ::deserialize(data, offset, port_id);
+      ::deserialize(data, offset, commands_size);
+      for (uint32_t i = 0; i < commands_size; i++)
+      {
+         std::string command;
+         ::deserialize(data, offset, command);
+         port_commands.push_back(command);
+      }
+
+      if (port_id <= 5)
+      {
+         m_commands_history[port_id] = port_commands;
+      }
+      UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
+   }
+
    setScrolling(m_scrolling_active);
    setTraceScrolling(m_trace_scrolling_active);
    ui->lineEndingComboBox->setCurrentText(QString(line_ending.c_str()));
@@ -375,6 +398,17 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_scrolling_active);
    ::serialize(data, m_trace_scrolling_active);
    ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
+   ::serialize(data, (uint8_t)m_commands_history.size());
+   for (const auto& item : m_commands_history)
+   {
+      ::serialize(data, item.first);
+      ::serialize(data, (uint32_t)item.second.size());
+      for (const std::string& history_item : item.second)
+      {
+         ::serialize(data, history_item);
+      }
+      UT_Log(MAIN, HIGH, "Serialized %u commands for port %u", item.second.size(), item.first);
+   }
 }
 
 void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& text)
