@@ -19,6 +19,7 @@ m_scrolling_active(false),
 m_trace_scrolling_active(false)
 {
     ui->setupUi(this);
+    this->setWindowTitle("UltimateTerminal");
 
     m_scroll_default_color = ui->scrollButton->palette().color(QPalette::Button).rgb();
 
