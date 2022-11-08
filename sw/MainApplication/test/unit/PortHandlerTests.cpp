@@ -129,7 +129,6 @@ TEST_F(PortHandlerFixture, connecting_with_default_settings)
 
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("PORT"));
-   EXPECT_EQ(receivied_event.size, 0);
 }
 
 TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
@@ -183,7 +182,6 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
    /* data received from port, three events */
    const std::vector<uint8_t> event_data = {'a', 'b', 'c', '\r', '\n', 'd', 'e', 'f', 'n'};
@@ -213,7 +211,6 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    EXPECT_EQ(receivied_event.event, GUI::Event::NEW_DATA);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_THAT(receivied_event.data, ContainerEq(event_data));
-   EXPECT_EQ(receivied_event.size, event_data.size());
 
    /* data send to port */
    const std::vector<uint8_t> data_to_write (event_data.rbegin(), event_data.rend());
@@ -249,7 +246,6 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    EXPECT_EQ(receivied_event.event, GUI::Event::DISCONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
 }
 
@@ -300,7 +296,6 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
    /* request to open settings dialog */
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,false));
@@ -325,7 +320,6 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    EXPECT_EQ(receivied_event.event, GUI::Event::DISCONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
    /* request to open settings dialog */
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true));
@@ -419,7 +413,6 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTING);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
    while(timer_running)
    {
@@ -431,7 +424,6 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
 }
 
@@ -491,7 +483,6 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTING);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
    while(!simulate_abort)
    {
@@ -507,7 +498,6 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_EQ(receivied_event.event, GUI::Event::DISCONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
-   EXPECT_EQ(receivied_event.size, 0);
 
 }
 

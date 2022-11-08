@@ -221,7 +221,6 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    port_data_event.event = GUI::Event::NEW_DATA;
    port_data_event.trace_color = TEST_TRACE_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   port_data_event.size = port_data_event.data.size();
    GUI::PortHandlerEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
@@ -245,7 +244,6 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
 
    /* adding item without newline at the end */
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t'};
-   port_data_event.size = port_data_event.data.size();
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_TRACE_COLOR)));
@@ -345,7 +343,6 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    port_data_event.event = GUI::Event::NEW_DATA;
    port_data_event.trace_color = TEST_TRACE_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   port_data_event.size = port_data_event.data.size();
    GUI::PortHandlerEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
@@ -494,7 +491,6 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    port_data_event.event = GUI::Event::NEW_DATA;
    port_data_event.trace_color = TEST_TRACE_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   port_data_event.size = port_data_event.data.size();
    GUI::PortHandlerEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
@@ -571,7 +567,6 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    port_data_event.port_id = 2;
    port_data_event.trace_color = TEST_TRACE_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   port_data_event.size = port_data_event.data.size();
    GUI::PortHandlerEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;

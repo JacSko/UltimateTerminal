@@ -31,7 +31,6 @@ struct PortHandlerEvent
    uint32_t trace_color;
    Event event;
    std::vector<uint8_t> data;
-   size_t size;
 };
 
 class PortHandlerListener
@@ -54,7 +53,6 @@ public:
    ~PortHandler();
 
    const std::string& getName();
-   int getUniqueId();
    bool write(const std::vector<uint8_t>& data, size_t size = 0);
 private:
 
@@ -89,7 +87,7 @@ private:
    void handleButtonClickEthernet();
    void setButtonState(ButtonState);
    void setButtonName(const std::string name);
-   void notifyListeners(Event event, const std::vector<uint8_t>& data = {}, size_t size = 0);
+   void notifyListeners(Event event, const std::vector<uint8_t>& data = {});
    Event toPortHandlerEvent(Drivers::SocketClient::ClientEvent);
    Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;

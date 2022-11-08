@@ -64,10 +64,10 @@ PortHandler::~PortHandler()
    m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
 }
-void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
+void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
    UT_Log(PORT_HANDLER, LOW, "Notifying listeners - id %u[%s] event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
-   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, event, data, size});});
+   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, event, data});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
 {
@@ -88,11 +88,6 @@ const std::string& PortHandler::getName()
 {
    return m_settings.port_name;
 }
-int PortHandler::getUniqueId()
-{
-   return m_settings.port_id;
-}
-
 bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    if (m_socket->isConnected())
@@ -108,17 +103,17 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
       return false;
    }
 }
-void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
+void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data});
    emit portEvent();
 }
-void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
+void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    UT_Log(PORT_HANDLER, HIGH, "new event %u", (uint8_t)ev);
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data});
    emit portEvent();
 }
 void PortHandler::onPortEvent()
@@ -135,7 +130,7 @@ void PortHandler::onPortEvent()
       }
       else if (event.event == Event::NEW_DATA)
       {
-         notifyListeners(Event::NEW_DATA, event.data, event.size);
+         notifyListeners(Event::NEW_DATA, event.data);
       }
       else
       {
