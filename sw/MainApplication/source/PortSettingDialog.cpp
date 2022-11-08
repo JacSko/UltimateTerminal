@@ -70,7 +70,7 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
 
-   std::string window_title = current_settings.native_name + " Settings";
+   std::string window_title = "PORT" + std::to_string(current_settings.port_id) + " Settings";
    m_dialog->setWindowTitle(QString(window_title.c_str()));
    addPortTypeComboBox(current_settings.type);
 
@@ -281,6 +281,7 @@ void PortSettingDialog::clearDialog()
 }
 bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 {
+   out_settings = m_current_settings;
    out_settings.type.fromName(m_portTypeBox->currentText().toStdString());
    UT_Log(GUI_DIALOG, MEDIUM, "collecting settings for %s", out_settings.type.toName().c_str());
 

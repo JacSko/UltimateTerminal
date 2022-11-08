@@ -99,7 +99,7 @@ TEST_P(PortSettingDialogParam, some_test)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowTitle(&test_dialog, HasSubstr(current_settings.native_name)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowTitle(&test_dialog, HasSubstr(std::string("PORT" + std::to_string(current_settings.port_id)))));
 
    if (current_settings.type == PortSettingDialog::PortType::ETHERNET)
    {
@@ -404,6 +404,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_EQ(new_settings.type, user_settings.type);
          EXPECT_EQ(new_settings.port_name, user_settings.port_name);
          EXPECT_EQ(new_settings.trace_color, user_settings.trace_color);
+         EXPECT_EQ(new_settings.port_id, user_settings.port_id);
          if (user_settings.type == PortSettingDialog::PortType::ETHERNET)
          {
             EXPECT_EQ(new_settings.ip_address, user_settings.ip_address);
@@ -430,7 +431,6 @@ TEST_P(PortSettingDialogParam, some_test)
    }
 }
 
-constexpr const char* TEST_NATIVE_PORT_NAME = "PORT1";
 constexpr const char* TEST_PORT_NAME = "OLD_NAME";
 constexpr const char* TEST_NEW_PORT_NAME = "NEW_NAME";
 constexpr const char* TEST_DEVICE_PATH = "/dev/ttyUSB0";
@@ -438,6 +438,7 @@ constexpr const char* TEST_NEW_DEVICE_PATH = "/dev/ttyUSB3";
 constexpr const char* TEST_CORRECT_IP_ADDRESS = "127.0.0.1";
 constexpr const char* TEST_NEW_CORRECT_IP_ADDRESS = "127.0.0.4";
 constexpr const char* TEST_INCORRECT_IP_ADDRESS = "222.333.444.555";
+constexpr uint8_t TEST_PORT_ID = 3;
 constexpr uint32_t TEST_CORRECT_IP_PORT = 1234;
 constexpr uint32_t TEST_NEW_CORRECT_IP_PORT = 4321;
 constexpr uint32_t TEST_INCORRECT_IP_PORT = 9999999;
@@ -461,8 +462,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::ETHERNET,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::ETHERNET,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -474,8 +475,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -503,8 +504,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -516,8 +517,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::ETHERNET,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::ETHERNET,
                                         TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -544,8 +545,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::ETHERNET,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::ETHERNET,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -557,8 +558,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::ETHERNET,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::ETHERNET,
                                         TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -585,8 +586,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -598,8 +599,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -626,8 +627,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -639,8 +640,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -667,8 +668,8 @@ TestParam params[] =
       {
             true, // editable
             true, // accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -680,8 +681,8 @@ TestParam params[] =
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
                                        TEST_TRACE_COLOR}, // old settings
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                       TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                       PortSettingDialog::PortType::SERIAL,
                                        TEST_NEW_PORT_NAME,
                                        {TEST_NEW_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -707,8 +708,8 @@ TestParam params[] =
       {
             false, // editable
             false, // not accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::SERIAL,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::SERIAL,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
@@ -735,8 +736,8 @@ TestParam params[] =
       {
             false, // editable
             false, // not accepted
-            PortSettingDialog::Settings{PortSettingDialog::PortType::ETHERNET,
-                                        TEST_NATIVE_PORT_NAME,
+            PortSettingDialog::Settings{TEST_PORT_ID,
+                                        PortSettingDialog::PortType::ETHERNET,
                                         TEST_PORT_NAME,
                                        {TEST_DEVICE_PATH,
                                         Drivers::Serial::DataMode::NEW_LINE_DELIMITER,

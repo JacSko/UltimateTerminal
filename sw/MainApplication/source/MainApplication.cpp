@@ -352,7 +352,7 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 
 void MainApplication::addtoCommandHistory(QComboBox* item, const QString& text)
 {
-   if (!text.empty())
+   if (!text.isEmpty())
    {
       item->addItem(text);
       while(ui->textEdit->count() > MAX_COMMANDS_HISTORY_ITEMS)

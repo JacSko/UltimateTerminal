@@ -26,6 +26,7 @@ enum class Event
 
 struct PortHandlerEvent
 {
+   uint8_t port_id;
    std::string name;
    uint32_t trace_color;
    Event event;
@@ -53,7 +54,7 @@ public:
    ~PortHandler();
 
    const std::string& getName();
-   const std::string& getNativeName();
+   int getUniqueId();
    bool write(const std::vector<uint8_t>& data, size_t size = 0);
 private:
 
@@ -77,7 +78,6 @@ private:
    std::queue<PortHandlerEvent> m_events;
    std::mutex m_event_mutex;
    std::mutex m_listener_mutex;
-   uint8_t m_port_id;
    Persistence::PersistenceHandler& m_persistence;
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);

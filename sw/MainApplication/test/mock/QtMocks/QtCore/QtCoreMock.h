@@ -39,7 +39,7 @@ public:
    {
       return std::stoi(*this);
    }
-   bool isEmpty()
+   bool isEmpty() const
    {
       return std::string::empty();
    }

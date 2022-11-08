@@ -26,8 +26,6 @@ m_timer_id(TIMERS_INVALID_ID),
 m_persistence(persistence)
 {
    PORT_ID++;
-   m_port_id = PORT_ID;
-   UT_Log(PORT_HANDLER, INFO, "Creating port handler for PORT%u", m_port_id);
 
    UT_Assert(object && "invalid QObject pointer");
    GenericListener::addListener(*listener);
@@ -35,12 +33,14 @@ m_persistence(persistence)
    m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
 
-   m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
-   m_settings.native_name = m_settings.port_name;
-   Persistence::PersistenceListener::setName(m_settings.native_name);
+   m_settings.port_id = PORT_ID;
+   m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
+   UT_Log(PORT_HANDLER, INFO, "Creating port handler for PORT%u", m_settings.port_id);
+
+   Persistence::PersistenceListener::setName(m_settings.port_name);
    m_persistence.addListener(*this);
    setButtonState(ButtonState::DISCONNECTED);
-   setButtonName(std::string("PORT") + std::to_string(m_port_id));
+   setButtonName(m_settings.port_name);
    notifyListeners(Event::DISCONNECTED);
 
    object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
@@ -66,8 +66,8 @@ PortHandler::~PortHandler()
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data, size_t size)
 {
-   UT_Log(PORT_HANDLER, LOW, "Notifying listeners - id %u[%s] event %u", m_port_id, m_settings.port_name.c_str(), (uint8_t)event);
-   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_name, m_settings.trace_color, event, data, size});});
+   UT_Log(PORT_HANDLER, LOW, "Notifying listeners - id %u[%s] event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
+   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, event, data, size});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
 {
@@ -88,9 +88,9 @@ const std::string& PortHandler::getName()
 {
    return m_settings.port_name;
 }
-const std::string& PortHandler::getNativeName()
+int PortHandler::getUniqueId()
 {
-   return m_settings.native_name;
+   return m_settings.port_id;
 }
 
 bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
@@ -111,14 +111,14 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
    emit portEvent();
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    UT_Log(PORT_HANDLER, HIGH, "new event %u", (uint8_t)ev);
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data, size});
    emit portEvent();
 }
 void PortHandler::onPortEvent()
@@ -159,7 +159,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
    if (m_settings.port_name.empty())
    {
       /* override with default port name if not provided by user */
-      m_settings.port_name = std::string("PORT") + std::to_string(m_port_id);
+      m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    }
 
    m_summary_label->setText(m_settings.shortSettingsString().c_str());
@@ -169,7 +169,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);
-   UT_Log(PORT_HANDLER, LOW, "got new settings - id %u[%s] settings %s", m_port_id, m_settings.port_name, m_settings.shortSettingsString().c_str());
+   UT_Log(PORT_HANDLER, LOW, "got new settings - id %u[%s] settings %s", m_settings.port_id, m_settings.port_name, m_settings.shortSettingsString().c_str());
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {
@@ -300,6 +300,7 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 
    ::deserialize(data, offset, new_settings.ip_address);
    ::deserialize(data, offset, new_settings.port);
+   ::deserialize(data, offset, new_settings.port_id);
    ::deserialize(data, offset, new_settings.port_name);
    ::deserialize(data, offset, baudrate_name);
    ::deserialize(data, offset, databits_name);
@@ -334,13 +335,14 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 }
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
-   UT_Log(PORT_HANDLER, LOW, "Saving persistence for port %u, name %s", m_port_id, m_settings.port_name.c_str());
+   UT_Log(PORT_HANDLER, LOW, "Saving persistence for port %u, name %s", m_settings.port_id, m_settings.port_name.c_str());
    serialize(data, m_settings);
 }
 void PortHandler::serialize(std::vector<uint8_t>& buffer, const PortSettingDialog::Settings& item)
 {
    ::serialize(buffer, m_settings.ip_address);
    ::serialize(buffer, m_settings.port);
+   ::serialize(buffer, m_settings.port_id);
    ::serialize(buffer, m_settings.port_name);
    ::serialize(buffer, m_settings.serialSettings.baudRate.toName());
    ::serialize(buffer, m_settings.serialSettings.dataBits.toName());
