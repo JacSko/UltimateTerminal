@@ -240,6 +240,7 @@ public:
    void setCurrentText(const QString&);
    QString currentText();
    int findText(const QString &text);
+   QString itemText(int index);
    void removeItem(int index);
    void setEditable(bool){}
    void setInsertPolicy(InsertPolicy policy){}
@@ -407,6 +408,7 @@ struct QtWidgetsMock
    MOCK_METHOD2(QComboBox_setCurrentText, void(QComboBox*, const QString&));
    MOCK_METHOD1(QComboBox_currentText, QString(QComboBox*));
    MOCK_METHOD2(QComboBox_findText, int(QComboBox*, const QString&));
+   MOCK_METHOD2(QComboBox_itemText, QString(QComboBox*, int));
    MOCK_METHOD2(QComboBox_removeItem, void(QComboBox*, int));
    MOCK_METHOD1(QComboBox_count, int(QComboBox*));
 

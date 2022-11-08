@@ -199,6 +199,8 @@ void MainApplication::connectSignalsToSlots()
 
    connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
    connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
+
+   connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -254,6 +256,11 @@ void MainApplication::onClearButtonClicked()
 {
    UT_Log(MAIN, MEDIUM, "Clearing requested");
    ui->terminalView->clear();
+}
+void MainApplication::onCurrentPortSelectionChanged(int index)
+{
+   std::string port_name = ui->portComboBox->itemText(index).toStdString();
+   UT_Log(MAIN, LOW, "Selected port changed, idx %u, name %s", (uint8_t) index, port_name.c_str());
 }
 bool MainApplication::sendToPort(const std::string& string)
 {

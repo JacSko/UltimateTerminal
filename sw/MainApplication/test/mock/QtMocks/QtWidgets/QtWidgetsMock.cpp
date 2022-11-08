@@ -138,6 +138,10 @@ int QComboBox::findText(const QString &text)
 {
    return g_widgets_mock->QComboBox_findText(this, text);
 }
+QString QComboBox::itemText(int idx)
+{
+   return g_widgets_mock->QComboBox_itemText(this, idx);
+}
 void QComboBox::removeItem(int index)
 {
    g_widgets_mock->QComboBox_removeItem(this, index);

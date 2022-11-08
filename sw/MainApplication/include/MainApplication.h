@@ -63,6 +63,7 @@ public slots:
    void onTraceClearButtonClicked();
    void onSendButtonClicked();
    void onLoggingButtonContextMenuRequested();
+   void onCurrentPortSelectionChanged(int );
 
 };
 #endif

@@ -109,6 +109,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_logging_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onLoggingButtonContextMenuRequested")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_scroll_button, HasSubstr("clicked"), _, HasSubstr("onScrollButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_trace_scroll_button, HasSubstr("clicked"), _, HasSubstr("onTraceScrollButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port_box, HasSubstr("currentIndexChanged"), _, HasSubstr("onCurrentPortSelectionChanged")));
 
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_logging_button, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_line_ending_box, _)).Times(3);
