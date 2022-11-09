@@ -7,8 +7,27 @@
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 
+#include <libgen.h>         // dirname
+#include <unistd.h>         // readlink
+
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
+
+
+namespace system_call
+{
+__attribute__((weak)) std::string getExecutablePath()
+{
+   constexpr uint32_t MAX_PATH_LENGTH = 4096;
+   char result[MAX_PATH_LENGTH];
+   ssize_t count = readlink("/proc/self/exe", result, MAX_PATH_LENGTH);
+   const char *path;
+   if (count != -1) {
+       path = dirname(result);
+   }
+   return std::string(path);
+}
+}
 
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
@@ -27,7 +46,7 @@ m_trace_scrolling_active(false)
     Persistence::PersistenceListener::setName("MAIN_APPLICATION");
     m_persistence.addListener(*this);
     Settings::SettingsHandler::create();
-    Settings::SettingsHandler::get()->start(CONFIG_FILE, m_timers.get());
+    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE, m_timers.get());
     LoggerEngine::get()->startFrontends();
 
     UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());

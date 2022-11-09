@@ -27,6 +27,13 @@ std::unique_ptr<IFileLogger> IFileLogger::create()
    return std::unique_ptr<IFileLogger>(g_logger_mock);
 }
 
+namespace system_call
+{
+__attribute__((weak)) std::string getExecutablePath()
+{
+   return "";
+}
+}
 
 struct MainApplicationFixture : public testing::Test
 {
