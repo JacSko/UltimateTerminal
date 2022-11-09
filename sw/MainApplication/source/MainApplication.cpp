@@ -30,6 +30,7 @@ m_trace_scrolling_active(false)
     LoggerEngine::get()->startFrontends();
 
     UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
+    ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
 
     Settings::SettingsHandler::get()->printSettings();
     m_timers->start();
