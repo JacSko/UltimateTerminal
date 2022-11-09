@@ -131,13 +131,6 @@
           <item row="1" column="0" colspan="5">
            <widget class="QListWidget" name="terminalView"/>
           </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QPushButton" name="clearButton">
-            <property name="text">
-             <string>CLEAR</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QComboBox" name="portComboBox">
             <property name="sizePolicy">
@@ -191,6 +184,13 @@
             </property>
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="3">
+           <widget class="QPushButton" name="clearButton">
+            <property name="text">
+             <string>CLEAR</string>
             </property>
            </widget>
           </item>
