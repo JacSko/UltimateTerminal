@@ -35,7 +35,9 @@ target_link_libraries(UltimateTerminal
    pthread
    MainApplication
 )
-
+add_custom_command(TARGET UltimateTerminal POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
+                   COMMENT "Copying setitngs file")
 else()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs -ftest-coverage -fno-exceptions -fPIC -O0")
    enable_testing()
