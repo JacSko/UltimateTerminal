@@ -104,6 +104,8 @@ m_trace_scrolling_active(false)
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
 
+    m_file_logger_settings.file_path = system_call::getExecutablePath();
+
     for (auto& handler : m_user_button_handlers)
     {
        handler->startThread();

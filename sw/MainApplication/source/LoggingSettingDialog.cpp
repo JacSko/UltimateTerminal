@@ -24,7 +24,7 @@ std::optional<bool> LoggingSettingDialog::showDialog(QWidget* parent, const Sett
    m_dialog = new QDialog(parent);
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
-
+   m_current_settings = current_settings;
 
    // create file path edit
    QString file_path_label = QString("File path:");
@@ -83,7 +83,7 @@ void LoggingSettingDialog::addDialogButtons()
 void LoggingSettingDialog::onPathSelectButtonClicked()
 {
    QString dir = QFileDialog::getExistingDirectory(m_dialog, tr("Select directory"),
-                                                "/home",
+                                                QString(m_current_settings.file_path.c_str()),
                                                 QFileDialog::ShowDirsOnly
                                                 | QFileDialog::DontResolveSymlinks);
    m_filePathEdit->setText(dir);

@@ -41,7 +41,7 @@ private:
    QLineEdit* m_filePathEdit;
    QPushButton* m_pathSelectButton;
    QCheckBox* m_autoNameBox;
-
+   Settings m_current_settings;
    bool m_editable;
 
    void addDialogButtons();
