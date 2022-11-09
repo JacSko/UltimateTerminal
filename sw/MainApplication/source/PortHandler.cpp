@@ -9,9 +9,9 @@
 namespace GUI
 {
 
+static uint8_t PORT_ID = 0;
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
-static uint8_t PORT_ID = 0;
 
 PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timers, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence):
 m_object(object),
@@ -66,7 +66,7 @@ PortHandler::~PortHandler()
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
-   UT_Log(PORT_HANDLER, LOW, "Notifying listeners - id %u[%s] event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] - Notifying listeners, event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
    GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, event, data});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
@@ -90,6 +90,7 @@ const std::string& PortHandler::getName()
 }
 bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
+   UT_Log(PORT_HANDLER, HIGH, "PORT%u[%s] writing %u bytes", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)data.size());
    if (m_socket->isConnected())
    {
       return m_socket->write(data, size);
@@ -111,7 +112,6 @@ void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t)
 {
-   UT_Log(PORT_HANDLER, HIGH, "new event %u", (uint8_t)ev);
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data});
    emit portEvent();
@@ -124,6 +124,7 @@ void PortHandler::onPortEvent()
       PortHandlerEvent& event = m_events.front();
       if (event.event == Event::DISCONNECTED)
       {
+         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] server disconnected, closing client", m_settings.port_id, m_settings.port_name.c_str());
          m_socket->disconnect();
          setButtonState(ButtonState::DISCONNECTED);
          notifyListeners(Event::DISCONNECTED);
@@ -134,7 +135,7 @@ void PortHandler::onPortEvent()
       }
       else
       {
-         UT_Log(PORT_HANDLER, ERROR, "Unknown event received %u", (uint8_t) event.event);
+         UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Unknown event received %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t) event.event);
       }
       m_events.pop();
    }
@@ -144,7 +145,7 @@ void PortHandler::onTimeout(uint32_t timer_id)
    // another thread
    if (timer_id == m_timer_id)
    {
-      UT_Log(PORT_HANDLER, LOW, "Retrying connect...");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Retrying connect...", m_settings.port_id, m_settings.port_name.c_str());
       tryConnectToSocket();
    }
 }
@@ -164,7 +165,7 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);
-   UT_Log(PORT_HANDLER, LOW, "got new settings - id %u[%s] settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {
@@ -208,23 +209,23 @@ void PortHandler::handleButtonClickSerial()
 
    if (m_serial->isOpened())
    {
-      UT_Log(PORT_HANDLER, LOW, "trying to close serial port");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to close serial port", m_settings.port_id, m_settings.port_name.c_str());
       m_serial->close();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else
    {
-      UT_Log(PORT_HANDLER, LOW, "trying to open serial port");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to open serial port", m_settings.port_id, m_settings.port_name.c_str());
       if (m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, m_settings.serialSettings))
       {
-         UT_Log(PORT_HANDLER, LOW, "serial port opened correctly");
+         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] serial port opened correctly", m_settings.port_id, m_settings.port_name.c_str());
          setButtonState(ButtonState::CONNECTED);
          notifyListeners(Event::CONNECTED);
       }
       else
       {
-         UT_Log(PORT_HANDLER, ERROR, "Cannot open serial");
+         UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
       }
    }
 }
@@ -233,21 +234,21 @@ void PortHandler::handleButtonClickEthernet()
    UT_Assert(m_socket && "Socket client not created");
    if (m_socket->isConnected())
    {
-      UT_Log(PORT_HANDLER, LOW, "trying to disconnet socket");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to disconnet socket", m_settings.port_id, m_settings.port_name.c_str());
       m_socket->disconnect();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else if (m_button_state == ButtonState::CONNECTING)
    {
-      UT_Log(PORT_HANDLER, LOW, "aborting connection attempts!");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] aborting connection attempts!", m_settings.port_id, m_settings.port_name.c_str());
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
    }
    else
    {
-      UT_Log(PORT_HANDLER, LOW, "trying to connect server");
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to connect server", m_settings.port_id, m_settings.port_name.c_str());
       tryConnectToSocket();
    }
 }
@@ -255,14 +256,14 @@ void PortHandler::tryConnectToSocket()
 {
    if(m_socket->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, m_settings.ip_address, m_settings.port))
    {
-      UT_Log(PORT_HANDLER, LOW, "Successfully connected to %s:%u", m_settings.ip_address.c_str(), m_settings.port);
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Successfully connected to %s:%u", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port);
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTED);
       notifyListeners(Event::CONNECTED);
    }
    else
    {
-      UT_Log(PORT_HANDLER, LOW, "Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTING);
@@ -271,7 +272,7 @@ void PortHandler::tryConnectToSocket()
 }
 void PortHandler::setButtonState(ButtonState state)
 {
-   UT_Log(PORT_HANDLER, LOW, "setting button state %.6x", (uint32_t)state);
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] setting button state %.6x", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)state);
    m_button_state = state;
    QPalette palette = m_object->palette();
    palette.setColor(QPalette::Button, QColor((uint32_t)state));
@@ -314,12 +315,11 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 
    if (new_settings.areValid())
    {
-      UT_Log(PORT_HANDLER, LOW, "got new settings: %s", new_settings.shortSettingsString().c_str());
       handleNewSettings(new_settings);
    }
    else
    {
-      UT_Log(PORT_HANDLER, ERROR, "Error restoring from persistence, errors:");
+      UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Error restoring from persistence, errors:", m_settings.port_id, m_settings.port_name.c_str());
       auto errors = new_settings.getErrorStrings();
       for (auto& error : errors)
       {
@@ -330,7 +330,7 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 }
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
-   UT_Log(PORT_HANDLER, LOW, "Saving persistence for port %u, name %s", m_settings.port_id, m_settings.port_name.c_str());
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence", m_settings.port_id, m_settings.port_name.c_str());
    serialize(data, m_settings);
 }
 void PortHandler::serialize(std::vector<uint8_t>& buffer, const PortSettingDialog::Settings& item)

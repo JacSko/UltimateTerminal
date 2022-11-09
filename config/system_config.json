@@ -15,5 +15,8 @@
   "Logger_group_SERIAL_DRV": "HIGH",
   "Logger_group_TRACE_FILTER": "HIGH",
   "Logger_group_PORT_HANDLER": "HIGH",
+  "Logger_group_USER_BTN_HANDLER": "HIGH",
+  "Logger_group_PERSISTENCE": "HIGH",
+  "MainApplication_maxTerminalTraces": 10000,
   "PortSettingDialog_maxLineEditLength": 30
 }

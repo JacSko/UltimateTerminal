@@ -31,13 +31,15 @@ public:
    }
    void execute()
    {
-      UT_Log(MAIN, LOW, "starting execution");
+      UT_Log(USER_BTN_HANDLER, LOW, "starting execution");
       std::lock_guard<std::mutex> lock(m_mutex);
       m_isActive = true;
       m_cond_var.notify_all();
    }
    int parseCommands(const std::string& text)
    {
+      UT_Log(USER_BTN_HANDLER, HIGH, "parsing new commands");
+
       std::lock_guard<std::mutex> lock(m_mutex);
       int result = 0;
       if (!m_isActive)
@@ -48,6 +50,7 @@ public:
          std::string command;
          while(std::getline(ss, command, '\n'))
          {
+            UT_Log(USER_BTN_HANDLER, HIGH, "command [%s]", command.c_str());
             if(isSpecialCommand(command))
             {
                addSpecialCommand(command);
@@ -58,7 +61,7 @@ public:
             }
          }
          result = m_commands.size();
-         UT_Log(MAIN, LOW, "created %u commands", m_commands.size());
+         UT_Log(USER_BTN_HANDLER, LOW, "created %u commands", m_commands.size());
       }
       return result;
    }
@@ -73,15 +76,15 @@ private:
       std::regex_match(command.cbegin(), command.cend(), matches, std::regex("(__.*)\\((.*)\\)"));
       if (matches.size() > 1)
       {
-         UT_Log(MAIN_GUI, HIGH, "got %u matches", matches.size());
          if (matches[1] == "__wait")
          {
-            divideWaitTime(std::stoi(matches[2]));
+            prepareWaitCommand(std::stoi(matches[2]));
          }
       }
    }
-   void divideWaitTime(uint32_t time)
+   void prepareWaitCommand(uint32_t time)
    {
+      UT_Log(USER_BTN_HANDLER, HIGH, "preparing wait command with %ums timeout", time);
       while (time)
       {
          uint32_t timeout = MAXIMUM_WAIT_TIME;
@@ -105,6 +108,7 @@ private:
 
          if (activated)
          {
+            UT_Log(USER_BTN_HANDLER, HIGH, "Thread unlocked");
             std::vector<std::function<bool()>>::iterator it = m_commands.begin();
             while (it != m_commands.end() && Utilities::ThreadWorker::isRunning())
             {
@@ -112,6 +116,7 @@ private:
                {
                   if (!(*it)())
                   {
+                     UT_Log(USER_BTN_HANDLER, ERROR, "Cannot execute command, aborting!");
                      break;
                   }
                }
@@ -123,6 +128,7 @@ private:
                m_isActive = false;
                if (m_callback)
                {
+                  UT_Log(USER_BTN_HANDLER, LOW, "Command execution result %u", it == m_commands.end());
                   m_callback(it == m_commands.end());
                }
             }

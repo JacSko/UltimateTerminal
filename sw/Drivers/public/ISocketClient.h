@@ -79,7 +79,7 @@ public:
     */
    virtual void disconnect() = 0;
    /**
-    * @brief Returns iformation if client is currently connected to the server.
+    * @brief Returns information if client is currently connected to the server.
     * @return True if connected.
     */
    virtual bool isConnected() = 0;

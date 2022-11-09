@@ -11,6 +11,7 @@
 #include "ITimersMock.h"
 #include "PersistenceHandlerMock.h"
 #include "IFileLoggerMock.h"
+#include "Settings.h"
 
 using namespace ::testing;
 
@@ -209,7 +210,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
     */
    constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
    constexpr uint8_t TEST_PORT_INDEX = 3;
-   constexpr uint32_t TEST_MAX_TRACE_NUMBER = 10000;
+   const uint32_t TEST_MAX_TRACE_NUMBER = SETTING_GET_U32(MainApplication_maxTerminalTraces);
    GUI::PortHandlerEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;

@@ -42,6 +42,7 @@ bool PersistenceHandler::restore(const std::string& file_name)
                /* get block data */
                std::vector<uint8_t> data (it, it + data_size);
                it += data_size;
+               UT_Log(PERSISTENCE, HIGH, "got %u bytes for %s", data.size(), name.c_str());
                GenericListener::notifyChange([&](PersistenceListener* l)
                      {
                         if (l->getName() == name)
@@ -70,6 +71,7 @@ bool PersistenceHandler::save(const std::string& file_name)
                l->onPersistenceWrite(temp_buffer);
                /* write block name */
                std::string name = l->getName();
+               UT_Log(PERSISTENCE, HIGH, "got %u bytes from %s", temp_buffer.size(), name.c_str());
                out_buffer.insert(out_buffer.end(), name.begin(), name.end());
                /* put NULL char to indicate string end */
                out_buffer.push_back(0x00);
@@ -77,6 +79,7 @@ bool PersistenceHandler::save(const std::string& file_name)
                ::serialize(out_buffer, (uint32_t)temp_buffer.size());
                /* insert serialized block data */
                out_buffer.insert(out_buffer.end(), temp_buffer.begin(), temp_buffer.end());
+               UT_Log(PERSISTENCE, HIGH, "Persistence file size %u", out_buffer.size());
             });
       addChecksum(out_buffer);
       file.write(reinterpret_cast<char*>(out_buffer.data()), out_buffer.size());
@@ -91,12 +94,13 @@ uint32_t PersistenceHandler::getFileSize(std::istream& file)
    file.seekg(0, std::ios::end);
    uint32_t result = file.tellg();
    file.seekg(0, std::ios::beg);
+   UT_Log(PERSISTENCE, LOW, "file size $u", result);
    return result;
 }
 void PersistenceHandler::addChecksum(std::vector<uint8_t>& data)
 {
    uint32_t checksum = std::accumulate(data.begin(), data.end(), 0);
-   UT_Log(MAIN, LOW, "writing checksum %.4x", checksum);
+   UT_Log(MAIN, HIGH, "writing checksum %.4x", checksum);
    ::serialize(data, checksum);
 }
 bool PersistenceHandler::validateChecksum(const std::vector<uint8_t>& data)
@@ -105,8 +109,7 @@ bool PersistenceHandler::validateChecksum(const std::vector<uint8_t>& data)
    uint32_t read_checksum = 0;
    uint32_t real_checksum = std::accumulate(data.begin(), data.end() - PERSISTENCE_CHECKSUM_SIZE, 0);
    ::deserialize(data, offset, read_checksum);
-   UT_Log(MAIN, LOW, "checksum read %.4x, checksum calculated %.4x", read_checksum, real_checksum);
-
+   UT_Log(PERSISTENCE, INFO, "checksum read %.4x, checksum calculated %.4x", read_checksum, real_checksum);
    return read_checksum == real_checksum;
 }
 

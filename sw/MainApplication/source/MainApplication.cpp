@@ -8,6 +8,7 @@
 #include "Serialize.hpp"
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
+constexpr uint8_t PORT_HANDLERS_COUNT = 5;
 
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
@@ -146,13 +147,13 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       new_line.chop(1);
    }
 
-   if(ui->terminalView->count() >= 10000)
+   if(ui->terminalView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
       ui->terminalView->clear();
    }
 
-   if(ui->traceView->count() >= 10000)
+   if(ui->traceView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
       ui->traceView->clear();
@@ -382,7 +383,7 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
          port_commands.push_back(command);
       }
 
-      if (port_id <= 5)
+      if (port_id <= PORT_HANDLERS_COUNT)
       {
          m_commands_history[port_id] = port_commands;
       }
