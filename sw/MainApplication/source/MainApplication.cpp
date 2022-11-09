@@ -27,7 +27,7 @@ m_trace_scrolling_active(false)
     Persistence::PersistenceListener::setName("MAIN_APPLICATION");
     m_persistence.addListener(*this);
     Settings::SettingsHandler::create();
-    Settings::SettingsHandler::get()->start(CONFIG_FILE_PATH, m_timers.get());
+    Settings::SettingsHandler::get()->start(CONFIG_FILE, m_timers.get());
     LoggerEngine::get()->startFrontends();
 
     UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
@@ -90,14 +90,14 @@ m_trace_scrolling_active(false)
        handler->startThread();
     }
 
-    if (!m_persistence.restore(SETTING_GET_STRING(Persistence_filePath)))
+    if (!m_persistence.restore(PERSISTENCE_PATH))
     {
        UT_Log(MAIN, ERROR, "Cannot restore persistence!");
     }
 }
 MainApplication::~MainApplication()
 {
-   if (!m_persistence.save(SETTING_GET_STRING(Persistence_filePath)))
+   if (!m_persistence.save(PERSISTENCE_PATH))
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }

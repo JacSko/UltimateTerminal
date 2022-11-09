@@ -13,7 +13,12 @@ endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-add_definitions(-DCONFIG_FILE_PATH={"${CMAKE_SOURCE_DIR}/config/system_config.json"} -DAPPLICATION_VERSION={"${PROJECT_VERSION}"})
+
+set(CONFIG_FILE ".system_config.json") 
+set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
+
+
+add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} -DPERSISTENCE_PATH="${PERSISTENCE_FILE}")
 
 #########################################
 #  QT related settings
