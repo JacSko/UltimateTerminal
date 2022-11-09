@@ -27,10 +27,10 @@ then
       mkdir -p deploy
       pushd deploy
       cp ../build/bin/UltimateTerminal .
+      cp ../build/bin/.system_config.json .
       cp /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5 .
       cp /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5 .
       cp /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 .
-      cp ../config/system_config.json ./.system_config.json
       echo "=============================================="
       echo "========= Project deployed correctly ========="
       echo "=============================================="
