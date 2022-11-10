@@ -245,10 +245,12 @@ public:
    void removeItem(int index);
    void setEditable(bool){}
    void setInsertPolicy(InsertPolicy policy){}
-   QLineEdit* lineEdit(){return nullptr;}
+   QLineEdit* lineEdit(){return &edit;}
    void insertItem(int index, const QString&text);
    int count();
    void clear(){}
+private:
+   QLineEdit edit;
 };
 
 class QColorDialog : public QWidget

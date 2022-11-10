@@ -1,0 +1,2 @@
+leak:*ui_MainWindow.h*
+

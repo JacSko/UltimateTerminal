@@ -35,6 +35,7 @@ ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
 m_marker_index(0),
+m_file_logger_settings {},
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
 {
