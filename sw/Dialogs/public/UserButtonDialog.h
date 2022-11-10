@@ -63,7 +63,6 @@ public:
    {
       std::string button_name;   /**< Name of the button. */
       std::string raw_commands;  /**< Commands in raw format, e.g. "CMD1\nCMD2"*/
-      std::vector<std::string> commands; /**< Parsed commands TODO remove */
    };
 
    /**
