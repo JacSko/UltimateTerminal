@@ -1,21 +1,20 @@
 #!/bin/bash -xe
 
-if [ ! ${CUSTOM_EXECUTOR_NUMBER+x} ]
+if [ ! ${BUILD_FOLDER+x} ]
 then
-   CUSTOM_EXECUTOR_NUMBER=8
+   BUILD_FOLDER=build_ut
 fi
 
-if [ ! ${CUSTOM_CMAKE_PARAMETERS+x} ]
-then
-   CUSTOM_CMAKE_PARAMETERS="-DUNIT_TESTS=On -DUNIT_TESTS_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug"
-fi
+EXECUTOR_NUMBER=8
+CMAKE_PARAMETERS="-DUNIT_TESTS=On -DCMAKE_BUILD_TYPE=Debug"
+CTEST_PARAMETERS="--output-on-failure --schedule-random --no-compress-output"
 
-mkdir -p build_ut
-pushd build_ut
+mkdir -p ${BUILD_FOLDER}
+pushd ${BUILD_FOLDER}
 
-cmake .. ${CUSTOM_CMAKE_PARAMETERS}
+cmake .. ${CMAKE_PARAMETERS}
 
-make -j${CUSTOM_EXECUTOR_NUMBER}
-ctest -j${CUSTOM_EXECUTOR_NUMBER}
+make -j${EXECUTOR_NUMBER}
+ctest -j${EXECUTOR_NUMBER} ${CTEST_PARAMETERS}
 
 popd
