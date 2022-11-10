@@ -11,50 +11,9 @@ target_link_libraries(ButtonCommandExecutorTests PUBLIC
         gmock_main
         Logger
         Utilities
+        DialogsMocks
 )
 add_test(NAME ButtonCommandExecutorTests COMMAND ButtonCommandExecutorTests)
-
-#####################################################################################
-
-add_executable(UserButtonDialogTests
-            UserButtonDialogTests.cpp
-            ../../source/UserButtonDialog.cpp
-)
-
-target_include_directories(UserButtonDialogTests PUBLIC
-        ../../include
-        ../../public
-)
-target_link_libraries(UserButtonDialogTests PUBLIC
-        gtest_main
-        gmock_main
-        Logger
-        Utilities
-        QtMocks
-)
-add_test(NAME UserButtonDialogTests COMMAND UserButtonDialogTests)
-
-#####################################################################################
-
-add_executable(PortSettingDialogTests
-            PortSettingDialogTests.cpp
-            ../../source/PortSettingDialog.cpp
-)
-
-target_include_directories(PortSettingDialogTests PUBLIC
-        ../../include
-        ../../public
-)
-target_link_libraries(PortSettingDialogTests PUBLIC
-        gtest_main
-        gmock_main
-        Logger
-        SettingsHandler
-        Utilities
-        QtMocks
-        DriversMocks
-)
-add_test(NAME PortSettingDialogTests COMMAND PortSettingDialogTests)
 
 #####################################################################################
 
@@ -75,6 +34,7 @@ target_link_libraries(UserButtonHandlerTests PUBLIC
         Utilities
         UtilitiesMocks
         QtMocks
+        DialogsMocks
 )
 add_test(NAME UserButtonHandlerTests COMMAND UserButtonHandlerTests)
 
@@ -97,6 +57,7 @@ target_link_libraries(TraceFilterHandlerTests PUBLIC
         Utilities
         UtilitiesMocks
         QtMocks
+        DialogsMocks
 )
 add_test(NAME TraceFilterHandlerTests COMMAND TraceFilterHandlerTests)
 
@@ -120,6 +81,7 @@ target_link_libraries(PortHandlerTests PUBLIC
         UtilitiesMocks
         QtMocks
         DriversMocks
+        DialogsMocks
 )
 add_test(NAME PortHandlerTests COMMAND PortHandlerTests)
 
@@ -144,5 +106,6 @@ target_link_libraries(MainApplicationTests PUBLIC
         QtMocks
         SettingsHandler
         ThreadWorker
+        DialogsMocks
 )
 add_test(NAME MainApplicationTests COMMAND MainApplicationTests)
