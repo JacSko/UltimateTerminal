@@ -30,6 +30,8 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTextEdit>
 
+namespace Dialogs
+{
 
 class UserButtonDialog : public QObject
 {
@@ -75,3 +77,5 @@ private:
    void addDialogButtons();
    bool convertGuiValues(Settings& out_settings);
 };
+
+}

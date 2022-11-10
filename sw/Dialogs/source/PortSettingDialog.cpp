@@ -24,22 +24,25 @@ std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 #undef DEF_STOP_BIT
 
 template<>
-std::string EnumValue<PortSettingDialog::PortType>::toName() const
+std::string EnumValue<Dialogs::PortSettingDialog::PortType>::toName() const
 {
-   UT_Assert(value < PortSettingDialog::PortType::PORT_TYPE_MAX);
+   UT_Assert(value < Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX);
    return g_port_names[(size_t)value];
 }
 template<>
-PortSettingDialog::PortType EnumValue<PortSettingDialog::PortType>::fromName(const std::string& name)
+Dialogs::PortSettingDialog::PortType EnumValue<Dialogs::PortSettingDialog::PortType>::fromName(const std::string& name)
 {
-   value = PortSettingDialog::PortType::PORT_TYPE_MAX;
+   value = Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX;
    auto it = std::find(g_port_names.begin(), g_port_names.end(), name);
    if (it != g_port_names.end())
    {
-      value = (PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
+      value = (Dialogs::PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
    }
    return value;
 }
+
+namespace Dialogs
+{
 
 PortSettingDialog::PortSettingDialog():
 m_dialog(nullptr),
@@ -318,4 +321,6 @@ void PortSettingDialog::onPortTypeChanged(const QString & name)
    {
       renderEthernetView(m_dialog, m_form, m_current_settings);
    }
+}
+
 }

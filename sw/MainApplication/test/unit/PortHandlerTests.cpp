@@ -42,7 +42,7 @@ constexpr int TEST_TIMER_ID = 1;
 
 struct TestParam
 {
-   PortSettingDialog::PortType type;
+   Dialogs::PortSettingDialog::PortType type;
 };
 
 struct PortHandlerFixture : public testing::Test
@@ -145,7 +145,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
     */
 
    GUI::PortHandlerEvent receivied_event;
-   PortSettingDialog::Settings user_settings;
+   Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
    user_settings.type = GetParam().type;
    user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
@@ -163,7 +163,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    m_test_subject->onPortButtonContextMenuRequested();
 
    /* port opening */
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
       EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
@@ -189,7 +189,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
                                                     .WillOnce(SaveArg<0>(&receivied_event))
                                                     .WillOnce(SaveArg<0>(&receivied_event));
 
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       Drivers::Serial::DriverEvent event = Drivers::Serial::DriverEvent::DATA_RECV;
       /* force three events with new data */
@@ -214,7 +214,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
 
    /* data send to port */
    const std::vector<uint8_t> data_to_write (event_data.rbegin(), event_data.rend());
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
       EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
@@ -228,7 +228,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    m_test_subject->write(data_to_write, data_to_write.size());
 
    /* closing serial port */
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
       EXPECT_CALL(*g_serial_mock, close());
@@ -262,7 +262,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
     */
 
    GUI::PortHandlerEvent receivied_event;
-   PortSettingDialog::Settings user_settings;
+   Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
    user_settings.type = GetParam().type;
    user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
@@ -277,7 +277,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    m_test_subject->onPortButtonContextMenuRequested();
 
    /* port opening */
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
       EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
@@ -302,7 +302,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    m_test_subject->onPortButtonContextMenuRequested();
 
    /* closing serial port */
-   if (user_settings.type == PortSettingDialog::PortType::SERIAL)
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
       EXPECT_CALL(*g_serial_mock, close());
@@ -334,9 +334,9 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
     * ************************************************
     */
 
-   PortSettingDialog::Settings user_settings;
+   Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
-   user_settings.type = PortSettingDialog::PortType::SERIAL;
+   user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
    user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
    user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
    user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
@@ -369,9 +369,9 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
     */
 
    PortHandlerEvent receivied_event;
-   PortSettingDialog::Settings user_settings;
+   Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
-   user_settings.type = PortSettingDialog::PortType::ETHERNET;
+   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
    user_settings.ip_address = "192.168.1.100";
    user_settings.port = 1234;
    bool timer_running = true;
@@ -440,9 +440,9 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
     */
 
    PortHandlerEvent receivied_event;
-   PortSettingDialog::Settings user_settings;
+   Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
-   user_settings.type = PortSettingDialog::PortType::ETHERNET;
+   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
    user_settings.ip_address = "192.168.1.100";
    user_settings.port = 1234;
    bool simulate_abort = false;
@@ -501,7 +501,7 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
 
 }
 
-TestParam params[] = {{PortSettingDialog::PortType::SERIAL},{PortSettingDialog::PortType::ETHERNET}};
+TestParam params[] = {{Dialogs::PortSettingDialog::PortType::SERIAL},{Dialogs::PortSettingDialog::PortType::ETHERNET}};
 INSTANTIATE_TEST_CASE_P(PortHandlerParamFixture, PortHandlerParamFixture, ValuesIn(params));
 
 }

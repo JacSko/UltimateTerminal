@@ -40,7 +40,7 @@ bool UserButtonHandler::startThread()
 {
    return m_executor.start(THREAD_START_TIMEOUT);
 }
-void UserButtonHandler::handleNewSettings(const UserButtonDialog::Settings& settings)
+void UserButtonHandler::handleNewSettings(const Dialogs::UserButtonDialog::Settings& settings)
 {
    m_settings = settings;
    int count = m_executor.parseCommands(m_settings.raw_commands);
@@ -49,8 +49,8 @@ void UserButtonHandler::handleNewSettings(const UserButtonDialog::Settings& sett
 }
 void UserButtonHandler::onUserButtonContextMenuRequested()
 {
-   UserButtonDialog dialog;
-   UserButtonDialog::Settings new_settings = {};
+   Dialogs::UserButtonDialog dialog;
+   Dialogs::UserButtonDialog::Settings new_settings = {};
 
    std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, true);
    if (result)
@@ -77,7 +77,7 @@ void UserButtonHandler::setButtonName(const std::string name)
 void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    uint32_t offset = 0;
-   UserButtonDialog::Settings new_settings = {};
+   Dialogs::UserButtonDialog::Settings new_settings = {};
 
    ::deserialize(data, offset, new_settings.button_name);
    ::deserialize(data, offset, new_settings.raw_commands);

@@ -110,13 +110,13 @@ TEST_F(UserButtonHandlerFixture, commands_sending_requested)
    std::atomic<bool> test_wait (true);
 
    /* simulate user settings change */
-   UserButtonDialog::Settings new_settings;
+   Dialogs::UserButtonDialog::Settings new_settings;
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
-               .WillOnce(Invoke([&](QWidget*, const UserButtonDialog::Settings&, UserButtonDialog::Settings& out, bool)->std::optional<bool>
+               .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;
@@ -160,13 +160,13 @@ TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
    std::atomic<bool> test_wait (true);
 
    /* simulate user settings change */
-   UserButtonDialog::Settings new_settings;
+   Dialogs::UserButtonDialog::Settings new_settings;
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
-               .WillOnce(Invoke([&](QWidget*, const UserButtonDialog::Settings&, UserButtonDialog::Settings& out, bool)->std::optional<bool>
+               .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;
@@ -208,13 +208,13 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
    std::vector<uint8_t> data_buffer;
 
    /* simulate user settings change */
-   UserButtonDialog::Settings new_settings;
+   Dialogs::UserButtonDialog::Settings new_settings;
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
-               .WillOnce(Invoke([&](QWidget*, const UserButtonDialog::Settings&, UserButtonDialog::Settings& out, bool)->std::optional<bool>
+               .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;

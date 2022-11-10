@@ -25,6 +25,8 @@
  */
 
 using namespace ::testing;
+namespace Dialogs
+{
 
 struct TestParam
 {
@@ -142,3 +144,4 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
 TestParam params[] = {{true, true},{false, true}, {false, false}};
 INSTANTIATE_TEST_CASE_P(UserButtonDialogParam, UserButtonDialogParam, ValuesIn(params));
 
+}

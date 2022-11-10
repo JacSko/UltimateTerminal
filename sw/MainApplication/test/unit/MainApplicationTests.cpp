@@ -355,7 +355,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
    port_close_event.event = GUI::Event::DISCONNECTED;
-   LoggingSettingDialog::Settings logger_settings;
+   Dialogs::LoggingSettingDialog::Settings logger_settings;
    logger_settings.file_name = "some_log.txt";
    logger_settings.file_path = "/home/user";
    logger_settings.use_default_name = false;
@@ -441,7 +441,7 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
    port_close_event.event = GUI::Event::DISCONNECTED;
-   LoggingSettingDialog::Settings logger_settings;
+   Dialogs::LoggingSettingDialog::Settings logger_settings;
    logger_settings.file_name = "some_log.txt";
    logger_settings.file_path = "/home/user";
    logger_settings.use_default_name = false;
@@ -805,11 +805,11 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
     */
    std::vector<uint8_t> data_buffer;
    std::string current_ending = "\\n";
-   LoggingSettingDialog::Settings old_logger_settings;
+   Dialogs::LoggingSettingDialog::Settings old_logger_settings;
    old_logger_settings.file_name = "old file";
    old_logger_settings.file_path = "old path";
    old_logger_settings.use_default_name = true;
-   LoggingSettingDialog::Settings new_logger_settings;
+   Dialogs::LoggingSettingDialog::Settings new_logger_settings;
    new_logger_settings.file_name = "new file";
    new_logger_settings.file_path = "new path";
    new_logger_settings.use_default_name = true;

@@ -66,7 +66,7 @@ private:
    QPushButton* m_object;
    QLabel* m_summary_label;
    QWidget* m_parent;
-   PortSettingDialog::Settings m_settings;
+   Dialogs::PortSettingDialog::Settings m_settings;
    uint32_t m_connect_retry_period;
    Utilities::ITimers& m_timers;
    std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
@@ -82,7 +82,7 @@ private:
    void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onTimeout(uint32_t timer_id);
    void tryConnectToSocket();
-   void handleNewSettings(const PortSettingDialog::Settings&);
+   void handleNewSettings(const Dialogs::PortSettingDialog::Settings&);
    void handleButtonClickSerial();
    void handleButtonClickEthernet();
    void setButtonState(ButtonState);
@@ -92,7 +92,7 @@ private:
    Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;
-   void serialize(std::vector<uint8_t>& buffer, const PortSettingDialog::Settings& item);
+   void serialize(std::vector<uint8_t>& buffer, const Dialogs::PortSettingDialog::Settings& item);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();

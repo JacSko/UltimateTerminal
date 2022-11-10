@@ -3,6 +3,9 @@
 #include "Logger.h"
 #include <sstream>
 
+namespace Dialogs
+{
+
 UserButtonDialog::UserButtonDialog():
 m_dialog(nullptr),
 m_form(nullptr),
@@ -62,4 +65,6 @@ bool UserButtonDialog::convertGuiValues(Settings& out_settings)
    out_settings.raw_commands = m_commandEdit->toPlainText().toStdString();
    UT_Log(GUI_DIALOG, HIGH, "got name %s and raw commands %s", out_settings.button_name.c_str(), out_settings.raw_commands.c_str());
    return true;
+}
+
 }

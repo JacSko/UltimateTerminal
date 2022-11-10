@@ -24,26 +24,26 @@ std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 #undef DEF_STOP_BIT
 
 template<>
-std::string EnumValue<PortSettingDialog::PortType>::toName() const
+std::string EnumValue<Dialogs::PortSettingDialog::PortType>::toName() const
 {
-   UT_Assert(value < PortSettingDialog::PortType::PORT_TYPE_MAX);
+   UT_Assert(value < Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX);
    return g_port_names[(size_t)value];
 }
 template<>
-PortSettingDialog::PortType EnumValue<PortSettingDialog::PortType>::fromName(const std::string& name)
+Dialogs::PortSettingDialog::PortType EnumValue<Dialogs::PortSettingDialog::PortType>::fromName(const std::string& name)
 {
-   value = PortSettingDialog::PortType::PORT_TYPE_MAX;
+   value = Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX;
    auto it = std::find(g_port_names.begin(), g_port_names.end(), name);
    if (it != g_port_names.end())
    {
-      value = (PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
+      value = (Dialogs::PortSettingDialog::PortType)(std::distance(g_port_names.begin(), it));
    }
    return value;
 }
 
 struct PortSettingDialogMock
 {
-   MOCK_METHOD4(showDialog,std::optional<bool>(QWidget*, const PortSettingDialog::Settings&, PortSettingDialog::Settings&, bool));
+   MOCK_METHOD4(showDialog,std::optional<bool>(QWidget*, const Dialogs::PortSettingDialog::Settings&, Dialogs::PortSettingDialog::Settings&, bool));
 };
 
 PortSettingDialogMock* g_port_setting_dialog_mock;
@@ -70,10 +70,15 @@ PortSettingDialogMock* PortSettingDialogMock_get()
 
 }
 
+namespace Dialogs
+{
+
 PortSettingDialog::PortSettingDialog() {}
 PortSettingDialog::~PortSettingDialog() {}
 
 std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
    return g_port_setting_dialog_mock->showDialog(parent, current_settings, out_settings, allow_edit);
+}
+
 }

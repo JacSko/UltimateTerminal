@@ -267,8 +267,8 @@ void MainApplication::onTraceClearButtonClicked()
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
-   LoggingSettingDialog dialog;
-   LoggingSettingDialog::Settings new_settings = {};
+   Dialogs::LoggingSettingDialog dialog;
+   Dialogs::LoggingSettingDialog::Settings new_settings = {};
    UT_Log(MAIN, MEDIUM, "Opening log setting dialog with settings %s %u", m_file_logger_settings.getPath().c_str(), m_file_logger_settings.use_default_name);
    auto result = dialog.showDialog(this, m_file_logger_settings, new_settings, !m_file_logger->isActive());
    if (result)

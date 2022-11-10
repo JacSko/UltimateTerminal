@@ -39,7 +39,7 @@ private:
     std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
     std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
     uint32_t m_marker_index;
-    LoggingSettingDialog::Settings m_file_logger_settings;
+    Dialogs::LoggingSettingDialog::Settings m_file_logger_settings;
     Persistence::PersistenceHandler m_persistence;
     bool m_scrolling_active;
     bool m_trace_scrolling_active;

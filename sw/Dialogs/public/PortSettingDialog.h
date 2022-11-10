@@ -31,7 +31,8 @@
  *
  */
 
-
+namespace Dialogs
+{
 
 #define DEF_PORT_TYPES     \
    DEF_PORT_TYPE(SERIAL)   \
@@ -189,5 +190,6 @@ public slots:
 
 };
 
+}
 
 #endif

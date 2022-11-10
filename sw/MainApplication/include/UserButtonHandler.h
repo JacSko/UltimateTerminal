@@ -21,11 +21,11 @@ private:
 
    QPushButton* m_object;
    QWidget* m_parent;
-   UserButtonDialog::Settings m_settings;
+   Dialogs::UserButtonDialog::Settings m_settings;
    Persistence::PersistenceHandler& m_persistence;
    ButtonCommandsExecutor m_executor;
 
-   void handleNewSettings(const UserButtonDialog::Settings&);
+   void handleNewSettings(const Dialogs::UserButtonDialog::Settings&);
    void setButtonName(const std::string name);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;

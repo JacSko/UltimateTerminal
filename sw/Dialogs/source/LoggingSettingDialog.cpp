@@ -3,6 +3,9 @@
 #include "LoggingSettingDialog.h"
 #include "Logger.h"
 
+namespace Dialogs
+{
+
 LoggingSettingDialog::LoggingSettingDialog():
 m_dialog(nullptr),
 m_form(nullptr),
@@ -108,4 +111,6 @@ bool LoggingSettingDialog::convertGuiValues(Settings& out_settings)
                                       ts->tm_hour, ts->tm_min, ts->tm_sec).toStdString();
    }
    return true;
+}
+
 }

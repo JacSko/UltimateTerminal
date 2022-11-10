@@ -22,6 +22,9 @@
 
 using namespace ::testing;
 
+namespace Dialogs
+{
+
 struct TestParam
 {
    bool editable;
@@ -753,3 +756,5 @@ TestParam params[] =
       }
 };
 INSTANTIATE_TEST_CASE_P(PortSettingDialogParam, PortSettingDialogParam, ValuesIn(params));
+
+}

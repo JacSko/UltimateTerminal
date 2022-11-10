@@ -149,7 +149,7 @@ void PortHandler::onTimeout(uint32_t timer_id)
       tryConnectToSocket();
    }
 }
-void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
+void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& settings)
 {
    m_settings = settings;
    if (m_settings.port_name.empty())
@@ -169,8 +169,8 @@ void PortHandler::handleNewSettings(const PortSettingDialog::Settings& settings)
 }
 void PortHandler::onPortButtonContextMenuRequested()
 {
-   PortSettingDialog dialog;
-   PortSettingDialog::Settings new_settings = {};
+   Dialogs::PortSettingDialog dialog;
+   Dialogs::PortSettingDialog::Settings new_settings = {};
    std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, m_button_state == ButtonState::DISCONNECTED);
    if (result)
    {
@@ -194,11 +194,11 @@ void PortHandler::onPortButtonContextMenuRequested()
 }
 void PortHandler::onPortButtonClicked()
 {
-   if(m_settings.type == PortSettingDialog::PortType::SERIAL)
+   if(m_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
       handleButtonClickSerial();
    }
-   else if (m_settings.type == PortSettingDialog::PortType::ETHERNET)
+   else if (m_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
    {
       handleButtonClickEthernet();
    }
@@ -286,7 +286,7 @@ void PortHandler::setButtonName(const std::string name)
 void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    uint32_t offset = 0;
-   PortSettingDialog::Settings new_settings = {};
+   Dialogs::PortSettingDialog::Settings new_settings = {};
 
    std::string baudrate_name;
    std::string databits_name;
@@ -333,7 +333,7 @@ void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence", m_settings.port_id, m_settings.port_name.c_str());
    serialize(data, m_settings);
 }
-void PortHandler::serialize(std::vector<uint8_t>& buffer, const PortSettingDialog::Settings& item)
+void PortHandler::serialize(std::vector<uint8_t>& buffer, const Dialogs::PortSettingDialog::Settings& item)
 {
    ::serialize(buffer, m_settings.ip_address);
    ::serialize(buffer, m_settings.port);

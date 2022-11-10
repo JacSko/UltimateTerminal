@@ -12,6 +12,9 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QPushButton>
 
+namespace Dialogs
+{
+
 class LoggingSettingDialog : public QObject
 {
    Q_OBJECT
@@ -52,5 +55,6 @@ public slots:
 
 };
 
+}
 
 #endif
