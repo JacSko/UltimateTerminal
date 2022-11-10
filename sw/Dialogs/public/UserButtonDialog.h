@@ -30,6 +30,23 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTextEdit>
 
+/**
+ * @file UserButtonDialog.h
+ *
+ * @brief
+ *    Dialog class that allows user to edit button details.
+ *
+ * @details
+ *    Dialog contains place to enter button name and related commands.
+ *    Current settings are presented to the user, their editability is configurable using allow_edit argument during showDialog() call.
+ *    All settings are validated when user accepts dialog box. When user rejects, no settings change takes place.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
+
+
 namespace Dialogs
 {
 

@@ -16,7 +16,7 @@
 #include "ISerialDriver.h"
 
 /**
- * @file PortSettingDialogTests.cpp
+ * @file PortSettingDialog.h
  *
  * @brief
  *    Dialog class that allows user to enter the port connection details.
@@ -54,7 +54,7 @@ enum class PortType
    PORT_TYPE_MAX
 };
 #undef DEF_PORT_TYPE
-
+   /** Set of setting used to describe port connection */
    class Settings
    {
    public:
@@ -84,13 +84,13 @@ enum class PortType
       trace_color(trace_color)
       {}
 
-      uint8_t port_id;
-      EnumValue<PortType> type;
-      std::string port_name;
-      Drivers::Serial::Settings serialSettings;
-      std::string ip_address;
-      uint32_t port;
-      uint32_t trace_color;
+      uint8_t port_id;                          /**< instance ID of the port        */
+      EnumValue<PortType> type;                 /**< Type of the connection         */
+      std::string port_name;                    /**< User name of the port          */
+      Drivers::Serial::Settings serialSettings; /**< Settings for serial connection */
+      std::string ip_address;                   /**< Server's IP address            */
+      uint32_t port;                            /**< Server's port                  */
+      uint32_t trace_color;                     /**< Color of traces that will be shown in terminal */
 
       std::string shortSettingsString() const
       {
@@ -155,6 +155,16 @@ enum class PortType
       std::vector<std::string> m_error_strings;
    };
 
+   /**
+    * @brief Opens a port connection settings dialog.
+    * @param[in] parent - parent Widget
+    * @param[in] current_settings - settings to be presented to user
+    * @param[in] out_settings - new settings gathered from user
+    * @param[in] allow_edit - set window editability
+    *
+    * @return Optional has value if user accepted the dialog, has no value if user rejected the dialog.
+    * @return If value of optional is true, new settings are correct. Otherwise false.
+    */
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
 private:
 
