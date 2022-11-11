@@ -97,17 +97,17 @@ public:
        ToolButton       = 0x00004000
    };
    QSizePolicy(){}
-   QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType){}
-   void setHorizontalStretch(int stretchFactor){};
-   void setVerticalStretch(int stretchFactor){};
-   void setHeightForWidth(bool b){};
+   QSizePolicy(Policy, Policy, ControlType = DefaultType){}
+   void setHorizontalStretch(int){};
+   void setVerticalStretch(int){};
+   void setHeightForWidth(bool){};
    bool hasHeightForWidth(){return true;}
 };
 
 class QRect
 {
 public:
-   QRect(int a, int b, int c, int d){}
+   QRect(int, int, int, int){}
 };
 
 class QWidget : public QObject
@@ -132,11 +132,11 @@ class QMainWindow : public QWidget
 public:
    QMainWindow(){}
    QMainWindow(QWidget*){}
-   void resize(int w, int h){};
-   void setCentralWidget(QWidget *widget){};
-   void setMenuBar(QMenuBar *menubar){};
-   void setStatusBar(QStatusBar *statusbar){};
-   void setWindowTitle(const QString & title){};
+   void resize(int , int){};
+   void setCentralWidget(QWidget *){};
+   void setMenuBar(QMenuBar *){};
+   void setStatusBar(QStatusBar *){};
+   void setWindowTitle(const QString &){};
 };
 
 class QDialog : public QWidget
@@ -146,9 +146,9 @@ public:
    QDialog(){};
    QDialog(QWidget*&){};
    virtual ~QDialog(){};
-   void* operator new(size_t size);
+   void* operator new(size_t );
    void operator delete(void*){};
-   void setWindowModality(Qt::WindowModality windowModality);
+   void setWindowModality(Qt::WindowModality);
    void setWindowTitle(const QString&);
    virtual int exec();
 };
@@ -162,7 +162,7 @@ public:
       Cancel             = 0x00400000,
    };
    QDialogButtonBox(){};
-   QDialogButtonBox(int buttons, Qt::Orientation orientation, QWidget *parent = nullptr){}
+   QDialogButtonBox(int, Qt::Orientation, QWidget * = nullptr){}
    void* operator new(size_t);
    void operator delete(void*){};
 };
@@ -174,11 +174,11 @@ public:
    QFormLayout(QDialog*&){}
    void* operator new(size_t);
    void operator delete(void*){};
-   void addRow(QWidget *widget);
-   void addRow(const QString&, QWidget *widget);
-   void addWidget(QWidget *w);
-   void insertRow(int row, const QString &labelText, QWidget *field);
-   void removeRow(QWidget *widget);
+   void addRow(QWidget *);
+   void addRow(const QString&, QWidget *);
+   void addWidget(QWidget *);
+   void insertRow(int, const QString &, QWidget *);
+   void removeRow(QWidget *);
 };
 
 class QLineEdit : public QWidget
@@ -199,7 +199,7 @@ public:
 class QTextEdit : public QWidget
 {
 public:
-   QTextEdit(QWidget *parent = nullptr){}
+   QTextEdit(QWidget * = nullptr){}
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &);
@@ -209,7 +209,7 @@ public:
 class QPushButton : public QWidget
 {
 public:
-   QPushButton(QWidget *parent = nullptr){}
+   QPushButton(QWidget * = nullptr){}
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &text);
@@ -233,7 +233,7 @@ public:
        InsertAlphabetically
    };
 
-   QComboBox(QWidget *parent = nullptr){}
+   QComboBox(QWidget * = nullptr){}
 
    void* operator new(size_t);
    void operator delete(void*){};
@@ -244,7 +244,7 @@ public:
    QString itemText(int index);
    void removeItem(int index);
    void setEditable(bool){}
-   void setInsertPolicy(InsertPolicy policy){}
+   void setInsertPolicy(InsertPolicy){}
    QLineEdit* lineEdit(){return &edit;}
    void insertItem(int index, const QString&text);
    int count();
@@ -256,7 +256,7 @@ private:
 class QColorDialog : public QWidget
 {
 public:
-   QColorDialog(QWidget *parent = nullptr){}
+   QColorDialog(QWidget * = nullptr){}
    void* operator new(size_t);
    void operator delete(void*){};
    static QColor getColor(const QColor &initial = Qt::white,
@@ -310,11 +310,11 @@ public:
 
    QLayout(){}
    void setSizeConstraint(SizeConstraint){};
-   void addWidget(QWidget *, int row, int column, int rowSpan, int columnSpan, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
-   void addWidget(QWidget *, int stretch = 0, Qt::AlignmentFlag alignment = Qt::AlignmentFlag::AlignCenter){};
-   void addLayout(QLayout *layout, int stretch = 0){};
-   void addLayout(QLayout *, int row, int column, int rowSpan, int columnSpan, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
-   void setContentsMargins(int left, int top, int right, int bottom){};
+   void addWidget(QWidget *, int, int, int, int, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void addWidget(QWidget *, int = 0, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void addLayout(QLayout *, int = 0){};
+   void addLayout(QLayout *, int, int, int, int, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void setContentsMargins(int, int, int, int){};
 };
 
 class QGridLayout : public QLayout
@@ -337,7 +337,7 @@ public:
    QSplitter(){};
    QSplitter(QWidget*){}
    void setOrientation(Qt::Orientation){};
-   void addWidget(QWidget *widget){};
+   void addWidget(QWidget *){};
 
 };
 
@@ -358,7 +358,7 @@ public:
    QListWidget(QWidget*){};
    void* operator new(size_t);
    void operator delete(void*){};
-   void addItem(QListWidgetItem *aitem);
+   void addItem(QListWidgetItem *);
    void scrollToBottom();
    int count();
    void clear();

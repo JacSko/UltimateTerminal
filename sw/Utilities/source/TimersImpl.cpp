@@ -47,7 +47,15 @@ uint32_t TimersImpl::createTimer(ITimerClient* client, uint32_t default_timeout)
          /* skip TIMERS_INVALID_ID */
          m_last_timer_id++;
       }
-      m_timers.push_back((Timer){m_last_timer_id, default_timeout, default_timeout, false, false, {}, client});
+      Timer timer;
+      timer.id = m_last_timer_id;
+      timer.default_timeout = default_timeout;
+      timer.current_timeout = default_timeout;
+      timer.is_running = false;
+      timer.periodic = false;
+      timer.start_ts = {};
+      timer.callback = client;
+      m_timers.push_back(timer);
       result = m_last_timer_id;
    }
    UT_Log(UTILITIES, LOW, "creating timer %u with default timeout %u - %s", result, default_timeout, result == TIMERS_INVALID_ID? "NOK" : "OK");

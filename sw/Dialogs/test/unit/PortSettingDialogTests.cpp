@@ -97,7 +97,6 @@ TEST_P(PortSettingDialogParam, some_test)
    bool dialog_accepted = GetParam().accepted;
    PortSettingDialog::Settings current_settings = GetParam().current_settings;
    PortSettingDialog::Settings user_settings = GetParam().new_settings;
-   bool settings_valid = user_settings.areValid();
 
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));

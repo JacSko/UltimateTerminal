@@ -127,7 +127,7 @@ struct ISerialDriverMock : public ISerialDriver
    MOCK_METHOD0(isOpened, bool());
    MOCK_METHOD1(addListener, void(SerialListener*));
    MOCK_METHOD1(removeListener, void(SerialListener*));
-   MOCK_METHOD2(write, bool(const std::vector<uint8_t>&, size_t));
+   MOCK_METHOD2(write, bool(const std::vector<uint8_t>&, ssize_t));
 };
 
 }

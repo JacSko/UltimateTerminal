@@ -21,7 +21,7 @@ private:
    bool isOpened() override;
    void addListener(SerialListener* callback) override;
    void removeListener(SerialListener* callback) override;
-   bool write(const std::vector<uint8_t>& data, size_t size = 0) override;
+   bool write(const std::vector<uint8_t>& data, ssize_t size = 0) override;
 
    void receivingThread();
    void notifyListeners(DriverEvent ev, const std::vector<uint8_t>& data, size_t size);

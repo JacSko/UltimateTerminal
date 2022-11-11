@@ -38,9 +38,9 @@ PortHandlerMock* PortHandlerMock_get()
 }
 
 
-PortHandler::PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence)
-:m_persistence(persistence),
- m_timers(timer)
+PortHandler::PortHandler(QPushButton*, QLabel*, Utilities::ITimers& timer, PortHandlerListener*, QWidget*, Persistence::PersistenceHandler& persistence)
+:m_timers(timer),
+ m_persistence(persistence)
 {
    PORT_ID++;
    m_settings.port_id = PORT_ID;
@@ -58,11 +58,11 @@ const std::string& PortHandler::getName()
    return PortHandlerMock_get()->getName(m_settings.port_id);
 }
 
-void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size){};
-void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size){};
-void PortHandler::onTimeout(uint32_t timer_id){};
-void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data){};
-void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data){};
+void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>&, size_t){};
+void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>&, size_t){};
+void PortHandler::onTimeout(uint32_t){};
+void PortHandler::onPersistenceRead(const std::vector<uint8_t>&){};
+void PortHandler::onPersistenceWrite(std::vector<uint8_t>&){};
 
 
 }

@@ -428,9 +428,7 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
     *                  Button shall be in red color. <br>
     * ************************************************
     */
-   constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
    constexpr uint8_t TEST_PORT_INDEX = 3;
-   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
    GUI::PortHandlerEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;
@@ -484,7 +482,6 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
     */
    constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
    constexpr uint8_t TEST_PORT_INDEX = 3;
-   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
    GUI::PortHandlerEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;
@@ -559,7 +556,6 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    constexpr uint32_t TEST_TRACE_COLOR = 0x123321;
    constexpr uint32_t TEST_FILER_COLOR = 0x999999;
    constexpr uint8_t TEST_PORT_INDEX = 3;
-   constexpr uint32_t TEST_MARKER_COLOR = 0xFF0055; //marker shall be red
    GUI::PortHandlerEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;

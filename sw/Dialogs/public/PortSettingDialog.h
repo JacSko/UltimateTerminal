@@ -170,8 +170,8 @@ private:
 
    void addPortTypeComboBox(const EnumValue<PortType>& current_selection);
    void addDialogButtons();
-   void renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
-   void renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings = {});
+   void renderSerialView(QFormLayout* form, const Settings& settings = {});
+   void renderEthernetView(QFormLayout* form, const Settings& settings = {});
    void clearDialog();
    bool convertGuiValues(Settings& out_settings);
 

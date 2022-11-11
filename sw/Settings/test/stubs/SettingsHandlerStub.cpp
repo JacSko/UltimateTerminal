@@ -104,7 +104,7 @@ void SettingsHandler::stopFileObservation()
 {
 }
 
-void SettingsHandler::onTimeout(uint32_t timer_id)
+void SettingsHandler::onTimeout(uint32_t)
 {
 }
 
@@ -182,15 +182,15 @@ bool SettingsHandler::setBool(KeyID id, bool value)
    return changed;
 }
 
-void SettingsHandler::registerListener(KeyID id, SettingsListener* listener)
+void SettingsHandler::registerListener(KeyID, SettingsListener*)
 {
 }
 
-void SettingsHandler::unregisterListener(KeyID id, SettingsListener* listener)
+void SettingsHandler::unregisterListener(KeyID, SettingsListener*)
 {
 }
 
-void SettingsHandler::notifyListeners(KeyID id)
+void SettingsHandler::notifyListeners(KeyID)
 {
 }
 

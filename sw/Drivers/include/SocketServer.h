@@ -62,7 +62,7 @@ private:
 
    void listening_thread();
    virtual std::unique_ptr<ISocketClientHandler> createClientHandler(int socket);
-   virtual int acceptClient(int socket, struct sockaddr * address, socklen_t * address_len);
+   virtual int acceptClient(struct sockaddr * address, socklen_t * address_len);
    virtual void onThreadStartFail();
    void worker_thread();
    void storeEvent(int client_id, ClientEvent ev, const std::vector<uint8_t>& data, size_t size);

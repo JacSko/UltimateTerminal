@@ -60,7 +60,7 @@ public:
    }
    void chop(int count)
    {
-      if (count >= size())
+      if ((size_t)count >= size())
       {
          std::string("");
       }
@@ -151,10 +151,10 @@ enum AlignmentFlag {
 class QApplication
 {
 public:
-   static QString translate(const char * context,
-                            const char * key,
-                            const char * disambiguation = nullptr,
-                            int n = -1){return QString(key);};
+   static QString translate(const char * key,
+                            const char *,
+                            const char * = nullptr,
+                            int = -1){return QString(key);};
 };
 class QCoreApplication : public QApplication
 {
@@ -164,7 +164,7 @@ class QCoreApplication : public QApplication
 class QMetaObject
 {
 public:
-   static void connectSlotsByName(QObject *o){};
+   static void connectSlotsByName(QObject *){};
 };
 
 class QObject

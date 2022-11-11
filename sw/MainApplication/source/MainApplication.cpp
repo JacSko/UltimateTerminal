@@ -168,13 +168,13 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       new_line.chop(1);
    }
 
-   if(ui->terminalView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if((uint32_t)ui->terminalView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
       ui->terminalView->clear();
    }
 
-   if(ui->traceView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if((uint32_t)ui->traceView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
       ui->traceView->clear();

@@ -61,8 +61,8 @@ SocketServer::SocketServer():
 m_listening_thread(std::bind(&SocketServer::listening_thread, this), "SOCK_LISTEN"),
 m_working_thread(std::bind(&SocketServer::worker_thread, this), "SOCK_WORKER"),
 m_server_fd(-1),
-m_max_clients(0),
 m_port(0),
+m_max_clients(0),
 m_listeners {},
 m_handlers {}
 {
@@ -154,7 +154,7 @@ void SocketServer::listening_thread()
    {
       if (system_call::listen(m_server_fd, (int)m_max_clients) != -1)
       {
-         int new_socket = acceptClient(m_server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
+         int new_socket = acceptClient((struct sockaddr *)&address, (socklen_t*)&addrlen);
          if (new_socket != -1)
          {
             std::lock_guard<std::mutex> lock(m_handlers_mutex);
@@ -182,7 +182,7 @@ std::unique_ptr<ISocketClientHandler> SocketServer::createClientHandler(int sock
    return std::unique_ptr<ISocketClientHandler>(new ClientHandler(socket, m_mode, this));
 }
 
-int SocketServer::acceptClient(int socket, struct sockaddr * address, socklen_t * address_len)
+int SocketServer::acceptClient(struct sockaddr * address, socklen_t * address_len)
 {
    return system_call::accept(m_server_fd, address, address_len);
 }

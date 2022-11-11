@@ -6,7 +6,7 @@
 namespace GUI
 {
 
-UserButtonHandler::UserButtonHandler(QPushButton* object, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
+UserButtonHandler::UserButtonHandler(QPushButton*, QWidget*, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
 :m_persistence(persistence),
  m_executor(writer, {})
 {
@@ -16,11 +16,11 @@ UserButtonHandler::~UserButtonHandler()
 {
 
 }
-void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>& data)
+void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>&)
 {
 
 }
-void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>& data)
+void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>&)
 {
 
 }

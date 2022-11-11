@@ -145,7 +145,7 @@ void LoggerEngine::assertion(int logger_writer, const char* filename, int line, 
    std::abort();
 }
 
-void LoggerEngine::writeLog(int logger_writer, const char* log)
+void LoggerEngine::writeLog(int, const char* log)
 {
    printf("%s", log);
 }

@@ -225,7 +225,7 @@ TEST_F(SocketClientFixture, client_write_to_server_delimiter_mode)
          });
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_CALL(*sys_call_mock, send(TEST_SOCKET_FD,_,_,_)).WillOnce(Invoke([&](int, const void * data, size_t length, int flags) -> ssize_t
+   EXPECT_CALL(*sys_call_mock, send(TEST_SOCKET_FD,_,_,_)).WillOnce(Invoke([&](int, const void * data, size_t length, int) -> ssize_t
          {
             std::vector<uint8_t> send_data ((uint8_t*) data, ((uint8_t*) data + length));
             EXPECT_THAT(send_data, ContainerEq(TEST_EXPECTED_DATA));
@@ -257,7 +257,7 @@ TEST_F(SocketClientFixture, client_read_from_server_delimiter_mode)
    EXPECT_CALL(*sys_call_mock, inet_pton(AF_INET, _, _)).WillOnce(Return(TEST_RETURN_OK));
    EXPECT_CALL(*sys_call_mock, connect(TEST_SOCKET_FD, _, _)).WillOnce(Return(0));
    EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _,_, _))
-   .WillOnce([&](int, void * buffer, size_t size, int)->ssize_t
+   .WillOnce([&](int, void * buffer, size_t, int)->ssize_t
    {
       /* simulate received data */
       if (buffer)
@@ -307,7 +307,7 @@ TEST_F(SocketClientFixture, client_read_empty_message_from_server)
    EXPECT_CALL(*sys_call_mock, inet_pton(AF_INET, _, _)).WillOnce(Return(TEST_RETURN_OK));
    EXPECT_CALL(*sys_call_mock, connect(TEST_SOCKET_FD, _, _)).WillOnce(Return(0));
    EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _,_, _))
-   .WillOnce([&](int, void * buffer, size_t size, int)->ssize_t
+   .WillOnce([&](int, void * buffer, size_t, int)->ssize_t
    {
       /* simulate received data */
       if (buffer)

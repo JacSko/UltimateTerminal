@@ -1,2 +1,2 @@
 #pragma once
-#include "QtWidgetsMock.h"
+#include "QtCoreMock.h"

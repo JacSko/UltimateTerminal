@@ -206,7 +206,7 @@ public:
     * @param[in] data - bytes to write.
     * @param[in] size - number of bytes to write - if not provided, data.size() bytes will be written.
     */
-   virtual bool write(const std::vector<uint8_t>& data, size_t size = 0) = 0;
+   virtual bool write(const std::vector<uint8_t>& data, ssize_t size = 0) = 0;
    virtual ~ISerialDriver(){};
 };
 

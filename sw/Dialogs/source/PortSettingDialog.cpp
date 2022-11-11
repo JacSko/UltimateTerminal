@@ -79,11 +79,11 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
 
    if (current_settings.type == PortType::SERIAL)
    {
-      renderSerialView(m_dialog, m_form, current_settings);
+      renderSerialView(m_form, current_settings);
    }
    else if (current_settings.type == PortType::ETHERNET)
    {
-      renderEthernetView(m_dialog, m_form, current_settings);
+      renderEthernetView(m_form, current_settings);
    }
    else
    {
@@ -134,7 +134,7 @@ void PortSettingDialog::addDialogButtons()
 
    UT_Log(GUI_DIALOG, HIGH, "%s", __func__);
 }
-void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, const Settings& settings)
+void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& settings)
 {
    UT_Log(GUI_DIALOG, LOW, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
@@ -217,7 +217,7 @@ void PortSettingDialog::renderSerialView(QDialog* dialog, QFormLayout* form, con
 
 
 }
-void PortSettingDialog::renderEthernetView(QDialog* dialog, QFormLayout* form, const Settings& settings)
+void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& settings)
 {
    UT_Log(GUI_DIALOG, LOW, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
@@ -315,11 +315,11 @@ void PortSettingDialog::onPortTypeChanged(const QString & name)
 
    if (EnumValue<PortType>(name.toStdString()) == PortType::SERIAL)
    {
-      renderSerialView(m_dialog, m_form, m_current_settings);
+      renderSerialView(m_form, m_current_settings);
    }
    else
    {
-      renderEthernetView(m_dialog, m_form, m_current_settings);
+      renderEthernetView(m_form, m_current_settings);
    }
 }
 

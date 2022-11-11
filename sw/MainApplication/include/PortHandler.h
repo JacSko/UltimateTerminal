@@ -71,7 +71,7 @@ private:
    Utilities::ITimers& m_timers;
    std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
    std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
-   int m_timer_id;
+   uint32_t m_timer_id;
    ButtonState m_button_state;
    std::queue<PortHandlerEvent> m_events;
    std::mutex m_event_mutex;
@@ -92,7 +92,7 @@ private:
    Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;
-   void serialize(std::vector<uint8_t>& buffer, const Dialogs::PortSettingDialog::Settings& item);
+   void serialize(std::vector<uint8_t>& buffer);
 public slots:
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();

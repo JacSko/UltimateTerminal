@@ -33,7 +33,7 @@ TraceFilterHandlerMock* TraceFilterHandlerMock_get()
 }
 
 
-TraceFilterHandler::TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QPushButton* button, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(QWidget*, QLineEdit*, QPushButton*, Persistence::PersistenceHandler& persistence):
 m_persistence(persistence)
 {
 }
@@ -42,6 +42,6 @@ std::optional<uint32_t> TraceFilterHandler::tryMatch(const std::string& text)
 {
    return TraceFilterHandlerMock_get()->tryMatch(text);
 }
-void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data){}
-void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data){}
+void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>&){}
+void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>&){}
 

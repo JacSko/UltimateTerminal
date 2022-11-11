@@ -80,7 +80,7 @@ Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
       return Event::NEW_DATA;
    }
 }
-Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent event)
+Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent)
 {
    return Event::NEW_DATA;
 }
@@ -331,9 +331,9 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence", m_settings.port_id, m_settings.port_name.c_str());
-   serialize(data, m_settings);
+   serialize(data);
 }
-void PortHandler::serialize(std::vector<uint8_t>& buffer, const Dialogs::PortSettingDialog::Settings& item)
+void PortHandler::serialize(std::vector<uint8_t>& buffer)
 {
    ::serialize(buffer, m_settings.ip_address);
    ::serialize(buffer, m_settings.port);

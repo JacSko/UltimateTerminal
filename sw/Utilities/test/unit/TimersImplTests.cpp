@@ -56,7 +56,7 @@ TEST_F(TimersFixture, create_timer_and_wait_for_callback)
    uint32_t test_timer_id = m_test_subject->createTimer(&m_client_mock, TEST_TIMER_DEFAULT_TIMEOUT);
    ASSERT_TRUE(test_timer_id != TIMERS_INVALID_ID);
 
-   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t timer_id){wait = false;}));
+   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t){wait = false;}));
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id);
 
@@ -82,7 +82,7 @@ TEST_F(TimersFixture, change_timeout_when_timer_is_running)
    uint32_t test_timer_id = m_test_subject->createTimer(&m_client_mock, TEST_TIMER_DEFAULT_TIMEOUT);
    ASSERT_TRUE(test_timer_id != TIMERS_INVALID_ID);
 
-   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t timer_id){wait = false;}));
+   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t){wait = false;}));
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id);
 
@@ -93,7 +93,7 @@ TEST_F(TimersFixture, change_timeout_when_timer_is_running)
    EXPECT_TRUE(m_test_subject->setTimeout(test_timer_id, new_timer_timeout));
    auto new_timeout_timestamp = std::chrono::steady_clock::now();
    auto callback_timestamp = std::chrono::steady_clock::now();
-   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t timer_id){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
+   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
 
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id);
@@ -124,7 +124,7 @@ TEST_F(TimersFixture, start_timer_with_temporary_timeout)
    ASSERT_TRUE(test_timer_id != TIMERS_INVALID_ID);
    auto callback_timestamp = std::chrono::steady_clock::now();
 
-   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t timer_id){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
+   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id, new_timer_timeout);
    auto start_timestamp = std::chrono::steady_clock::now();
@@ -135,7 +135,7 @@ TEST_F(TimersFixture, start_timer_with_temporary_timeout)
 
    wait = true;
    callback_timestamp = std::chrono::steady_clock::now();
-   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t timer_id){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
+   EXPECT_CALL(m_client_mock, onTimeout(test_timer_id)).WillOnce(Invoke([&](uint32_t){wait = false; callback_timestamp = std::chrono::steady_clock::now();}));
 
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id);
@@ -167,7 +167,7 @@ TEST_F(TimersFixture, start_periodic_timer)
       .WillOnce(Return())
       .WillOnce(Return())
       .WillOnce(Return())
-      .WillOnce([&](uint32_t timer_id){m_test_subject->stopTimer(test_timer_id); wait = false;});
+      .WillOnce([&](uint32_t){m_test_subject->stopTimer(test_timer_id); wait = false;});
 
    /* start timer for one shot */
    m_test_subject->startTimer(test_timer_id, true);
@@ -181,7 +181,6 @@ TEST_F(TimersFixture, timer_stopping)
 {
    /* atomic flag to wait for callback */
    std::atomic<bool> wait(true);
-   constexpr uint32_t TEST_MAX_WAIT_TIMEOUT = 500;
    /**
     * <b>scenario</b>: Create timer and start as periodic, than stop.<br>
     * <b>expected</b>: No callback called.<br>

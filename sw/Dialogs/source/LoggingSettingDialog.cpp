@@ -10,11 +10,11 @@ LoggingSettingDialog::LoggingSettingDialog():
 m_dialog(nullptr),
 m_form(nullptr),
 m_buttonBox(nullptr),
-m_editable(true),
 m_fileNameEdit(nullptr),
 m_filePathEdit(nullptr),
 m_pathSelectButton(nullptr),
-m_autoNameBox(nullptr)
+m_autoNameBox(nullptr),
+m_editable(true)
 {
 }
 LoggingSettingDialog::~LoggingSettingDialog()

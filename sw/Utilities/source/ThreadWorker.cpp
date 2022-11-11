@@ -82,10 +82,7 @@ bool ThreadWorker::setPriority(int prio_level)
       {
          policy = SCHED_RR;
       };
-
-      int old_prio = params.sched_priority;
       params.sched_priority = prio_level;
-
       status = pthread_setschedparam(m_thread.native_handle(), policy, &params);
    }
    return status == 0;

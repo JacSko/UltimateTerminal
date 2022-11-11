@@ -341,7 +341,7 @@ void SerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>& d
       }
    }
 }
-bool SerialDriver::write(const std::vector<uint8_t>& data, size_t size)
+bool SerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
    return ::write(m_fd, data.data(), data.size()) == size;
 }
