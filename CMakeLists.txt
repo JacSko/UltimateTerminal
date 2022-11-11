@@ -31,8 +31,6 @@ add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" -DAPPLICATION_VERSION={"${PROJECT
 #########################################
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/sw/gui)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 if (NOT UNIT_TESTS)
