@@ -27,6 +27,7 @@
    DEF_SETTING_GROUP(Logger_group_USER_BTN_HANDLER, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_PERSISTENCE, std::string, "HIGH") \
    DEF_SETTING_GROUP(MainApplication_maxTerminalTraces, uint32_t, 10000) \
+   DEF_SETTING_GROUP(MainApplication_statusBarTimeout, uint32_t, 10000) \
    DEF_SETTING_GROUP(PortSettingDialog_maxLineEditLength, uint32_t, 30) \
 
 

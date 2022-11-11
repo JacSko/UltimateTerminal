@@ -6,7 +6,7 @@
 
 struct LoggingSettingDialogMock
 {
-   MOCK_METHOD4(showDialog,std::optional<bool>(QWidget*, const Dialogs::LoggingSettingDialog::Settings&, Dialogs::LoggingSettingDialog::Settings&, bool));
+   MOCK_METHOD3(showDialog,std::optional<std::string>(QWidget*, const std::string&, bool));
 };
 
 LoggingSettingDialogMock* g_log_setting_dialog_mock;
@@ -39,9 +39,9 @@ namespace Dialogs
 LoggingSettingDialog::LoggingSettingDialog() {}
 LoggingSettingDialog::~LoggingSettingDialog() {}
 
-std::optional<bool> LoggingSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
+std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, const std::string& current_path, bool allow_edit)
 {
-   return g_log_setting_dialog_mock->showDialog(parent, current_settings, out_settings, allow_edit);
+   return g_log_setting_dialog_mock->showDialog(parent, current_path, allow_edit);
 }
 
 }

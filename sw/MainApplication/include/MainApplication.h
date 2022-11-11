@@ -39,7 +39,8 @@ private:
     std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
     std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
     uint32_t m_marker_index;
-    Dialogs::LoggingSettingDialog::Settings m_file_logger_settings;
+    std::string m_file_logging_path;
+    std::string m_log_file_name;
     Persistence::PersistenceHandler m_persistence;
     bool m_scrolling_active;
     bool m_trace_scrolling_active;
@@ -58,6 +59,7 @@ private:
     void onPersistenceWrite(std::vector<uint8_t>& data);
     void addToCommandHistory(uint8_t port_id, const std::string& text);
     uint8_t portNameToId(const std::string& name);
+    std::string createLogFileName();
 public slots:
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

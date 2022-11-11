@@ -35,7 +35,6 @@ ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
 m_marker_index(0),
-m_file_logger_settings {},
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
 {
@@ -105,7 +104,7 @@ m_trace_scrolling_active(false)
     ui->lineEndingComboBox->addItem("\\n");
     ui->lineEndingComboBox->addItem("EMPTY");
 
-    m_file_logger_settings.file_path = system_call::getExecutablePath();
+    m_file_logging_path = system_call::getExecutablePath();
 
     for (auto& handler : m_user_button_handlers)
     {
@@ -240,15 +239,18 @@ void MainApplication::onLoggingButtonClicked()
    if (!m_file_logger->isActive())
    {
       UT_Log(MAIN, LOW, "enabling file logging");
-      if (m_file_logger->openFile(m_file_logger_settings.getPath()))
+      m_log_file_name = m_file_logging_path + '/' + createLogFileName();
+      if (m_file_logger->openFile(m_log_file_name))
       {
-         UT_Log(MAIN, LOW, "file opened, logging started");
+         UT_Log(MAIN, INFO, "Logging started, new logfile created: %s", m_log_file_name.c_str());
+         ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
          setButtonColor(ui->loggingButton, Qt::green);
       }
    }
    else
    {
       UT_Log(MAIN, LOW, "stopping file logging");
+      ui->statusbar->showMessage(QString("").asprintf("Log file ready: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
       m_file_logger->closeFile();
       setButtonColor(ui->loggingButton, Qt::red);
    }
@@ -269,16 +271,12 @@ void MainApplication::onTraceClearButtonClicked()
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
    Dialogs::LoggingSettingDialog dialog;
-   Dialogs::LoggingSettingDialog::Settings new_settings = {};
-   UT_Log(MAIN, MEDIUM, "Opening log setting dialog with settings %s %u", m_file_logger_settings.getPath().c_str(), m_file_logger_settings.use_default_name);
-   auto result = dialog.showDialog(this, m_file_logger_settings, new_settings, !m_file_logger->isActive());
+   UT_Log(MAIN, MEDIUM, "Opening log setting dialog with path %s", m_file_logging_path.c_str());
+   auto result = dialog.showDialog(this, m_file_logging_path, !m_file_logger->isActive());
    if (result)
    {
-      if (result.value())
-      {
-         UT_Log(MAIN, LOW, "got new logging settings: auto %u, file:%s", new_settings.use_default_name, new_settings.getPath().c_str());
-         m_file_logger_settings = new_settings;
-      }
+      UT_Log(MAIN, LOW, "got new logging path %s", result.value().c_str());
+      m_file_logging_path = result.value();
    }
 }
 void MainApplication::onClearButtonClicked()
@@ -384,9 +382,7 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
    std::string application_version;
    uint32_t offset = 0;
    ::deserialize(data, offset, application_version);
-   ::deserialize(data, offset, m_file_logger_settings.file_path);
-   ::deserialize(data, offset, m_file_logger_settings.file_name);
-   ::deserialize(data, offset, m_file_logger_settings.use_default_name);
+   ::deserialize(data, offset, m_file_logging_path);
    ::deserialize(data, offset, m_scrolling_active);
    ::deserialize(data, offset, m_trace_scrolling_active);
    ::deserialize(data, offset, line_ending);
@@ -422,9 +418,7 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 {
    ::serialize(data, std::string(APPLICATION_VERSION));
-   ::serialize(data, m_file_logger_settings.file_path);
-   ::serialize(data, m_file_logger_settings.file_name);
-   ::serialize(data, m_file_logger_settings.use_default_name);
+   ::serialize(data, m_file_logging_path);
    ::serialize(data, m_scrolling_active);
    ::serialize(data, m_trace_scrolling_active);
    ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
@@ -468,4 +462,16 @@ uint8_t MainApplication::portNameToId(const std::string& name)
    {
       return 0;
    }
+}
+std::string MainApplication::createLogFileName()
+{
+   std::string result;
+   /* create new file */
+   auto currentTime = std::chrono::system_clock::now();
+   std::time_t tt = std::chrono::system_clock::to_time_t ( currentTime );
+   auto ts = localtime (&tt);
+   result = QString().asprintf("log_%u%.2u%u_%.2u%.2u%.2u",
+                                   ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
+                                   ts->tm_hour, ts->tm_min, ts->tm_sec).toStdString();
+   return result;
 }

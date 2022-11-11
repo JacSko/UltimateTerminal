@@ -355,10 +355,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
    port_close_event.event = GUI::Event::DISCONNECTED;
-   Dialogs::LoggingSettingDialog::Settings logger_settings;
-   logger_settings.file_name = "some_log.txt";
-   logger_settings.file_path = "/home/user";
-   logger_settings.use_default_name = false;
+   std::string log_path = "/home/user";
 
    /* port opening */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
@@ -366,13 +363,14 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
 
    /* user requested to change the logging file */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(logger_settings), Return(std::optional<bool>(true))));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
 
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*g_logger_mock, openFile("/home/user/some_log.txt")).WillOnce(Return(true));
+   EXPECT_CALL(*g_logger_mock, openFile(HasSubstr(log_path + "/log"))).WillOnce(Return(true));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
 
    /* first marker added */
@@ -403,7 +401,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
 
    /* user requested to change the logging file, it should not be possible when logging is active */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
-   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,false)).WillOnce(Return(std::optional<bool>(false)));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,false)).WillOnce(Return(std::optional<std::string>()));
    m_test_subject->onLoggingButtonContextMenuRequested();
 
    /* closing port */
@@ -415,6 +413,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
    EXPECT_CALL(*g_logger_mock, closeFile());
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
 
 }
@@ -441,21 +440,18 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
    port_close_event.event = GUI::Event::DISCONNECTED;
-   Dialogs::LoggingSettingDialog::Settings logger_settings;
-   logger_settings.file_name = "some_log.txt";
-   logger_settings.file_path = "/home/user";
-   logger_settings.use_default_name = false;
-
+   std::string log_path = "/home/user";
 
    /* user requested to change the logging file */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(logger_settings), Return(std::optional<bool>(true))));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
 
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*g_logger_mock, openFile("/home/user/some_log.txt")).WillOnce(Return(true));
+   EXPECT_CALL(*g_logger_mock, openFile(HasSubstr(log_path + "/log"))).WillOnce(Return(true));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
 
    /* port opening */
@@ -471,6 +467,7 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
    EXPECT_CALL(*g_logger_mock, closeFile());
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
+   EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
 
 }
@@ -805,18 +802,11 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
     */
    std::vector<uint8_t> data_buffer;
    std::string current_ending = "\\n";
-   Dialogs::LoggingSettingDialog::Settings old_logger_settings;
-   old_logger_settings.file_name = "old file";
-   old_logger_settings.file_path = "old path";
-   old_logger_settings.use_default_name = true;
-   Dialogs::LoggingSettingDialog::Settings new_logger_settings;
-   new_logger_settings.file_name = "new file";
-   new_logger_settings.file_path = "new path";
-   new_logger_settings.use_default_name = true;
+   std::string log_path = "/home/user";
 
    /* replace all persistent data, to get known state */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(old_logger_settings), Return(std::optional<bool>(true))));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
    m_test_subject->onScrollButtonClicked();
@@ -831,7 +821,7 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
 
    /* replace all persistent data, to make sure that has been restored from persistence correctly */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(new_logger_settings), Return(std::optional<bool>(true))));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    m_test_subject->onScrollButtonClicked();

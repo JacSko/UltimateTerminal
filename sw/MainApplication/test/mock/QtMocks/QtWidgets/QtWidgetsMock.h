@@ -381,6 +381,7 @@ public:
    QStatusBar(QWidget*){};
    void* operator new(size_t);
    void operator delete(void*){};
+   void showMessage(const QString&, uint32_t timeout);
 };
 
 
@@ -454,9 +455,10 @@ struct QtWidgetsMock
    MOCK_METHOD1(QListWidget_count, int(QListWidget*));
    MOCK_METHOD1(QListWidget_clear, void(QListWidget*));
 
+   MOCK_METHOD0(QStatusBar_new, void*());
+   MOCK_METHOD3(QStatusBar_showMessage, void(QStatusBar*, const QString&, uint32_t timeout));
    MOCK_METHOD0(QCheckBox_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());
-   MOCK_METHOD0(QStatusBar_new, void*());
 };
 
 void QtWidgetsMock_init();
