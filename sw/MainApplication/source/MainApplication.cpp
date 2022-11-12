@@ -1,14 +1,16 @@
+#include <QtWidgets/QMessageBox>
+#include <libgen.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+
 #include "MainApplication.h"
 #include "ui_MainWindow.h"
-#include <QtWidgets/QMessageBox>
-
 #include "SettingsHandler.h"
 #include "Settings.h"
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 
-#include <libgen.h>         // dirname
-#include <unistd.h>         // readlink
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
@@ -245,6 +247,13 @@ void MainApplication::onLoggingButtonClicked()
          UT_Log(MAIN, INFO, "Logging started, new logfile created: %s", m_log_file_name.c_str());
          ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
          setButtonColor(ui->loggingButton, Qt::green);
+      }
+      else
+      {
+         QMessageBox messageBox;
+         QString error_message = QString().asprintf("Cannot create logfile @ %s\n%s (%u)", m_file_logging_path.c_str(), strerror(errno), errno);
+         messageBox.critical(this,"Error", error_message, "OK");
+
       }
    }
    else

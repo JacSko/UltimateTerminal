@@ -333,7 +333,6 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
     * <b>expected</b>: Button color shall not change. <br>
     * ************************************************
     */
-
    Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
    user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
@@ -348,6 +347,9 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
    m_test_subject->onPortButtonContextMenuRequested();
+
+   /* expect QMessageBox with error */
+   EXPECT_CALL(*QtWidgetsMock_get(), QMessageBox_critical(_,_,_,_,_));
 
    /* port opening */
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));

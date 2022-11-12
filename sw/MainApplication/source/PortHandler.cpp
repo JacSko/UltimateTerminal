@@ -1,6 +1,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <optional>
+#include <string.h>
+#include <errno.h>
 
 #include "Logger.h"
 #include "PortHandler.h"
@@ -226,6 +228,9 @@ void PortHandler::handleButtonClickSerial()
       else
       {
          UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
+         QMessageBox messageBox;
+         QString error_message = QString().asprintf("Cannot open %s [%s]\n%s (%u)", m_settings.serialSettings.device.c_str(), m_settings.port_name.c_str(), strerror(errno), errno);
+         messageBox.critical(m_parent,"Error", error_message, "OK");
       }
    }
 }
