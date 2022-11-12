@@ -53,9 +53,9 @@ struct MainApplicationFixture : public testing::Test
 
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_user_button_1))
                                                          .WillOnce(Return(&test_user_button_2))
-                                                         .WillOnce(Return(&test_user_button_5))
                                                          .WillOnce(Return(&test_user_button_3))
                                                          .WillOnce(Return(&test_user_button_4))
+                                                         .WillOnce(Return(&test_user_button_5))
                                                          .WillOnce(Return(&test_user_button_6))
                                                          .WillOnce(Return(&test_user_button_7))
                                                          .WillOnce(Return(&test_user_button_8))
@@ -68,18 +68,18 @@ struct MainApplicationFixture : public testing::Test
                                                          .WillOnce(Return(&test_clear_button))
                                                          .WillOnce(Return(&test_trace_clear_button))
                                                          .WillOnce(Return(&test_trace_scroll_button))
-                                                         .WillOnce(Return(&test_trace_filter_7))
                                                          .WillOnce(Return(&test_trace_filter_1))
-                                                         .WillOnce(Return(&test_trace_filter_5))
-                                                         .WillOnce(Return(&test_trace_filter_4))
-                                                         .WillOnce(Return(&test_trace_filter_3))
-                                                         .WillOnce(Return(&test_trace_filter_6))
                                                          .WillOnce(Return(&test_trace_filter_2))
-                                                         .WillOnce(Return(&test_port_button_2))
-                                                         .WillOnce(Return(&test_port_button_5))
+                                                         .WillOnce(Return(&test_trace_filter_3))
+                                                         .WillOnce(Return(&test_trace_filter_4))
+                                                         .WillOnce(Return(&test_trace_filter_5))
+                                                         .WillOnce(Return(&test_trace_filter_6))
+                                                         .WillOnce(Return(&test_trace_filter_7))
                                                          .WillOnce(Return(&test_port_button_1))
+                                                         .WillOnce(Return(&test_port_button_2))
                                                          .WillOnce(Return(&test_port_button_3))
-                                                         .WillOnce(Return(&test_port_button_4));
+                                                         .WillOnce(Return(&test_port_button_4))
+                                                         .WillOnce(Return(&test_port_button_5));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_info_label))
                                                      .WillOnce(Return(&test_port_label_1))
                                                      .WillOnce(Return(&test_port_label_2))
@@ -91,12 +91,12 @@ struct MainApplicationFixture : public testing::Test
                                                         .WillOnce(Return(&test_text_edit));
       EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_terminal_view))
                                                           .WillOnce(Return(&test_trace_view));
-      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_trace_filter_2))
-                                                        .WillOnce(Return(&test_trace_filter_1))
-                                                        .WillOnce(Return(&test_trace_filter_5))
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_trace_filter_1))
+                                                        .WillOnce(Return(&test_trace_filter_2))
                                                         .WillOnce(Return(&test_trace_filter_3))
-                                                        .WillOnce(Return(&test_trace_filter_6))
                                                         .WillOnce(Return(&test_trace_filter_4))
+                                                        .WillOnce(Return(&test_trace_filter_5))
+                                                        .WillOnce(Return(&test_trace_filter_6))
                                                         .WillOnce(Return(&test_trace_filter_7));
       EXPECT_CALL(*QtWidgetsMock_get(), QMenuBar_new()).WillOnce(Return(&test_menu_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_new()).WillOnce(Return(&test_status_bar));
