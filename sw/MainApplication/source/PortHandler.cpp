@@ -126,10 +126,11 @@ void PortHandler::onPortEvent()
       PortHandlerEvent& event = m_events.front();
       if (event.event == Event::DISCONNECTED)
       {
-         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] server disconnected, closing client", m_settings.port_id, m_settings.port_name.c_str());
+         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] server disconnected, trying to reconnect", m_settings.port_id, m_settings.port_name.c_str());
          m_socket->disconnect();
-         setButtonState(ButtonState::DISCONNECTED);
-         notifyListeners(Event::DISCONNECTED);
+         setButtonState(ButtonState::CONNECTING);
+         notifyListeners(Event::CONNECTING);
+         tryConnectToSocket();
       }
       else if (event.event == Event::NEW_DATA)
       {

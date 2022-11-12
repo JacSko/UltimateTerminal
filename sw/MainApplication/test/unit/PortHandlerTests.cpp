@@ -503,6 +503,72 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
 
 }
 
+TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
+{
+   /**
+    * <b>scenario</b>: Socket server closed connection unexpectedly. <br>
+    * <b>expected</b>: Socket connection requested. <br>
+    *                  Button color changed to CONNECTING <br>
+    *                  Connection started successfully. <br>
+    *                  After socket disconnection, button color shall change to CONNECTING. <br>
+    *                  Listeners notified about disconnection. <br>
+    *                  When server is back again, connection shall be restored.<br>
+    * ************************************************
+    */
+
+   PortHandlerEvent receivied_event;
+   Dialogs::PortSettingDialog::Settings user_settings;
+   user_settings.port_name = "TEST_NAME";
+   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
+   user_settings.ip_address = "192.168.1.100";
+   user_settings.port = 1234;
+
+   /* settings change requested */
+   EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, QString(user_settings.shortSettingsString().c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
+   m_test_subject->onPortButtonContextMenuRequested();
+
+   /* port opening */
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
+
+   EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
+   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
+   m_test_subject->onPortButtonClicked();
+
+   /* expect notification via listener */
+   EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
+   EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
+   EXPECT_TRUE(receivied_event.data.empty());
+
+   /* server disconnected unexpectedly */
+   EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
+   EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
+   EXPECT_CALL(*g_socket_mock, disconnect());
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_CONNECTING_COLOR)))).Times(AtLeast(1));
+   ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED, {}, 0);
+   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
+   m_test_subject->onPortEvent();
+   /* expect notification via listener */
+   EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTING);
+   EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
+   EXPECT_TRUE(receivied_event.data.empty());
+
+   /* server available again */
+   EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
+   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, QColor(BUTTON_ON_COLOR))));
+   ((Utilities::ITimerClient*)m_test_subject.get())->onTimeout(TEST_TIMER_ID);
+
+   /* expect notification via listener */
+   EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
+   EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
+   EXPECT_TRUE(receivied_event.data.empty());
+}
+
 TestParam params[] = {{Dialogs::PortSettingDialog::PortType::SERIAL},{Dialogs::PortSettingDialog::PortType::ETHERNET}};
 INSTANTIATE_TEST_CASE_P(PortHandlerParamFixture, PortHandlerParamFixture, ValuesIn(params));
 
