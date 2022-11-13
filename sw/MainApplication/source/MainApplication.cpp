@@ -69,15 +69,15 @@ m_trace_scrolling_active(false)
     setButtonState(ui->loggingButton, false);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this, m_persistence)));
+          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, ui->port1ButtonShortcut, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, *m_timers, this, this, m_persistence)));
+          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, ui->port2ButtonShortcut, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, *m_timers, this, this, m_persistence)));
+          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, ui->port3ButtonShortcut, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, *m_timers, this, this, m_persistence)));
+          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, ui->port4ButtonShortcut, *m_timers, this, this, m_persistence)));
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, *m_timers, this, this, m_persistence)));
+          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, ui->port5ButtonShortcut, *m_timers, this, this, m_persistence)));
 
     m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
           new GUI::UserButtonHandler(ui->userButton_1, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
@@ -234,11 +234,6 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
    connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
    connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
-   connect(ui->port1ButtonShortcut, SIGNAL(activated()), m_port_handlers[0].get(), SLOT(onPortButtonClicked()));
-   connect(ui->port2ButtonShortcut, SIGNAL(activated()), m_port_handlers[1].get(), SLOT(onPortButtonClicked()));
-   connect(ui->port3ButtonShortcut, SIGNAL(activated()), m_port_handlers[2].get(), SLOT(onPortButtonClicked()));
-   connect(ui->port4ButtonShortcut, SIGNAL(activated()), m_port_handlers[3].get(), SLOT(onPortButtonClicked()));
-   connect(ui->port5ButtonShortcut, SIGNAL(activated()), m_port_handlers[4].get(), SLOT(onPortButtonClicked()));
    connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
 }
 void MainApplication::onMarkerButtonClicked()

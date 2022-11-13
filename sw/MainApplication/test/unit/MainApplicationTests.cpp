@@ -126,11 +126,6 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port_box, HasSubstr("currentIndexChanged"), _, HasSubstr("onCurrentPortSelectionChanged")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_loggingButtonShortcut, HasSubstr("activated"), _, HasSubstr("onLoggingButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_markerButtonShortcut, HasSubstr("activated"), _, HasSubstr("onMarkerButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port1ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port2ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port3ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port4ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port5ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_traceClearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onTraceClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_switchSendPortShortcut, HasSubstr("activated"), _, HasSubstr("onPortSwitchRequest")));

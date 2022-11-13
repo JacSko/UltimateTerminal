@@ -5,6 +5,7 @@
 
 #include <QtCore/QObject>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QShortcut>
 
 #include "GenericListener.hpp"
 #include "ISocketDriverFactory.h"
@@ -49,7 +50,13 @@ class PortHandler : public QObject,
 {
    Q_OBJECT
 public:
-   PortHandler(QPushButton* object, QLabel* label, Utilities::ITimers& timer, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence);
+   PortHandler(QPushButton* object,
+               QLabel* label,
+               QShortcut* shortcut,
+               Utilities::ITimers& timer,
+               PortHandlerListener* listener,
+               QWidget* parent,
+               Persistence::PersistenceHandler& persistence);
    ~PortHandler();
 
    const std::string& getName();
@@ -65,6 +72,7 @@ private:
 
    QPushButton* m_object;
    QLabel* m_summary_label;
+   QShortcut* m_shortcut;
    QWidget* m_parent;
    Dialogs::PortSettingDialog::Settings m_settings;
    uint32_t m_connect_retry_period;

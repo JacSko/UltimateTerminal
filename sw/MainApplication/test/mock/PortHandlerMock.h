@@ -38,7 +38,7 @@ PortHandlerMock* PortHandlerMock_get()
 }
 
 
-PortHandler::PortHandler(QPushButton*, QLabel*, Utilities::ITimers& timer, PortHandlerListener*, QWidget*, Persistence::PersistenceHandler& persistence)
+PortHandler::PortHandler(QPushButton*, QLabel*, QShortcut*, Utilities::ITimers& timer, PortHandlerListener*, QWidget*, Persistence::PersistenceHandler& persistence)
 :m_timers(timer),
  m_persistence(persistence)
 {

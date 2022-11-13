@@ -62,6 +62,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("clicked"), _, HasSubstr("onPortButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onPortButtonContextMenuRequested")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, HasSubstr("portEvent"), _, HasSubstr("onPortEvent")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_shortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
       EXPECT_CALL(timer_mock, createTimer(_,_)).WillOnce(Return(TEST_TIMER_ID));
 
       EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
@@ -69,7 +70,7 @@ struct PortHandlerFixture : public testing::Test
 
       EXPECT_CALL(*g_socket_mock, addListener(_));
       EXPECT_CALL(*g_serial_mock, addListener(_));
-      m_test_subject.reset(new PortHandler(&test_button, &test_label, timer_mock, &listener_mock, &test_parent, fake_persistence));
+      m_test_subject.reset(new PortHandler(&test_button, &test_label, &test_shortcut, timer_mock, &listener_mock, &test_parent, fake_persistence));
 
       EXPECT_EQ(test_button.palette().color(QPalette::Button), DEFAULT_APP_COLOR);
       EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), DEFAULT_APP_COLOR);
@@ -102,6 +103,7 @@ struct PortHandlerFixture : public testing::Test
    QMainWindow test_parent;
    QPushButton test_button;
    QLabel test_label;
+   QShortcut test_shortcut;
    Persistence::PersistenceHandler fake_persistence;
 };
 
