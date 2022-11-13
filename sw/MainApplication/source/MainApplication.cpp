@@ -43,7 +43,7 @@ m_trace_scrolling_active(false)
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
    Settings::SettingsHandler::create();
-   Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE, m_timers.get());
+   Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
 
     ui->setupUi(this);
     if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))

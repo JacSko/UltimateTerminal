@@ -10,8 +10,6 @@
  * @details
  *    Settings are stored in defined file on filesystem. File path is provided via compilation variable.
  *    If settings file is broken or missing, the default settings are sent out to other components.
- *    Settings has it's own thread, which monitors the file content.
- *    It is possible to force settings reload by changing the key in settings file.
  *
  * @author Jacek Skowronek
  * @date   22/03/2022
@@ -26,9 +24,7 @@
 #include <array>
 #include <mutex>
 #include <vector>
-#include <sys/stat.h>
 
-#include "ITimers.h"
 #include "Settings_config.h"
 
 #undef DEF_SETTING_GROUP
@@ -56,7 +52,7 @@ public:
 
 };
 
-class SettingsHandler : public Utilities::ITimerClient
+class SettingsHandler
 {
 public:
    SettingsHandler();
@@ -75,7 +71,7 @@ public:
     * @return void
     */
    static void destroy();
-   void start(const std::string& settings_file_path, Utilities::ITimers* timers);
+   void start(const std::string& settings_file_path);
    void stop();
    /**
     * @brief Reads settings from file.
@@ -151,18 +147,9 @@ public:
 
 
 private:
-
-   void onTimeout(uint32_t timer_id) override;
    void notifyListeners(KeyID id);
    std::vector<KeyID> applySettings();
-   bool checkAndRefresh();
-   void reloadSettings();
-   void startFileObservation();
-   void stopFileObservation();
 
-   Utilities::ITimers* m_timers;
-   uint32_t m_timer_id;
-   struct timespec m_last_file_modification;
    std::string m_file_path;
    std::mutex m_settings_mutex;
    std::vector<std::pair<KeyID, SettingsListener*>> m_listeners;

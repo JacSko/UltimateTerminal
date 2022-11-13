@@ -51,18 +51,13 @@ SettingsHandler* SettingsHandler::get()
    static SettingsHandler g_settings;
    return &g_settings;
 }
-
 void SettingsHandler::create()
 {
 }
-
 void SettingsHandler::destroy()
 {
 }
-
-SettingsHandler::SettingsHandler():
-m_timers(nullptr),
-m_timer_id(TIMERS_INVALID_ID)
+SettingsHandler::SettingsHandler()
 {
 
 /* load default settings from SettingsHolder.h macro */
@@ -73,71 +68,41 @@ m_timer_id(TIMERS_INVALID_ID)
 
    UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
-
-void SettingsHandler::start(const std::string&, Utilities::ITimers*)
+void SettingsHandler::start(const std::string&)
 {
 }
-
 void SettingsHandler::stop()
 {
 }
-
 bool SettingsHandler::parseSettings()
 {
    return false;
 }
-
-bool SettingsHandler::checkAndRefresh()
-{
-   return false;
-}
-
-void SettingsHandler::reloadSettings()
-{
-}
-
-void SettingsHandler::startFileObservation()
-{
-}
-
-void SettingsHandler::stopFileObservation()
-{
-}
-
-void SettingsHandler::onTimeout(uint32_t)
-{
-}
-
 std::vector<KeyID> SettingsHandler::applySettings()
 {
    return {};
 }
-
 void SettingsHandler::printSettings()
 {
 }
-
 uint32_t SettingsHandler::getU32(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
    UT_Assert(id < SETTING_GROUP_MAX);
    return m_u32_items[id];
 }
-
 std::string SettingsHandler::getString(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
    UT_Assert(id < SETTING_GROUP_MAX);
    return m_string_items[id];
 }
-
 bool SettingsHandler::getBool(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
    UT_Assert(id < SETTING_GROUP_MAX);
    return m_bool_items[id];
 }
-
 bool SettingsHandler::setU32(KeyID id, uint32_t value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
@@ -148,7 +113,6 @@ bool SettingsHandler::setU32(KeyID id, uint32_t value)
    notifyListeners(id);
    return changed;
 }
-
 bool SettingsHandler::setString(KeyID id, const std::string& value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
@@ -159,7 +123,6 @@ bool SettingsHandler::setString(KeyID id, const std::string& value)
    notifyListeners(id);
    return changed;
 }
-
 KeyID SettingsHandler::getID(const std::string& name)
 {
    KeyID result = SETTING_GROUP_MAX;
@@ -170,7 +133,6 @@ KeyID SettingsHandler::getID(const std::string& name)
    }
    return result;
 }
-
 bool SettingsHandler::setBool(KeyID id, bool value)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
@@ -181,15 +143,12 @@ bool SettingsHandler::setBool(KeyID id, bool value)
    notifyListeners(id);
    return changed;
 }
-
 void SettingsHandler::registerListener(KeyID, SettingsListener*)
 {
 }
-
 void SettingsHandler::unregisterListener(KeyID, SettingsListener*)
 {
 }
-
 void SettingsHandler::notifyListeners(KeyID)
 {
 }

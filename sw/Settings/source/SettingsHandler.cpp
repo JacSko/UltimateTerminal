@@ -63,9 +63,7 @@ void SettingsHandler::destroy()
    delete g_settings;
 }
 
-SettingsHandler::SettingsHandler():
-m_timers(nullptr),
-m_timer_id(TIMERS_INVALID_ID)
+SettingsHandler::SettingsHandler()
 {
 
 /* load default settings from SettingsHolder.h macro */
@@ -77,10 +75,9 @@ m_timer_id(TIMERS_INVALID_ID)
    UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
 
-void SettingsHandler::start(const std::string& settings_file_path, Utilities::ITimers* timers)
+void SettingsHandler::start(const std::string& settings_file_path)
 {
    m_file_path = settings_file_path;
-   m_timers = timers;
    parseSettings();
 }
 
@@ -94,93 +91,12 @@ bool SettingsHandler::parseSettings()
    std::ifstream file(m_file_path);
    if (file)
    {
-      struct stat file_stat;
-      if (stat(m_file_path.c_str(), &file_stat) == 0)
-      {
-         m_last_file_modification = file_stat.st_mtim;
-         applySettings();
-         printSettings();
-         startFileObservation();
-         result = true;
-      }
+      applySettings();
+      printSettings();
+      result = true;
    }
    return result;
 }
-
-bool SettingsHandler::checkAndRefresh()
-{
-   bool result = false;
-
-   struct stat file_stats;
-   int res = stat(m_file_path.c_str(), &file_stats);
-
-   if (res == 0)
-   {
-      if (m_last_file_modification.tv_sec != file_stats.st_mtim.tv_sec)
-      {
-         m_last_file_modification = file_stats.st_mtim;
-         UT_Log(SETTINGS, LOW, "Settings file changed");
-         auto settings_changed = applySettings();
-         if (settings_changed.size() > 0)
-         {
-            result = true;
-            UT_Log(SETTINGS, INFO, "%d settings changed", settings_changed.size());
-            for (auto& key : settings_changed)
-            {
-               notifyListeners(key);
-            }
-         }
-      }
-   }
-
-   return result;
-}
-
-void SettingsHandler::reloadSettings()
-{
-   if (SETTING_GET_BOOL(Settings_reloadOnFileChange) && (m_timer_id != TIMERS_INVALID_ID))
-   {
-      startFileObservation();
-   }
-   else
-   {
-      stopFileObservation();
-   }
-
-   if (m_timer_id != TIMERS_INVALID_ID)
-   {
-      UT_Log(SETTINGS, INFO, "File check period changed to %u", SETTING_GET_U32(Settings_fileCheckPeriod));
-      m_timers->setTimeout(m_timer_id, SETTING_GET_U32(Settings_fileCheckPeriod));
-      m_timers->startTimer(m_timer_id, true);
-   }
-
-}
-
-void SettingsHandler::startFileObservation()
-{
-   if (m_timer_id == TIMERS_INVALID_ID)
-   {
-      m_timer_id = m_timers->createTimer(this, SETTING_GET_U32(Settings_fileCheckPeriod));
-   }
-   m_timers->startTimer(m_timer_id, true);
-}
-
-void SettingsHandler::stopFileObservation()
-{
-   UT_Log(SETTINGS, INFO, "%s", __func__);
-   m_timers->stopTimer(m_timer_id);
-   m_timers->removeTimer(m_timer_id);
-   m_timer_id = TIMERS_INVALID_ID;
-}
-
-void SettingsHandler::onTimeout(uint32_t timer_id)
-{
-   if (timer_id == m_timer_id)
-   {
-      checkAndRefresh();
-   }
-}
-
 std::vector<KeyID> SettingsHandler::applySettings()
 {
    std::vector<KeyID> result;
@@ -218,7 +134,6 @@ std::vector<KeyID> SettingsHandler::applySettings()
             break;
          }
       }
-      reloadSettings();
    }
    return result;
 }
