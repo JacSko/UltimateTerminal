@@ -27,7 +27,7 @@ private:
    std::regex m_regex;
    QColor m_color;
 
-   void setButtonColor(QColor);
+   void setButtonState(bool state);
    void setLineEditColor(QColor color);
    bool filteringActive();
 public slots:

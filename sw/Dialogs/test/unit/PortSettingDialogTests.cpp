@@ -62,6 +62,7 @@ TEST_P(PortSettingDialogParam, some_test)
 {
    /* widgets presented on GUI */
    /* common widgets */
+   QMainWindow test_parent;
    QDialog test_dialog;
    QFormLayout test_layout;
    QComboBox test_porttype;
@@ -81,6 +82,7 @@ TEST_P(PortSettingDialogParam, some_test)
    QComboBox test_serial_stopbits;
 
    printf("WIDGET ADDRESSES:\n");
+   printf("test_dialog : %p\n", (void*)&test_dialog);
    printf("test_porttype : %p\n", (void*)&test_porttype);
    printf("test_buttonbox : %p\n", (void*)&test_buttonbox);
    printf("test_portname : %p\n", (void*)&test_portname);
@@ -102,7 +104,6 @@ TEST_P(PortSettingDialogParam, some_test)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowTitle(&test_dialog, HasSubstr(std::string("PORT" + std::to_string(current_settings.port_id)))));
-
    if (current_settings.type == PortSettingDialog::PortType::ETHERNET)
    {
       if (current_settings.type == user_settings.type)
@@ -127,6 +128,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipaddress));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipport));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color_button));
+
       }
       else
       {
@@ -301,8 +303,6 @@ TEST_P(PortSettingDialogParam, some_test)
    {
       /* created field with color selection */
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!"))).Times(2);
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, QPalette(QPalette::Button, current_settings.trace_color))).Times(2);
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, QPalette(QPalette::Button, user_settings.trace_color)));
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button)).Times(2);
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_)).Times(2);
 
@@ -350,8 +350,6 @@ TEST_P(PortSettingDialogParam, some_test)
    {
       /* created field with color selection */
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!")));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, QPalette(QPalette::Button, current_settings.trace_color)));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_color_button, QPalette(QPalette::Button, user_settings.trace_color)));
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_));
 
@@ -395,7 +393,7 @@ TEST_P(PortSettingDialogParam, some_test)
                test_subject.onColorButtonClicked();
                return dialog_accepted? QDialog::Accepted : QDialog::Rejected;
             }));
-   std::optional<bool> result = test_subject.showDialog(nullptr, current_settings, new_settings, editable);
+   std::optional<bool> result = test_subject.showDialog(&test_parent, current_settings, new_settings, editable);
 
    if (dialog_accepted)
    {

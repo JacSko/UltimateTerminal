@@ -2,6 +2,8 @@
 
 #include "PortSettingDialog.h"
 #include "QtWidgets/QColorDialog"
+#include <QtWidgets/qabstractitemview.h>
+
 
 #undef DEF_PORT_TYPE
 #define DEF_PORT_TYPE(a) #a,
@@ -67,14 +69,18 @@ PortSettingDialog::~PortSettingDialog()
 }
 std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
-   m_current_settings = current_settings;
    std::optional<bool> result;
-   m_dialog = new QDialog(parent);
-   m_form = new QFormLayout(m_dialog);
+   m_current_settings = current_settings;
    m_editable = allow_edit;
 
+   m_dialog = new QDialog(parent);
+   m_dialog->setPalette(parent->palette());
+   m_dialog->setWindowModality(Qt::ApplicationModal);
    std::string window_title = "PORT" + std::to_string(current_settings.port_id) + " Settings";
    m_dialog->setWindowTitle(QString(window_title.c_str()));
+
+   m_form = new QFormLayout(m_dialog);
+
    addPortTypeComboBox(current_settings.type);
 
    if (current_settings.type == PortType::SERIAL)
@@ -92,7 +98,6 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
 
    addDialogButtons();
 
-   m_dialog->setWindowModality(Qt::ApplicationModal);
    UT_Log(GUI_DIALOG, INFO, "%s for [%s] edit possible: %u", __func__, current_settings.port_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
@@ -118,6 +123,8 @@ void PortSettingDialog::addPortTypeComboBox(const EnumValue<PortType>& current_s
 
    m_portTypeBox->setCurrentText(QString(current_selection.toName().c_str()));
    m_portTypeBox->setDisabled(!m_editable);
+   m_portTypeBox->setPalette(m_dialog->palette());
+   m_portTypeBox->view()->setPalette(m_dialog->palette());
    m_form->addRow(porttype_label, m_portTypeBox);
 
    QObject::connect(m_portTypeBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(onPortTypeChanged(const QString &)));
@@ -139,6 +146,7 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    UT_Log(GUI_DIALOG, LOW, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
+   /* create port name */
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
@@ -147,6 +155,7 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
+   /* create device name */
    QString device_label = QString("Device name:");
    m_deviceNameEdit = new QLineEdit(m_dialog);
    m_deviceNameEdit->setText(QString(settings.serialSettings.device.c_str()));
@@ -154,6 +163,7 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    form->insertRow(2, device_label, m_deviceNameEdit);
    m_current_widgets.push_back(m_deviceNameEdit);
 
+   /* create baudrate box */
    QString baudrate_label = QString("Baudrate:");
    m_baudRateBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::BaudRate::BAUDRATE_MAX; i++)
@@ -163,9 +173,12 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    }
    m_baudRateBox->setCurrentText(QString(settings.serialSettings.baudRate.toName().c_str()));
    m_baudRateBox->setDisabled(!m_editable);
+   m_baudRateBox->setPalette(m_dialog->palette());
+   m_baudRateBox->view()->setPalette(m_dialog->palette());
    form->insertRow(3, baudrate_label, m_baudRateBox);
    m_current_widgets.push_back(m_baudRateBox);
 
+   /* create databits box */
    QString databits_label = QString("Data Bits:");
    m_dataBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::DataBitType::DATA_BIT_MAX; i++)
@@ -176,9 +189,12 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
 
    m_dataBitsBox->setCurrentText(QString(settings.serialSettings.dataBits.toName().c_str()));
    m_dataBitsBox->setDisabled(!m_editable);
+   m_dataBitsBox->setPalette(m_dialog->palette());
+   m_dataBitsBox->view()->setPalette(m_dialog->palette());
    form->insertRow(4, databits_label, m_dataBitsBox);
    m_current_widgets.push_back(m_dataBitsBox);
 
+   /* create paritybit box */
    QString paritybits_label = QString("Parity Bits:");
    m_parityBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::ParityType::PARITY_BIT_MAX; i++)
@@ -188,9 +204,12 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    }
    m_parityBitsBox->setCurrentText(QString(settings.serialSettings.parityBits.toName().c_str()));
    m_parityBitsBox->setDisabled(!m_editable);
+   m_parityBitsBox->setPalette(m_dialog->palette());
+   m_parityBitsBox->view()->setPalette(m_dialog->palette());
    form->insertRow(5, paritybits_label, m_parityBitsBox);
    m_current_widgets.push_back(m_parityBitsBox);
 
+   /* create stopbit box */
    QString stopbits_label = QString("Stop Bits:");
    m_stopBitsBox = new QComboBox(m_dialog);
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::StopBitType::STOP_BIT_MAX; i++)
@@ -200,15 +219,19 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    }
    m_stopBitsBox->setCurrentText(QString(settings.serialSettings.stopBits.toName().c_str()));
    m_stopBitsBox->setDisabled(!m_editable);
+   m_stopBitsBox->setPalette(m_dialog->palette());
+   m_stopBitsBox->view()->setPalette(m_dialog->palette());
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);
 
+   /* create color button */
    QString color_label = QString("Terminal color");
    m_colorSelectionButton = new QPushButton(m_dialog);
    m_colorSelectionButton->setText(QString("Click!"));
    m_colorSelectionButton->setDisabled(!m_editable);
    QPalette palette = m_colorSelectionButton->palette();
    palette.setColor(QPalette::Button, QColor(settings.trace_color));
+   palette.setColor(QPalette::ButtonText, Qt::black);
    m_colorSelectionButton->setPalette(palette);
    m_colorSelectionButton->update();
    form->insertRow(7, color_label, m_colorSelectionButton);
@@ -222,6 +245,7 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    UT_Log(GUI_DIALOG, LOW, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
+   /* create port name */
    QString portname_label = QString("Port name:");
    m_portNameEdit = new QLineEdit(m_dialog);
    m_portNameEdit->setText(QString(settings.port_name.c_str()));
@@ -230,6 +254,7 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    form->insertRow(1, portname_label, m_portNameEdit);
    m_current_widgets.push_back(m_portNameEdit);
 
+   /* create ip address field */
    QString address_label = QString("IP Address:");
    m_ipAddressEdit = new QLineEdit(m_dialog);
    m_ipAddressEdit->setText(QString(settings.ip_address.c_str()));
@@ -237,6 +262,7 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    form->insertRow(2, address_label, m_ipAddressEdit);
    m_current_widgets.push_back(m_ipAddressEdit);
 
+   /* create ip port field */
    QString port_label = QString("Port:");
    m_ipPortEdit = new QLineEdit(m_dialog);
    m_ipPortEdit->setText(QString::number(settings.port));
@@ -244,12 +270,14 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    form->insertRow(3, port_label, m_ipPortEdit);
    m_current_widgets.push_back(m_ipPortEdit);
 
+   /* create color button */
    QString color_label = QString("Terminal color");
    m_colorSelectionButton = new QPushButton(m_dialog);
    m_colorSelectionButton->setText(QString("Click!"));
    m_colorSelectionButton->setDisabled(!m_editable);
    QPalette palette = m_colorSelectionButton->palette();
    palette.setColor(QPalette::Button, QColor(settings.trace_color));
+   palette.setColor(QPalette::ButtonText, Qt::black);
    m_colorSelectionButton->setPalette(palette);
    m_colorSelectionButton->update();
    form->insertRow(4, color_label, m_colorSelectionButton);

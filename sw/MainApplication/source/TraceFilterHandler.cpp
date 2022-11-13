@@ -29,7 +29,8 @@ m_persistence(persistence)
    connect(m_line_edit, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
    m_button->setCheckable(true);
    m_line_edit->setDisabled(false);
-   setButtonColor(Qt::red);
+   setButtonState(false);
+   setLineEditColor(m_parent->palette().color(QPalette::Base));
    m_color = m_line_edit->palette().color(QPalette::Base);
 
    UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
@@ -70,7 +71,7 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 
    m_color = color;
    setLineEditColor(color);
-   setButtonColor(is_active? Qt::red : Qt::green);
+   setButtonState(!is_active);
    m_button->setChecked(!is_active);
    m_line_edit->setDisabled(!is_active);
    m_line_edit->setText(QString(text.c_str()));
@@ -98,14 +99,14 @@ void TraceFilterHandler::onButtonClicked()
    {
       UT_Log(TRACE_FILTER, INFO, "enabling filter %s", getName().c_str());
       m_regex = std::regex(m_line_edit->text().toStdString());
-      setButtonColor(Qt::green);
+      setButtonState(true);
       m_button->setChecked(true);
       m_line_edit->setDisabled(true);
    }
    else
    {
       UT_Log(TRACE_FILTER, INFO, "disabling filter %s", getName().c_str());
-      setButtonColor(Qt::red);
+      setButtonState(false);
       m_button->setChecked(false);
       m_line_edit->setDisabled(false);
    }
@@ -127,18 +128,28 @@ void TraceFilterHandler::onContextMenuRequested()
       UT_Log(TRACE_FILTER, LOW, "Cannot show color dialog - filter is active!");
    }
 }
-void TraceFilterHandler::setButtonColor(QColor color)
+void TraceFilterHandler::setButtonState(bool active)
 {
-   QPalette palette = m_button->palette();
-   palette.setColor(QPalette::Button, color);
-   m_button->setPalette(palette);
-   m_button->update();
+   if (active)
+   {
+      QPalette palette = m_parent->palette();
+      palette.setColor(QPalette::Button, Qt::green);
+      palette.setColor(QPalette::ButtonText, Qt::black);
+      m_button->setPalette(palette);
+      m_button->update();
+   }
+   else
+   {
+      m_button->setPalette(m_parent->palette());
+      m_button->update();
+   }
 }
 void TraceFilterHandler::setLineEditColor(QColor color)
 {
    UT_Log(TRACE_FILTER, LOW, "setting color for %s to %.6x", getName().c_str(), color.rgb());
    QPalette palette = m_line_edit->palette();
    palette.setColor(QPalette::Base, color);
+   palette.setColor(QPalette::Text, Qt::black);
    m_line_edit->setPalette(palette);
    m_line_edit->update();
 }

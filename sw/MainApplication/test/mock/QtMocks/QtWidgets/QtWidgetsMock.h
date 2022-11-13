@@ -35,23 +35,24 @@ class QPalette
 {
 public:
    enum ColorGroup { Active, Disabled, Inactive, NColorGroups, Current, All, Normal = Active };
-   enum ColorRole { Button, Base};
-   QPalette(ColorRole cr, QColor color):
-   current_role(cr),
-   current_color(color)
+   enum ColorRole { Window, WindowText, Button, ButtonText, Base, Text};
+   QPalette(ColorRole cr, QColor color)
+   {
+      m_color_map[cr] = color;
+   }
+   QPalette()
    {
 
    }
    void setColor(ColorRole acr, const QColor& acolor)
    {
-      current_role = acr;
-      current_color = acolor;
+      m_color_map[acr] = acolor;
    }
    QColor color(ColorRole cr)
    {
-      if (cr == current_role)
+      if (m_color_map.find(cr) != m_color_map.end())
       {
-         return current_color;
+         return m_color_map[cr];
       }
       else
       {
@@ -60,11 +61,10 @@ public:
    }
    bool operator==(const QPalette& lhs) const
    {
-      return (lhs.current_color == current_color) && (lhs.current_role == current_role);
+      return (lhs.m_color_map == m_color_map);
    }
 private:
-   ColorRole current_role;
-   QColor current_color;
+   std::map<ColorRole, QColor> m_color_map;
 };
 
 class QSizePolicy
@@ -118,13 +118,15 @@ public:
    void setEnabled(bool);
    void setDisabled(bool);
    bool isEnabled();
-   QPalette palette(){return {QPalette::Button, DEFAULT_APP_COLOR};}
-   void setPalette(const QPalette &);
+   QPalette palette(){return m_palette;}
+   void setPalette(const QPalette & palette) {m_palette = palette;}
    void update(){};
    void setSizePolicy(QSizePolicy){};
    QSizePolicy sizePolicy(){return {};};
    void setGeometry(const QRect &){};
 
+private:
+   QPalette m_palette;
 };
 
 class QMainWindow : public QWidget
@@ -220,6 +222,12 @@ public:
 
 };
 
+class QAbstractViewItem
+{
+public:
+   void setPalette(const QPalette &){};
+};
+
 class QComboBox : public QWidget
 {
 public:
@@ -246,11 +254,13 @@ public:
    void setEditable(bool){}
    void setInsertPolicy(InsertPolicy){}
    QLineEdit* lineEdit(){return &edit;}
+   QAbstractViewItem* view(){return &item;};
    void insertItem(int index, const QString&text);
    int count();
    void clear(){}
 private:
    QLineEdit edit;
+   QAbstractViewItem item;
 };
 
 class QColorDialog : public QWidget
@@ -431,7 +441,6 @@ struct QtWidgetsMock
    MOCK_METHOD2(QWidget_setEnabled, void(QWidget*, bool));
    MOCK_METHOD2(QWidget_setDisabled, void(QWidget*, bool));
    MOCK_METHOD1(QWidget_isEnabled, bool(QWidget*));
-   MOCK_METHOD2(QWidget_setPalette, void(QWidget*, const QPalette&));
 
    MOCK_METHOD0(QColorDialog_new, void*());
    MOCK_METHOD3(QColorDialog_getColor, QColor(const QColor&, QWidget*, const QString&));

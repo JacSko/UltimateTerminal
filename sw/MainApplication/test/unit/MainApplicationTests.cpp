@@ -103,11 +103,6 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(_,_)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(_,_)).Times(AtLeast(1));
 
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
-
-
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clear_button, HasSubstr("clicked"), _, HasSubstr("onClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_trace_clear_button, HasSubstr("clicked"), _, HasSubstr("onTraceClearButtonClicked")));
@@ -125,6 +120,10 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*g_timers_mock, start());
       EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), restore(_)).WillOnce(Return(true));
       m_test_subject = std::unique_ptr<MainApplication>(new MainApplication());
+
+      EXPECT_EQ(test_logging_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
+      EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
+      EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
 
       Mock::VerifyAndClearExpectations(g_timers_mock);
       Mock::VerifyAndClearExpectations(QtCoreMock_get());
@@ -369,9 +368,9 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*g_logger_mock, openFile(HasSubstr(log_path + "/log"))).WillOnce(Return(true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
+   EXPECT_EQ(test_logging_button.palette().color(QPalette::Button), QColor(Qt::green));
 
    /* first marker added */
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
@@ -412,10 +411,9 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    /* closing file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
    EXPECT_CALL(*g_logger_mock, closeFile());
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
    EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
-
+   EXPECT_EQ(test_logging_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
 }
 
 TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
@@ -448,9 +446,9 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*g_logger_mock, openFile(HasSubstr(log_path + "/log"))).WillOnce(Return(true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
+   EXPECT_EQ(test_logging_button.palette().color(QPalette::Button), QColor(Qt::green));
 
    /* port opening */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
@@ -464,9 +462,10 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    /* closing file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
    EXPECT_CALL(*g_logger_mock, closeFile());
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_logging_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::red))));
    EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_showMessage(&test_status_bar, HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    m_test_subject->onLoggingButtonClicked();
+   EXPECT_EQ(test_logging_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
+
 
 }
 
@@ -498,10 +497,9 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    port_close_event.port_id = 2;
    port_close_event.event = GUI::Event::DISCONNECTED;
 
-
    /* user requested to disable scrolling */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
    m_test_subject->onScrollButtonClicked();
+   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
 
    /* port opening */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
@@ -520,8 +518,9 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to enable scrolling */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    m_test_subject->onScrollButtonClicked();
+   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
+
 
    /* writing data */
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
@@ -575,8 +574,8 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
 
 
    /* user requested to disable scrolling */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
    m_test_subject->onTraceScrollButtonClicked();
+   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
 
    /* port opening */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
@@ -600,8 +599,9 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to enable scrolling */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    m_test_subject->onTraceScrollButtonClicked();
+   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
+
 
    /* writing data */
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item)).WillOnce(Return(&trace_item));
@@ -804,10 +804,10 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
    m_test_subject->onScrollButtonClicked();
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
    m_test_subject->onTraceScrollButtonClicked();
+   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
+   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
    /* expectations before write */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(current_ending.c_str())));
    ASSERT_EQ(data_buffer.size(), 0);
@@ -819,17 +819,17 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_test_subject->onLoggingButtonContextMenuRequested();
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    m_test_subject->onScrollButtonClicked();
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor(Qt::green))));
    m_test_subject->onTraceScrollButtonClicked();
+   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
 
 
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_line_ending_box, QString(current_ending.c_str())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_trace_scroll_button, QPalette(QPalette::ColorRole::Button, QColor())));
 
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
+   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
+   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
 
 }
 

@@ -18,5 +18,11 @@
   "Logger_group_PERSISTENCE": "HIGH",
   "MainApplication_maxTerminalTraces": 10000,
   "MainApplication_statusBarTimeout": 10000,
-  "PortSettingDialog_maxLineEditLength": 30
+  "PortSettingDialog_maxLineEditLength": 30,
+  "GUI_Dark_WindowBackground": 3947580,
+  "GUI_Dark_WindowText": 11842740,
+  "GUI_Dark_TerminalBackground": 5263440,
+  "GUI_Default_Theme_ID" : 0,
+  "GUI_Dark_Theme_ID": 1,
+  "GUI_Theme_ID": 1
 }

@@ -29,6 +29,12 @@
    DEF_SETTING_GROUP(MainApplication_maxTerminalTraces, uint32_t, 10000) \
    DEF_SETTING_GROUP(MainApplication_statusBarTimeout, uint32_t, 10000) \
    DEF_SETTING_GROUP(PortSettingDialog_maxLineEditLength, uint32_t, 30) \
+   DEF_SETTING_GROUP(GUI_Dark_WindowBackground, uint32_t, 3947580) \
+   DEF_SETTING_GROUP(GUI_Dark_WindowText, uint32_t, 11842740) \
+   DEF_SETTING_GROUP(GUI_Dark_TerminalBackground, uint32_t, 5263440) \
+   DEF_SETTING_GROUP(GUI_Default_Theme_ID, uint32_t, 0) \
+   DEF_SETTING_GROUP(GUI_Dark_Theme_ID, uint32_t, 1) \
+   DEF_SETTING_GROUP(GUI_Theme_ID, uint32_t, 1) \
 
 
 #endif

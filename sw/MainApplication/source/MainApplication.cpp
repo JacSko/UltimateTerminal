@@ -40,15 +40,22 @@ m_marker_index(0),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
 {
+   Persistence::PersistenceListener::setName("MAIN_APPLICATION");
+   m_persistence.addListener(*this);
+   Settings::SettingsHandler::create();
+   Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE, m_timers.get());
+
     ui->setupUi(this);
+    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
+    {
+       ui->loadTheme(Ui::MainWindow::Theme::DARK);
+    }
+    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
+    {
+       ui->loadTheme(Ui::MainWindow::Theme::DEFAULT);
+    }
     this->setWindowTitle("UltimateTerminal");
 
-    m_scroll_default_color = ui->scrollButton->palette().color(QPalette::Button).rgb();
-
-    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
-    m_persistence.addListener(*this);
-    Settings::SettingsHandler::create();
-    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE, m_timers.get());
     LoggerEngine::get()->startFrontends();
 
     UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
@@ -58,9 +65,9 @@ m_trace_scrolling_active(false)
     m_timers->start();
 
     connectSignalsToSlots();
-    setButtonColor(ui->loggingButton, Qt::red);
     setScrolling(true);
     setTraceScrolling(true);
+    setButtonState(ui->loggingButton, false);
 
     m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, *m_timers, this, this, m_persistence)));
@@ -215,17 +222,13 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
    connect(ui->traceClearButton, SIGNAL(clicked()), this, SLOT(onTraceClearButtonClicked()));
-
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
    connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
-
    ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
-
    connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
    connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
-
    connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
 }
 void MainApplication::onMarkerButtonClicked()
@@ -246,7 +249,7 @@ void MainApplication::onLoggingButtonClicked()
       {
          UT_Log(MAIN, INFO, "Logging started, new logfile created: %s", m_log_file_name.c_str());
          ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
-         setButtonColor(ui->loggingButton, Qt::green);
+         setButtonState(ui->loggingButton, true);
       }
       else
       {
@@ -261,7 +264,7 @@ void MainApplication::onLoggingButtonClicked()
       UT_Log(MAIN, LOW, "stopping file logging");
       ui->statusbar->showMessage(QString("").asprintf("Log file ready: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
       m_file_logger->closeFile();
-      setButtonColor(ui->loggingButton, Qt::red);
+      setButtonState(ui->loggingButton, false);
    }
 }
 void MainApplication::onScrollButtonClicked()
@@ -332,7 +335,7 @@ bool MainApplication::sendToPort(const std::string& string)
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(port_name, data_to_send);
+            addToTerminal(port_name, data_to_send, ui->terminalView->palette().color(QPalette::Base).rgb());
             addToCommandHistory(port_id, string);
          }
          else
@@ -341,7 +344,7 @@ bool MainApplication::sendToPort(const std::string& string)
             error += port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(port_name, error);
+            addToTerminal(port_name, error, ui->terminalView->palette().color(QPalette::Base).rgb());
          }
       }
    }
@@ -352,38 +355,33 @@ void MainApplication::onSendButtonClicked()
    UT_Log(MAIN, LOW, "Send button clicked");
    (void)sendToPort(ui->textEdit->currentText().toStdString());
 }
-void MainApplication::setButtonColor(QPushButton* button, QColor color)
+void MainApplication::setButtonState(QPushButton* button, bool state)
 {
-   QPalette palette = button->palette();
-   palette.setColor(QPalette::Button, color);
-   button->setPalette(palette);
-   button->update();
+   if (state)
+   {
+      QPalette palette = this->palette();
+      palette.setColor(QPalette::Button, Qt::green);
+      palette.setColor(QPalette::ButtonText, Qt::black);
+      button->setPalette(palette);
+      button->update();
+   }
+   else
+   {
+      button->setPalette(this->palette());
+      button->update();
+   }
 }
 void MainApplication::setScrolling(bool active)
 {
    UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
    m_scrolling_active = active;
-   if(m_scrolling_active)
-   {
-      setButtonColor(ui->scrollButton, Qt::green);
-   }
-   else
-   {
-      setButtonColor(ui->scrollButton, QColor(m_scroll_default_color));
-   }
+   setButtonState(ui->scrollButton, m_scrolling_active);
 }
 void MainApplication::setTraceScrolling(bool active)
 {
    UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
    m_trace_scrolling_active = active;
-   if(m_trace_scrolling_active)
-   {
-      setButtonColor(ui->traceScrollButton, Qt::green);
-   }
-   else
-   {
-      setButtonColor(ui->traceScrollButton, QColor(m_scroll_default_color));
-   }
+   setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {

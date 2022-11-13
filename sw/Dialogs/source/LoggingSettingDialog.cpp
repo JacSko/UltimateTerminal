@@ -24,10 +24,12 @@ LoggingSettingDialog::~LoggingSettingDialog()
 std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, const std::string& current_path, bool allow_edit)
 {
    std::optional<std::string> result;
-   m_dialog = new QDialog(parent);
-   m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
    m_current_path = current_path;
+
+   m_dialog = new QDialog(parent);
+   m_dialog->setPalette(parent->palette());
+   m_form = new QFormLayout(m_dialog);
 
    // create file path edit
    QString file_path_label = QString("File path:");

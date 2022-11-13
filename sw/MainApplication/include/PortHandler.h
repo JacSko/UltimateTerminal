@@ -58,9 +58,9 @@ private:
 
    enum class ButtonState
    {
-      DISCONNECTED = 0xFF0000,
-      CONNECTING = 0x0000FF,
-      CONNECTED = 0x00FF00,
+      DISCONNECTED,
+      CONNECTING,
+      CONNECTED,
    };
 
    QPushButton* m_object;

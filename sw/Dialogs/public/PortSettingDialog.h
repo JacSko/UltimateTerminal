@@ -12,6 +12,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
 
+
 #include "Logger.h"
 #include "ISerialDriver.h"
 
@@ -174,7 +175,6 @@ private:
    void renderEthernetView(QFormLayout* form, const Settings& settings = {});
    void clearDialog();
    bool convertGuiValues(Settings& out_settings);
-
    QDialog* m_dialog;
    QFormLayout* m_form;
    QComboBox* m_portTypeBox;

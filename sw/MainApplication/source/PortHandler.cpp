@@ -49,6 +49,10 @@ m_persistence(persistence)
    m_summary_label->setAutoFillBackground(true);
    m_summary_label->setAlignment(Qt::AlignCenter);
    m_summary_label->setText(m_settings.shortSettingsString().c_str());
+   QPalette palette = m_parent->palette();
+   palette.setColor(QPalette::WindowText, Qt::black);
+   m_summary_label->setPalette(palette);
+
 
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
@@ -280,10 +284,33 @@ void PortHandler::setButtonState(ButtonState state)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] setting button state %.6x", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)state);
    m_button_state = state;
-   QPalette palette = m_object->palette();
-   palette.setColor(QPalette::Button, QColor((uint32_t)state));
-   m_object->setPalette(palette);
-   m_object->update();
+   switch(m_button_state)
+   {
+      case ButtonState::CONNECTED:
+      {
+         QPalette palette = m_parent->palette();
+         palette.setColor(QPalette::Button, Qt::green);
+         palette.setColor(QPalette::ButtonText, Qt::black);
+         m_object->setPalette(palette);
+         m_object->update();
+         break;
+      }
+      case ButtonState::CONNECTING:
+      {
+         QPalette palette = m_parent->palette();
+         palette.setColor(QPalette::Button, Qt::blue);
+         palette.setColor(QPalette::ButtonText, Qt::black);
+         m_object->setPalette(palette);
+         m_object->update();
+         break;
+      }
+      default:
+      {
+         m_object->setPalette(m_parent->palette());
+         m_object->update();
+         break;
+      }
+   }
 }
 void PortHandler::setButtonName(const std::string name)
 {

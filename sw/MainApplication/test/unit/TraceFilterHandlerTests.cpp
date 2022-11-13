@@ -23,9 +23,11 @@ struct TraceFilterHandlerTests : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_button, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setContextMenuPolicy(&test_line_edit, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&test_button, true));
-      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::red)));
       EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, false));
       m_test_subject.reset(new TraceFilterHandler(&test_parent, &test_line_edit, &test_button, fake_persistence));
+
+      EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+      EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
 
       Mock::VerifyAndClearExpectations(QtCoreMock_get());
       Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
@@ -78,15 +80,17 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_line_edit, QPalette(QPalette::ColorRole::Base, new_trace_color.rgb())));
    m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(Qt::black));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::green)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
    m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
@@ -119,15 +123,17 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_line_edit, QPalette(QPalette::ColorRole::Base, new_trace_color.rgb())));
    m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(Qt::black));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::green)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
    m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
@@ -135,9 +141,10 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
 
    /* filter disabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, false));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::red)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, false));
    m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
 
    result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_FALSE(result.has_value());
@@ -167,15 +174,17 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_line_edit, QPalette(QPalette::ColorRole::Base, new_trace_color.rgb())));
    m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(Qt::black));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::green)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
    m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
@@ -204,16 +213,18 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
                                                                         .WillOnce(Return(false));// check during persistence write
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_line_edit, QPalette(QPalette::ColorRole::Base, new_trace_color.rgb())));
    m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(Qt::black));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str()))) // filter enable
                                                                      .WillOnce(Return(QString(test_regex.c_str())));// persistence write
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&test_button, QPalette(QPalette::ColorRole::Button, Qt::green)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
    m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
@@ -234,24 +245,26 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&new_test_button, Qt::ContextMenuPolicy::CustomContextMenu));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setContextMenuPolicy(&new_test_line_edit, Qt::ContextMenuPolicy::CustomContextMenu));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&new_test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&new_test_button, QPalette(QPalette::ColorRole::Button, Qt::red)));
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&new_test_line_edit, false));
    std::unique_ptr<TraceFilterHandler> new_test_subject = std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(&test_parent, &new_test_line_edit, &new_test_button, fake_persistence));
+   EXPECT_EQ(new_test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(new_test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
 
    /* expectations to be met when restoring from persistence */
    /* button state restoration */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&new_test_button, QPalette(QPalette::ColorRole::Button, Qt::green)));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&new_test_button, true));
    /* Line edit restoration */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&new_test_line_edit, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setPalette(&new_test_line_edit, QPalette(QPalette::ColorRole::Base, new_trace_color.rgb())));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&new_test_line_edit, QString(test_regex.c_str())));
    reinterpret_cast<Persistence::PersistenceListener*>(new_test_subject.get())->onPersistenceRead(data_buffer);
 
+   EXPECT_EQ(new_test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(new_test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
+   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Text), QColor(Qt::black));
    /* try to match the same text as before persistence write */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&new_test_line_edit)).WillOnce(Return(false)); // check during tryMatch
    result = new_test_subject->tryMatch("ABCDEF");
-
    EXPECT_TRUE(result.has_value());
    EXPECT_EQ(result.value(), new_trace_color.rgb());
 
