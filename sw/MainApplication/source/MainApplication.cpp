@@ -258,10 +258,13 @@ void MainApplication::onLoggingButtonClicked()
       }
       else
       {
-         QMessageBox messageBox;
          QString error_message = QString().asprintf("Cannot create logfile @ %s\n%s (%u)", m_file_logging_path.c_str(), strerror(errno), errno);
-         messageBox.critical(this,"Error", error_message, "OK");
-
+         QMessageBox messageBox;
+         messageBox.setText(error_message);
+         messageBox.setWindowTitle("Error");
+         messageBox.setIcon(QMessageBox::Critical);
+         messageBox.setPalette(this->palette());
+         messageBox.exec();
       }
    }
    else

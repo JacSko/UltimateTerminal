@@ -362,7 +362,7 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
    m_test_subject->onPortButtonContextMenuRequested();
 
    /* expect QMessageBox with error */
-   EXPECT_CALL(*QtWidgetsMock_get(), QMessageBox_critical(_,_,_,_,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QMessageBox_exec(_));
 
    /* port opening */
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));

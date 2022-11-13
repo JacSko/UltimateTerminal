@@ -189,7 +189,6 @@ void PortHandler::onPortButtonContextMenuRequested()
       }
       else
       {
-         QMessageBox messageBox;
          QString error_message = "";
          auto errors = new_settings.getErrorStrings();
          for (const auto& error : errors)
@@ -197,7 +196,12 @@ void PortHandler::onPortButtonContextMenuRequested()
             error_message += error.c_str();
             error_message += "\n";
          }
-         messageBox.critical(m_parent,"Error", error_message, "OK");
+         QMessageBox messageBox;
+         messageBox.setText(error_message);
+         messageBox.setWindowTitle("Error");
+         messageBox.setIcon(QMessageBox::Critical);
+         messageBox.setPalette(m_parent->palette());
+         messageBox.exec();
       }
    }
 }
@@ -237,7 +241,11 @@ void PortHandler::handleButtonClickSerial()
          UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
          QMessageBox messageBox;
          QString error_message = QString().asprintf("Cannot open %s [%s]\n%s (%u)", m_settings.serialSettings.device.c_str(), m_settings.port_name.c_str(), strerror(errno), errno);
-         messageBox.critical(m_parent,"Error", error_message, "OK");
+         messageBox.setText(error_message);
+         messageBox.setWindowTitle("Error");
+         messageBox.setIcon(QMessageBox::Critical);
+         messageBox.setPalette(m_parent->palette());
+         messageBox.exec();
       }
    }
 }

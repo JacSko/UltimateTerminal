@@ -200,6 +200,10 @@ int QMessageBox::critical(QWidget *parent, const QString &title,
 {
    return g_widgets_mock->QMessageBox_critical(this, parent, title, text, button0Text);
 }
+void QMessageBox::exec()
+{
+   g_widgets_mock->QMessageBox_exec(this);
+}
 void* QLabel::operator new(size_t)
 {
    return g_widgets_mock->QLabel_new();

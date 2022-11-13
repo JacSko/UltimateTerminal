@@ -288,9 +288,17 @@ public:
 class QMessageBox : public QWidget
 {
 public:
+   enum Type
+   {
+      Critical
+   };
    QMessageBox(){}
    void* operator new(size_t);
    void operator delete(void*){};
+   void setText(const QString&){};
+   void setWindowTitle(const QString&){};
+   void setIcon(int){};
+   void exec();
    int critical(QWidget *parent, const QString &title,
                            const QString& text,
                            const QString& button0Text);
@@ -460,6 +468,7 @@ struct QtWidgetsMock
 
    MOCK_METHOD0(QMessageBox_new, void*());
    MOCK_METHOD5(QMessageBox_critical, int(QMessageBox*, QWidget*, const QString&, const QString&, const QString&));
+   MOCK_METHOD1(QMessageBox_exec, void(QMessageBox*));
 
    MOCK_METHOD0(QLabel_new, void*());
    MOCK_METHOD2(QLabel_setAutoFillBackground, void(QLabel*, bool));
