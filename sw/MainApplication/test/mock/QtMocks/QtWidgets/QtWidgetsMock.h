@@ -129,6 +129,15 @@ private:
    QPalette m_palette;
 };
 
+class QShortcut : public QWidget
+{
+public:
+   QShortcut(){}
+   QShortcut(int, QWidget*){}
+   void* operator new(size_t );
+   void operator delete(void*){};
+};
+
 class QMainWindow : public QWidget
 {
 public:
@@ -258,6 +267,8 @@ public:
    void insertItem(int index, const QString&text);
    int count();
    void clear(){}
+   int currentIndex();
+   void setCurrentIndex(int idx);
 private:
    QLineEdit edit;
    QAbstractViewItem item;
@@ -428,6 +439,8 @@ struct QtWidgetsMock
    MOCK_METHOD3(QComboBox_insertItem, void(QComboBox*, int, const QString&));
    MOCK_METHOD2(QComboBox_removeItem, void(QComboBox*, int));
    MOCK_METHOD1(QComboBox_count, int(QComboBox*));
+   MOCK_METHOD1(QComboBox_currentIndex, int(QComboBox*));
+   MOCK_METHOD2(QComboBox_setCurrentIndex, void(QComboBox*, int));
 
    MOCK_METHOD0(QPushButton_new, void*());
    MOCK_METHOD2(QPushButton_setText, void(QPushButton*, const QString&));
@@ -468,6 +481,7 @@ struct QtWidgetsMock
    MOCK_METHOD3(QStatusBar_showMessage, void(QStatusBar*, const QString&, uint32_t timeout));
    MOCK_METHOD0(QCheckBox_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());
+   MOCK_METHOD0(QShortcut_new, void*());
 };
 
 void QtWidgetsMock_init();

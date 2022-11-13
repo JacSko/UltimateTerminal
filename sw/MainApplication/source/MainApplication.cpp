@@ -64,7 +64,6 @@ m_trace_scrolling_active(false)
     Settings::SettingsHandler::get()->printSettings();
     m_timers->start();
 
-    connectSignalsToSlots();
     setScrolling(true);
     setTraceScrolling(true);
     setButtonState(ui->loggingButton, false);
@@ -124,6 +123,7 @@ m_trace_scrolling_active(false)
     {
        UT_Log(MAIN, ERROR, "Cannot restore persistence!");
     }
+    connectSignalsToSlots();
 }
 MainApplication::~MainApplication()
 {
@@ -220,16 +220,26 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 void MainApplication::connectSignalsToSlots()
 {
    connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
+   connect(ui->markerButtonShortcut, SIGNAL(activated()), this, SLOT(onMarkerButtonClicked()));
    connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
+   connect(ui->clearButtonShortcut, SIGNAL(activated()), this, SLOT(onClearButtonClicked()));
    connect(ui->traceClearButton, SIGNAL(clicked()), this, SLOT(onTraceClearButtonClicked()));
+   connect(ui->traceClearButtonShortcut, SIGNAL(activated()), this, SLOT(onTraceClearButtonClicked()));
    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
    connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
    ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
    connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
+   connect(ui->loggingButtonShortcut, SIGNAL(activated()), this, SLOT(onLoggingButtonClicked()));
    connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
    connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
    connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
+   connect(ui->port1ButtonShortcut, SIGNAL(activated()), m_port_handlers[0].get(), SLOT(onPortButtonClicked()));
+   connect(ui->port2ButtonShortcut, SIGNAL(activated()), m_port_handlers[1].get(), SLOT(onPortButtonClicked()));
+   connect(ui->port3ButtonShortcut, SIGNAL(activated()), m_port_handlers[2].get(), SLOT(onPortButtonClicked()));
+   connect(ui->port4ButtonShortcut, SIGNAL(activated()), m_port_handlers[3].get(), SLOT(onPortButtonClicked()));
+   connect(ui->port5ButtonShortcut, SIGNAL(activated()), m_port_handlers[4].get(), SLOT(onPortButtonClicked()));
+   connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -310,6 +320,22 @@ void MainApplication::onCurrentPortSelectionChanged(int index)
       ui->textEdit->insertItem(0, QString(command.c_str()));
    }
    ui->textEdit->lineEdit()->clear();
+}
+void MainApplication::onPortSwitchRequest()
+{
+   int element_count = ui->portComboBox->count();
+   if (element_count > 1)
+   {
+      int idx = ui->portComboBox->currentIndex();
+      if (idx == (element_count - 1))
+      {
+         ui->portComboBox->setCurrentIndex(0);
+      }
+      else
+      {
+         ui->portComboBox->setCurrentIndex(idx+1);
+      }
+   }
 }
 bool MainApplication::sendToPort(const std::string& string)
 {

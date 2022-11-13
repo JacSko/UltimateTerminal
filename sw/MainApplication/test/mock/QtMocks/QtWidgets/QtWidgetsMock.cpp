@@ -150,6 +150,14 @@ void QComboBox::removeItem(int index)
 {
    g_widgets_mock->QComboBox_removeItem(this, index);
 }
+int QComboBox::currentIndex()
+{
+   return g_widgets_mock->QComboBox_currentIndex(this);
+}
+void QComboBox::setCurrentIndex(int idx)
+{
+   g_widgets_mock->QComboBox_setCurrentIndex(this, idx);
+}
 void* QPushButton::operator new(size_t)
 {
    return g_widgets_mock->QPushButton_new();
@@ -251,6 +259,10 @@ void* QListWidget::operator new(size_t)
 void* QMenuBar::operator new(size_t)
 {
    return g_widgets_mock->QMenuBar_new();
+}
+void* QShortcut::operator new(size_t)
+{
+   return g_widgets_mock->QShortcut_new();
 }
 void* QStatusBar::operator new(size_t)
 {

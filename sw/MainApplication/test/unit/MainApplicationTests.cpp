@@ -103,6 +103,17 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(_,_)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(_,_)).Times(AtLeast(1));
 
+      EXPECT_CALL(*QtWidgetsMock_get(), QShortcut_new()).WillOnce(Return(&test_loggingButtonShortcut))
+                                                        .WillOnce(Return(&test_markerButtonShortcut))
+                                                        .WillOnce(Return(&test_port1ButtonShortcut))
+                                                        .WillOnce(Return(&test_port2ButtonShortcut))
+                                                        .WillOnce(Return(&test_port3ButtonShortcut))
+                                                        .WillOnce(Return(&test_port4ButtonShortcut))
+                                                        .WillOnce(Return(&test_port5ButtonShortcut))
+                                                        .WillOnce(Return(&test_clearButtonShortcut))
+                                                        .WillOnce(Return(&test_traceClearButtonShortcut))
+                                                        .WillOnce(Return(&test_switchSendPortShortcut));
+
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clear_button, HasSubstr("clicked"), _, HasSubstr("onClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_trace_clear_button, HasSubstr("clicked"), _, HasSubstr("onTraceClearButtonClicked")));
@@ -113,6 +124,17 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_scroll_button, HasSubstr("clicked"), _, HasSubstr("onScrollButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_trace_scroll_button, HasSubstr("clicked"), _, HasSubstr("onTraceScrollButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port_box, HasSubstr("currentIndexChanged"), _, HasSubstr("onCurrentPortSelectionChanged")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_loggingButtonShortcut, HasSubstr("activated"), _, HasSubstr("onLoggingButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_markerButtonShortcut, HasSubstr("activated"), _, HasSubstr("onMarkerButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port1ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port2ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port3ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port4ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_port5ButtonShortcut, HasSubstr("activated"), _, HasSubstr("onPortButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onClearButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_traceClearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onTraceClearButtonClicked")));
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_switchSendPortShortcut, HasSubstr("activated"), _, HasSubstr("onPortSwitchRequest")));
+
 
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_logging_button, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_line_ending_box, _)).Times(3);
@@ -200,6 +222,16 @@ struct MainApplicationFixture : public testing::Test
    QLineEdit test_trace_filter_7;
    QMenuBar test_menu_bar;
    QStatusBar test_status_bar;
+   QShortcut test_loggingButtonShortcut;
+   QShortcut test_markerButtonShortcut;
+   QShortcut test_port1ButtonShortcut;
+   QShortcut test_port2ButtonShortcut;
+   QShortcut test_port3ButtonShortcut;
+   QShortcut test_port4ButtonShortcut;
+   QShortcut test_port5ButtonShortcut;
+   QShortcut test_clearButtonShortcut;
+   QShortcut test_traceClearButtonShortcut;
+   QShortcut test_switchSendPortShortcut;
 
    std::unique_ptr<MainApplication> m_test_subject;
 };
@@ -985,4 +1017,41 @@ TEST_F(MainApplicationFixture, command_history_reloading)
    m_test_subject->onCurrentPortSelectionChanged(0);
 }
 
+TEST_F(MainApplicationFixture, port_switch_request_handling)
+{
+   /**
+    * <b>scenario</b>: No ports opened, shortcut to switch port requested. <br>
+    * <b>expected</b>: No action. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(0));
+   m_test_subject->onPortSwitchRequest();
 
+   /**
+    * <b>scenario</b>: One ports opened, shortcut to switch port requested. <br>
+    * <b>expected</b>: No action. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(1));
+   m_test_subject->onPortSwitchRequest();
+
+   /**
+    * <b>scenario</b>: Three ports opened, index 0 is selected, shortcut to switch port requested. <br>
+    * <b>expected</b>: Index 1 shall be selected. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(3));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentIndex(&test_port_box)).WillOnce(Return(0));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentIndex(&test_port_box, 1));
+   m_test_subject->onPortSwitchRequest();
+
+   /**
+    * <b>scenario</b>: Three ports opened, index 2 is selected, shortcut to switch port requested. <br>
+    * <b>expected</b>: Index 0 shall be selected. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(3));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentIndex(&test_port_box)).WillOnce(Return(2));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentIndex(&test_port_box, 0));
+   m_test_subject->onPortSwitchRequest();
+}

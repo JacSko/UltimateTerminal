@@ -15,6 +15,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QShortcut>
 
 #include "Settings.h"
 
@@ -98,6 +99,18 @@ public:
    QMenuBar *menubar;
    QStatusBar *statusbar;
    QMainWindow* mainWindow;
+
+   /* key shortcuts */
+   QShortcut* loggingButtonShortcut;
+   QShortcut* markerButtonShortcut;
+   QShortcut* port1ButtonShortcut;
+   QShortcut* port2ButtonShortcut;
+   QShortcut* port3ButtonShortcut;
+   QShortcut* port4ButtonShortcut;
+   QShortcut* port5ButtonShortcut;
+   QShortcut* clearButtonShortcut;
+   QShortcut* traceClearButtonShortcut;
+   QShortcut* switchSendPortShortcut;
 
    enum class Theme
    {
@@ -408,6 +421,17 @@ public:
       retranslateUi(MainWindow);
 
       QMetaObject::connectSlotsByName(MainWindow);
+
+      loggingButtonShortcut = new QShortcut(Qt::Key_F2, mainWindow);
+      markerButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_M, mainWindow);
+      port1ButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_1, mainWindow);
+      port2ButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_2, mainWindow);
+      port3ButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_3, mainWindow);
+      port4ButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_4, mainWindow);
+      port5ButtonShortcut = new QShortcut(Qt::CTRL + Qt::Key_5, mainWindow);
+      clearButtonShortcut = new QShortcut(Qt::Key_F3, mainWindow);
+      traceClearButtonShortcut = new QShortcut(Qt::Key_F4, mainWindow);
+      switchSendPortShortcut = new QShortcut(Qt::Key_F1, mainWindow);
    }
 
    void retranslateUi(QMainWindow *MainWindow)
