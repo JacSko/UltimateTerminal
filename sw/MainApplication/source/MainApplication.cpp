@@ -197,12 +197,13 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 
    for (auto& filter : m_trace_filter_handlers)
    {
-      std::optional<uint32_t> color = filter->tryMatch(data);
-      if (color.has_value())
+      std::optional<TraceFilterHandler::ColorSet> color_set = filter->tryMatch(data);
+      if (color_set.has_value())
       {
          QListWidgetItem* item = new QListWidgetItem();
          item->setText(new_line);
-         item->setBackground(QColor(color.value()));
+         item->setBackground(QColor(color_set.value().background));
+         item->setForeground(QColor(color_set.value().font));
          ui->traceView->addItem(item);
       }
    }
