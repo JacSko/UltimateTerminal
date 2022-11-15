@@ -139,7 +139,7 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
    if (event.event == GUI::Event::NEW_DATA)
    {
-      addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.trace_color);
+      addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.background_color);
    }
    else if (event.event == GUI::Event::CONNECTED)
    {

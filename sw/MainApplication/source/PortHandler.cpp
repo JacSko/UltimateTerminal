@@ -75,7 +75,7 @@ PortHandler::~PortHandler()
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] - Notifying listeners, event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
-   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, event, data});});
+   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, event, data});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
 {
@@ -115,13 +115,13 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
    emit portEvent();
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, toPortHandlerEvent(ev), data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
    emit portEvent();
 }
 void PortHandler::onPortEvent()
@@ -169,8 +169,8 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
 
    m_summary_label->setText(m_settings.shortSettingsString().c_str());
 
-   char stylesheet [100];
-   std::snprintf(stylesheet, 100, "background-color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color);
+   char stylesheet [300];
+   std::snprintf(stylesheet, 300, "background-color: #%.6x;color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color, settings.font_color);
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);

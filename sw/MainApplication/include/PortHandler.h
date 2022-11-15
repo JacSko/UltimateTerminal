@@ -29,7 +29,8 @@ struct PortHandlerEvent
 {
    uint8_t port_id;
    std::string name;
-   uint32_t trace_color;
+   uint32_t background_color;
+   uint32_t font_color;
    Event event;
    std::vector<uint8_t> data;
 };
