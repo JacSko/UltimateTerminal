@@ -12,9 +12,17 @@ class TraceFilterHandler : public QObject,
    Q_OBJECT
 
 public:
+
+
+   struct ColorSet
+   {
+      uint32_t background;
+      uint32_t font;
+   };
+
    TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QPushButton* button, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
-   std::optional<uint32_t> tryMatch(const std::string&);
+   std::optional<ColorSet> tryMatch(const std::string&);
 
 private:
    void onPersistenceRead(const std::vector<uint8_t>& data);
@@ -25,10 +33,11 @@ private:
    QPushButton* m_button;
    Persistence::PersistenceHandler& m_persistence;
    std::regex m_regex;
-   QColor m_color;
+   uint32_t m_background_color;
+   uint32_t m_font_color;
 
    void setButtonState(bool state);
-   void setLineEditColor(QColor color);
+   void setLineEditColor(uint32_t background_color, uint32_t font_color);
    bool filteringActive();
 public slots:
    void onButtonClicked();

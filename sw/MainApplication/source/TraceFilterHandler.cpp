@@ -30,8 +30,10 @@ m_persistence(persistence)
    m_button->setCheckable(true);
    m_line_edit->setDisabled(false);
    setButtonState(false);
-   setLineEditColor(m_parent->palette().color(QPalette::Base));
-   m_color = m_line_edit->palette().color(QPalette::Base);
+
+   m_background_color = m_parent->palette().color(QPalette::Base).rgb();
+   m_font_color = m_parent->palette().color(QPalette::Text).rgb();
+   setLineEditColor(m_background_color, m_font_color);
 
    UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
 }
@@ -39,14 +41,15 @@ TraceFilterHandler::~TraceFilterHandler()
 {
    m_persistence.removeListener(*this);
 }
-std::optional<uint32_t> TraceFilterHandler::tryMatch(const std::string& text)
+std::optional<TraceFilterHandler::ColorSet> TraceFilterHandler::tryMatch(const std::string& text)
 {
    if (filteringActive())
    {
       if (std::regex_search(text, m_regex))
       {
          UT_Log(TRACE_FILTER, HIGH, "Found match for filer %s", getName().c_str());
-         return m_color.rgb();
+         ColorSet result {m_background_color, m_font_color};
+         return result;
       }
       return {};
    }
@@ -61,36 +64,38 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 
    uint32_t offset = 0;
 
-   uint32_t color;
+   uint32_t background_color;
+   uint32_t font_color;
    std::string text;
    bool is_active;
 
    ::deserialize(data, offset, is_active);
    ::deserialize(data, offset, text);
-   ::deserialize(data, offset, color);
+   ::deserialize(data, offset, background_color);
+   ::deserialize(data, offset, font_color);
 
-   m_color = color;
-   setLineEditColor(color);
+   m_background_color = background_color;
+   m_font_color = font_color;
+   setLineEditColor(background_color, font_color);
    setButtonState(!is_active);
    m_button->setChecked(!is_active);
    m_line_edit->setDisabled(!is_active);
    m_line_edit->setText(QString(text.c_str()));
    m_regex = std::regex(text);
 
-   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : color %.6x, active %u, text %s", getName().c_str(), color, is_active, text.c_str());
+   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x active %u, text %s", getName().c_str(), m_background_color, m_font_color, is_active, text.c_str());
 }
 void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
    UT_Log(TRACE_FILTER, LOW, "Saving persistence for %s", getName().c_str());
-   uint32_t color = m_color.rgb();
    std::string text = m_line_edit->text().toStdString();
    bool is_active = m_line_edit->isEnabled();
 
    ::serialize(data, is_active);
    ::serialize(data, text);
-   ::serialize(data, color);
-
-   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : color %.6x, active %u, text %s", getName().c_str(), color, is_active, text.c_str());
+   ::serialize(data, m_background_color);
+   ::serialize(data, m_font_color);
+   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_background_color, m_font_color, is_active, text.c_str());
 
 }
 void TraceFilterHandler::onButtonClicked()
@@ -116,12 +121,17 @@ void TraceFilterHandler::onContextMenuRequested()
    if(!filteringActive())
    {
       UT_Log(TRACE_FILTER, LOW, "showing color dialog for %s", getName().c_str());
-      QColor color = QColorDialog::getColor(m_color, m_parent, "Select color");
-      if (color.isValid())
+      QColor background_color = QColorDialog::getColor(m_background_color, m_parent, "Select background color");
+      if (background_color.isValid())
       {
-         m_color = color;
-         setLineEditColor(color);
+         m_background_color = background_color.rgb();
       }
+      QColor font_color = QColorDialog::getColor(m_background_color, m_parent, "Select font color");
+      if (font_color.isValid())
+      {
+         m_font_color = font_color.rgb();
+      }
+      setLineEditColor(m_background_color, m_font_color);
    }
    else
    {
@@ -144,12 +154,12 @@ void TraceFilterHandler::setButtonState(bool active)
       m_button->update();
    }
 }
-void TraceFilterHandler::setLineEditColor(QColor color)
+void TraceFilterHandler::setLineEditColor(uint32_t background_color, uint32_t font_color)
 {
-   UT_Log(TRACE_FILTER, LOW, "setting color for %s to %.6x", getName().c_str(), color.rgb());
+   UT_Log(TRACE_FILTER, LOW, "setting %s bg %.6x text %.6x", getName().c_str(), background_color, font_color);
    QPalette palette = m_line_edit->palette();
-   palette.setColor(QPalette::Base, color);
-   palette.setColor(QPalette::Text, Qt::black);
+   palette.setColor(QPalette::Base, QColor(background_color));
+   palette.setColor(QPalette::Text, QColor(font_color));
    m_line_edit->setPalette(palette);
    m_line_edit->update();
 }
