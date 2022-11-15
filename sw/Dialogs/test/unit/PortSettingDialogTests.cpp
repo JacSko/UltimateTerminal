@@ -69,6 +69,7 @@ TEST_P(PortSettingDialogParam, some_test)
    QDialogButtonBox test_buttonbox;
    QLineEdit test_portname;
    QPushButton test_color_button;
+   QPushButton test_font_color_button;
 
    /* widgets related to ETHERNET port */
    QLineEdit test_ipaddress;
@@ -87,6 +88,7 @@ TEST_P(PortSettingDialogParam, some_test)
    printf("test_buttonbox : %p\n", (void*)&test_buttonbox);
    printf("test_portname : %p\n", (void*)&test_portname);
    printf("test_color_button : %p\n", (void*)&test_color_button);
+   printf("test_font_color_button : %p\n", (void*)&test_font_color_button);
    printf("test_ipaddress : %p\n", (void*)&test_ipaddress);
    printf("test_ipport : %p\n", (void*)&test_ipport);
    printf("test_serial_device_name : %p\n", (void*)&test_serial_device_name);
@@ -113,7 +115,8 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_portname))
                                                            .WillOnce(Return(&test_ipaddress))
                                                            .WillOnce(Return(&test_ipport));
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button));
+         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button))
+                                                             .WillOnce(Return(&test_font_color_button));
          /* created field with port name */
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_portname, current_settings.port_name));
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setMaxLength(&test_portname, _));
@@ -123,12 +126,13 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipaddress,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipport,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_color_button,!editable));
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_font_color_button,!editable));
 
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_portname));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipaddress));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipport));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color_button));
-
+         EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_font_color_button));
       }
       else
       {
@@ -143,7 +147,9 @@ TEST_P(PortSettingDialogParam, some_test)
                                                            .WillOnce(Return(&test_portname))
                                                            .WillOnce(Return(&test_serial_device_name));
          EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button))
-                                                             .WillOnce(Return(&test_color_button));
+                                                             .WillOnce(Return(&test_font_color_button))
+                                                             .WillOnce(Return(&test_color_button))
+                                                             .WillOnce(Return(&test_font_color_button));
          /* created field with port name */
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_portname, current_settings.port_name)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setMaxLength(&test_portname, _)).Times(2);
@@ -153,6 +159,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipaddress,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_ipport,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_color_button,!editable)).Times(2);
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_font_color_button,!editable)).Times(2);
 
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_device_name,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_baudrate,!editable));
@@ -164,6 +171,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipaddress));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipport));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color_button)).Times(2);
+         EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_font_color_button)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_device_name));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_baudrate));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_databits));
@@ -191,7 +199,8 @@ TEST_P(PortSettingDialogParam, some_test)
                                                            .WillOnce(Return(&test_serial_stopbits));
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_portname))
                                                            .WillOnce(Return(&test_serial_device_name));
-         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button));
+         EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button))
+                                                             .WillOnce(Return(&test_font_color_button));
 
          /* created field with port name */
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_portname, current_settings.port_name));
@@ -200,6 +209,7 @@ TEST_P(PortSettingDialogParam, some_test)
 
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_portname,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_color_button,!editable));
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_font_color_button,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_device_name,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_baudrate,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_databits,!editable));
@@ -208,6 +218,7 @@ TEST_P(PortSettingDialogParam, some_test)
 
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_portname));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color_button));
+         EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_font_color_button));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_device_name));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_baudrate));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_databits));
@@ -228,7 +239,9 @@ TEST_P(PortSettingDialogParam, some_test)
                                                            .WillOnce(Return(&test_ipaddress))
                                                            .WillOnce(Return(&test_ipport));
          EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_color_button))
-                                                             .WillOnce(Return(&test_color_button));
+                                                             .WillOnce(Return(&test_font_color_button))
+                                                             .WillOnce(Return(&test_color_button))
+                                                             .WillOnce(Return(&test_font_color_button));
          /* created field with port name */
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_portname, current_settings.port_name)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setMaxLength(&test_portname, _)).Times(2);
@@ -236,6 +249,7 @@ TEST_P(PortSettingDialogParam, some_test)
 
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_portname,!editable)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_color_button,!editable)).Times(2);
+         EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_font_color_button,!editable)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_device_name,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_baudrate,!editable));
          EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_serial_databits,!editable));
@@ -248,6 +262,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipaddress));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_ipport));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_color_button)).Times(2);
+         EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_font_color_button)).Times(2);
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_device_name));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_baudrate));
          EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_removeRow(&test_layout, &test_serial_databits));
@@ -302,9 +317,10 @@ TEST_P(PortSettingDialogParam, some_test)
    if (current_settings.type != user_settings.type)
    {
       /* created field with color selection */
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!"))).Times(2);
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button)).Times(2);
+      EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_font_color_button)).Times(2);
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_)).Times(2);
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_font_color_button,_,_,_)).Times(2);
 
       /* expect removal currently added widgets */
       if (current_settings.type == PortSettingDialog::PortType::ETHERNET)
@@ -349,14 +365,16 @@ TEST_P(PortSettingDialogParam, some_test)
    else
    {
       /* created field with color selection */
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_color_button, QString("Click!")));
       EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_color_button));
+      EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_insertRow(&test_layout,_,_, &test_font_color_button));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_color_button,_,_,_));
-
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_font_color_button,_,_,_));
    }
 
-   /* simulate that user changed the color */
+   /* simulate that user changed the background color */
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(QColor(current_settings.trace_color),_,_)).WillOnce(Return(QColor(user_settings.trace_color)));
+   /* simulate that user changed the font color */
+   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(QColor(current_settings.font_color),_,_)).WillOnce(Return(QColor(user_settings.font_color)));
 
    /* expect data readout when dialog accepted */
    if (dialog_accepted)
@@ -390,7 +408,8 @@ TEST_P(PortSettingDialogParam, some_test)
                {
                   test_subject.onPortTypeChanged(QString(user_settings.type.toName().c_str()));
                }
-               test_subject.onColorButtonClicked();
+               test_subject.onBackgroundColorButtonClicked();
+               test_subject.onFontColorButtonClicked();
                return dialog_accepted? QDialog::Accepted : QDialog::Rejected;
             }));
    std::optional<bool> result = test_subject.showDialog(&test_parent, current_settings, new_settings, editable);
@@ -404,6 +423,7 @@ TEST_P(PortSettingDialogParam, some_test)
          EXPECT_EQ(new_settings.type, user_settings.type);
          EXPECT_EQ(new_settings.port_name, user_settings.port_name);
          EXPECT_EQ(new_settings.trace_color, user_settings.trace_color);
+         EXPECT_EQ(new_settings.font_color, user_settings.font_color);
          EXPECT_EQ(new_settings.port_id, user_settings.port_id);
          if (user_settings.type == PortSettingDialog::PortType::ETHERNET)
          {

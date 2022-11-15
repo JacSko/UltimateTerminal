@@ -194,14 +194,15 @@ private:
    QComboBox* m_stopBitsBox;
    QLineEdit* m_ipAddressEdit;
    QLineEdit* m_ipPortEdit;
-   QPushButton* m_colorSelectionButton;
+   QPushButton* m_traceColorSelectionButton;
+   QPushButton* m_fontColorSelectionButton;
 
    std::vector<QWidget*> m_current_widgets;
    bool m_editable;
 public slots:
    void onPortTypeChanged(const QString& port_name);
-   void onColorButtonClicked();
-
+   void onBackgroundColorButtonClicked();
+   void onFontColorButtonClicked();
 };
 
 }

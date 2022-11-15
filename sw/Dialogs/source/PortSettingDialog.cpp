@@ -59,7 +59,8 @@ m_parityBitsBox(nullptr),
 m_stopBitsBox(nullptr),
 m_ipAddressEdit(nullptr),
 m_ipPortEdit(nullptr),
-m_colorSelectionButton(nullptr),
+m_traceColorSelectionButton(nullptr),
+m_fontColorSelectionButton(nullptr),
 m_editable(true)
 {
 }
@@ -224,21 +225,29 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
    form->insertRow(6, stopbits_label, m_stopBitsBox);
    m_current_widgets.push_back(m_stopBitsBox);
 
-   /* create color button */
-   QString color_label = QString("Terminal color");
-   m_colorSelectionButton = new QPushButton(m_dialog);
-   m_colorSelectionButton->setText(QString("Click!"));
-   m_colorSelectionButton->setDisabled(!m_editable);
-   QPalette palette = m_colorSelectionButton->palette();
+   /* create trace color button */
+   QString color_label = QString("Background color");
+   m_traceColorSelectionButton = new QPushButton(m_dialog);
+   m_traceColorSelectionButton->setDisabled(!m_editable);
+   QPalette palette = m_traceColorSelectionButton->palette();
    palette.setColor(QPalette::Button, QColor(settings.trace_color));
-   palette.setColor(QPalette::ButtonText, Qt::black);
-   m_colorSelectionButton->setPalette(palette);
-   m_colorSelectionButton->update();
-   form->insertRow(7, color_label, m_colorSelectionButton);
-   m_current_widgets.push_back(m_colorSelectionButton);
-   QObject::connect(m_colorSelectionButton, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
+   m_traceColorSelectionButton->setPalette(palette);
+   m_traceColorSelectionButton->update();
+   form->insertRow(7, color_label, m_traceColorSelectionButton);
+   m_current_widgets.push_back(m_traceColorSelectionButton);
+   QObject::connect(m_traceColorSelectionButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
 
-
+   /* create font color button */
+   QString font_color_label = QString("Font color");
+   m_fontColorSelectionButton = new QPushButton(m_dialog);
+   m_fontColorSelectionButton->setDisabled(!m_editable);
+   QPalette font_palette = m_fontColorSelectionButton->palette();
+   font_palette.setColor(QPalette::Button, QColor(settings.font_color));
+   m_fontColorSelectionButton->setPalette(font_palette);
+   m_fontColorSelectionButton->update();
+   form->insertRow(8, font_color_label, m_fontColorSelectionButton);
+   m_current_widgets.push_back(m_fontColorSelectionButton);
+   QObject::connect(m_fontColorSelectionButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
 }
 void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& settings)
 {
@@ -271,34 +280,60 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    m_current_widgets.push_back(m_ipPortEdit);
 
    /* create color button */
-   QString color_label = QString("Terminal color");
-   m_colorSelectionButton = new QPushButton(m_dialog);
-   m_colorSelectionButton->setText(QString("Click!"));
-   m_colorSelectionButton->setDisabled(!m_editable);
-   QPalette palette = m_colorSelectionButton->palette();
+   QString color_label = QString("Background color");
+   m_traceColorSelectionButton = new QPushButton(m_dialog);
+   m_traceColorSelectionButton->setDisabled(!m_editable);
+   QPalette palette = m_traceColorSelectionButton->palette();
    palette.setColor(QPalette::Button, QColor(settings.trace_color));
-   palette.setColor(QPalette::ButtonText, Qt::black);
-   m_colorSelectionButton->setPalette(palette);
-   m_colorSelectionButton->update();
-   form->insertRow(4, color_label, m_colorSelectionButton);
-   m_current_widgets.push_back(m_colorSelectionButton);
-   QObject::connect(m_colorSelectionButton, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
+   m_traceColorSelectionButton->setPalette(palette);
+   m_traceColorSelectionButton->update();
+   form->insertRow(4, color_label, m_traceColorSelectionButton);
+   m_current_widgets.push_back(m_traceColorSelectionButton);
+   QObject::connect(m_traceColorSelectionButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
+
+   /* create font color button */
+   QString font_color_label = QString("Font color");
+   m_fontColorSelectionButton = new QPushButton(m_dialog);
+   m_fontColorSelectionButton->setDisabled(!m_editable);
+   QPalette font_palette = m_fontColorSelectionButton->palette();
+   font_palette.setColor(QPalette::Button, QColor(settings.font_color));
+   m_fontColorSelectionButton->setPalette(font_palette);
+   m_fontColorSelectionButton->update();
+   form->insertRow(5, font_color_label, m_fontColorSelectionButton);
+   m_current_widgets.push_back(m_fontColorSelectionButton);
+   QObject::connect(m_fontColorSelectionButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
 
 }
-void PortSettingDialog::onColorButtonClicked()
+void PortSettingDialog::onBackgroundColorButtonClicked()
 {
-   UT_Log(GUI_DIALOG, LOW, "color button clicked, current RGB #.6x", m_current_settings.trace_color);
+   UT_Log(GUI_DIALOG, LOW, "color button clicked, current RGB %.6x", m_current_settings.trace_color);
 
-   QColor color = QColorDialog::getColor(m_current_settings.trace_color, m_dialog, "Select color");
+   QColor color = QColorDialog::getColor(m_current_settings.trace_color, m_dialog, "Select background color");
 
    if (color.isValid())
    {
-      QPalette palette = m_colorSelectionButton->palette();
+      QPalette palette = m_traceColorSelectionButton->palette();
       palette.setColor(QPalette::Button, color);
-      m_colorSelectionButton->setPalette(palette);
-      m_colorSelectionButton->update();
+      m_traceColorSelectionButton->setPalette(palette);
+      m_traceColorSelectionButton->update();
       m_current_settings.trace_color = color.rgb();
-      UT_Log(GUI_DIALOG, LOW, "color dialog accepted, new RGB #.6x", color.rgb());
+      UT_Log(GUI_DIALOG, LOW, "color dialog accepted, new RGB %.6x", color.rgb());
+   }
+}
+void PortSettingDialog::onFontColorButtonClicked()
+{
+   UT_Log(GUI_DIALOG, LOW, "font color button clicked, current RGB %.6x", m_current_settings.font_color);
+
+   QColor color = QColorDialog::getColor(m_current_settings.font_color, m_dialog, "Select font color");
+
+   if (color.isValid())
+   {
+      QPalette palette = m_fontColorSelectionButton->palette();
+      palette.setColor(QPalette::Button, color);
+      m_fontColorSelectionButton->setPalette(palette);
+      m_fontColorSelectionButton->update();
+      m_current_settings.font_color = color.rgb();
+      UT_Log(GUI_DIALOG, LOW, "font color dialog accepted, new RGB %.6x", color.rgb());
    }
 }
 void PortSettingDialog::clearDialog()
@@ -332,6 +367,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_current_settings.trace_color;
+   out_settings.font_color = m_current_settings.font_color;
    bool result = out_settings.areValid()? true : false;
    UT_Log_If(!out_settings.areValid(), GUI_DIALOG, ERROR, "got invalid settings from GUI: %s", out_settings.shortSettingsString().c_str());
 
