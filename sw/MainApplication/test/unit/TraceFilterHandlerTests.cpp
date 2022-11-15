@@ -3,7 +3,7 @@
 
 #include "QtWidgets/QtWidgetsMock.h"
 #include <QtWidgets/QPushButton>
-
+#include "TraceFilterSettingDialogMock.h"
 #include "TraceFilterHandler.h"
 
 
@@ -15,6 +15,7 @@ struct TraceFilterHandlerTests : public testing::Test
    {
       QtCoreMock_init();
       QtWidgetsMock_init();
+      TraceFilterSettingDialogMock_init();
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("clicked"), _, HasSubstr("onButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onContextMenuRequested")));
@@ -38,6 +39,7 @@ struct TraceFilterHandlerTests : public testing::Test
    void TearDown()
    {
       m_test_subject.reset(nullptr);
+      TraceFilterSettingDialogMock_deinit();
       QtWidgetsMock_deinit();
       QtCoreMock_deinit();
    }
@@ -74,8 +76,9 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
     *                  std::optional shall contain filter color value.<br>
     * ************************************************
     */
-   QColor new_trace_color = 0x112233;
-   QColor new_font_color = 0x332211;
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
    std::string test_regex = "CDE";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)) // check before opening the color dialog
@@ -83,11 +86,10 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
                                                                         .WillOnce(Return(false)); // check during tryMatch
 
    /* color change */
-   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color))
-                                                                  .WillOnce(Return(new_font_color));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
    m_test_subject->onContextMenuRequested();
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(new_font_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
@@ -99,8 +101,8 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
-   EXPECT_EQ(result.value().background, new_trace_color.rgb());
-   EXPECT_EQ(result.value().font, new_font_color.rgb());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
 
 }
 
@@ -118,8 +120,9 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
     *                  std::optional shall NOT contain a value.<br>
     * ************************************************
     */
-   QColor new_trace_color = 0x112233;
-   QColor new_font_color = 0x332211;
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
    std::string test_regex = "CDE";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)) // check before opening the color dialog
@@ -129,12 +132,10 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
                                                                         .WillOnce(Return(true));// check during second tryMatch
 
    /* color change */
-   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color))
-                                                                  .WillOnce(Return(new_font_color));
-
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
    m_test_subject->onContextMenuRequested();
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(new_font_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
@@ -146,8 +147,8 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
-   EXPECT_EQ(result.value().background, new_trace_color.rgb());
-   EXPECT_EQ(result.value().font, new_font_color.rgb());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
 
    /* filter disabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, false));
@@ -174,8 +175,9 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
     *                  On color change request, the color dialog shall not be displayed.<br>
     * ************************************************
     */
-   QColor new_trace_color = 0x112233;
-   QColor new_font_color = 0x332211;
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
    std::string test_regex = "CDE";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true))  // check before opening the color dialog
@@ -184,11 +186,10 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
                                                                         .WillOnce(Return(false));// check during color change
 
    /* color change */
-   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color))
-                                                                  .WillOnce(Return(new_font_color));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
    m_test_subject->onContextMenuRequested();
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(new_font_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
@@ -200,11 +201,11 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
-   EXPECT_EQ(result.value().background, new_trace_color.rgb());
-   EXPECT_EQ(result.value().font, new_font_color.rgb());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
 
    /* color change requested, but not allowed */
-   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).Times(0);
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).Times(0);
    m_test_subject->onContextMenuRequested();
 
 }
@@ -217,8 +218,9 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
     * ************************************************
     */
    std::vector<uint8_t> data_buffer;
-   QColor new_trace_color = 0x112233;
-   QColor new_font_color = 0x112233;
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
    std::string test_regex = "CDE";
 
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)) // check before opening the color dialog
@@ -226,11 +228,10 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
                                                                         .WillOnce(Return(false))// check during tryMatch
                                                                         .WillOnce(Return(false));// check during persistence write
    /* color change */
-   EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(new_trace_color))
-                                                                  .WillOnce(Return(new_font_color));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
    m_test_subject->onContextMenuRequested();
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
-   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(new_font_color));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
 
    /* filter enabling */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str()))) // filter enable
@@ -243,8 +244,8 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
 
    auto result = m_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
-   EXPECT_EQ(result.value().background, new_trace_color.rgb());
-   EXPECT_EQ(result.value().font, new_font_color.rgb());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
 
    /* simulate persistence write request */
    ASSERT_EQ(data_buffer.size(), 0);
@@ -276,14 +277,14 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
 
    EXPECT_EQ(new_test_button.palette().color(QPalette::Button), QColor(Qt::green));
    EXPECT_EQ(new_test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
-   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Base), QColor(new_trace_color));
-   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Text), QColor(new_font_color));
+   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(new_test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
    /* try to match the same text as before persistence write */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&new_test_line_edit)).WillOnce(Return(false)); // check during tryMatch
    result = new_test_subject->tryMatch("ABCDEF");
    EXPECT_TRUE(result.has_value());
-   EXPECT_EQ(result.value().background, new_trace_color.rgb());
-   EXPECT_EQ(result.value().font, new_font_color.rgb());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
 
 }
 

@@ -1,3 +1,4 @@
+#include "QtWidgets/QColorDialog"
 #include <QtCore/QString>
 #include "TraceFilterSettingDialog.h"
 #include "Logger.h"
@@ -20,6 +21,7 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
 {
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
+   m_dialog->setPalette(parent->palette());
    m_form = new QFormLayout(m_dialog);
 
    m_backgroundButton = new QPushButton(m_dialog);

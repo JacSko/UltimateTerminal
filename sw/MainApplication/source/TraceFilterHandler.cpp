@@ -1,6 +1,5 @@
-#include "QtWidgets/QColorDialog"
-
 #include "TraceFilterHandler.h"
+#include "TraceFilterSettingDialog.h"
 #include "Logger.h"
 #include "Serialize.hpp"
 
@@ -121,15 +120,15 @@ void TraceFilterHandler::onContextMenuRequested()
    if(!filteringActive())
    {
       UT_Log(TRACE_FILTER, LOW, "showing color dialog for %s", getName().c_str());
-      QColor background_color = QColorDialog::getColor(m_background_color, m_parent, "Select background color");
-      if (background_color.isValid())
+      Dialogs::TraceFilterSettingDialog::ColorSet current_set = {m_background_color, m_font_color};
+      Dialogs::TraceFilterSettingDialog::ColorSet new_set;
+
+      Dialogs::TraceFilterSettingDialog dialog;
+      std::optional<bool> result = dialog.showDialog(m_parent, current_set, new_set);
+      if (result.has_value() && result.value())
       {
-         m_background_color = background_color.rgb();
-      }
-      QColor font_color = QColorDialog::getColor(m_background_color, m_parent, "Select font color");
-      if (font_color.isValid())
-      {
-         m_font_color = font_color.rgb();
+         m_background_color = new_set.background;
+         m_font_color = new_set.font;
       }
       setLineEditColor(m_background_color, m_font_color);
    }
