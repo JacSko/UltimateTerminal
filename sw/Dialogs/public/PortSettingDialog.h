@@ -66,7 +66,8 @@ enum class PortType
       serialSettings({}),
       ip_address("127.0.0.1"),
       port(1234),
-      trace_color(0xFFFFFF)
+      trace_color(0xFFFFFF),
+      font_color(0x000000)
       {}
 
       Settings(uint8_t id,
@@ -75,14 +76,16 @@ enum class PortType
                const Drivers::Serial::Settings& serial,
                const std::string& ip_address,
                uint32_t port,
-               uint32_t trace_color):
+               uint32_t trace_color,
+               uint32_t font_color):
       port_id(id),
       type(type),
       port_name(name),
       serialSettings(serial),
       ip_address(ip_address),
       port(port),
-      trace_color(trace_color)
+      trace_color(trace_color),
+      font_color(font_color)
       {}
 
       uint8_t port_id;                          /**< instance ID of the port        */
@@ -92,6 +95,7 @@ enum class PortType
       std::string ip_address;                   /**< Server's IP address            */
       uint32_t port;                            /**< Server's port                  */
       uint32_t trace_color;                     /**< Color of traces that will be shown in terminal */
+      uint32_t font_color;                      /**< Color of the font in terminal */
 
       std::string shortSettingsString() const
       {

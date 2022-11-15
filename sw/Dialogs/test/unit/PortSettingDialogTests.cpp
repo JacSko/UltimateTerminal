@@ -444,7 +444,8 @@ constexpr uint32_t TEST_NEW_CORRECT_IP_PORT = 4321;
 constexpr uint32_t TEST_INCORRECT_IP_PORT = 9999999;
 constexpr uint32_t TEST_TRACE_COLOR = 0x1234;
 constexpr uint32_t TEST_NEW_TRACE_COLOR = 0x4321;
-
+constexpr uint32_t TEST_FONT_COLOR = 0x7777;
+constexpr uint32_t TEST_NEW_FONT_COLOR = 0x8888;
 
 TestParam params[] =
 {
@@ -474,7 +475,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                         PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
@@ -487,7 +489,8 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
 
       /**
@@ -516,7 +519,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                         PortSettingDialog::PortType::ETHERNET,
                                         TEST_NEW_PORT_NAME,
@@ -529,7 +533,8 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
       /**
        * @test
@@ -557,7 +562,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                         PortSettingDialog::PortType::ETHERNET,
                                         TEST_NEW_PORT_NAME,
@@ -570,7 +576,8 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
       /**
        * @test
@@ -598,7 +605,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                         PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
@@ -611,7 +619,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
       /**
        * @test
@@ -639,7 +648,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                         PortSettingDialog::PortType::SERIAL,
                                         TEST_NEW_PORT_NAME,
@@ -652,7 +662,8 @@ TestParam params[] =
                                        },
                                        TEST_INCORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
       /**
        * @test
@@ -680,7 +691,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
                                        PortSettingDialog::PortType::SERIAL,
                                        TEST_NEW_PORT_NAME,
@@ -693,7 +705,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_INCORRECT_IP_PORT,
-                                       TEST_NEW_TRACE_COLOR}, // new settings
+                                       TEST_NEW_TRACE_COLOR,
+                                       TEST_NEW_FONT_COLOR}, // new settings
       },
 
       /**
@@ -720,7 +733,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{}, // new settings
       },
 
@@ -748,7 +762,8 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
-                                       TEST_TRACE_COLOR}, // old settings
+                                       TEST_TRACE_COLOR,
+                                       TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{}, // new settings
       }
 };
