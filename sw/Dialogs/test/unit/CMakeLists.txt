@@ -37,3 +37,25 @@ target_link_libraries(PortSettingDialogTests PUBLIC
         DriversMocks
 )
 add_test(NAME PortSettingDialogTests COMMAND PortSettingDialogTests)
+
+#####################################################################################
+
+add_executable(TraceFilterSettingDialogTests
+            TraceFilterSettingDialogTests.cpp
+            ../../source/TraceFilterSettingDialog.cpp
+)
+
+target_include_directories(TraceFilterSettingDialogTests PUBLIC
+        ../../include
+        ../../public
+)
+target_link_libraries(TraceFilterSettingDialogTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        SettingsHandler
+        Utilities
+        QtMocks
+        DriversMocks
+)
+add_test(NAME TraceFilterSettingDialogTests COMMAND TraceFilterSettingDialogTests)
