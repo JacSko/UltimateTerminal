@@ -12,7 +12,7 @@
 #include "Serialize.hpp"
 
 
-constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0055;
+constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
 
 
@@ -139,7 +139,7 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
    if (event.event == GUI::Event::NEW_DATA)
    {
-      addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.background_color);
+      addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.background_color, event.font_color);
    }
    else if (event.event == GUI::Event::CONNECTED)
    {
@@ -158,7 +158,7 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
       UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
    }
 }
-void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color)
+void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color)
 {
    auto currentTime = std::chrono::system_clock::now();
    auto millis = (currentTime.time_since_epoch().count() / 1000000) % 1000;
@@ -191,7 +191,8 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 
    QListWidgetItem* item = new QListWidgetItem();
    item->setText(new_line);
-   item->setBackground(QColor(rgb_color));
+   item->setBackground(QColor(background_color));
+   item->setForeground(QColor(font_color));
    ui->terminalView->addItem(item);
 
    for (auto& filter : m_trace_filter_handlers)
@@ -242,7 +243,7 @@ void MainApplication::onMarkerButtonClicked()
    std::string log = "MARKER";
    log += std::to_string(m_marker_index);
    log += '\n';
-   addToTerminal("MARKER", log, TRACE_MARKER_COLOR);
+   addToTerminal("MARKER", log, TRACE_MARKER_COLOR, this->palette().color(QPalette::Text).rgb());
 }
 void MainApplication::onLoggingButtonClicked()
 {
@@ -359,7 +360,7 @@ bool MainApplication::sendToPort(const std::string& string)
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(port_name, data_to_send, ui->terminalView->palette().color(QPalette::Base).rgb());
+            addToTerminal(port_name, data_to_send, ui->terminalView->palette().color(QPalette::Base).rgb(), this->palette().color(QPalette::Text).rgb());
             addToCommandHistory(port_id, string);
          }
          else
@@ -368,7 +369,7 @@ bool MainApplication::sendToPort(const std::string& string)
             error += port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(port_name, error, ui->terminalView->palette().color(QPalette::Base).rgb());
+            addToTerminal(port_name, error, ui->terminalView->palette().color(QPalette::Base).rgb(), this->palette().color(QPalette::Text).rgb());
          }
       }
    }

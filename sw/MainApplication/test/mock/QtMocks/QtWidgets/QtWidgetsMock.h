@@ -379,6 +379,7 @@ public:
    void operator delete(void*){};
    void setText(const QString &atext);
    void setBackground(const QColor &color);
+   void setForeground(const QColor &color);
 };
 class QListWidget : public QWidget
 {
@@ -479,6 +480,7 @@ struct QtWidgetsMock
    MOCK_METHOD0(QListWidgetItem_new, void*());
    MOCK_METHOD2(QListWidgetItem_setText, void(QListWidgetItem*, const QString&));
    MOCK_METHOD2(QListWidgetItem_setBackground, void(QListWidgetItem*, const QColor&));
+   MOCK_METHOD2(QListWidgetItem_setForeground, void(QListWidgetItem*, const QColor&));
 
    MOCK_METHOD0(QListWidget_new, void*());
    MOCK_METHOD2(QListWidget_addItem, void(QListWidget*, QListWidgetItem*));

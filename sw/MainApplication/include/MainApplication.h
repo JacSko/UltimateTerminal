@@ -51,7 +51,7 @@ private:
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
     bool sendToPort(const std::string&);
-    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t rgb_color);
+    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color);
     void setButtonState(QPushButton* button, bool active);
     void setScrolling(bool active);
     void setTraceScrolling(bool active);

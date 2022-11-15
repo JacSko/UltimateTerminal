@@ -236,6 +236,10 @@ void QListWidgetItem::setBackground(const QColor &color)
 {
    g_widgets_mock->QListWidgetItem_setBackground(this, color);
 }
+void QListWidgetItem::setForeground(const QColor &color)
+{
+   g_widgets_mock->QListWidgetItem_setForeground(this, color);
+}
 void QListWidget::addItem(QListWidgetItem *aitem)
 {
    g_widgets_mock->QListWidget_addItem(this, aitem);
