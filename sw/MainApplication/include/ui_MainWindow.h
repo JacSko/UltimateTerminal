@@ -29,8 +29,11 @@ public:
    /* layout with user buttons at the top of application */
    QPushButton *markerButton;
    QPushButton *loggingButton;
+   QPushButton *settingsButton;
+   QComboBox *buttonVariant;
    QLabel *infoLabel;
    QGridLayout *userButtonsLayout;
+   QGridLayout *controlButtonsLayout;
    QPushButton *userButton_1;
    QPushButton *userButton_2;
    QPushButton *userButton_5;
@@ -136,61 +139,72 @@ public:
       verticalLayout_3 = new QVBoxLayout();
       verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
       verticalLayout_3->setSizeConstraint(QLayout::SetDefaultConstraint);
+
+      controlButtonsLayout = new QGridLayout();
+      controlButtonsLayout->setObjectName(QString::fromUtf8("controlButtonsLayout"));
+
+      markerButton = new QPushButton(centralwidget);
+      markerButton->setObjectName(QString::fromUtf8("markerButton"));
+      controlButtonsLayout->addWidget(markerButton, 0, 0, 1, 1);
+      loggingButton = new QPushButton(centralwidget);
+      loggingButton->setObjectName(QString::fromUtf8("loggingButton"));
+      controlButtonsLayout->addWidget(loggingButton, 0, 1, 1, 1);
+      settingsButton = new QPushButton(centralwidget);
+      settingsButton->setObjectName(QString::fromUtf8("settingsButton"));
+      controlButtonsLayout->addWidget(settingsButton, 0, 2, 1, 1);
+      buttonVariant = new QComboBox(centralwidget);
+      buttonVariant->setObjectName(QString::fromUtf8("buttonVariant"));
+      controlButtonsLayout->addWidget(buttonVariant, 0, 3, 1, 1);
+      infoLabel = new QLabel(centralwidget);
+      infoLabel->setObjectName(QString::fromUtf8("infoLabel"));
+      controlButtonsLayout->addWidget(infoLabel, 0, 4, 1, 1);
+
+      verticalLayout_3->addLayout(controlButtonsLayout);
+
       userButtonsLayout = new QGridLayout();
       userButtonsLayout->setObjectName(QString::fromUtf8("userButtonsLayout"));
 
       /* create user buttons */
       userButton_1 = new QPushButton(centralwidget);
       userButton_1->setObjectName(QString::fromUtf8("userButton_1"));
-      userButtonsLayout->addWidget(userButton_1, 1, 0, 1, 1);
+      userButtonsLayout->addWidget(userButton_1, 0, 0, 1, 1);
 
       userButton_2 = new QPushButton(centralwidget);
       userButton_2->setObjectName(QString::fromUtf8("userButton_2"));
-      userButtonsLayout->addWidget(userButton_2, 1, 1, 1, 1);
+      userButtonsLayout->addWidget(userButton_2, 0, 1, 1, 1);
 
       userButton_3 = new QPushButton(centralwidget);
       userButton_3->setObjectName(QString::fromUtf8("userButton_3"));
-      userButtonsLayout->addWidget(userButton_3, 1, 2, 1, 1);
+      userButtonsLayout->addWidget(userButton_3, 0, 2, 1, 1);
 
       userButton_4 = new QPushButton(centralwidget);
       userButton_4->setObjectName(QString::fromUtf8("userButton_4"));
-      userButtonsLayout->addWidget(userButton_4, 1, 3, 1, 1);
-
-      infoLabel = new QLabel(centralwidget);
-      infoLabel->setObjectName(QString::fromUtf8("infoLabel"));
-      userButtonsLayout->addWidget(infoLabel, 0, 4, 1, 1);
+      userButtonsLayout->addWidget(userButton_4, 0, 3, 1, 1);
 
       userButton_5 = new QPushButton(centralwidget);
       userButton_5->setObjectName(QString::fromUtf8("userButton_5"));
-      userButtonsLayout->addWidget(userButton_5, 1, 4, 1, 1);
+      userButtonsLayout->addWidget(userButton_5, 0, 4, 1, 1);
 
       userButton_6 = new QPushButton(centralwidget);
       userButton_6->setObjectName(QString::fromUtf8("userButton_6"));
-      userButtonsLayout->addWidget(userButton_6, 2, 0, 1, 1);
+      userButtonsLayout->addWidget(userButton_6, 1, 0, 1, 1);
 
       userButton_7 = new QPushButton(centralwidget);
       userButton_7->setObjectName(QString::fromUtf8("userButton_7"));
-      userButtonsLayout->addWidget(userButton_7, 2, 1, 1, 1);
+      userButtonsLayout->addWidget(userButton_7, 1, 1, 1, 1);
 
       userButton_8 = new QPushButton(centralwidget);
       userButton_8->setObjectName(QString::fromUtf8("userButton_8"));
-      userButtonsLayout->addWidget(userButton_8, 2, 2, 1, 1);
+      userButtonsLayout->addWidget(userButton_8, 1, 2, 1, 1);
 
       userButton_9 = new QPushButton(centralwidget);
       userButton_9->setObjectName(QString::fromUtf8("userButton_9"));
-      userButtonsLayout->addWidget(userButton_9, 2, 3, 1, 1);
+      userButtonsLayout->addWidget(userButton_9, 1, 3, 1, 1);
 
       userButton_10 = new QPushButton(centralwidget);
       userButton_10->setObjectName(QString::fromUtf8("userButton_10"));
-      userButtonsLayout->addWidget(userButton_10, 2, 4, 1, 1);
+      userButtonsLayout->addWidget(userButton_10, 1, 4, 1, 1);
 
-      markerButton = new QPushButton(centralwidget);
-      markerButton->setObjectName(QString::fromUtf8("markerButton"));
-
-      userButtonsLayout->addWidget(markerButton, 0, 0, 1, 1);
-      loggingButton = new QPushButton(centralwidget);
-      loggingButton->setObjectName(QString::fromUtf8("loggingButton"));
-      userButtonsLayout->addWidget(loggingButton, 0, 1, 1, 1);
       verticalLayout_3->addLayout(userButtonsLayout);
 
       /*fill terminal layout */
@@ -450,6 +464,7 @@ public:
       userButton_10->setText(QString());
       markerButton->setText(QCoreApplication::translate("MainWindow", "MARKER", nullptr));
       loggingButton->setText(QCoreApplication::translate("MainWindow", "LOG", nullptr));
+      settingsButton->setText(QCoreApplication::translate("MainWindow", "SETTINGS", nullptr));
       sendButton->setText(QCoreApplication::translate("MainWindow", "SEND", nullptr));
       scrollButton->setText(QCoreApplication::translate("MainWindow", "SCROLL", nullptr));
       clearButton->setText(QCoreApplication::translate("MainWindow", "CLEAR", nullptr));
@@ -503,6 +518,8 @@ private:
       lineEndingComboBox->view()->setPalette(combobox_palette);
       textEdit->setPalette(combobox_palette);
       textEdit->view()->setPalette(combobox_palette);
+      buttonVariant->setPalette(combobox_palette);
+      buttonVariant->view()->setPalette(combobox_palette);
 
       QPalette terminal_palette = terminalView->palette();
       terminal_palette.setColor(QPalette::Base, TERMINAL_BACKGROUND_COLOR);
@@ -527,6 +544,8 @@ private:
       lineEndingComboBox->view()->setPalette({});
       textEdit->setPalette({});
       textEdit->view()->setPalette({});
+      buttonVariant->setPalette({});
+      buttonVariant->view()->setPalette({});
       terminalView->setPalette({});
       traceView->setPalette({});
       mainWindow->setPalette({});

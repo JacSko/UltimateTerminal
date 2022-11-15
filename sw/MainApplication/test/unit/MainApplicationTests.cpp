@@ -51,7 +51,10 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_objectName(_)).WillOnce(Return(QString("")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_setObjectName(_, _)).Times(AtLeast(1));
 
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_user_button_1))
+      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_marker_button))
+                                                         .WillOnce(Return(&test_logging_button))
+                                                         .WillOnce(Return(&test_settings_button))
+                                                         .WillOnce(Return(&test_user_button_1))
                                                          .WillOnce(Return(&test_user_button_2))
                                                          .WillOnce(Return(&test_user_button_3))
                                                          .WillOnce(Return(&test_user_button_4))
@@ -61,8 +64,6 @@ struct MainApplicationFixture : public testing::Test
                                                          .WillOnce(Return(&test_user_button_8))
                                                          .WillOnce(Return(&test_user_button_9))
                                                          .WillOnce(Return(&test_user_button_10))
-                                                         .WillOnce(Return(&test_marker_button))
-                                                         .WillOnce(Return(&test_logging_button))
                                                          .WillOnce(Return(&test_send_button))
                                                          .WillOnce(Return(&test_scroll_button))
                                                          .WillOnce(Return(&test_clear_button))
@@ -86,7 +87,8 @@ struct MainApplicationFixture : public testing::Test
                                                      .WillOnce(Return(&test_port_label_3))
                                                      .WillOnce(Return(&test_port_label_4))
                                                      .WillOnce(Return(&test_port_label_5));
-      EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
+      EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_button_variant))
+                                                        .WillOnce(Return(&test_port_box))
                                                         .WillOnce(Return(&test_line_ending_box))
                                                         .WillOnce(Return(&test_text_edit));
       EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_terminal_view))
@@ -180,6 +182,7 @@ struct MainApplicationFixture : public testing::Test
    QPushButton test_user_button_10;
    QPushButton test_marker_button;
    QPushButton test_logging_button;
+   QPushButton test_settings_button;
    QPushButton test_send_button;
    QPushButton test_scroll_button;
    QPushButton test_clear_button;
@@ -203,6 +206,7 @@ struct MainApplicationFixture : public testing::Test
    QLabel test_port_label_3;
    QLabel test_port_label_4;
    QLabel test_port_label_5;
+   QComboBox test_button_variant;
    QComboBox test_port_box;
    QComboBox test_line_ending_box;
    QComboBox test_text_edit;
