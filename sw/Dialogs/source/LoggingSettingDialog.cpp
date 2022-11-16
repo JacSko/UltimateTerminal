@@ -36,6 +36,7 @@ std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, con
    m_filePathEdit = new QLineEdit(m_dialog);
    m_filePathEdit->setText(QString(current_path.c_str()));
    m_filePathEdit->setDisabled(true);
+   m_filePathEdit->setMinimumSize(500, 0);
    m_form->insertRow(1, file_path_label, m_filePathEdit);
 
    // create file path button
