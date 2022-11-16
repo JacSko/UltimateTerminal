@@ -592,6 +592,69 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
 }
 
+TEST_F(PortHandlerFixture, refreshing_ui_tests)
+{
+   /**
+    * <b>scenario</b>: User requested to reload the UI elements when port is not connected.<br>
+    * <b>expected</b>: Settings shall be correctly reloaded without change of state. <br>
+    * ************************************************
+    */
+
+   Dialogs::PortSettingDialog::Settings user_settings;
+   user_settings.port_name = "TEST_NAME";
+   user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
+   user_settings.ip_address = "192.168.1.100";
+   user_settings.port = 1234;
+
+   /* settings change requested */
+   EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, QString(user_settings.shortSettingsString().c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
+   m_test_subject->onPortButtonContextMenuRequested();
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, QString(user_settings.shortSettingsString().c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
+   m_test_subject->refreshUi();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), DEFAULT_APP_COLOR);
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), DEFAULT_APP_COLOR);
+
+   /**
+    * <b>scenario</b>: User requested to reload the UI elements when port is connected.<br>
+    * <b>expected</b>: Settings shall be correctly reloaded without change of state. <br>
+    * ************************************************
+    */
+   /* port opening */
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
+   {
+      EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
+      EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
+   }
+   else
+   {
+      EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
+      EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+      EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
+   }
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
+   m_test_subject->onPortButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, QString(user_settings.shortSettingsString().c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
+   m_test_subject->refreshUi();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+
+}
+
 TestParam params[] = {{Dialogs::PortSettingDialog::PortType::SERIAL},{Dialogs::PortSettingDialog::PortType::ETHERNET}};
 INSTANTIATE_TEST_CASE_P(PortHandlerParamFixture, PortHandlerParamFixture, ValuesIn(params));
 
