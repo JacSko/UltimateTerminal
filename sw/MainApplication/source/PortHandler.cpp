@@ -388,5 +388,4 @@ void PortHandler::serialize(std::vector<uint8_t>& buffer)
    ::serialize(buffer, m_settings.type.toName());
 }
 
-
-};
+}

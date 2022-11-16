@@ -16,10 +16,12 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QShortcut>
+#include <QtWidgets/QTabWidget>
 
 #include "Settings.h"
 
 QT_BEGIN_NAMESPACE
+
 
 class Ui_MainWindow
 {
@@ -115,6 +117,9 @@ public:
    QShortcut* traceClearButtonShortcut;
    QShortcut* switchSendPortShortcut;
 
+   QTabWidget* buttonsTabWidget;
+   QWidget* tabWidget;
+
    enum class Theme
    {
       DEFAULT,
@@ -138,7 +143,8 @@ public:
       gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
       verticalLayout_3 = new QVBoxLayout();
       verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-      verticalLayout_3->setSizeConstraint(QLayout::SetDefaultConstraint);
+//      verticalLayout_3->setSizeConstraint(QLayout::SetDefaultConstraint);
+      verticalLayout_3->setSizeConstraint(QLayout::SetMinimumSize);
 
       controlButtonsLayout = new QGridLayout();
       controlButtonsLayout->setObjectName(QString::fromUtf8("controlButtonsLayout"));
@@ -161,6 +167,10 @@ public:
 
       verticalLayout_3->addLayout(controlButtonsLayout);
 
+
+      buttonsTabWidget = new QTabWidget();
+      tabWidget = new QWidget();
+      buttonsTabWidget->setSizeConstraint(QLayout::SetMinimumSize);
       userButtonsLayout = new QGridLayout();
       userButtonsLayout->setObjectName(QString::fromUtf8("userButtonsLayout"));
 
@@ -205,7 +215,14 @@ public:
       userButton_10->setObjectName(QString::fromUtf8("userButton_10"));
       userButtonsLayout->addWidget(userButton_10, 1, 4, 1, 1);
 
-      verticalLayout_3->addLayout(userButtonsLayout);
+//      verticalLayout_3->addLayout(userButtonsLayout);
+
+      tabWidget->setLayout(userButtonsLayout);
+      buttonsTabWidget->addTab(tabWidget, "BUTTONS");
+
+      verticalLayout_3->addWidget(buttonsTabWidget);
+
+
 
       /*fill terminal layout */
       splitter_2 = new QSplitter(centralwidget);
