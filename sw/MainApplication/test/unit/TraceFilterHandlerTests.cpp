@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <optional>
 
 #include "QtWidgets/QtWidgetsMock.h"
 #include <QtWidgets/QPushButton>
@@ -285,6 +286,96 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
    EXPECT_TRUE(result.has_value());
    EXPECT_EQ(result.value().background, color_set.background);
    EXPECT_EQ(result.value().font, color_set.font);
+
+}
+
+TEST_F(TraceFilterHandlerTests, refresh_ui_when_filter_disabled)
+{
+   /**
+    * <b>scenario</b>: Trace filter is disabled, colors are default, UI refresh requested <br>
+    * <b>expected</b>: QLineEdit color updated to the new theme color. <br>
+    *                  QPushButton color updated to the new theme color. <br>
+    * ************************************************
+    */
+   m_test_subject->refreshUi();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(DEFAULT_APP_COLOR));
+
+}
+
+TEST_F(TraceFilterHandlerTests, refresh_ui_when_user_colors_used)
+{
+   /**
+    * <b>scenario</b>: Trace filter is disabled, colors are defined by user, UI refresh requested <br>
+    * <b>expected</b>: QLineEdit color not changed. <br>
+    *                  QPushButton color not changed. <br>
+    * ************************************************
+    */
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
+   std::string test_regex = "CDE";
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true));
+
+   /* color change */
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
+   m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
+
+   m_test_subject->refreshUi();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
+
+}
+
+TEST_F(TraceFilterHandlerTests, refresh_ui_when_filer_active)
+{
+   /**
+    * <b>scenario</b>: Trace filter is enabled, colors are defined by user, UI refresh requested <br>
+    * <b>expected</b>: QLineEdit color not changed. <br>
+    *                  QPushButton color not changed. <br>
+    * ************************************************
+    */
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = 0x112233;
+   color_set.font = 0x332211;
+   std::string test_regex = "CDE";
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)) // check before opening the color dialog
+                                                                        .WillOnce(Return(true)) // check before enabling filter
+                                                                        .WillOnce(Return(false)); // check during tryMatch
+
+   /* color change */
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
+   m_test_subject->onContextMenuRequested();
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
+
+   /* filter enabling */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(test_regex.c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
+   m_test_subject->onButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+
+   auto result = m_test_subject->tryMatch("ABCDEF");
+   EXPECT_TRUE(result.has_value());
+   EXPECT_EQ(result.value().background, color_set.background);
+   EXPECT_EQ(result.value().font, color_set.font);
+
+   m_test_subject->refreshUi();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+   EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
+
 
 }
 
