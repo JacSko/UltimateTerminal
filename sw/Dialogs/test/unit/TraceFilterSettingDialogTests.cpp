@@ -54,6 +54,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
     *       New settings should be returned. <br>
     * ************************************************
     */
+   QMainWindow test_parent;
    QDialog test_dialog;
    QFormLayout test_layout;
    QPushButton test_backgroundButton;
@@ -108,7 +109,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(QColor(user_settings.background)))
                                                                   .WillOnce(Return(QColor(user_settings.font)));
 
-   std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings);
+   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings);
 
    EXPECT_TRUE(result.has_value());
    EXPECT_TRUE(result.value());
@@ -130,6 +131,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
     *       std::optional shall not contain the value. <br>
     * ************************************************
     */
+   QMainWindow test_parent;
    QDialog test_dialog;
    QFormLayout test_layout;
    QPushButton test_backgroundButton;
@@ -184,7 +186,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(QColor(user_settings.background)))
                                                                   .WillOnce(Return(QColor(user_settings.font)));
 
-   std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings);
+   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings);
 
    EXPECT_FALSE(result.has_value());
    EXPECT_EQ(set_presented_to_user.background, current_settings.background);
