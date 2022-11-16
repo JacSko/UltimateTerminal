@@ -7,6 +7,7 @@
 struct TraceFilterHandlerMock
 {
    MOCK_METHOD1(tryMatch,std::optional<TraceFilterHandler::ColorSet>(const std::string&));
+   MOCK_METHOD0(refreshUi, void());
 };
 
 TraceFilterHandlerMock* g_trace_filter_mock;;
@@ -41,6 +42,10 @@ TraceFilterHandler::~TraceFilterHandler(){}
 std::optional<TraceFilterHandler::ColorSet> TraceFilterHandler::tryMatch(const std::string& text)
 {
    return TraceFilterHandlerMock_get()->tryMatch(text);
+}
+void TraceFilterHandler::refreshUi()
+{
+   TraceFilterHandlerMock_get()->refreshUi();
 }
 void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>&){}
 void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>&){}

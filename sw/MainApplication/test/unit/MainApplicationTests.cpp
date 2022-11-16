@@ -119,6 +119,7 @@ struct MainApplicationFixture : public testing::Test
                                                         .WillOnce(Return(&test_traceClearButtonShortcut))
                                                         .WillOnce(Return(&test_switchSendPortShortcut));
       EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_new()).WillOnce(Return(&test_tab_widget));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_tab_widget, _,_));
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clear_button, HasSubstr("clicked"), _, HasSubstr("onClearButtonClicked")));

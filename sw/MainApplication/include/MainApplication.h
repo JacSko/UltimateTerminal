@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 
+#include "ui_MainWindow.h"
 #include "ITimers.h"
 #include "PortHandler.h"
 #include "LoggingSettingDialog.h"
@@ -47,6 +48,7 @@ private:
     uint32_t m_scroll_default_color;
     std::map<uint8_t,std::string> m_port_id_name_map;
     std::map<uint8_t, std::vector<std::string>> m_commands_history;
+    Ui_MainWindow::Theme m_current_theme;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
@@ -58,6 +60,7 @@ private:
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
     void addToCommandHistory(uint8_t port_id, const std::string& text);
+    void reloadTheme(Ui_MainWindow::Theme);
     uint8_t portNameToId(const std::string& name);
     std::string createLogFileName();
 public slots:

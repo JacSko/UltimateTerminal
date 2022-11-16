@@ -5,7 +5,6 @@
 #include <errno.h>
 
 #include "MainApplication.h"
-#include "ui_MainWindow.h"
 #include "SettingsHandler.h"
 #include "Settings.h"
 #include "LoggerEngine.h"
@@ -51,10 +50,12 @@ m_trace_scrolling_active(false)
     if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
     {
        ui->loadTheme(Ui::MainWindow::Theme::DARK);
+       m_current_theme = Ui::MainWindow::Theme::DARK;
     }
     else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
     {
        ui->loadTheme(Ui::MainWindow::Theme::DEFAULT);
+       m_current_theme = Ui::MainWindow::Theme::DEFAULT;
     }
     this->setWindowTitle("UltimateTerminal");
 
@@ -469,6 +470,26 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
          ui->textEdit->removeItem(history.size());
          history.erase(history.begin());
       }
+   }
+}
+void MainApplication::reloadTheme(Ui_MainWindow::Theme theme)
+{
+   if (m_current_theme != theme)
+   {
+      UT_Log(MAIN_GUI, INFO, "reloading theme %u -> %u", (uint8_t)m_current_theme, (uint8_t)theme);
+      m_current_theme = theme;
+      ui->loadTheme(theme);
+      for (const auto& port : m_port_handlers)
+      {
+         port->refreshUi();
+      }
+      for (const auto& handler : m_trace_filter_handlers)
+      {
+         handler->refreshUi();
+      }
+      setButtonState(ui->loggingButton, m_file_logger->isActive());
+      setButtonState(ui->scrollButton, m_scrolling_active);
+      setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
    }
 }
 uint8_t MainApplication::portNameToId(const std::string& name)

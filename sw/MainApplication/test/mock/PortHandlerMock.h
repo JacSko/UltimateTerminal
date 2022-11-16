@@ -10,6 +10,7 @@ struct PortHandlerMock
 {
    MOCK_METHOD1(getName,const std::string&(uint8_t id));
    MOCK_METHOD2(write, bool(const std::vector<uint8_t>& data, size_t size));
+   MOCK_METHOD0(refreshUi, void());
 };
 
 PortHandlerMock* g_port_handler_mock;
@@ -57,7 +58,10 @@ const std::string& PortHandler::getName()
 {
    return PortHandlerMock_get()->getName(m_settings.port_id);
 }
-
+void PortHandler::refreshUi()
+{
+   return PortHandlerMock_get()->refreshUi();
+}
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onTimeout(uint32_t){};
