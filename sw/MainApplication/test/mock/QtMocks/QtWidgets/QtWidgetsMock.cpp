@@ -280,4 +280,11 @@ void QStatusBar::showMessage(const QString& text, uint32_t timeout)
 {
    g_widgets_mock->QStatusBar_showMessage(this, text, timeout);
 }
-
+void* QTabWidget::operator new(size_t)
+{
+   return g_widgets_mock->QTabWidget_new();
+}
+void QTabWidget::addTab(QWidget* widget, const QString& text)
+{
+   g_widgets_mock->QTabWidget_addTab(this, widget, text);
+}

@@ -10,6 +10,7 @@
 typedef unsigned int QRgb;
 class QMenuBar;
 class QStatusBar;
+class QLayout;
 
 constexpr uint32_t DEFAULT_APP_COLOR = 0xDEAD;
 
@@ -102,6 +103,7 @@ public:
    void setVerticalStretch(int){};
    void setHeightForWidth(bool){};
    bool hasHeightForWidth(){return true;}
+   void setVerticalPolicy(int){};
 };
 
 class QRect
@@ -120,6 +122,7 @@ public:
    bool isEnabled();
    QPalette palette(){return m_palette;}
    void setPalette(const QPalette & palette) {m_palette = palette;}
+   void setLayout(QLayout*){};
    void update(){};
    void setSizePolicy(QSizePolicy){};
    QSizePolicy sizePolicy(){return {};};
@@ -127,6 +130,15 @@ public:
 
 private:
    QPalette m_palette;
+};
+
+class QTabWidget : public QWidget
+{
+public:
+   QTabWidget(){};
+   void* operator new(size_t );
+   void operator delete(void*){};
+   void addTab(QWidget*, const QString& label);
 };
 
 class QShortcut : public QWidget
@@ -490,6 +502,10 @@ struct QtWidgetsMock
 
    MOCK_METHOD0(QStatusBar_new, void*());
    MOCK_METHOD3(QStatusBar_showMessage, void(QStatusBar*, const QString&, uint32_t timeout));
+
+   MOCK_METHOD0(QTabWidget_new, void*());
+   MOCK_METHOD3(QTabWidget_addTab, void(QTabWidget*, QWidget*, const QString&));
+
    MOCK_METHOD0(QCheckBox_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());
    MOCK_METHOD0(QShortcut_new, void*());

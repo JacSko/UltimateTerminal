@@ -28,12 +28,15 @@ class Ui_MainWindow
 public:
    QWidget *centralwidget;
 
-   /* layout with user buttons at the top of application */
+   /* control buttons at the top of application */
    QPushButton *markerButton;
    QPushButton *loggingButton;
    QPushButton *settingsButton;
-   QComboBox *buttonVariant;
    QLabel *infoLabel;
+
+   /* layout with user buttons */
+   QTabWidget* buttonsTabWidget;
+   QWidget* tabWidget;
    QGridLayout *userButtonsLayout;
    QGridLayout *controlButtonsLayout;
    QPushButton *userButton_1;
@@ -117,9 +120,6 @@ public:
    QShortcut* traceClearButtonShortcut;
    QShortcut* switchSendPortShortcut;
 
-   QTabWidget* buttonsTabWidget;
-   QWidget* tabWidget;
-
    enum class Theme
    {
       DEFAULT,
@@ -158,9 +158,6 @@ public:
       settingsButton = new QPushButton(centralwidget);
       settingsButton->setObjectName(QString::fromUtf8("settingsButton"));
       controlButtonsLayout->addWidget(settingsButton, 0, 2, 1, 1);
-      buttonVariant = new QComboBox(centralwidget);
-      buttonVariant->setObjectName(QString::fromUtf8("buttonVariant"));
-      controlButtonsLayout->addWidget(buttonVariant, 0, 3, 1, 1);
       infoLabel = new QLabel(centralwidget);
       infoLabel->setObjectName(QString::fromUtf8("infoLabel"));
       controlButtonsLayout->addWidget(infoLabel, 0, 4, 1, 1);
@@ -169,8 +166,12 @@ public:
 
 
       buttonsTabWidget = new QTabWidget();
+      QSizePolicy policy = buttonsTabWidget->sizePolicy();
+      policy.setVerticalPolicy(QSizePolicy::Minimum);
+      buttonsTabWidget->setSizePolicy(policy);
+
       tabWidget = new QWidget();
-      buttonsTabWidget->setSizeConstraint(QLayout::SetMinimumSize);
+
       userButtonsLayout = new QGridLayout();
       userButtonsLayout->setObjectName(QString::fromUtf8("userButtonsLayout"));
 
@@ -215,14 +216,9 @@ public:
       userButton_10->setObjectName(QString::fromUtf8("userButton_10"));
       userButtonsLayout->addWidget(userButton_10, 1, 4, 1, 1);
 
-//      verticalLayout_3->addLayout(userButtonsLayout);
-
       tabWidget->setLayout(userButtonsLayout);
       buttonsTabWidget->addTab(tabWidget, "BUTTONS");
-
       verticalLayout_3->addWidget(buttonsTabWidget);
-
-
 
       /*fill terminal layout */
       splitter_2 = new QSplitter(centralwidget);
@@ -535,8 +531,6 @@ private:
       lineEndingComboBox->view()->setPalette(combobox_palette);
       textEdit->setPalette(combobox_palette);
       textEdit->view()->setPalette(combobox_palette);
-      buttonVariant->setPalette(combobox_palette);
-      buttonVariant->view()->setPalette(combobox_palette);
 
       QPalette terminal_palette = terminalView->palette();
       terminal_palette.setColor(QPalette::Base, TERMINAL_BACKGROUND_COLOR);
@@ -561,8 +555,6 @@ private:
       lineEndingComboBox->view()->setPalette({});
       textEdit->setPalette({});
       textEdit->view()->setPalette({});
-      buttonVariant->setPalette({});
-      buttonVariant->view()->setPalette({});
       terminalView->setPalette({});
       traceView->setPalette({});
       mainWindow->setPalette({});

@@ -87,8 +87,7 @@ struct MainApplicationFixture : public testing::Test
                                                      .WillOnce(Return(&test_port_label_3))
                                                      .WillOnce(Return(&test_port_label_4))
                                                      .WillOnce(Return(&test_port_label_5));
-      EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_button_variant))
-                                                        .WillOnce(Return(&test_port_box))
+      EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
                                                         .WillOnce(Return(&test_line_ending_box))
                                                         .WillOnce(Return(&test_text_edit));
       EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_terminal_view))
@@ -115,6 +114,7 @@ struct MainApplicationFixture : public testing::Test
                                                         .WillOnce(Return(&test_clearButtonShortcut))
                                                         .WillOnce(Return(&test_traceClearButtonShortcut))
                                                         .WillOnce(Return(&test_switchSendPortShortcut));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_new()).WillOnce(Return(&test_tab_widget));
 
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_marker_button, HasSubstr("clicked"), _, HasSubstr("onMarkerButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clear_button, HasSubstr("clicked"), _, HasSubstr("onClearButtonClicked")));
@@ -170,6 +170,7 @@ struct MainApplicationFixture : public testing::Test
 
    QMainWindow test_main_window;
 
+   QTabWidget test_tab_widget;
    QPushButton test_user_button_1;
    QPushButton test_user_button_2;
    QPushButton test_user_button_3;
@@ -206,7 +207,6 @@ struct MainApplicationFixture : public testing::Test
    QLabel test_port_label_3;
    QLabel test_port_label_4;
    QLabel test_port_label_5;
-   QComboBox test_button_variant;
    QComboBox test_port_box;
    QComboBox test_line_ending_box;
    QComboBox test_text_edit;
