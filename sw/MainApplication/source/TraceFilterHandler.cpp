@@ -9,7 +9,8 @@ TraceFilterHandler::TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QP
 m_parent(parent),
 m_line_edit(line_edit),
 m_button(button),
-m_persistence(persistence)
+m_persistence(persistence),
+m_user_defined(false)
 {
    UT_Assert(line_edit && "Line edit cannot be NULL");
    UT_Assert(button && "Button cannot be NULL");
@@ -57,6 +58,16 @@ std::optional<TraceFilterHandler::ColorSet> TraceFilterHandler::tryMatch(const s
       return {};
    }
 }
+void TraceFilterHandler::refreshUi()
+{
+   setButtonState(m_button->palette().color(QPalette::Button) == Qt::green);
+   if (!m_user_defined)
+   {
+      m_background_color = m_parent->palette().color(QPalette::Base).rgb();
+      m_font_color = m_parent->palette().color(QPalette::Text).rgb();
+   }
+   setLineEditColor(m_background_color, m_font_color);
+}
 void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    UT_Log(TRACE_FILTER, LOW, "Restoring persistence for %s", getName().c_str());
@@ -72,6 +83,7 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, text);
    ::deserialize(data, offset, background_color);
    ::deserialize(data, offset, font_color);
+   ::deserialize(data, offset, m_user_defined);
 
    m_background_color = background_color;
    m_font_color = font_color;
@@ -94,6 +106,7 @@ void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, text);
    ::serialize(data, m_background_color);
    ::serialize(data, m_font_color);
+   ::serialize(data, m_user_defined);
    UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_background_color, m_font_color, is_active, text.c_str());
 
 }
@@ -127,6 +140,7 @@ void TraceFilterHandler::onContextMenuRequested()
       std::optional<bool> result = dialog.showDialog(m_parent, current_set, new_set);
       if (result.has_value() && result.value())
       {
+         m_user_defined = true;
          m_background_color = new_set.background;
          m_font_color = new_set.font;
       }

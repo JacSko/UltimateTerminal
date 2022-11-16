@@ -26,6 +26,7 @@ m_timers(timers),
 m_socket(Drivers::SocketFactory::createClient()),
 m_serial(Drivers::Serial::ISerialDriver::create()),
 m_timer_id(TIMERS_INVALID_ID),
+m_button_state(ButtonState::DISCONNECTED),
 m_persistence(persistence)
 {
    PORT_ID++;
@@ -108,6 +109,10 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
       return false;
    }
 }
+void PortHandler::refreshUi()
+{
+   handleNewSettings(m_settings);
+}
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
@@ -170,6 +175,7 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
 
    m_summary_label->setStyleSheet(QString(stylesheet));
    setButtonName(m_settings.port_name);
+   setButtonState(m_button_state);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
 }
 void PortHandler::onPortButtonContextMenuRequested()

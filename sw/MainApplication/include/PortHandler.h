@@ -62,6 +62,7 @@ public:
 
    const std::string& getName();
    bool write(const std::vector<uint8_t>& data, size_t size = 0);
+   void refreshUi();
 private:
 
    enum class ButtonState

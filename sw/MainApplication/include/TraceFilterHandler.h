@@ -23,6 +23,7 @@ public:
    TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QPushButton* button, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
    std::optional<ColorSet> tryMatch(const std::string&);
+   void refreshUi();
 
 private:
    void onPersistenceRead(const std::vector<uint8_t>& data);
@@ -35,6 +36,7 @@ private:
    std::regex m_regex;
    uint32_t m_background_color;
    uint32_t m_font_color;
+   bool m_user_defined;
 
    void setButtonState(bool state);
    void setLineEditColor(uint32_t background_color, uint32_t font_color);
