@@ -39,6 +39,10 @@ struct MainApplicationFixture : public testing::Test
 {
    void SetUp()
    {
+      SETTING_SET_U32(GUI_UserButtons_Tabs, 1);
+      SETTING_SET_U32(GUI_UserButtons_RowsPerTab, 2);
+      SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, 5);
+
       QtCoreMock_init();
       QtWidgetsMock_init();
       GUI::PortHandlerMock_init();

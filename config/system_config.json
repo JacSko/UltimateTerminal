@@ -24,5 +24,8 @@
   "GUI_Dark_TerminalBackground": 5263440,
   "GUI_Default_Theme_ID" : 0,
   "GUI_Dark_Theme_ID": 1,
-  "GUI_Theme_ID": 1
+  "GUI_Theme_ID": 1,
+  "GUI_UserButtons_Tabs": 1,
+  "GUI_UserButtons_RowsPerTab": 2,
+  "GUI_UserButtons_ButtonsPerRow": 5
 }

@@ -35,6 +35,9 @@
    DEF_SETTING_GROUP(GUI_Default_Theme_ID, uint32_t, 0) \
    DEF_SETTING_GROUP(GUI_Dark_Theme_ID, uint32_t, 1) \
    DEF_SETTING_GROUP(GUI_Theme_ID, uint32_t, 1) \
+   DEF_SETTING_GROUP(GUI_UserButtons_Tabs, uint32_t, 1) \
+   DEF_SETTING_GROUP(GUI_UserButtons_RowsPerTab, uint32_t, 2) \
+   DEF_SETTING_GROUP(GUI_UserButtons_ButtonsPerRow, uint32_t, 5) \
 
 
 #endif

@@ -19,9 +19,9 @@
 #include <QtWidgets/QTabWidget>
 
 #include "Settings.h"
+#include "Logger.h"
 
 QT_BEGIN_NAMESPACE
-
 
 class Ui_MainWindow
 {
@@ -29,6 +29,7 @@ public:
    QWidget *centralwidget;
 
    /* control buttons at the top of application */
+   QGridLayout *controlButtonsLayout;
    QPushButton *markerButton;
    QPushButton *loggingButton;
    QPushButton *settingsButton;
@@ -36,19 +37,6 @@ public:
 
    /* layout with user buttons */
    QTabWidget* buttonsTabWidget;
-   QWidget* tabWidget;
-   QGridLayout *userButtonsLayout;
-   QGridLayout *controlButtonsLayout;
-   QPushButton *userButton_1;
-   QPushButton *userButton_2;
-   QPushButton *userButton_5;
-   QPushButton *userButton_3;
-   QPushButton *userButton_4;
-   QPushButton *userButton_6;
-   QPushButton *userButton_7;
-   QPushButton *userButton_8;
-   QPushButton *userButton_9;
-   QPushButton *userButton_10;
 
    /* terminal layout */
    QGridLayout *terminalLayout;
@@ -143,7 +131,6 @@ public:
       gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
       verticalLayout_3 = new QVBoxLayout();
       verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-//      verticalLayout_3->setSizeConstraint(QLayout::SetDefaultConstraint);
       verticalLayout_3->setSizeConstraint(QLayout::SetMinimumSize);
 
       controlButtonsLayout = new QGridLayout();
@@ -161,63 +148,18 @@ public:
       infoLabel = new QLabel(centralwidget);
       infoLabel->setObjectName(QString::fromUtf8("infoLabel"));
       controlButtonsLayout->addWidget(infoLabel, 0, 4, 1, 1);
-
       verticalLayout_3->addLayout(controlButtonsLayout);
-
 
       buttonsTabWidget = new QTabWidget();
       QSizePolicy policy = buttonsTabWidget->sizePolicy();
       policy.setVerticalPolicy(QSizePolicy::Minimum);
       buttonsTabWidget->setSizePolicy(policy);
-
-      tabWidget = new QWidget();
-
-      userButtonsLayout = new QGridLayout();
-      userButtonsLayout->setObjectName(QString::fromUtf8("userButtonsLayout"));
-
-      /* create user buttons */
-      userButton_1 = new QPushButton(centralwidget);
-      userButton_1->setObjectName(QString::fromUtf8("userButton_1"));
-      userButtonsLayout->addWidget(userButton_1, 0, 0, 1, 1);
-
-      userButton_2 = new QPushButton(centralwidget);
-      userButton_2->setObjectName(QString::fromUtf8("userButton_2"));
-      userButtonsLayout->addWidget(userButton_2, 0, 1, 1, 1);
-
-      userButton_3 = new QPushButton(centralwidget);
-      userButton_3->setObjectName(QString::fromUtf8("userButton_3"));
-      userButtonsLayout->addWidget(userButton_3, 0, 2, 1, 1);
-
-      userButton_4 = new QPushButton(centralwidget);
-      userButton_4->setObjectName(QString::fromUtf8("userButton_4"));
-      userButtonsLayout->addWidget(userButton_4, 0, 3, 1, 1);
-
-      userButton_5 = new QPushButton(centralwidget);
-      userButton_5->setObjectName(QString::fromUtf8("userButton_5"));
-      userButtonsLayout->addWidget(userButton_5, 0, 4, 1, 1);
-
-      userButton_6 = new QPushButton(centralwidget);
-      userButton_6->setObjectName(QString::fromUtf8("userButton_6"));
-      userButtonsLayout->addWidget(userButton_6, 1, 0, 1, 1);
-
-      userButton_7 = new QPushButton(centralwidget);
-      userButton_7->setObjectName(QString::fromUtf8("userButton_7"));
-      userButtonsLayout->addWidget(userButton_7, 1, 1, 1, 1);
-
-      userButton_8 = new QPushButton(centralwidget);
-      userButton_8->setObjectName(QString::fromUtf8("userButton_8"));
-      userButtonsLayout->addWidget(userButton_8, 1, 2, 1, 1);
-
-      userButton_9 = new QPushButton(centralwidget);
-      userButton_9->setObjectName(QString::fromUtf8("userButton_9"));
-      userButtonsLayout->addWidget(userButton_9, 1, 3, 1, 1);
-
-      userButton_10 = new QPushButton(centralwidget);
-      userButton_10->setObjectName(QString::fromUtf8("userButton_10"));
-      userButtonsLayout->addWidget(userButton_10, 1, 4, 1, 1);
-
-      tabWidget->setLayout(userButtonsLayout);
-      buttonsTabWidget->addTab(tabWidget, "BUTTONS");
+      uint8_t tabs_count = SETTING_GET_U32(GUI_UserButtons_Tabs);
+      for (uint8_t i = 0; i < tabs_count; i++)
+      {
+         UT_Log(MAIN_GUI, LOW, "Creating user button tab %u", i);
+         createUserButtonTab(i);
+      }
       verticalLayout_3->addWidget(buttonsTabWidget);
 
       /*fill terminal layout */
@@ -465,16 +407,6 @@ public:
    {
       MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
       infoLabel->setText(QString());
-      userButton_1->setText(QString());
-      userButton_2->setText(QString());
-      userButton_3->setText(QString());
-      userButton_4->setText(QString());
-      userButton_5->setText(QString());
-      userButton_6->setText(QString());
-      userButton_7->setText(QString());
-      userButton_8->setText(QString());
-      userButton_9->setText(QString());
-      userButton_10->setText(QString());
       markerButton->setText(QCoreApplication::translate("MainWindow", "MARKER", nullptr));
       loggingButton->setText(QCoreApplication::translate("MainWindow", "LOG", nullptr));
       settingsButton->setText(QCoreApplication::translate("MainWindow", "SETTINGS", nullptr));
@@ -513,6 +445,10 @@ public:
        renderDarkTheme();
       }
    }
+   const std::vector<QPushButton*>& getUserButtons()
+   {
+      return m_user_buttons;
+   }
 private:
 
    void renderDarkTheme()
@@ -521,7 +457,7 @@ private:
       const QColor TERMINAL_BACKGROUND_COLOR = SETTING_GET_U32(GUI_Dark_TerminalBackground);
       const QColor TEXT_COLOR = SETTING_GET_U32(GUI_Dark_WindowText);
 
-      QPalette combobox_palette = userButton_1->palette();
+      QPalette combobox_palette {};
       combobox_palette.setColor(QPalette::Window, BACKGROUND_COLOR);
       combobox_palette.setColor(QPalette::WindowText, TEXT_COLOR);
       combobox_palette.setColor(QPalette::Text, TEXT_COLOR);
@@ -559,6 +495,39 @@ private:
       traceView->setPalette({});
       mainWindow->setPalette({});
    }
+   QPushButton* createUserButton()
+   {
+      QPushButton* button = new QPushButton(centralwidget);
+      m_user_buttons.push_back(button);
+      std::string button_name = "BUTTON" + std::to_string(m_user_buttons.size() + 1);
+      button->setObjectName(QString(button_name.c_str()));
+      return button;
+   }
+   void createUserButtonTab(uint8_t index)
+   {
+      QWidget* tab_widget = new QWidget();
+      QGridLayout* widget_layout = new QGridLayout();
+      uint8_t buttons_rows = SETTING_GET_U32(GUI_UserButtons_RowsPerTab);
+      uint8_t buttons_per_row = SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
+      UT_Log(MAIN_GUI, LOW, "Creating tab with %u rows, each with %u buttons", buttons_rows, buttons_per_row);
+      uint8_t current_row = 0;
+
+      for (uint8_t i = 0; i < buttons_rows; i++)
+      {
+         for (uint8_t j = 0; j < buttons_per_row; j++)
+         {
+            QPushButton* btn = createUserButton();
+            widget_layout->addWidget(btn, current_row, j, 1, 1);
+         }
+         current_row ++;
+      }
+      tab_widget->setLayout(widget_layout);
+      std::string tab_name = "BUTTONS" + std::to_string(index);
+      buttonsTabWidget->addTab(tab_widget, QString(tab_name.c_str()));
+      UT_Log(MAIN_GUI, LOW, "tab %s created", tab_name.c_str());
+   }
+
+   std::vector<QPushButton*> m_user_buttons;
 };
 
 namespace Ui {
