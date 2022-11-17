@@ -44,74 +44,74 @@ m_trace_scrolling_active(false)
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
+   if (!m_persistence.restore(PERSISTENCE_PATH))
+   {
+      UT_Log(MAIN, ERROR, "Cannot restore persistence!");
+   }
 
-    ui->setupUi(this);
+   ui->setupUi(this);
 
-    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
-    {
-       ui->loadTheme(Ui::MainWindow::Theme::DARK);
-       m_current_theme = Ui::MainWindow::Theme::DARK;
-    }
-    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
-    {
-       ui->loadTheme(Ui::MainWindow::Theme::DEFAULT);
-       m_current_theme = Ui::MainWindow::Theme::DEFAULT;
-    }
-    this->setWindowTitle("UltimateTerminal");
+   if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
+   {
+      ui->loadTheme(Ui::MainWindow::Theme::DARK);
+      m_current_theme = Ui::MainWindow::Theme::DARK;
+   }
+   else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
+   {
+      ui->loadTheme(Ui::MainWindow::Theme::DEFAULT);
+      m_current_theme = Ui::MainWindow::Theme::DEFAULT;
+   }
+   this->setWindowTitle("UltimateTerminal");
 
-    UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
-    ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
+   UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
+   ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
 
-    Settings::SettingsHandler::get()->printSettings();
-    m_timers->start();
+   Settings::SettingsHandler::get()->printSettings();
+   m_timers->start();
 
-    setScrolling(true);
-    setTraceScrolling(true);
-    setButtonState(ui->loggingButton, false);
+   setScrolling(true);
+   setTraceScrolling(true);
+   setButtonState(ui->loggingButton, false);
 
-    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, ui->port1ButtonShortcut, *m_timers, this, this, m_persistence)));
-    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, ui->port2ButtonShortcut, *m_timers, this, this, m_persistence)));
-    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, ui->port3ButtonShortcut, *m_timers, this, this, m_persistence)));
-    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, ui->port4ButtonShortcut, *m_timers, this, this, m_persistence)));
-    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-          new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, ui->port5ButtonShortcut, *m_timers, this, this, m_persistence)));
+   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+       new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, ui->port1ButtonShortcut, *m_timers, this, this, m_persistence)));
+   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+       new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, ui->port2ButtonShortcut, *m_timers, this, this, m_persistence)));
+   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+       new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, ui->port3ButtonShortcut, *m_timers, this, this, m_persistence)));
+   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+       new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, ui->port4ButtonShortcut, *m_timers, this, this, m_persistence)));
+   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+       new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, ui->port5ButtonShortcut, *m_timers, this, this, m_persistence)));
 
-    /* create handlers for user buttons */
-    auto buttons = ui->getUserButtons();
-    for (QPushButton* button : buttons)
-    {
-       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
-             new GUI::UserButtonHandler(button, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
-    }
+   /* create handlers for user buttons */
+   auto buttons = ui->getUserButtons();
+   for (QPushButton* button : buttons)
+   {
+      m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
+          new GUI::UserButtonHandler(button, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+   }
 
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_1, ui->traceFilterButton_1, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_2, ui->traceFilterButton_2, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_3, ui->traceFilterButton_3, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_4, ui->traceFilterButton_4, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_5, ui->traceFilterButton_5, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_6, ui->traceFilterButton_6, m_persistence)));
-    m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_7, ui->traceFilterButton_7, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_1, ui->traceFilterButton_1, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_2, ui->traceFilterButton_2, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_3, ui->traceFilterButton_3, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_4, ui->traceFilterButton_4, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_5, ui->traceFilterButton_5, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_6, ui->traceFilterButton_6, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_7, ui->traceFilterButton_7, m_persistence)));
 
-    ui->lineEndingComboBox->addItem("\\r\\n");
-    ui->lineEndingComboBox->addItem("\\n");
-    ui->lineEndingComboBox->addItem("EMPTY");
+   ui->lineEndingComboBox->addItem("\\r\\n");
+   ui->lineEndingComboBox->addItem("\\n");
+   ui->lineEndingComboBox->addItem("EMPTY");
 
-    m_file_logging_path = system_call::getExecutablePath();
+   m_file_logging_path = system_call::getExecutablePath();
 
-    for (auto& handler : m_user_button_handlers)
-    {
-       handler->startThread();
-    }
+   for (auto& handler : m_user_button_handlers)
+   {
+      handler->startThread();
+   }
 
-    if (!m_persistence.restore(PERSISTENCE_PATH))
-    {
-       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
-    }
-    connectSignalsToSlots();
+   connectSignalsToSlots();
 }
 MainApplication::~MainApplication()
 {
