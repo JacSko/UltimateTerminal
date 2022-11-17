@@ -8,7 +8,27 @@
 #include "Logger.h"
 #include "ThreadWorker.h"
 
+/**
+ * @file ButtonCommandsExecutor.hpp
+ *
+ * @brief
+ *    Class is responsible for parsing user input in textual form, converting to commands that are next send using passed writer.
+ *
+ * @details
+ *    Text input is divided into commands by splitting by '\n' char.
+ *    There is also processing of special commands, that begins with '__' prefix (example: __wait(<time>)).
+ *    Every __wait command longer than MAXIMUM_WAIT_TIME ms is divided into MAXIMUM_WAIT_TIME ms chunks.
+ *    This allows to not block application shutdown when such wait is executed.
+ *    Every instance if executor creates a separate thread for commands execution.
+ *
+ * @author Jacek Skowronek
+ * @date   26/10/2022
+ *
+ */
+
+/** Timeout for thread starting */
 constexpr uint32_t THREAD_START_TIMEOUT = 1000;
+/** Maximum waiting time - see details for more description */
 constexpr uint32_t MAXIMUM_WAIT_TIME = 500;
 
 namespace GUI
@@ -17,6 +37,13 @@ namespace GUI
 class ButtonCommandsExecutor : public Utilities::ThreadWorker
 {
 public:
+   /**
+    * @brief Creates object.
+    * @param[in] writer - function that is sending commands to port.
+    * @param[in] callback - function called on command execution finish
+    *
+    * @return None.
+    */
    ButtonCommandsExecutor(std::function<bool(const std::string&)> writer, std::function<void(bool)> callback):
    Utilities::ThreadWorker(std::bind(&ButtonCommandsExecutor::threadLoop, this), "CmdExec"),
    m_writer(writer),
@@ -29,6 +56,11 @@ public:
    {
       Utilities::ThreadWorker::stop();
    }
+   /**
+    * @brief Starts execution of  currently stored commands.
+    *
+    * @return None.
+    */
    void execute()
    {
       UT_Log(USER_BTN_HANDLER, LOW, "starting execution");
@@ -36,6 +68,13 @@ public:
       m_isActive = true;
       m_cond_var.notify_all();
    }
+   /**
+    * @brief Process new text input to commands.
+    *
+    * @param[in] text - commands in textual form.
+    * @return Number of created commands.
+    */
+
    int parseCommands(const std::string& text)
    {
       UT_Log(USER_BTN_HANDLER, HIGH, "parsing new commands");

@@ -19,10 +19,10 @@
  *    Dialog window implementation that allows user to enter the file logging details.
  *
  * @details
- *    Dialog contains places to enter path and file name of the new log file.
- *    Current settings are presented to the user, their editability is configurable using allow_edit argument during showDialog() call.
+ *    Dialog contains places to enter path where new logfiles should be stored.
+ *    Current path is presented to the user, editability is configurable using allow_edit argument during showDialog() call.
  *    Logfile path is not editable by hand, but can be chosen using dedicated QFileDialog.
- *    There is possibility to enter own logfile name, or choose the automatic naming convention (log_ddmmrr_hhmmss).
+ *    Module user shall take care of generating the logfile name.
  *
  * @author Jacek Skowronek
  * @date   26/10/2022
@@ -66,7 +66,6 @@ private:
    std::string convertGuiValues();
 public slots:
    void onPathSelectButtonClicked();
-   void onAutoNameStateChanged(int);
 
 };
 

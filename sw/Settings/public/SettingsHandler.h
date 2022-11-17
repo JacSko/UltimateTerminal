@@ -58,7 +58,7 @@ public:
    SettingsHandler();
    /**
     * @brief Returns instance of SettingsHandler object.
-    * @return Pointer to ISettings object
+    * @return Pointer to SettingsHandler object
     */
    static SettingsHandler* get();
    /**
@@ -71,7 +71,17 @@ public:
     * @return void
     */
    static void destroy();
+   /**
+    * @brief Starts settings handler module.
+    * @details Call to start() reads content from JSON file and parsing the settings.
+    * @param[in] settings_file_path - path to JSON file with settings.
+    * @return void
+    */
    void start(const std::string& settings_file_path);
+   /**
+    * @brief Stops settings handler module.
+    * @return void
+    */
    void stop();
    /**
     * @brief Reads settings from file.

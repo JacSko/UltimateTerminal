@@ -11,6 +11,18 @@
 #include <functional>
 #include "EnumValue.hpp"
 
+/**
+ * @file ISerialDriver.h
+ *
+ * @brief
+ *    Interface for serial port communication.
+ *
+ * @details
+ *
+ * @author Jacek Skowronek
+ * @date   08/04/2022
+ *
+ */
 
 namespace Drivers
 {

@@ -79,10 +79,6 @@ void LoggingSettingDialog::onPathSelectButtonClicked()
                                                 | QFileDialog::DontResolveSymlinks);
    m_filePathEdit->setText(dir);
 }
-void LoggingSettingDialog::onAutoNameStateChanged(int state)
-{
-   m_fileNameEdit->setDisabled(state);
-}
 std::string LoggingSettingDialog::convertGuiValues()
 {
    return m_filePathEdit->text().toStdString();
