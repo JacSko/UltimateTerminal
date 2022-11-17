@@ -185,7 +185,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
 
    for (auto& filter : m_trace_filter_handlers)
    {
-      std::optional<TraceFilterHandler::ColorSet> color_set = filter->tryMatch(data);
+      std::optional<Dialogs::TraceFilterSettingDialog::ColorSet> color_set = filter->tryMatch(data);
       if (color_set.has_value())
       {
          QListWidgetItem* item = new QListWidgetItem();

@@ -1,5 +1,4 @@
 #include "TraceFilterHandler.h"
-#include "TraceFilterSettingDialog.h"
 #include "Logger.h"
 #include "Serialize.hpp"
 
@@ -41,14 +40,14 @@ TraceFilterHandler::~TraceFilterHandler()
 {
    m_persistence.removeListener(*this);
 }
-std::optional<TraceFilterHandler::ColorSet> TraceFilterHandler::tryMatch(const std::string& text)
+std::optional<Dialogs::TraceFilterSettingDialog::ColorSet> TraceFilterHandler::tryMatch(const std::string& text)
 {
    if (filteringActive())
    {
       if (std::regex_search(text, m_regex))
       {
          UT_Log(TRACE_FILTER, HIGH, "Found match for filer %s", getName().c_str());
-         ColorSet result {m_background_color, m_font_color};
+         Dialogs::TraceFilterSettingDialog::ColorSet result {m_background_color, m_font_color};
          return result;
       }
       return {};

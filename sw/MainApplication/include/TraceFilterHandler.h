@@ -5,6 +5,7 @@
 #include <optional>
 #include <regex>
 #include "PersistenceHandler.h"
+#include "TraceFilterSettingDialog.h"
 
 class TraceFilterHandler : public QObject,
                            public Persistence::PersistenceListener
@@ -12,17 +13,9 @@ class TraceFilterHandler : public QObject,
    Q_OBJECT
 
 public:
-
-
-   struct ColorSet
-   {
-      uint32_t background;
-      uint32_t font;
-   };
-
    TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QPushButton* button, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
-   std::optional<ColorSet> tryMatch(const std::string&);
+   std::optional<Dialogs::TraceFilterSettingDialog::ColorSet> tryMatch(const std::string&);
    void refreshUi();
 
 private:
