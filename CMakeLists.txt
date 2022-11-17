@@ -21,11 +21,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #########################################
 set(CONFIG_FILE ".system_config.json") 
 set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
-
+set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistence.bin")
 #########################################
 #  Global project definitions
 #########################################
-add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} -DPERSISTENCE_PATH="${PERSISTENCE_FILE}")
+add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}")
 
 #########################################
 #  QT related settings

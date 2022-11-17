@@ -44,11 +44,6 @@ m_trace_scrolling_active(false)
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
-   if (!m_persistence.restore(PERSISTENCE_PATH))
-   {
-      UT_Log(MAIN, ERROR, "Cannot restore persistence!");
-   }
-
    ui->setupUi(this);
 
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
@@ -110,7 +105,10 @@ m_trace_scrolling_active(false)
    {
       handler->startThread();
    }
-
+   if (!m_persistence.restore(PERSISTENCE_PATH))
+   {
+      UT_Log(MAIN, ERROR, "Cannot restore persistence!");
+   }
    connectSignalsToSlots();
 }
 MainApplication::~MainApplication()
@@ -121,6 +119,8 @@ MainApplication::~MainApplication()
    }
 
    m_persistence.removeListener(*this);
+   Settings::SettingsHandler::get()->stop();
+   Settings::SettingsHandler::destroy();
    delete ui;
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
@@ -403,10 +403,6 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
    std::string application_version;
    uint32_t offset = 0;
    uint8_t ports_count = 0;
-   uint32_t theme_id = 0;
-   uint32_t button_tabs = 0;
-   uint32_t rows_per_tabs = 0;
-   uint32_t buttons_per_row = 0;
 
    ::deserialize(data, offset, application_version);
    ::deserialize(data, offset, m_file_logging_path);
@@ -435,19 +431,9 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       }
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
-   ::deserialize(data, offset, theme_id);
-   ::deserialize(data, offset, button_tabs);
-   ::deserialize(data, offset, rows_per_tabs);
-   ::deserialize(data, offset, buttons_per_row);
-
    setScrolling(m_scrolling_active);
    setTraceScrolling(m_trace_scrolling_active);
    ui->lineEndingComboBox->setCurrentText(QString(line_ending.c_str()));
-   SETTING_SET_U32(GUI_Theme_ID, theme_id);
-   SETTING_SET_U32(GUI_UserButtons_Tabs, button_tabs);
-   SETTING_SET_U32(GUI_UserButtons_RowsPerTab, rows_per_tabs);
-   SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, buttons_per_row);
-
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
@@ -468,10 +454,6 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
       }
       UT_Log(MAIN, HIGH, "Serialized %u commands for port %u", item.second.size(), item.first);
    }
-   ::serialize(data, SETTING_GET_U32(GUI_Theme_ID));
-   ::serialize(data, SETTING_GET_U32(GUI_UserButtons_Tabs));
-   ::serialize(data, SETTING_GET_U32(GUI_UserButtons_RowsPerTab));
-   ::serialize(data, SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow));
 }
 
 void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& text)

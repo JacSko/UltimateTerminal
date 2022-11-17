@@ -9,4 +9,4 @@ endif()
       
 add_library(SettingsHandler ${SETTINGS_SOURCES})
 target_include_directories(SettingsHandler PUBLIC public/ PRIVATE include/)
-target_link_libraries(SettingsHandler PUBLIC nlohmann_json::nlohmann_json GeneratedSettings PRIVATE Logger)
+target_link_libraries(SettingsHandler PUBLIC nlohmann_json::nlohmann_json GeneratedSettings PRIVATE Logger Utilities)

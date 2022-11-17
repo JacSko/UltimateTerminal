@@ -860,10 +860,6 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    std::vector<uint8_t> data_buffer;
    std::string current_ending = "\\n";
    std::string log_path = "/home/user";
-   uint32_t theme_id = 1;
-   uint32_t button_tabs = 2;
-   uint32_t rows_per_tabs = 3;
-   uint32_t buttons_per_row = 4;
 
    /* replace all persistent data, to get known state */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
@@ -876,10 +872,6 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    /* expectations before write */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(current_ending.c_str())));
    ASSERT_EQ(data_buffer.size(), 0);
-   SETTING_SET_U32(GUI_Theme_ID, theme_id);
-   SETTING_SET_U32(GUI_UserButtons_Tabs, button_tabs);
-   SETTING_SET_U32(GUI_UserButtons_RowsPerTab, rows_per_tabs);
-   SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, buttons_per_row);
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_THAT(data_buffer.size(), Gt(0));
 
@@ -890,10 +882,6 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    m_test_subject->onLoggingButtonContextMenuRequested();
    m_test_subject->onScrollButtonClicked();
    m_test_subject->onTraceScrollButtonClicked();
-   SETTING_SET_U32(GUI_Theme_ID, 0);
-   SETTING_SET_U32(GUI_UserButtons_Tabs, 0);
-   SETTING_SET_U32(GUI_UserButtons_RowsPerTab, 0);
-   SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, 0);
    EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
    EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
 
@@ -903,10 +891,6 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
    EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
    EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-   EXPECT_EQ(SETTING_GET_U32(GUI_Theme_ID), theme_id);
-   EXPECT_EQ(SETTING_GET_U32(GUI_UserButtons_Tabs), button_tabs);
-   EXPECT_EQ(SETTING_GET_U32(GUI_UserButtons_RowsPerTab), rows_per_tabs);
-   EXPECT_EQ(SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow), buttons_per_row);
 
 }
 

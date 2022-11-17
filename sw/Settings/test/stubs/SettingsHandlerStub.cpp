@@ -152,6 +152,11 @@ void SettingsHandler::unregisterListener(KeyID, SettingsListener*)
 void SettingsHandler::notifyListeners(KeyID)
 {
 }
-
+void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>&)
+{
+}
+void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>&)
+{
+}
 
 }

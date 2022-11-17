@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "Settings_config.h"
+#include "PersistenceHandler.h"
 
 #undef DEF_SETTING_GROUP
 #define DEF_SETTING_GROUP(name, type, default_value) name,
@@ -38,6 +39,14 @@ typedef enum
 
 namespace Settings
 {
+
+enum class SettingType
+{
+   U32,
+   BOOL,
+   STRING,
+   UNKNOWN,
+};
 
 class SettingsListener
 {
@@ -52,7 +61,7 @@ public:
 
 };
 
-class SettingsHandler
+class SettingsHandler : public Persistence::PersistenceListener
 {
 public:
    SettingsHandler();
@@ -159,10 +168,14 @@ public:
 private:
    void notifyListeners(KeyID id);
    std::vector<KeyID> applySettings();
+   void onPersistenceRead(const std::vector<uint8_t>& data);
+   void onPersistenceWrite(std::vector<uint8_t>& data);
+   SettingType getType(KeyID);
 
    std::string m_file_path;
    std::mutex m_settings_mutex;
    std::vector<std::pair<KeyID, SettingsListener*>> m_listeners;
+   Persistence::PersistenceHandler m_persistence;
 };
 
 }

@@ -5,6 +5,7 @@
 #include "nlohmann/json.hpp"
 #include "Logger.h"
 #include "Settings.h"
+#include "Serialize.hpp"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -27,6 +28,8 @@ static std::map<KeyID, std::string> m_string_items;
 
 template<typename T>
 void set_setting(KeyID id, T){}
+template<typename T>
+T get_setting(KeyID id){}
 
 template<>
 void set_setting<uint32_t>(KeyID id, uint32_t setting)
@@ -42,6 +45,21 @@ template<>
 void set_setting<bool>(KeyID id, bool setting)
 {
    m_bool_items[id] = setting;
+}
+template<>
+uint32_t get_setting<uint32_t>(KeyID id)
+{
+   return m_u32_items[id];
+}
+template<>
+std::string get_setting<std::string>(KeyID id)
+{
+   return m_string_items[id];
+}
+template<>
+bool get_setting<bool>(KeyID id)
+{
+   return m_bool_items[id];
 }
 
 
@@ -65,6 +83,7 @@ void SettingsHandler::destroy()
 
 SettingsHandler::SettingsHandler()
 {
+   Persistence::PersistenceListener::setName("SETTINGS");
 
 /* load default settings from SettingsHolder.h macro */
 #undef DEF_SETTING_GROUP
@@ -72,17 +91,27 @@ SettingsHandler::SettingsHandler()
    SETTING_GROUPS
 #undef DEF_SETTING_GROUP
 
-   UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
 
 void SettingsHandler::start(const std::string& settings_file_path)
 {
    m_file_path = settings_file_path;
    parseSettings();
+   m_persistence.addListener(*this);
+   UT_Log(SETTINGS, INFO, "Trying to restore from persistence");
+   if (!m_persistence.restore(SETTINGS_PERSISTENCE_PATH))
+   {
+      UT_Log(SETTINGS, ERROR, "Cannot restore persistence!");
+   }
 }
 
 void SettingsHandler::stop()
 {
+   if (!m_persistence.save(SETTINGS_PERSISTENCE_PATH))
+   {
+      UT_Log(SETTINGS, ERROR, "Cannot write persistence!");
+   }
+   m_persistence.removeListener(*this);
 }
 
 bool SettingsHandler::parseSettings()
@@ -137,7 +166,79 @@ std::vector<KeyID> SettingsHandler::applySettings()
    }
    return result;
 }
+void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>& data)
+{
+   uint32_t offset = 0;
 
+   while (offset != data.size())
+   {
+      std::string setting_name;
+      KeyID id;
+      ::deserialize(data, offset, setting_name);
+      id = getID(setting_name);
+      switch(getType(id))
+      {
+      case SettingType::BOOL:
+      {
+         bool bool_value;
+         ::deserialize(data, offset, bool_value);
+         set_setting<bool>(id,bool_value);
+         break;
+
+      }
+      case SettingType::STRING:
+      {
+         std::string string_value;
+         ::deserialize(data, offset, string_value);
+         set_setting<std::string>(id,string_value);
+         break;
+      }
+      case SettingType::U32:
+      {
+         uint32_t u32_value;
+         ::deserialize(data, offset, u32_value);
+         set_setting<uint32_t>(id,u32_value);
+         break;
+      }
+      default:
+         break;
+      }
+   }
+   UT_Log(SETTINGS, INFO, "Settings restored from persistence!");
+}
+void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>& data)
+{
+#undef DEF_SETTING_GROUP
+#define DEF_SETTING_GROUP(name, type, default_value) (::serialize(data, std::string(#name)));::serialize(data, (type)(get_setting<type>(name)));
+   SETTING_GROUPS
+#undef DEF_SETTING_GROUP
+   UT_Log(SETTINGS, INFO, "Settings saved to persistence!");
+}
+SettingType SettingsHandler::getType(KeyID id)
+{
+   for (const auto& item : m_u32_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::U32;
+      }
+   }
+   for (const auto& item : m_bool_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::BOOL;
+      }
+   }
+   for (const auto& item : m_string_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::STRING;
+      }
+   }
+   return SettingType::UNKNOWN;
+}
 void SettingsHandler::printSettings()
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
