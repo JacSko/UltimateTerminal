@@ -67,6 +67,30 @@ void TraceFilterHandler::refreshUi()
    }
    setLineEditColor(m_background_color, m_font_color);
 }
+bool TraceFilterHandler::setSettings(const TraceFilterSettings& settings)
+{
+   bool result = false;
+   if (!filteringActive())
+   {
+      m_background_color = settings.colors.background;
+      m_font_color = settings.colors.font;
+      m_line_edit->setText(QString(settings.regular_expression.c_str()));
+      m_regex = std::regex(settings.regular_expression);
+      result = true;
+   }
+   return result;
+}
+TraceFilterHandler::TraceFilterSettings TraceFilterHandler::getSettings()
+{
+   TraceFilterHandler::TraceFilterSettings settings;
+   settings.colors = {m_background_color, m_font_color};
+   settings.regular_expression = m_line_edit->text().toStdString();
+   return settings;
+}
+bool TraceFilterHandler::isActive()
+{
+   return filteringActive();
+}
 void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {
    UT_Log(TRACE_FILTER, LOW, "Restoring persistence for %s", getName().c_str());

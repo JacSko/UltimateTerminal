@@ -376,6 +376,80 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_filer_active)
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
 
-
 }
 
+TEST_F(TraceFilterHandlerTests, settings_set_and_get_tests)
+{
+   uint32_t TEST_BACKGROUND_COLOR = 0x112233;
+   uint32_t TEST_FONT_COLOR = 0x332211;
+   std::string TEST_REGEX = "TEST_REGEX";
+   uint32_t TEST_NEW_BACKGROUND_COLOR = 0x998877;
+   uint32_t TEST_NEW_FONT_COLOR = 0x778899;
+   std::string TEST_NEW_REGEX = "TEST_NEW_REGEX";
+   Dialogs::TraceFilterSettingDialog::ColorSet color_set;
+   color_set.background = TEST_BACKGROUND_COLOR;
+   color_set.font = TEST_FONT_COLOR;
+
+   TraceFilterHandler::TraceFilterSettings new_settings;
+   new_settings.colors.background = TEST_NEW_BACKGROUND_COLOR;
+   new_settings.colors.font = TEST_NEW_FONT_COLOR;
+   new_settings.regular_expression = TEST_NEW_REGEX;
+
+   {
+      /**
+       * <b>scenario</b>: Settings change requested when filtering active <br>
+       * <b>expected</b>: New colors not accepted <br>
+       * ************************************************
+       */
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)) // check before opening the color dialog
+                                                                           .WillOnce(Return(true)) // check before enabling filter
+                                                                           .WillOnce(Return(false)); // check during settings set
+
+      /* color change */
+      EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(color_set),Return(true)));
+      m_test_subject->onContextMenuRequested();
+      EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(color_set.background));
+      EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(color_set.font));
+
+      /* filter enabling */
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(TEST_REGEX.c_str())));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_line_edit, true));
+      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
+      m_test_subject->onButtonClicked();
+
+      /* filter enabled, check current settings */
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(TEST_REGEX.c_str())));
+      TraceFilterHandler::TraceFilterSettings current_settings = m_test_subject->getSettings();
+      EXPECT_EQ(current_settings.colors.background, TEST_BACKGROUND_COLOR);
+      EXPECT_EQ(current_settings.colors.font, TEST_FONT_COLOR);
+      EXPECT_EQ(current_settings.regular_expression, TEST_REGEX);
+
+      /* try to set new settings */
+      EXPECT_FALSE(m_test_subject->setSettings(new_settings));
+
+      /* expect old settings once again */
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(TEST_REGEX.c_str())));
+      current_settings = m_test_subject->getSettings();
+      EXPECT_EQ(current_settings.colors.background, TEST_BACKGROUND_COLOR);
+      EXPECT_EQ(current_settings.colors.font, TEST_FONT_COLOR);
+      EXPECT_EQ(current_settings.regular_expression, TEST_REGEX);
+   }
+
+   {
+      /**
+       * <b>scenario</b>: Settings change requested when filtering inactive <br>
+       * <b>expected</b>: New colors accepted <br>
+       * ************************************************
+       */
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(TEST_NEW_REGEX.c_str())));
+      EXPECT_CALL(*QtWidgetsMock_get(), QWidget_isEnabled(&test_line_edit)).WillOnce(Return(true)); // check during settings set
+      EXPECT_TRUE(m_test_subject->setSettings(new_settings));
+
+      /* expect new settings once again */
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_line_edit)).WillOnce(Return(QString(TEST_NEW_REGEX.c_str())));
+      TraceFilterHandler::TraceFilterSettings current_settings = m_test_subject->getSettings();
+      EXPECT_EQ(current_settings.colors.background, TEST_NEW_BACKGROUND_COLOR);
+      EXPECT_EQ(current_settings.colors.font, TEST_NEW_FONT_COLOR);
+      EXPECT_EQ(current_settings.regular_expression, TEST_NEW_REGEX);
+   }
+}
