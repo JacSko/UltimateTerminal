@@ -133,6 +133,7 @@ TEST_F(PortHandlerFixture, connecting_with_default_settings)
 
    m_test_subject->onPortButtonClicked();
 
+   EXPECT_TRUE(m_test_subject->isOpened());
    EXPECT_EQ(receivied_event.event, GUI::Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("PORT"));
    EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
@@ -652,6 +653,71 @@ TEST_F(PortHandlerFixture, refreshing_ui_tests)
    m_test_subject->refreshUi();
    EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
    EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+
+}
+
+TEST_F(PortHandlerFixture, settings_set_and_get_tests)
+{
+   Dialogs::PortSettingDialog::Settings user_settings;
+   user_settings.port_name = "TEST_NAME";
+   user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
+   user_settings.ip_address = "192.168.1.100";
+   user_settings.port = 1234;
+
+   /**
+    * <b>scenario</b>: Providing new settings when port is opened.<br>
+    * <b>expected</b>: Settings shall be rejected. <br>
+    * ************************************************
+    */
+   ASSERT_TRUE(user_settings.areValid());
+
+   EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
+   EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
+   m_test_subject->onPortButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(Qt::green));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(Qt::black));
+
+   EXPECT_FALSE(m_test_subject->setSettings(user_settings));
+   Dialogs::PortSettingDialog::Settings current_settings = m_test_subject->getSettings();
+   EXPECT_THAT(current_settings.port_name, Ne(user_settings.port_name));
+
+   /**
+    * <b>scenario</b>: Providing new settings when port is closed.<br>
+    * <b>expected</b>: Settings shall be accepted. <br>
+    * ************************************************
+    */
+   ASSERT_TRUE(user_settings.areValid());
+
+   EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
+   EXPECT_CALL(*g_serial_mock, close());
+   EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
+   m_test_subject->onPortButtonClicked();
+   EXPECT_EQ(test_button.palette().color(QPalette::Button), QColor(DEFAULT_APP_COLOR));
+   EXPECT_EQ(test_button.palette().color(QPalette::ButtonText), QColor(DEFAULT_APP_COLOR));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_label, QString(user_settings.shortSettingsString().c_str())));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
+   EXPECT_TRUE(m_test_subject->setSettings(user_settings));
+
+   /**
+    * <b>scenario</b>: Providing invalid new settings when port is closed.<br>
+    * <b>expected</b>: Settings shall be rejected. <br>
+    * ************************************************
+    */
+   user_settings.port_name = "TEST_NAME2";
+   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
+   user_settings.ip_address = "xx.yy..";
+
+   ASSERT_FALSE(user_settings.areValid());
+   EXPECT_FALSE(m_test_subject->setSettings(user_settings));
+   current_settings = m_test_subject->getSettings();
+   EXPECT_THAT(current_settings.port_name, Ne(user_settings.port_name));
 
 }
 

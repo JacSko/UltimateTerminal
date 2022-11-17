@@ -113,6 +113,24 @@ void PortHandler::refreshUi()
 {
    handleNewSettings(m_settings);
 }
+bool PortHandler::setSettings(const Dialogs::PortSettingDialog::Settings& settings)
+{
+   bool result = false;
+   if (settings.areValid() && (m_button_state == ButtonState::DISCONNECTED))
+   {
+      handleNewSettings(settings);
+      result = true;
+   }
+   return result;
+}
+const Dialogs::PortSettingDialog::Settings& PortHandler::getSettings()
+{
+   return m_settings;
+}
+bool PortHandler::isOpened()
+{
+   return (m_button_state != ButtonState::DISCONNECTED);
+}
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);

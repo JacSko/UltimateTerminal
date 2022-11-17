@@ -116,7 +116,7 @@ enum class PortType
          }
          return result;
       }
-      bool areValid()
+      bool areValid() const
       {
          bool result = true;
          m_error_strings.clear();
@@ -132,7 +132,7 @@ enum class PortType
          return m_error_strings;
       }
    private:
-      bool validateIpAddress(const std::string& ip_address)
+      bool validateIpAddress(const std::string& ip_address) const
       {
          struct sockaddr_in sa;
          int result = inet_pton(AF_INET, ip_address.c_str(), &(sa.sin_addr));
@@ -144,7 +144,7 @@ enum class PortType
          }
          return result != 0;
       }
-      bool validatePort(uint32_t port)
+      bool validatePort(uint32_t port) const
       {
          if (port > MAX_IPPORT_VALUE)
          {
@@ -157,7 +157,7 @@ enum class PortType
 
       static const uint32_t MIN_IPPORT_VALUE = 1;
       static const uint32_t MAX_IPPORT_VALUE = 99999;
-      std::vector<std::string> m_error_strings;
+      mutable std::vector<std::string> m_error_strings;
    };
 
    /**

@@ -111,6 +111,23 @@ public:
     * @return None.
     */
    void refreshUi();
+   /**
+    * @brief Sets new settings to PortHandler.
+    * @details Settings can be set only if port is not opened.
+    * @return True if settings accepted.
+    */
+   bool setSettings(const Dialogs::PortSettingDialog::Settings& settings);
+   /**
+    * @brief Return the current PortHandler settings.
+    * @return Const reference to setting.
+    */
+   const Dialogs::PortSettingDialog::Settings& getSettings();
+   /**
+    * @brief Checks if port is opened.
+    * @return True if port is opened (or even in Connecting state).
+    */
+   bool isOpened();
+
 private:
 
    enum class ButtonState
