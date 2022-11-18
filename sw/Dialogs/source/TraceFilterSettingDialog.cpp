@@ -7,6 +7,7 @@ namespace Dialogs
 {
 
 TraceFilterSettingDialog::TraceFilterSettingDialog():
+m_parent(nullptr),
 m_dialog(nullptr),
 m_form(nullptr),
 m_buttonBox(nullptr),
@@ -23,33 +24,10 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_dialog->setPalette(parent->palette());
-   m_form = new QFormLayout(m_dialog);
+   m_parent = m_dialog;
 
-   m_regexEdit = new QLineEdit(m_dialog);
-   QPalette palette = m_regexEdit->palette();
-   palette.setColor(QPalette::Base, QColor(current_settings.background));
-   palette.setColor(QPalette::Text, QColor(current_settings.font));
-   m_regexEdit->setPalette(palette);
-   m_regexEdit->update();
-   m_regexEdit->setText(QString(current_settings.regex.c_str()));
-   m_form->addRow("Regular expression", m_regexEdit);
-
-   m_backgroundButton = new QPushButton(m_dialog);
-   QPalette background_palette;
-   background_palette.setColor(QPalette::Button, QColor(current_settings.background));
-   m_backgroundButton->setPalette(background_palette);
-   m_form->addRow("Background color", m_backgroundButton);
-   QObject::connect(m_backgroundButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
-
-   m_fontButton = new QPushButton(m_dialog);
-   QPalette font_palette;
-   font_palette.setColor(QPalette::Button, QColor(current_settings.font));
-   m_fontButton->setPalette(font_palette);
-   m_form->addRow("Font color", m_fontButton);
-   QObject::connect(m_fontButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
-
+   m_dialog->setLayout(createLayout(m_dialog, current_settings, true));
    addDialogButtons();
-
    m_dialog->setWindowModality(Qt::ApplicationModal);
    UT_Log(GUI_DIALOG, INFO, "Trace filter dialog opened");
    if (m_dialog->exec() == QDialog::Accepted)
@@ -63,6 +41,44 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
    UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
 
    return result;
+}
+QLayout* TraceFilterSettingDialog::createLayout(QWidget* parent, const Settings& current_settings, bool allow_edit)
+{
+   m_parent = parent;
+   m_form = new QFormLayout();
+
+   m_regexEdit = new QLineEdit(m_parent);
+   QPalette palette = m_regexEdit->palette();
+   palette.setColor(QPalette::Base, QColor(current_settings.background));
+   palette.setColor(QPalette::Text, QColor(current_settings.font));
+   m_regexEdit->setPalette(palette);
+   m_regexEdit->update();
+   m_regexEdit->setText(QString(current_settings.regex.c_str()));
+   m_form->addRow("Regular expression", m_regexEdit);
+
+   m_backgroundButton = new QPushButton(m_parent);
+   QPalette background_palette;
+   background_palette.setColor(QPalette::Button, QColor(current_settings.background));
+   m_backgroundButton->setPalette(background_palette);
+   m_form->addRow("Background color", m_backgroundButton);
+   QObject::connect(m_backgroundButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
+
+   m_fontButton = new QPushButton(m_parent);
+   QPalette font_palette;
+   font_palette.setColor(QPalette::Button, QColor(current_settings.font));
+   m_fontButton->setPalette(font_palette);
+   m_form->addRow("Font color", m_fontButton);
+   QObject::connect(m_fontButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
+
+   return m_form;
+}
+void TraceFilterSettingDialog::destroyLayout()
+{
+   if (m_form)
+   {
+      delete m_form;
+      m_form = nullptr;
+   }
 }
 void TraceFilterSettingDialog::addDialogButtons()
 {
@@ -81,7 +97,7 @@ bool TraceFilterSettingDialog::convertGuiValues(Settings& out_settings)
 }
 void TraceFilterSettingDialog::onBackgroundColorButtonClicked()
 {
-   QColor background_color = QColorDialog::getColor(m_backgroundButton->palette().color(QPalette::Button), m_dialog, "Select background color");
+   QColor background_color = QColorDialog::getColor(m_backgroundButton->palette().color(QPalette::Button), m_parent, "Select background color");
    if (background_color.isValid())
    {
       QPalette background_palette;
@@ -91,7 +107,7 @@ void TraceFilterSettingDialog::onBackgroundColorButtonClicked()
 }
 void TraceFilterSettingDialog::onFontColorButtonClicked()
 {
-   QColor font_color = QColorDialog::getColor(m_fontButton->palette().color(QPalette::Button), m_dialog, "Select font color");
+   QColor font_color = QColorDialog::getColor(m_fontButton->palette().color(QPalette::Button), m_parent, "Select font color");
    if (font_color.isValid())
    {
       QPalette font_palette;
