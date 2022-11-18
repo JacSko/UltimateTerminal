@@ -136,7 +136,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_clearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_traceClearButtonShortcut, HasSubstr("activated"), _, HasSubstr("onTraceClearButtonClicked")));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_switchSendPortShortcut, HasSubstr("activated"), _, HasSubstr("onPortSwitchRequest")));
-
+      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_settings_button, HasSubstr("clicked"), _, HasSubstr("onSettingsButtonClicked")));
 
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_logging_button, Qt::ContextMenuPolicy::CustomContextMenu));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_line_ending_box, _)).Times(3);

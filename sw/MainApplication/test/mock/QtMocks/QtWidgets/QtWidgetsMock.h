@@ -190,20 +190,6 @@ public:
    void operator delete(void*){};
 };
 
-class QFormLayout : public QWidget
-{
-public:
-   QFormLayout(){};
-   QFormLayout(QDialog*&){}
-   void* operator new(size_t);
-   void operator delete(void*){};
-   void addRow(QWidget *);
-   void addRow(const QString&, QWidget *);
-   void addWidget(QWidget *);
-   void insertRow(int, const QString &, QWidget *);
-   void removeRow(QWidget *);
-};
-
 class QLineEdit : public QWidget
 {
 public:
@@ -370,6 +356,20 @@ class QVBoxLayout : public QLayout
 public:
    QVBoxLayout(){};
    QVBoxLayout(QWidget*){};
+};
+
+class QFormLayout : public QLayout
+{
+public:
+   QFormLayout(){};
+   QFormLayout(QDialog*&){}
+   void* operator new(size_t);
+   void operator delete(void*){};
+   void addRow(QWidget *);
+   void addRow(const QString&, QWidget *);
+   void addWidget(QWidget *);
+   void insertRow(int, const QString &, QWidget *);
+   void removeRow(QWidget *);
 };
 
 class QSplitter : public QWidget
