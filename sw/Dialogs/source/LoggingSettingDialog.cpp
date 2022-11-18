@@ -24,12 +24,31 @@ LoggingSettingDialog::~LoggingSettingDialog()
 std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, const std::string& current_path, bool allow_edit)
 {
    std::optional<std::string> result;
-   m_editable = allow_edit;
    m_current_path = current_path;
 
    m_dialog = new QDialog(parent);
    m_dialog->setPalette(parent->palette());
-   m_form = new QFormLayout(m_dialog);
+
+   m_dialog->setLayout(createLayout(current_path, allow_edit));
+   addDialogButtons();
+   m_dialog->setWindowModality(Qt::ApplicationModal);
+   UT_Log(MAIN_GUI, INFO, "logging dialog show");
+   if (m_dialog->exec() == QDialog::Accepted)
+   {
+      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
+      result = convertGuiValues();
+   }
+
+   destroyLayout();
+   delete m_dialog;
+   m_dialog = nullptr;
+
+   return result;
+}
+QLayout* LoggingSettingDialog::createLayout(const std::string& current_path, bool allow_edit)
+{
+   m_editable = allow_edit;
+   m_form = new QFormLayout();
 
    // create file path edit
    QString file_path_label = QString("File path:");
@@ -47,22 +66,16 @@ std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, con
    m_form->insertRow(2, path_select_label, m_pathSelectButton);
    QObject::connect(m_pathSelectButton, SIGNAL(clicked()), this, SLOT(onPathSelectButtonClicked()));
 
-   addDialogButtons();
-
-   m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(MAIN_GUI, INFO, "logging dialog show");
-   if (m_dialog->exec() == QDialog::Accepted)
-   {
-      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
-      result = convertGuiValues();
-   }
-
-   delete m_form;
-   delete m_dialog;
-
-   return result;
+   return m_form;
 }
-
+void LoggingSettingDialog::destroyLayout()
+{
+   if (m_form)
+   {
+      delete m_form;
+      m_form = nullptr;
+   }
+}
 void LoggingSettingDialog::addDialogButtons()
 {
    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, m_dialog);
@@ -81,6 +94,7 @@ void LoggingSettingDialog::onPathSelectButtonClicked()
 }
 std::string LoggingSettingDialog::convertGuiValues()
 {
+   UT_Assert(m_filePathEdit && "Create m_filePathEdit first!");
    return m_filePathEdit->text().toStdString();
 }
 

@@ -43,14 +43,32 @@ public:
    /**
     * @brief Opens a logfile settings dialog.
     * @param[in] parent - parent Widget
-    * @param[in] current_settings - settings to be presented to user
-    * @param[in] out_settings - new settings gathered from user
+    * @param[in] current_path - settings to be presented to user
     * @param[in] allow_edit - set window editability
     *
     * @return Optional has value if user accepted the dialog, has no value if user rejected the dialog.
-    * @return If value of optional is true, new settings are correct. Otherwise false.
+    * @return If value of optional is true, new logging path is returned.
     */
    std::optional<std::string> showDialog(QWidget* parent, const std::string& current_path, bool allow_edit);
+
+   /**
+    * @brief Creates a layout related to dialog window that can be placed in another QWidget (i.e application settings).
+    * @param[in] current_path - settings to be presented to user
+    * @param[in] allow_edit - set window editability
+    *
+    * @return Pointer to new Layout. User is responsible for calling destroyLayout afterwards.
+    */
+   QLayout* createLayout(const std::string& current_path, bool allow_edit);
+   /**
+    * @brief Destroys previously created layout.
+    * @return None.
+    */
+   void destroyLayout();
+   /**
+    * @brief Converts the values from currently created layout. Method createLayout() has to be called prior to conversion.
+    * @return None.
+    */
+   std::string convertGuiValues();
 private:
    QDialog* m_dialog;
    QFormLayout* m_form;
@@ -63,7 +81,6 @@ private:
    std::string m_current_path;
 
    void addDialogButtons();
-   std::string convertGuiValues();
 public slots:
    void onPathSelectButtonClicked();
 
