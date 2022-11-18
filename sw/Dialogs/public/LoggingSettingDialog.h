@@ -66,7 +66,7 @@ public:
    void destroyLayout();
    /**
     * @brief Converts the values from currently created layout. Method createLayout() has to be called prior to conversion.
-    * @return None.
+    * @return User selected logging path.
     */
    std::string convertGuiValues();
 private:

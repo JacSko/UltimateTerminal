@@ -171,6 +171,26 @@ enum class PortType
     * @return If value of optional is true, new settings are correct. Otherwise false.
     */
    std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
+   /**
+    * @brief Creates a layout related to dialog window that can be placed in another QWidget (i.e application settings).
+    * @param[in] current_settings - settings to be presented to user
+    * @param[in] allow_edit - set window editability
+    *
+    * @return Pointer to created Layout.
+    */
+   QLayout* createLayout(QWidget* parent, const Settings& current_settings, bool allow_edit);
+   /**
+    * @brief Destroys previously created layout.
+    * @return None.
+    */
+   void destroyLayout();
+   /**
+    * @brief Converts the values from currently created layout. Method createLayout() has to be called prior to conversion.
+    * @return True if gathered settings are correct, othwerwise false.
+    * @return If settings are correct, out_settings are filled with the new data.
+    */
+   bool convertGuiValues(Settings& out_settings);
+
 private:
 
    void addPortTypeComboBox(const EnumValue<PortType>& current_selection);
@@ -178,7 +198,7 @@ private:
    void renderSerialView(QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QFormLayout* form, const Settings& settings = {});
    void clearDialog();
-   bool convertGuiValues(Settings& out_settings);
+   QWidget* m_parent;
    QDialog* m_dialog;
    QFormLayout* m_form;
    QComboBox* m_portTypeBox;
