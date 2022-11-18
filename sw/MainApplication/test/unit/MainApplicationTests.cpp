@@ -607,6 +607,7 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
    constexpr uint32_t TEST_FILTER_BG_COLOR = 0x999999;
    constexpr uint32_t TEST_FILTER_TEXT_COLOR = 0x888888;
+   const std::string TEST_FILTER_REGEX = "SOME REGEX";
    constexpr uint8_t TEST_PORT_INDEX = 3;
    GUI::PortHandlerEvent port_open_event;
    port_open_event.name = "PORT_NAME";
@@ -621,6 +622,10 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    port_data_event.background_color = TEST_BACKGROUND_COLOR;
    port_data_event.font_color = TEST_FONT_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
+   Dialogs::TraceFilterSettingDialog::Settings trace_filter_settings;
+   trace_filter_settings.background = TEST_FILTER_BG_COLOR;
+   trace_filter_settings.font = TEST_FILTER_TEXT_COLOR;
+   trace_filter_settings.regex = TEST_FILTER_REGEX;
    GUI::PortHandlerEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
@@ -650,7 +655,7 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
                                                                                .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
@@ -674,7 +679,7 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
                                                                                .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
