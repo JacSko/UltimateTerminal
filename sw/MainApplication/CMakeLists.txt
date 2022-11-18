@@ -5,13 +5,14 @@ add_library(MainApplication STATIC
    source/TraceFilterHandler.cpp
    source/FileLogger.cpp
    include/MainApplication.h
-   include/PortHandler.h
    include/UserButtonHandler.h
-   include/TraceFilterHandler.h
+   public/PortHandler.h
+   public/TraceFilterHandler.h
 )
 
 target_include_directories(MainApplication PUBLIC 
    include/
+   public/
 )
 
 target_link_libraries(MainApplication
@@ -25,7 +26,7 @@ target_link_libraries(MainApplication
 
 add_library(MainApplicationIf INTERFACE)
 target_include_directories(MainApplicationIf INTERFACE 
-   include/
+   public/
 )
 
 if (UNIT_TESTS)
