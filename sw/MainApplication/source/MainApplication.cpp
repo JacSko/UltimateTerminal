@@ -225,6 +225,7 @@ void MainApplication::connectSignalsToSlots()
    connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
    connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
    connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
+   connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(onSettingsButtonClicked()));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -324,6 +325,27 @@ void MainApplication::onPortSwitchRequest()
          ui->portComboBox->setCurrentIndex(idx+1);
       }
    }
+}
+void MainApplication::onSettingsButtonClicked()
+{
+//   QDialog* dialog = new QDialog(this);
+//   dialog->setPalette(this->palette());
+//   QVBoxLayout* dialog_layout = new QVBoxLayout();
+//
+//   QTabWidget* tab_view = new QTabWidget();
+//   QWidget* tab_widget = new QWidget();
+//
+//   Dialogs::LoggingSettingDialog logging_context;
+//   tab_widget->setLayout(logging_context.createLayout(m_file_logging_path, !m_file_logger->isActive()));
+//   tab_view->addTab(tab_widget,"Logger");
+//   dialog_layout->addWidget(tab_view);
+//   dialog->setLayout(dialog_layout);
+//   dialog->exec();
+//
+//   logging_context.destroyLayout();
+//   delete tab_widget;
+//   delete tab_view;
+//   delete dialog;
 }
 bool MainApplication::sendToPort(const std::string& string)
 {

@@ -74,6 +74,7 @@ public slots:
    void onLoggingButtonContextMenuRequested();
    void onCurrentPortSelectionChanged(int );
    void onPortSwitchRequest();
+   void onSettingsButtonClicked();
 
 };
 #endif
