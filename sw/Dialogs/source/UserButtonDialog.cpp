@@ -22,6 +22,7 @@ std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings
 {
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
+   m_dialog->setPalette(parent->palette());
    m_form = new QFormLayout(m_dialog);
    m_editable = allow_edit;
 

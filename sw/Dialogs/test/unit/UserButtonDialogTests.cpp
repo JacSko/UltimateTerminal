@@ -66,6 +66,7 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
     *       New settings should be returned. <br>
     * ************************************************
     */
+   QMainWindow test_parent;
    QDialog test_dialog;
    QFormLayout test_layout;
    QLineEdit test_linedit;
@@ -124,7 +125,7 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
    /* user takes decision */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(GetParam().accepted? QDialog::Accepted : QDialog::Rejected));
 
-   std::optional<bool> result = dialog.showDialog(nullptr, current_settings, received_settings, GetParam().editable);
+   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings, GetParam().editable);
 
    if (GetParam().accepted)
    {
