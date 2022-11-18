@@ -59,3 +59,26 @@ target_link_libraries(TraceFilterSettingDialogTests PUBLIC
         DriversMocks
 )
 add_test(NAME TraceFilterSettingDialogTests COMMAND TraceFilterSettingDialogTests)
+
+#####################################################################################
+
+add_executable(ApplicationSettingsDialogTests
+            ApplicationSettingsDialogTests.cpp
+            ../../source/ApplicationSettingsDialog.cpp
+)
+
+target_include_directories(ApplicationSettingsDialogTests PUBLIC
+        ../../include
+        ../../public
+)
+target_link_libraries(ApplicationSettingsDialogTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        SettingsHandler
+        Utilities
+        QtMocks
+        DriversMocks
+        MainApplicationIf
+)
+add_test(NAME ApplicationSettingsDialogTests COMMAND ApplicationSettingsDialogTests)

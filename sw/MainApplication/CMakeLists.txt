@@ -23,6 +23,11 @@ target_link_libraries(MainApplication
    Dialogs
 )
 
+add_library(MainApplicationIf INTERFACE)
+target_include_directories(MainApplicationIf INTERFACE 
+   include/
+)
+
 if (UNIT_TESTS)
    add_subdirectory(test)
 endif()
