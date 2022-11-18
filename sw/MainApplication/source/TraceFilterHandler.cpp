@@ -30,9 +30,9 @@ m_user_defined(false)
    m_line_edit->setDisabled(false);
    setButtonState(false);
 
-   m_background_color = m_parent->palette().color(QPalette::Base).rgb();
-   m_font_color = m_parent->palette().color(QPalette::Text).rgb();
-   setLineEditColor(m_background_color, m_font_color);
+   m_settings.background = m_parent->palette().color(QPalette::Base).rgb();
+   m_settings.font = m_parent->palette().color(QPalette::Text).rgb();
+   setLineEditColor(m_settings.background, m_settings.font);
 
    UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
 }
@@ -40,14 +40,14 @@ TraceFilterHandler::~TraceFilterHandler()
 {
    m_persistence.removeListener(*this);
 }
-std::optional<Dialogs::TraceFilterSettingDialog::ColorSet> TraceFilterHandler::tryMatch(const std::string& text)
+std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilterHandler::tryMatch(const std::string& text)
 {
    if (filteringActive())
    {
       if (std::regex_search(text, m_regex))
       {
          UT_Log(TRACE_FILTER, HIGH, "Found match for filer %s", getName().c_str());
-         Dialogs::TraceFilterSettingDialog::ColorSet result {m_background_color, m_font_color};
+         Dialogs::TraceFilterSettingDialog::Settings result {m_settings.regex, m_settings.background, m_settings.font};
          return result;
       }
       return {};
@@ -62,30 +62,24 @@ void TraceFilterHandler::refreshUi()
    setButtonState(m_button->palette().color(QPalette::Button) == Qt::green);
    if (!m_user_defined)
    {
-      m_background_color = m_parent->palette().color(QPalette::Base).rgb();
-      m_font_color = m_parent->palette().color(QPalette::Text).rgb();
+      m_settings.background = m_parent->palette().color(QPalette::Base).rgb();
+      m_settings.font = m_parent->palette().color(QPalette::Text).rgb();
    }
-   setLineEditColor(m_background_color, m_font_color);
+   setLineEditColor(m_settings.background, m_settings.font);
 }
-bool TraceFilterHandler::setSettings(const TraceFilterSettings& settings)
+bool TraceFilterHandler::setSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
 {
    bool result = false;
    if (!filteringActive())
    {
-      m_background_color = settings.colors.background;
-      m_font_color = settings.colors.font;
-      m_line_edit->setText(QString(settings.regular_expression.c_str()));
-      m_regex = std::regex(settings.regular_expression);
+      handleNewSettings(settings);
       result = true;
    }
    return result;
 }
-TraceFilterHandler::TraceFilterSettings TraceFilterHandler::getSettings()
+Dialogs::TraceFilterSettingDialog::Settings TraceFilterHandler::getSettings()
 {
-   TraceFilterHandler::TraceFilterSettings settings;
-   settings.colors = {m_background_color, m_font_color};
-   settings.regular_expression = m_line_edit->text().toStdString();
-   return settings;
+   return m_settings;
 }
 bool TraceFilterHandler::isActive()
 {
@@ -101,6 +95,7 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    uint32_t font_color;
    std::string text;
    bool is_active;
+   Dialogs::TraceFilterSettingDialog::Settings settings;
 
    ::deserialize(data, offset, is_active);
    ::deserialize(data, offset, text);
@@ -108,16 +103,15 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, font_color);
    ::deserialize(data, offset, m_user_defined);
 
-   m_background_color = background_color;
-   m_font_color = font_color;
-   setLineEditColor(background_color, font_color);
+   settings.background = background_color;
+   settings.font = font_color;
+   settings.regex = text;
+   handleNewSettings(settings);
    setButtonState(!is_active);
    m_button->setChecked(!is_active);
    m_line_edit->setDisabled(!is_active);
-   m_line_edit->setText(QString(text.c_str()));
-   m_regex = std::regex(text);
 
-   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x active %u, text %s", getName().c_str(), m_background_color, m_font_color, is_active, text.c_str());
+   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x active %u, text %s", getName().c_str(), m_settings.background, m_settings.font, is_active, text.c_str());
 }
 void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
@@ -127,10 +121,10 @@ void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 
    ::serialize(data, is_active);
    ::serialize(data, text);
-   ::serialize(data, m_background_color);
-   ::serialize(data, m_font_color);
+   ::serialize(data, m_settings.background);
+   ::serialize(data, m_settings.font);
    ::serialize(data, m_user_defined);
-   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_background_color, m_font_color, is_active, text.c_str());
+   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_settings.background, m_settings.font, is_active, text.c_str());
 
 }
 void TraceFilterHandler::onButtonClicked()
@@ -156,23 +150,28 @@ void TraceFilterHandler::onContextMenuRequested()
    if(!filteringActive())
    {
       UT_Log(TRACE_FILTER, LOW, "showing color dialog for %s", getName().c_str());
-      Dialogs::TraceFilterSettingDialog::ColorSet current_set = {m_background_color, m_font_color};
-      Dialogs::TraceFilterSettingDialog::ColorSet new_set;
-
+      Dialogs::TraceFilterSettingDialog::Settings new_settings;
       Dialogs::TraceFilterSettingDialog dialog;
-      std::optional<bool> result = dialog.showDialog(m_parent, current_set, new_set);
+      std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings);
       if (result.has_value() && result.value())
       {
          m_user_defined = true;
-         m_background_color = new_set.background;
-         m_font_color = new_set.font;
+         handleNewSettings(new_settings);
       }
-      setLineEditColor(m_background_color, m_font_color);
    }
    else
    {
       UT_Log(TRACE_FILTER, LOW, "Cannot show color dialog - filter is active!");
    }
+}
+void TraceFilterHandler::handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
+{
+   m_settings = settings;
+
+   setLineEditColor(m_settings.background, m_settings.font);
+   m_line_edit->setText(QString(m_settings.regex.c_str()));
+   m_regex = std::regex(settings.regex);
+
 }
 void TraceFilterHandler::setButtonState(bool active)
 {

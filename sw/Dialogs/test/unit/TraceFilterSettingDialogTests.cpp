@@ -59,26 +59,30 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    QFormLayout test_layout;
    QPushButton test_backgroundButton;
    QPushButton test_fontButton;
+   QLineEdit test_regexEdit;
    QDialogButtonBox test_buttonbox;
    TraceFilterSettingDialog dialog;
 
    /* current settings */
-   TraceFilterSettingDialog::ColorSet current_settings;
+   TraceFilterSettingDialog::Settings current_settings;
    current_settings.background = 0x000001;
    current_settings.font = 0x000002;
+   current_settings.regex = "test_regex";
 
-   TraceFilterSettingDialog::ColorSet received_settings;
+   TraceFilterSettingDialog::Settings received_settings;
 
    /* new settings retreived from user */
-   TraceFilterSettingDialog::ColorSet user_settings;
+   TraceFilterSettingDialog::Settings user_settings;
    user_settings.background = 0x000003;
    user_settings.font = 0x000004;
+   user_settings.regex = "user_regex";
 
-   TraceFilterSettingDialog::ColorSet set_presented_to_user;
+   TraceFilterSettingDialog::Settings set_presented_to_user;
 
    /* prepare GUI elements */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_backgroundButton))
                                                        .WillOnce(Return(&test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
@@ -86,6 +90,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    /* all GUI widgets added to layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_backgroundButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_fontButton));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
 
    /* all signals connected */
@@ -96,6 +101,11 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
 
    /* dialog should be modal */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
+
+   /* expect current regex presented on regexEdit */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_regexEdit, HasSubstr("test_regex")));
+   /* expect readout of new settings */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_regexEdit)).WillOnce(Return(QString(user_settings.regex.c_str())));
 
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Invoke([&]()->int
          {
@@ -118,6 +128,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    EXPECT_EQ(set_presented_to_user.font, current_settings.font);
    EXPECT_EQ(received_settings.background, user_settings.background);
    EXPECT_EQ(received_settings.font, user_settings.font);
+   EXPECT_EQ(received_settings.regex, user_settings.regex);
 }
 
 TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
@@ -136,26 +147,29 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    QFormLayout test_layout;
    QPushButton test_backgroundButton;
    QPushButton test_fontButton;
+   QLineEdit test_regexEdit;
    QDialogButtonBox test_buttonbox;
    TraceFilterSettingDialog dialog;
 
    /* current settings */
-   TraceFilterSettingDialog::ColorSet current_settings;
+   TraceFilterSettingDialog::Settings current_settings;
    current_settings.background = 0x000001;
    current_settings.font = 0x000002;
+   current_settings.regex = "test_regex";
 
-   TraceFilterSettingDialog::ColorSet received_settings;
+   TraceFilterSettingDialog::Settings received_settings;
 
    /* new settings retreived from user */
-   TraceFilterSettingDialog::ColorSet user_settings;
+   TraceFilterSettingDialog::Settings user_settings;
    user_settings.background = 0x000003;
    user_settings.font = 0x000004;
 
-   TraceFilterSettingDialog::ColorSet set_presented_to_user;
+   TraceFilterSettingDialog::Settings set_presented_to_user;
 
    /* prepare GUI elements */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_backgroundButton))
                                                        .WillOnce(Return(&test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
@@ -163,6 +177,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    /* all GUI widgets added to layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_backgroundButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_fontButton));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
 
    /* all signals connected */
@@ -173,6 +188,9 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
 
    /* dialog should be modal */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
+
+   /* expect current regex presented on regexEdit */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_regexEdit, HasSubstr("test_regex")));
 
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Invoke([&]()->int
          {

@@ -10,6 +10,7 @@ TraceFilterSettingDialog::TraceFilterSettingDialog():
 m_dialog(nullptr),
 m_form(nullptr),
 m_buttonBox(nullptr),
+m_regexEdit(nullptr),
 m_backgroundButton(nullptr),
 m_fontButton(nullptr)
 {
@@ -17,12 +18,21 @@ m_fontButton(nullptr)
 TraceFilterSettingDialog::~TraceFilterSettingDialog()
 {
 }
-std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const ColorSet& current_settings, ColorSet& out_settings)
+std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
 {
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_dialog->setPalette(parent->palette());
    m_form = new QFormLayout(m_dialog);
+
+   m_regexEdit = new QLineEdit(m_dialog);
+   QPalette palette = m_regexEdit->palette();
+   palette.setColor(QPalette::Base, QColor(current_settings.background));
+   palette.setColor(QPalette::Text, QColor(current_settings.font));
+   m_regexEdit->setPalette(palette);
+   m_regexEdit->update();
+   m_regexEdit->setText(QString(current_settings.regex.c_str()));
+   m_form->addRow("Regular expression", m_regexEdit);
 
    m_backgroundButton = new QPushButton(m_dialog);
    QPalette background_palette;
@@ -61,11 +71,12 @@ void TraceFilterSettingDialog::addDialogButtons()
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
 }
-bool TraceFilterSettingDialog::convertGuiValues(ColorSet& out_settings)
+bool TraceFilterSettingDialog::convertGuiValues(Settings& out_settings)
 {
+   out_settings.regex = m_regexEdit->text().toStdString();
    out_settings.background = m_backgroundButton->palette().color(QPalette::Button).rgb();
    out_settings.font = m_fontButton->palette().color(QPalette::Button).rgb();
-   UT_Log(GUI_DIALOG, HIGH, "got colors background %.6x, font %.6x", out_settings.background, out_settings.font);
+   UT_Log(GUI_DIALOG, HIGH, "got colors background %.6x, font %.6x, regex %s", out_settings.background, out_settings.font, out_settings.regex.c_str());
    return true;
 }
 void TraceFilterSettingDialog::onBackgroundColorButtonClicked()

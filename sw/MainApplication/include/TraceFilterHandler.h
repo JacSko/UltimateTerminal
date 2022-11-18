@@ -31,13 +31,6 @@ class TraceFilterHandler : public QObject,
    Q_OBJECT
 
 public:
-   /**< Describes settings used in module */
-   struct TraceFilterSettings
-   {
-      Dialogs::TraceFilterSettingDialog::ColorSet colors; /**< Set of two colors used for trace presentation */
-      std::string regular_expression;                     /**< User-defined regular expression */
-   };
-
    /**
     * @brief Creates object.
     * @param[in] parent - parent widget.
@@ -56,7 +49,7 @@ public:
     * @return Empty optional if text does not match the regular expression or filter is disabled.
     * @return Non-empty optional with background and font color if filter is enabled and text does match the regular expression.
     */
-   std::optional<Dialogs::TraceFilterSettingDialog::ColorSet> tryMatch(const std::string& text);
+   std::optional<Dialogs::TraceFilterSettingDialog::Settings> tryMatch(const std::string& text);
    /**
     * @brief Refresh the related UI elements.
     * @return None.
@@ -67,12 +60,12 @@ public:
     * @details Settings can be set only if filter is not active.
     * @return True if settings accepted.
     */
-   bool setSettings(const TraceFilterSettings& settings);
+   bool setSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
    /**
     * @brief Return the current module settings.
     * @return Current setting.
     */
-   TraceFilterSettings getSettings();
+   Dialogs::TraceFilterSettingDialog::Settings getSettings();
    /**
     * @brief Checks if filter is active.
     * @return True if filter is active.
@@ -82,14 +75,14 @@ public:
 private:
    void onPersistenceRead(const std::vector<uint8_t>& data);
    void onPersistenceWrite(std::vector<uint8_t>& data);
+   void handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
 
    QWidget* m_parent;
    QLineEdit* m_line_edit;
    QPushButton* m_button;
    Persistence::PersistenceHandler& m_persistence;
    std::regex m_regex;
-   uint32_t m_background_color;
-   uint32_t m_font_color;
+   Dialogs::TraceFilterSettingDialog::Settings m_settings;
    bool m_user_defined;
 
    void setButtonState(bool state);

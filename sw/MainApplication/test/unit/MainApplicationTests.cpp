@@ -285,7 +285,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* adding item without newline at the end */
@@ -300,7 +300,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* items count exceeded the maximum count for terminal view, terminal shall be cleaned */
@@ -315,7 +315,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
@@ -348,7 +348,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    m_test_subject->onMarkerButtonClicked();
 
    /* second marker added */
@@ -362,7 +362,7 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER2")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER2"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER2"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    m_test_subject->onMarkerButtonClicked();
 
 }
@@ -428,7 +428,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    m_test_subject->onMarkerButtonClicked();
 
    /* adding item with newline at the end */
@@ -442,7 +442,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to change the logging file, it should not be possible when logging is active */
@@ -564,7 +564,7 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to enable scrolling */
@@ -583,7 +583,7 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* closing port */
@@ -650,8 +650,8 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
-                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
+                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to enable scrolling */
@@ -674,8 +674,8 @@ TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
-                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>({TEST_FILTER_BG_COLOR, TEST_FILTER_TEXT_COLOR})))
+                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* closing port */
@@ -761,7 +761,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
 
    m_test_subject->onSendButtonClicked();
@@ -803,7 +803,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
 
    m_test_subject->onSendButtonClicked();
@@ -845,7 +845,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
 
    m_test_subject->onSendButtonClicked();
 }
@@ -934,7 +934,7 @@ TEST_F(MainApplicationFixture, command_history_item_removing)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillRepeatedly(Return(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _)).Times(AtLeast(1));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND))).Times(AtLeast(1));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str()))).Times(AtLeast(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_text_edit, _)).Times(AtLeast(1));
    for (uint8_t i = 0; i < MainApplication::MAX_COMMANDS_HISTORY_ITEMS + 10; i++)
@@ -973,7 +973,7 @@ TEST_F(MainApplicationFixture, command_history_reloading)
 
    /* common expectations */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(_)).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::ColorSet>()));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(_)).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(_,_)).WillRepeatedly(Return(true));
    EXPECT_CALL(*g_logger_mock, putLog(_)).Times(AtLeast(1));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillRepeatedly(Return(&terminal_item));

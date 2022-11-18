@@ -29,6 +29,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
 
 namespace Dialogs
 {
@@ -42,8 +43,9 @@ public:
    virtual ~TraceFilterSettingDialog();
 
    /** @brief Stores data from dialog fields */
-   struct ColorSet
+   struct Settings
    {
+      std::string regex;     /**< Regular expression */
       uint32_t background;   /**< Background color. */
       uint32_t font;         /**< Font color */
    };
@@ -64,16 +66,17 @@ public:
     * @return If user declined the dialog, the empty value is returned.
     *
     */
-   std::optional<bool> showDialog(QWidget* parent, const ColorSet& current_settings, ColorSet& out_settings);
+   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
 private:
    QDialog* m_dialog;
    QFormLayout* m_form;
    QDialogButtonBox* m_buttonBox;
+   QLineEdit* m_regexEdit;
    QPushButton* m_backgroundButton;
    QPushButton* m_fontButton;
 
    void addDialogButtons();
-   bool convertGuiValues(ColorSet& out_settings);
+   bool convertGuiValues(Settings& out_settings);
 public slots:
    void onBackgroundColorButtonClicked();
    void onFontColorButtonClicked();
