@@ -88,7 +88,7 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -135,7 +135,7 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -190,7 +190,7 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -209,7 +209,7 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
    EXPECT_EQ(result.value().font, settings.font);
 
    /* color change requested, but not allowed */
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).Times(0);
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,_)).Times(0);
    m_test_subject->onContextMenuRequested();
 
 }
@@ -233,7 +233,7 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
                                                                         .WillOnce(Return(false));// check during persistence write
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -326,7 +326,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_user_colors_used)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -358,7 +358,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_filer_active)
 
    /* color change */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+   EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
    m_test_subject->onContextMenuRequested();
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
    EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));
@@ -414,7 +414,7 @@ TEST_F(TraceFilterHandlerTests, settings_set_and_get_tests)
 
       /* color change */
       EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_line_edit, QString(settings.regex.c_str())));
-      EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
+      EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
       m_test_subject->onContextMenuRequested();
       EXPECT_EQ(test_line_edit.palette().color(QPalette::Base), QColor(settings.background));
       EXPECT_EQ(test_line_edit.palette().color(QPalette::Text), QColor(settings.font));

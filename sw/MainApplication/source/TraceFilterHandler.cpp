@@ -152,7 +152,7 @@ void TraceFilterHandler::onContextMenuRequested()
       UT_Log(TRACE_FILTER, LOW, "showing color dialog for %s", getName().c_str());
       Dialogs::TraceFilterSettingDialog::Settings new_settings;
       Dialogs::TraceFilterSettingDialog dialog;
-      std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings);
+      std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, true);
       if (result.has_value() && result.value())
       {
          m_user_defined = true;

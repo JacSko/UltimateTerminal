@@ -77,6 +77,8 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    user_settings.font = 0x000004;
    user_settings.regex = "user_regex";
 
+   bool dialog_editable = true;
+
    TraceFilterSettingDialog::Settings set_presented_to_user;
 
    /* prepare GUI elements */
@@ -102,6 +104,11 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    /* dialog should be modal */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
+   /* all widgets shall be enabled */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_regexEdit, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_backgroundButton, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_fontButton, false));
+
    /* expect current regex presented on regexEdit */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_regexEdit, HasSubstr("test_regex")));
    /* expect readout of new settings */
@@ -119,7 +126,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(QColor(user_settings.background)))
                                                                   .WillOnce(Return(QColor(user_settings.font)));
 
-   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings);
+   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings, dialog_editable);
 
    EXPECT_TRUE(result.has_value());
    EXPECT_TRUE(result.value());
@@ -164,6 +171,8 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    user_settings.background = 0x000003;
    user_settings.font = 0x000004;
 
+   bool dialog_editable = true;
+
    TraceFilterSettingDialog::Settings set_presented_to_user;
 
    /* prepare GUI elements */
@@ -189,6 +198,11 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    /* dialog should be modal */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
+   /* all widgets shall be enabled */
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_regexEdit, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_backgroundButton, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_fontButton, false));
+
    /* expect current regex presented on regexEdit */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_regexEdit, HasSubstr("test_regex")));
 
@@ -204,7 +218,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    EXPECT_CALL(*QtWidgetsMock_get(), QColorDialog_getColor(_,_,_)).WillOnce(Return(QColor(user_settings.background)))
                                                                   .WillOnce(Return(QColor(user_settings.font)));
 
-   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings);
+   std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings, dialog_editable);
 
    EXPECT_FALSE(result.has_value());
    EXPECT_EQ(set_presented_to_user.background, current_settings.background);

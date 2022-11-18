@@ -19,14 +19,14 @@ m_fontButton(nullptr)
 TraceFilterSettingDialog::~TraceFilterSettingDialog()
 {
 }
-std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
+std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
    std::optional<bool> result;
    m_dialog = new QDialog(parent);
    m_dialog->setPalette(parent->palette());
    m_parent = m_dialog;
 
-   m_dialog->setLayout(createLayout(m_dialog, current_settings, true));
+   m_dialog->setLayout(createLayout(m_dialog, current_settings, allow_edit));
    addDialogButtons();
    m_dialog->setWindowModality(Qt::ApplicationModal);
    UT_Log(GUI_DIALOG, INFO, "Trace filter dialog opened");
@@ -54,12 +54,14 @@ QLayout* TraceFilterSettingDialog::createLayout(QWidget* parent, const Settings&
    m_regexEdit->setPalette(palette);
    m_regexEdit->update();
    m_regexEdit->setText(QString(current_settings.regex.c_str()));
+   m_regexEdit->setDisabled(!allow_edit);
    m_form->addRow("Regular expression", m_regexEdit);
 
    m_backgroundButton = new QPushButton(m_parent);
    QPalette background_palette;
    background_palette.setColor(QPalette::Button, QColor(current_settings.background));
    m_backgroundButton->setPalette(background_palette);
+   m_backgroundButton->setDisabled(!allow_edit);
    m_form->addRow("Background color", m_backgroundButton);
    QObject::connect(m_backgroundButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
 
@@ -67,6 +69,7 @@ QLayout* TraceFilterSettingDialog::createLayout(QWidget* parent, const Settings&
    QPalette font_palette;
    font_palette.setColor(QPalette::Button, QColor(current_settings.font));
    m_fontButton->setPalette(font_palette);
+   m_fontButton->setDisabled(!allow_edit);
    m_form->addRow("Font color", m_fontButton);
    QObject::connect(m_fontButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
 

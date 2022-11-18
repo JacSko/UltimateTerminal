@@ -6,7 +6,7 @@
 
 struct TraceFilterSettingDialogMock
 {
-   MOCK_METHOD3(showDialog,std::optional<bool>(QWidget*, const Dialogs::TraceFilterSettingDialog::Settings&, Dialogs::TraceFilterSettingDialog::Settings&));
+   MOCK_METHOD4(showDialog,std::optional<bool>(QWidget*, const Dialogs::TraceFilterSettingDialog::Settings&, Dialogs::TraceFilterSettingDialog::Settings&, bool));
 };
 
 TraceFilterSettingDialogMock* g_trace_filter_setting_dialog_mock;
@@ -39,9 +39,9 @@ namespace Dialogs
 TraceFilterSettingDialog::TraceFilterSettingDialog() {}
 TraceFilterSettingDialog::~TraceFilterSettingDialog() {}
 
-std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings)
+std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
-   return g_trace_filter_setting_dialog_mock->showDialog(parent, current_settings, out_settings);
+   return g_trace_filter_setting_dialog_mock->showDialog(parent, current_settings, out_settings, allow_edit);
 }
 
 }

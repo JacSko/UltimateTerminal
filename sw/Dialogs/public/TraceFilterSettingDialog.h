@@ -66,7 +66,7 @@ public:
     * @return If user declined the dialog, the empty value is returned.
     *
     */
-   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings);
+   std::optional<bool> showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit);
    /**
     * @brief Creates a layout related to dialog window that can be placed in another QWidget (i.e application settings).
     * @param[in] current_settings - settings to be presented to user
