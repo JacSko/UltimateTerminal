@@ -10,6 +10,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QComboBox>
 
 #include "PortHandler.h"
 #include "TraceFilterHandler.h"
@@ -92,15 +93,26 @@ private:
    void createPortHandlersTab(QTabWidget*, QWidget*);
    void createTraceFiltersTab(QTabWidget*, QWidget*);
    void createFileLoggerTab(QTabWidget*);
-   void createDebugTab(QTabWidget*);
+   void createDebugTab(QTabWidget*, QWidget*);
+   void createLoggerTab(QTabWidget*, QWidget*);
+   void createSystemSettingsTab(QTabWidget*, QWidget*);
+   void writeSettingValue(int id, QLineEdit*);
 
    void notifyPortHandlersChanges();
    void notifyTraceFiltersChanges();
    void notifyFileLoggingChanges();
+   void saveLoggerGroups();
+   void saveSystemSettingsGroup();
+   void saveSystemU32Setting(int, QLineEdit*);
+   void saveSystemBoolSetting(int, QLineEdit*);
+   void saveSystemStringSetting(int, QLineEdit*);
 
+   void onDialogClosed();
    PortHandlerItems m_handlers;
    TraceFilterItems m_filters;
    FileLoggingItems m_file_logging;
+   std::vector<QComboBox*> m_logger_comboboxes;
+   std::vector<QLineEdit*> m_setting_lineedits;
 };
 
 }

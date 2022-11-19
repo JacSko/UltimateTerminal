@@ -39,6 +39,12 @@ public:
    {
       return std::stoi(*this);
    }
+   unsigned int toUInt(bool* conv)
+   {
+      *conv = true;
+      return std::stoi(*this);
+   }
+
    bool isEmpty() const
    {
       return std::string::empty();

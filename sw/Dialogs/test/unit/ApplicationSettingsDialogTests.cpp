@@ -15,6 +15,7 @@
 #include "PersistenceHandler.h"
 
 #include "Logger.h"
+#include "Settings.h"
 #include "SerialDriverMock.h"
 
 #include "ApplicationSettingsDialog.h"
@@ -116,9 +117,14 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QTabWidget test_main_tab;
    QDialogButtonBox test_buttonbox;
 
-   /* port handlers and filter contains embedded tab widget */
    QTabWidget test_ports_tab;
    QTabWidget test_filters_tab;
+   QTabWidget test_debug_tab;
+
+   QFormLayout test_logger_layout;
+   QComboBox test_logger_item;
+   QFormLayout test_setting_layout;
+   QLineEdit test_setting_item;
 
    /* current settings */
    test_logging_path = "TEST_PATH";
@@ -141,7 +147,8 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_new()).WillOnce(Return(&test_main_tab))
                                                       .WillOnce(Return(&test_ports_tab))
-                                                      .WillOnce(Return(&test_filters_tab));
+                                                      .WillOnce(Return(&test_filters_tab))
+                                                      .WillOnce(Return(&test_debug_tab));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
    /* expect connecting the dialog button signals */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
@@ -163,10 +170,26 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*LoggingSettingDialogMock_get(), createLayout(_,_)).WillRepeatedly(Return(nullptr));
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
 
+   /* expect Debug subtabs creation, and their layout */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("LOGGING")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("SETTINGS")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_logger_layout))
+                                                       .WillOnce(Return(&test_setting_layout));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_logger_layout, _, _)).Times(LOGGER_GROUP_MAX);
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_setting_layout, _, _)).Times(SETTING_GROUP_MAX);
+   /* expect creation of comboboxes to present current logging settings */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillRepeatedly(Return(&test_logger_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_logger_item, _)).Times(LOGGER_GROUP_MAX * LOGGER_LEVEL_MAX);
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_logger_item, _)).Times(LOGGER_GROUP_MAX);
+   /* expect creation of comboboxes to present current system settings */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillRepeatedly(Return(&test_setting_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_setting_item, _)).Times(SETTING_GROUP_MAX);
+
    /* expect all tab added to main tab view */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_ports_tab,QString("PORTS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_filters_tab,QString("FILTERS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("FILE LOGGING")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_debug_tab,HasSubstr("DEBUG")));
 
    /* user accepted the dialog */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
@@ -180,6 +203,12 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), convertGuiValues(Ne(new_trace_filter_settings_id), _)).WillRepeatedly(DoAll(SetArgReferee<1>(trace_settings), Return(true)));
    /* expect settings readout for file logging */
    EXPECT_CALL(*LoggingSettingDialogMock_get(), convertGuiValues()).WillOnce(Return(test_new_logging_path));
+
+   /* expect readout of logging settings */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_logger_item)).WillRepeatedly(Return("HIGH"));
+
+   /* expect readout of system settings */
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_setting_item)).WillRepeatedly(Return("0"));
 
    /* expect propagation of new settings */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), setSettings(new_port_settings_id,_)).WillOnce(Return(true));

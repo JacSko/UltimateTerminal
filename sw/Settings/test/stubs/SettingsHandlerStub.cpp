@@ -158,5 +158,45 @@ void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>&)
 void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>&)
 {
 }
+std::string SettingsHandler::toString(KeyID id)
+{
+   UT_Assert(id < SETTING_GROUP_MAX);
+   return m_setting_names[id];
+}
+KeyID SettingsHandler::fromString(const std::string& name)
+{
+   KeyID result = SETTING_GROUP_MAX;
+   auto it = std::find(m_setting_names.begin(), m_setting_names.end(), name);
+   if (it != m_setting_names.end())
+   {
+      result = (KeyID)(std::distance(m_setting_names.begin(), it));
+   }
+   return result;
+}
+SettingType SettingsHandler::getType(KeyID id)
+{
+   for (const auto& item : m_u32_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::U32;
+      }
+   }
+   for (const auto& item : m_bool_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::BOOL;
+      }
+   }
+   for (const auto& item : m_string_items)
+   {
+      if (item.first == id)
+      {
+         return SettingType::STRING;
+      }
+   }
+   return SettingType::UNKNOWN;
+}
 
 }

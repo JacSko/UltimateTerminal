@@ -160,3 +160,33 @@ LoggerLevelID LoggerEngine::getLevel(LoggerGroupID id)
    std::lock_guard<std::recursive_mutex> lock(m_mutex);
    return m_group_levels[id];
 }
+std::string LoggerEngine::getGroupName(LoggerGroupID id)
+{
+   UT_Assert(id < LOGGER_GROUP_MAX);
+   return m_group_names[id];
+}
+std::string LoggerEngine::getLevelName(LoggerLevelID level)
+{
+   UT_Assert(level < LOGGER_LEVEL_MAX);
+   return m_level_names[level];
+}
+LoggerGroupID LoggerEngine::groupFromString(const std::string& name)
+{
+   LoggerGroupID result = LOGGER_GROUP_MAX;
+   auto it = std::find(m_group_names.begin(), m_group_names.end(), name);
+   if (it != m_group_names.end())
+   {
+      result = (LoggerGroupID)(std::distance(m_group_names.begin(), it));
+   }
+   return result;
+}
+LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
+{
+   LoggerLevelID result = LOGGER_LEVEL_MAX;
+   auto it = std::find(m_level_names.begin(), m_level_names.end(), name);
+   if (it != m_level_names.end())
+   {
+      result = (LoggerLevelID)(std::distance(m_level_names.begin(), it));
+   }
+   return result;
+}

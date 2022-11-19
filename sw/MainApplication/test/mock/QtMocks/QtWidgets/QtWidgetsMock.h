@@ -194,8 +194,8 @@ class QLineEdit : public QWidget
 {
 public:
    QLineEdit(){};
-   QLineEdit(QDialog*&){};
-   QLineEdit(QWidget*&){};
+   QLineEdit(QDialog*){};
+   QLineEdit(QWidget*){};
    void* operator new(size_t);
    void operator delete(void*){};
    void setText(const QString &);

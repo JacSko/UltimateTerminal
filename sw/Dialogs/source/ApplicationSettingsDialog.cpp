@@ -1,9 +1,12 @@
 #include <array>
+#include <string>
 
 #include "ApplicationSettingsDialog.h"
 #include "PortSettingDialog.h"
 #include "TraceFilterSettingDialog.h"
 #include "Logger.h"
+#include "Settings.h"
+#include <QtWidgets/qabstractitemview.h>
 
 namespace Dialogs
 {
@@ -34,7 +37,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    createPortHandlersTab(main_tab_view, parent);
    createTraceFiltersTab(main_tab_view, parent);
    createFileLoggerTab(main_tab_view);
-   createDebugTab(main_tab_view);
+   createDebugTab(main_tab_view, parent);
 
    QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, main_dialog);
 
@@ -51,8 +54,12 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
       notifyPortHandlersChanges();
       notifyTraceFiltersChanges();
       notifyFileLoggingChanges();
+      saveLoggerGroups();
+      saveSystemSettingsGroup();
       result = true;
    }
+
+   onDialogClosed();
    delete main_dialog;
    return result;
 }
@@ -91,9 +98,76 @@ void ApplicationSettingsDialog::createFileLoggerTab(QTabWidget* main_tab)
    logging_widget->setLayout(m_file_logging.dialog.createLayout(m_file_logging.path, !m_file_logging.logger->isActive()));
    main_tab->addTab(logging_widget, "FILE LOGGING");
 }
-void ApplicationSettingsDialog::createDebugTab(QTabWidget* main_tab)
+void ApplicationSettingsDialog::createDebugTab(QTabWidget* main_tab, QWidget* parent)
 {
-   //TODO but support in logger engine missing
+   QTabWidget* debug_tab = new QTabWidget();
+
+   createLoggerTab(debug_tab, parent);
+   createSystemSettingsTab(debug_tab, parent);
+   main_tab->addTab(debug_tab, "DEBUG");
+}
+void ApplicationSettingsDialog::createLoggerTab(QTabWidget* debug_tab, QWidget* parent)
+{
+   QWidget* logger_widget = new QWidget();
+   QFormLayout* logger_widget_layout = new QFormLayout();
+   logger_widget->setLayout(logger_widget_layout);
+
+   for (uint8_t i = 0; i < LOGGER_GROUP_MAX; i++)
+   {
+      QComboBox* levelbox = new QComboBox(debug_tab);
+      levelbox->setPalette(parent->palette());
+      levelbox->view()->setPalette(parent->palette());
+      for (uint8_t j = 0; j < LOGGER_LEVEL_MAX; j++)
+      {
+         levelbox->addItem(QString(LoggerEngine::get()->getLevelName((LoggerLevelID)j).c_str()));
+      }
+      levelbox->setCurrentText(QString(LoggerEngine::get()->getLevelName(LoggerEngine::get()->getLevel((LoggerGroupID)i)).c_str()));
+      m_logger_comboboxes.push_back(levelbox);
+      logger_widget_layout->addRow(QString(LoggerEngine::get()->getGroupName((LoggerGroupID)i).c_str()), levelbox);
+   }
+   debug_tab->addTab(logger_widget, "LOGGING");
+}
+void ApplicationSettingsDialog::createSystemSettingsTab(QTabWidget* debug_tab, QWidget* parent)
+{
+   QWidget* setting_widget = new QWidget();
+   QFormLayout* setting_widget_layout = new QFormLayout();
+   setting_widget->setLayout(setting_widget_layout);
+
+   setting_widget_layout->setSizeConstraint(QLayout::SetMaximumSize);
+
+   for (uint8_t i = 0; i < SETTING_GROUP_MAX; i++)
+   {
+      QLineEdit* setting_value = new QLineEdit(debug_tab);
+      setting_value->setPalette(parent->palette());
+      std::string name = SETTING_GET_NAME((KeyID)i);
+      writeSettingValue(i, setting_value);
+      setting_widget_layout->addRow(QString(name.c_str()), setting_value);
+      m_setting_lineedits.push_back(setting_value);
+   }
+   debug_tab->addTab(setting_widget, "SETTINGS");
+}
+void ApplicationSettingsDialog::writeSettingValue(int id, QLineEdit* edit)
+{
+   switch (SETTING_GET_TYPE((KeyID)id))
+   {
+   case Settings::SettingType::BOOL:
+   {
+      edit->setText(QString::number(SETTING_GET_BOOL((KeyID)id)));
+      break;
+   }
+   case Settings::SettingType::STRING:
+   {
+      edit->setText(QString(SETTING_GET_STRING((KeyID)id).c_str()));
+      break;
+   }
+   case Settings::SettingType::U32:
+   {
+      edit->setText(QString::number(SETTING_GET_U32((KeyID)id)));
+      break;
+   }
+   default:
+      break;
+   }
 }
 void ApplicationSettingsDialog::notifyPortHandlersChanges()
 {
@@ -131,5 +205,82 @@ void ApplicationSettingsDialog::notifyFileLoggingChanges()
    }
 }
 
+void ApplicationSettingsDialog::saveLoggerGroups()
+{
+   for (uint8_t i = 0; i < m_logger_comboboxes.size(); i++)
+   {
+      std::string level_name = m_logger_comboboxes[i]->currentText().toStdString();
+      LoggerGroupID logger_id = (LoggerGroupID)i;
+      LoggerLevelID logger_level = LoggerEngine::get()->levelFromString(level_name);
+      LoggerEngine::get()->setLevel(logger_id, logger_level);
+      UT_Log(GUI_DIALOG, LOW, "Logger group %s set to %s", LoggerEngine::get()->getGroupName(logger_id).c_str(), level_name.c_str());
+   }
+}
+
+void ApplicationSettingsDialog::saveSystemSettingsGroup()
+{
+   for (uint8_t i = 0; i < m_setting_lineedits.size(); i++)
+   {
+      switch(SETTING_GET_TYPE((KeyID)i))
+      {
+      case Settings::SettingType::BOOL:
+         saveSystemBoolSetting(i, m_setting_lineedits[i]);
+         break;
+      case Settings::SettingType::STRING:
+         saveSystemStringSetting(i, m_setting_lineedits[i]);
+         break;
+      case Settings::SettingType::U32:
+         saveSystemU32Setting(i, m_setting_lineedits[i]);
+         break;
+      default:
+         break;
+      }
+   }
+}
+void ApplicationSettingsDialog::saveSystemU32Setting(int id, QLineEdit* edit)
+{
+   KeyID setting_id = (KeyID)id;
+   bool conversion_ok = false;
+   QString text = edit->text();
+   uint32_t value = text.toUInt(&conversion_ok);
+   if (conversion_ok)
+   {
+      SETTING_SET_U32(setting_id, value);
+      UT_Log(GUI_DIALOG, LOW, "Setting %s to %u", SETTING_GET_NAME(setting_id).c_str(), value);
+   }
+   else
+   {
+      UT_Log(GUI_DIALOG, ERROR, "Cannot convert value %s to U32 for setting %s", text.toStdString().c_str(), SETTING_GET_NAME(setting_id).c_str());
+   }
+}
+void ApplicationSettingsDialog::saveSystemBoolSetting(int id, QLineEdit* edit)
+{
+   KeyID setting_id = (KeyID)id;
+   bool conversion_ok = false;
+   QString text = edit->text();
+   bool value = (bool)text.toUInt(&conversion_ok);
+   if (conversion_ok)
+   {
+      SETTING_SET_BOOL(setting_id, value);
+      UT_Log(GUI_DIALOG, ERROR, "Setting %s to %u", SETTING_GET_NAME(setting_id).c_str(), value);
+   }
+   else
+   {
+      UT_Log(GUI_DIALOG, ERROR, "Cannot convert value %s to BOOL for setting %s", text.toStdString().c_str(), SETTING_GET_NAME(setting_id).c_str());
+   }
+}
+void ApplicationSettingsDialog::saveSystemStringSetting(int id, QLineEdit* edit)
+{
+   KeyID setting_id = (KeyID)id;
+   std::string value = edit->text().toStdString();
+   SETTING_SET_STRING(setting_id, value);
+   UT_Log(GUI_DIALOG, ERROR, "Setting %s to %s", SETTING_GET_NAME(setting_id).c_str(), value.c_str());
+}
+
+void ApplicationSettingsDialog::onDialogClosed()
+{
+   m_logger_comboboxes.clear();
+   m_setting_lineedits.clear();
+}
 
 }
