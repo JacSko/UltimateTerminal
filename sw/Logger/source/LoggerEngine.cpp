@@ -99,7 +99,7 @@ void LoggerEngine::refreshGroupLevelSettings()
    for (uint32_t i = 0; i < LOGGER_GROUP_MAX; i++)
    {
       std::string name = "Logger_group_" + m_group_names[i];
-      auto id = SETTING_STRING_TO_ID(name);
+      auto id = SETTING_GET_ID(name);
       if (id != SETTING_GROUP_MAX)
       {
          /* if setting found */

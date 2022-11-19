@@ -15,6 +15,8 @@
 #define SETTING_ADD_LISTENER(id, listener) ::Settings::SettingsHandler::get()->registerListener(id, listener)
 #define SETTING_REMOVE_LISTENER(id, listener) ::Settings::SettingsHandler::get()->unregisterListener(id, listener)
 
-#define SETTING_STRING_TO_ID(stringname) ::Settings::SettingsHandler::get()->getID(stringname)
+#define SETTING_GET_NAME(id) ::Settings::SettingsHandler::get()->toString(id)
+#define SETTING_GET_ID(name) ::Settings::SettingsHandler::get()->fromString(name)
+#define SETTING_GET_TYPE(id) ::Settings::SettingsHandler::get()->getType(id)
 
 #endif

@@ -175,7 +175,7 @@ void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>& data)
       std::string setting_name;
       KeyID id;
       ::deserialize(data, offset, setting_name);
-      id = getID(setting_name);
+      id = fromString(setting_name);
       switch(getType(id))
       {
       case SettingType::BOOL:
@@ -259,7 +259,21 @@ void SettingsHandler::printSettings()
    }
 
 }
-
+std::string SettingsHandler::toString(KeyID id)
+{
+   UT_Assert(id < SETTING_GROUP_MAX);
+   return m_setting_names[id];
+}
+KeyID SettingsHandler::fromString(const std::string& name)
+{
+   KeyID result = SETTING_GROUP_MAX;
+   auto it = std::find(m_setting_names.begin(), m_setting_names.end(), name);
+   if (it != m_setting_names.end())
+   {
+      result = (KeyID)(std::distance(m_setting_names.begin(), it));
+   }
+   return result;
+}
 uint32_t SettingsHandler::getU32(KeyID id)
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
@@ -301,17 +315,6 @@ bool SettingsHandler::setString(KeyID id, const std::string& value)
    bool changed = old != value;
    notifyListeners(id);
    return changed;
-}
-
-KeyID SettingsHandler::getID(const std::string& name)
-{
-   KeyID result = SETTING_GROUP_MAX;
-   auto it = std::find(m_setting_names.begin(), m_setting_names.end(), name);
-   if (it != m_setting_names.end())
-   {
-      result = (KeyID) std::distance(m_setting_names.begin(), it);
-   }
-   return result;
 }
 
 bool SettingsHandler::setBool(KeyID id, bool value)

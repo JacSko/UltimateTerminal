@@ -162,7 +162,24 @@ public:
     * @return void
     */
    void printSettings();
-
+   /**
+    * @brief Get settings name in textual form.
+    * @param[in] id - id of the string.
+    * @return Name of the setting
+    */
+   std::string toString(KeyID id);
+   /**
+    * @brief Get settings id from name.
+    * @param[in] name - name of the string.
+    * @return id of the setting
+    */
+   KeyID fromString(const std::string& name);
+   /**
+    * @brief Get type of the settings basing on id.
+    * @param[in] id - id of the setting.
+    * @return Type of the setting
+    */
+   SettingType getType(KeyID id);
 
 
 private:
@@ -170,7 +187,6 @@ private:
    std::vector<KeyID> applySettings();
    void onPersistenceRead(const std::vector<uint8_t>& data);
    void onPersistenceWrite(std::vector<uint8_t>& data);
-   SettingType getType(KeyID);
 
    std::string m_file_path;
    std::mutex m_settings_mutex;
