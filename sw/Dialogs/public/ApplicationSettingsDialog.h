@@ -13,6 +13,7 @@
 
 #include "PortHandler.h"
 #include "TraceFilterHandler.h"
+#include "LoggingSettingDialog.h"
 #include "IFileLogger.h"
 
 
@@ -37,7 +38,10 @@ class ApplicationSettingsDialog : public QObject
    Q_OBJECT
 
 public:
-   ApplicationSettingsDialog(std::vector<std::unique_ptr<GUI::PortHandler>>& ports, std::vector<std::unique_ptr<TraceFilterHandler>>& filters, std::unique_ptr<IFileLogger>& logger);
+   ApplicationSettingsDialog(std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
+                             std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
+                             std::unique_ptr<IFileLogger>& logger,
+                             std::string& logging_path);
    ~ApplicationSettingsDialog();
 
    /**
@@ -49,9 +53,54 @@ public:
     */
    std::optional<bool> showDialog(QWidget* parent);
 private:
-   std::vector<std::unique_ptr<GUI::PortHandler>>& m_port_handlers;
-   std::vector<std::unique_ptr<TraceFilterHandler>>& m_trace_filters;
-   std::unique_ptr<IFileLogger>& m_file_logger;
+   struct PortHandlerItems
+   {
+      PortHandlerItems(std::vector<std::unique_ptr<GUI::PortHandler>>& handlers):
+      port_handlers(handlers),
+      dialogs {handlers.size()}
+      {
+      }
+      std::vector<std::unique_ptr<GUI::PortHandler>>& port_handlers;
+      std::vector<Dialogs::PortSettingDialog> dialogs;
+   };
+
+   struct TraceFilterItems
+   {
+      TraceFilterItems(std::vector<std::unique_ptr<TraceFilterHandler>>& handlers):
+      filters(handlers),
+      dialogs {handlers.size()}
+      {
+      }
+      std::vector<std::unique_ptr<TraceFilterHandler>>& filters;
+      std::vector<Dialogs::TraceFilterSettingDialog> dialogs;
+   };
+
+   struct FileLoggingItems
+   {
+      FileLoggingItems(std::string& path, std::unique_ptr<IFileLogger>& logger):
+      path(path),
+      dialog (),
+      logger(logger)
+      {
+      }
+      std::string& path;
+      Dialogs::LoggingSettingDialog dialog;
+      std::unique_ptr<IFileLogger>& logger;
+   };
+
+   void createGeneralTab(QTabWidget*);
+   void createPortHandlersTab(QTabWidget*, QWidget*);
+   void createTraceFiltersTab(QTabWidget*, QWidget*);
+   void createFileLoggerTab(QTabWidget*);
+   void createDebugTab(QTabWidget*);
+
+   void notifyPortHandlersChanges();
+   void notifyTraceFiltersChanges();
+   void notifyFileLoggingChanges();
+
+   PortHandlerItems m_handlers;
+   TraceFilterItems m_filters;
+   FileLoggingItems m_file_logging;
 };
 
 }

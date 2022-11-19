@@ -79,6 +79,9 @@ target_link_libraries(ApplicationSettingsDialogTests PUBLIC
         Utilities
         QtMocks
         DriversMocks
+        DialogsMocks
         MainApplicationIf
+        MainApplicationMocks
+        UtilitiesMocks
 )
 add_test(NAME ApplicationSettingsDialogTests COMMAND ApplicationSettingsDialogTests)

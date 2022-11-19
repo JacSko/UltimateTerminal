@@ -32,6 +32,7 @@ m_user_defined(false)
 
    m_settings.background = m_parent->palette().color(QPalette::Base).rgb();
    m_settings.font = m_parent->palette().color(QPalette::Text).rgb();
+   m_settings.id = TRACE_FILTER_FIELD_ID;
    setLineEditColor(m_settings.background, m_settings.font);
 
    UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
@@ -47,8 +48,7 @@ std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilterHandler::t
       if (std::regex_search(text, m_regex))
       {
          UT_Log(TRACE_FILTER, HIGH, "Found match for filer %s", getName().c_str());
-         Dialogs::TraceFilterSettingDialog::Settings result {m_settings.regex, m_settings.background, m_settings.font};
-         return result;
+         return m_settings;
       }
       return {};
    }
@@ -93,6 +93,7 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 
    uint32_t background_color;
    uint32_t font_color;
+   uint8_t id;
    std::string text;
    bool is_active;
    Dialogs::TraceFilterSettingDialog::Settings settings;
@@ -102,10 +103,12 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, background_color);
    ::deserialize(data, offset, font_color);
    ::deserialize(data, offset, m_user_defined);
+   ::deserialize(data, offset, id);
 
    settings.background = background_color;
    settings.font = font_color;
    settings.regex = text;
+   settings.id = id;
    handleNewSettings(settings);
    setButtonState(!is_active);
    m_button->setChecked(!is_active);
@@ -124,7 +127,8 @@ void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_settings.background);
    ::serialize(data, m_settings.font);
    ::serialize(data, m_user_defined);
-   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_settings.background, m_settings.font, is_active, text.c_str());
+   ::serialize(data, m_settings.id);
+   UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : id %u, background color %.6x, font color %.6x, active %u, text %s", getName().c_str(), m_settings.id, m_settings.background, m_settings.font, is_active, text.c_str());
 
 }
 void TraceFilterHandler::onButtonClicked()

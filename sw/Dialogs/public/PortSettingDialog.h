@@ -131,6 +131,21 @@ enum class PortType
       {
          return m_error_strings;
       }
+
+      bool operator== (const Settings& rhs)
+      {
+         return (type == rhs.type) &&
+                (port_name == rhs.port_name) &&
+                (serialSettings == rhs.serialSettings) &&
+                (ip_address == rhs.ip_address) &&
+                (port == rhs.port) &&
+                (trace_color == rhs.trace_color) &&
+                (font_color == rhs.font_color);
+      }
+      bool operator!= (const Settings& rhs)
+      {
+         return !(*this == rhs);
+      }
    private:
       bool validateIpAddress(const std::string& ip_address) const
       {

@@ -11,6 +11,9 @@ struct PortHandlerMock
    MOCK_METHOD1(getName,const std::string&(uint8_t id));
    MOCK_METHOD2(write, bool(const std::vector<uint8_t>& data, size_t size));
    MOCK_METHOD0(refreshUi, void());
+   MOCK_METHOD2(setSettings, bool(uint8_t id, const Dialogs::PortSettingDialog::Settings&));
+   MOCK_METHOD1(getSettings, const Dialogs::PortSettingDialog::Settings&(uint8_t id));
+   MOCK_METHOD1(isOpened, bool(uint8_t id));
 };
 
 PortHandlerMock* g_port_handler_mock;
@@ -62,6 +65,19 @@ void PortHandler::refreshUi()
 {
    return PortHandlerMock_get()->refreshUi();
 }
+bool PortHandler::setSettings(const Dialogs::PortSettingDialog::Settings& settings)
+{
+   return PortHandlerMock_get()->setSettings(m_settings.port_id, settings);
+}
+const Dialogs::PortSettingDialog::Settings& PortHandler::getSettings()
+{
+   return PortHandlerMock_get()->getSettings(m_settings.port_id);
+}
+bool PortHandler::isOpened()
+{
+   return PortHandlerMock_get()->isOpened(m_settings.port_id);
+}
+
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onTimeout(uint32_t){};

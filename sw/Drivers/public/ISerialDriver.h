@@ -166,6 +166,16 @@ struct Settings
    EnumValue<ParityType> parityBits;
    EnumValue<StopBitType> stopBits;
    EnumValue<DataBitType> dataBits;
+
+   bool operator==(const Settings& lhs)
+   {
+      return (device == lhs.device)        &&
+             (baudRate == lhs.baudRate)    &&
+             (mode == lhs.mode)            &&
+             (parityBits == lhs.parityBits)&&
+             (stopBits == lhs.stopBits)    &&
+             (dataBits == lhs.dataBits);
+   }
 };
 
 class SerialListener

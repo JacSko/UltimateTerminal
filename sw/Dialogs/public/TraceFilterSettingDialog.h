@@ -45,9 +45,20 @@ public:
    /** @brief Stores data from dialog fields */
    struct Settings
    {
+      uint8_t id;            /**< ID of the filter   */
       std::string regex;     /**< Regular expression */
-      uint32_t background;   /**< Background color. */
-      uint32_t font;         /**< Font color */
+      uint32_t background;   /**< Background color.  */
+      uint32_t font;         /**< Font color         */
+      bool operator == (const Settings& lhs)
+      {
+         return (regex == lhs.regex)           &&
+                (background == lhs.background) &&
+                (font == lhs.font);
+      }
+      bool operator != (const Settings& lhs)
+      {
+         return (!(*this == lhs));
+      }
    };
 
    /**
@@ -94,6 +105,7 @@ private:
    QLineEdit* m_regexEdit;
    QPushButton* m_backgroundButton;
    QPushButton* m_fontButton;
+   Settings m_settings;
 
    void addDialogButtons();
 public slots:

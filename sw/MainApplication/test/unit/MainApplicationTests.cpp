@@ -10,6 +10,9 @@
 #include "LoggingSettingDialogMock.h"
 #include "ITimersMock.h"
 #include "PersistenceHandlerMock.h"
+#include "PortSettingDialogMock.h"
+#include "TraceFilterSettingDialogMock.h"
+#include "ApplicationSettingsDialogMock.h"
 #include "IFileLoggerMock.h"
 #include "Settings.h"
 
@@ -49,6 +52,7 @@ struct MainApplicationFixture : public testing::Test
       TraceFilterHandlerMock_init();
       LoggingSettingDialogMock_init();
       Persistence::PersistenceHandlerMock_init();
+      ApplicationSettingsDialogMock_init();
       g_timers_mock = new Utilities::ITimersMock;
       g_logger_mock = new IFileLoggerMock;
 
@@ -164,6 +168,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), save(_)).WillOnce(Return(true));
 
       m_test_subject.reset(nullptr);
+      ApplicationSettingsDialogMock_deinit();
       Persistence::PersistenceHandlerMock_deinit();
       LoggingSettingDialogMock_deinit();
       TraceFilterHandlerMock_deinit();

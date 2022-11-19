@@ -9,7 +9,7 @@
 #include "Settings.h"
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
-
+#include "ApplicationSettingsDialog.h"
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
@@ -328,24 +328,8 @@ void MainApplication::onPortSwitchRequest()
 }
 void MainApplication::onSettingsButtonClicked()
 {
-//   QDialog* dialog = new QDialog(this);
-//   dialog->setPalette(this->palette());
-//   QVBoxLayout* dialog_layout = new QVBoxLayout();
-//
-//   QTabWidget* tab_view = new QTabWidget();
-//   QWidget* tab_widget = new QWidget();
-//
-//   Dialogs::LoggingSettingDialog logging_context;
-//   tab_widget->setLayout(logging_context.createLayout(m_file_logging_path, !m_file_logger->isActive()));
-//   tab_view->addTab(tab_widget,"Logger");
-//   dialog_layout->addWidget(tab_view);
-//   dialog->setLayout(dialog_layout);
-//   dialog->exec();
-//
-//   logging_context.destroyLayout();
-//   delete tab_widget;
-//   delete tab_view;
-//   delete dialog;
+   Dialogs::ApplicationSettingsDialog dialog (m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
+   dialog.showDialog(this);
 }
 bool MainApplication::sendToPort(const std::string& string)
 {

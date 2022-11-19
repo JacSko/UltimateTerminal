@@ -3,10 +3,12 @@ add_library(Dialogs STATIC
    source/UserButtonDialog.cpp
    source/LoggingSettingDialog.cpp
    source/TraceFilterSettingDialog.cpp
+   source/ApplicationSettingsDialog.cpp
    public/PortSettingDialog.h
    public/UserButtonDialog.h
    public/LoggingSettingDialog.h
    public/TraceFilterSettingDialog.h
+   public/ApplicationSettingsDialog.h
 )
 
 target_include_directories(Dialogs PUBLIC 
@@ -19,6 +21,7 @@ target_link_libraries(Dialogs
    Logger
    Utilities
    Drivers
+   MainApplicationIf
 )
 
 if (UNIT_TESTS)

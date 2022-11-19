@@ -25,6 +25,9 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
    m_dialog = new QDialog(parent);
    m_dialog->setPalette(parent->palette());
    m_parent = m_dialog;
+   std::string window_title = "FILTER" + std::to_string(current_settings.id) + " Settings";
+   m_dialog->setWindowTitle(QString(window_title.c_str()));
+
 
    m_dialog->setLayout(createLayout(m_dialog, current_settings, allow_edit));
    addDialogButtons();
@@ -46,6 +49,7 @@ QLayout* TraceFilterSettingDialog::createLayout(QWidget* parent, const Settings&
 {
    m_parent = parent;
    m_form = new QFormLayout();
+   m_settings = current_settings;
 
    m_regexEdit = new QLineEdit(m_parent);
    QPalette palette = m_regexEdit->palette();
@@ -95,6 +99,7 @@ bool TraceFilterSettingDialog::convertGuiValues(Settings& out_settings)
    out_settings.regex = m_regexEdit->text().toStdString();
    out_settings.background = m_backgroundButton->palette().color(QPalette::Button).rgb();
    out_settings.font = m_fontButton->palette().color(QPalette::Button).rgb();
+   out_settings.id = m_settings.id;
    UT_Log(GUI_DIALOG, HIGH, "got colors background %.6x, font %.6x, regex %s", out_settings.background, out_settings.font, out_settings.regex.c_str());
    return true;
 }

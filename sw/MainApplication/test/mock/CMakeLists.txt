@@ -10,3 +10,12 @@ target_link_libraries(QtMocks PRIVATE
                       Logger
                       gmock
                       )
+                      
+add_library(MainApplicationMocks INTERFACE)
+            
+target_include_directories(MainApplicationMocks INTERFACE
+                           ./ )
+target_link_libraries(MainApplicationMocks INTERFACE 
+                      Logger
+                      gmock
+                      )
