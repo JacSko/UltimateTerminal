@@ -102,6 +102,34 @@ public:
     */
    LoggerLevelID getLevel(LoggerGroupID id);
 
+   /**
+    * @brief Returns LoggerGroupID in textual form
+    * @param[in] id - id of the logger group
+    * @return LoggerGroupID name
+    */
+   std::string getGroupName(LoggerGroupID id);
+
+   /**
+    * @brief Returns LoggerLevelID in textual form
+    * @param[in] level - id of the logger level
+    * @return LoggerLevelID name
+    */
+   std::string getLevelName(LoggerLevelID level);
+
+   /**
+    * @brief Returns LoggerGroupID from textual form
+    * @param[in] name - name of the group
+    * @return LoggerGroupID as enum value
+    */
+   LoggerGroupID groupFromString(const std::string& name);
+
+   /**
+    * @brief Returns LoggerLevelID from textual form
+    * @param[in] name - name of the level
+    * @return LoggerLevelID as enum value
+    */
+   LoggerLevelID levelFromString(const std::string& name);
+
 private:
    void refreshGroupLevelSettings();
    LoggerLevelID getLevelFromString(const std::string& level);
