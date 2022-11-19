@@ -86,11 +86,14 @@ void LoggingSettingDialog::addDialogButtons()
 }
 void LoggingSettingDialog::onPathSelectButtonClicked()
 {
-   QString dir = QFileDialog::getExistingDirectory(m_dialog, tr("Select directory"),
+   QString dir = QFileDialog::getExistingDirectory(m_dialog, "Select directory",
                                                 QString(m_current_path.c_str()),
                                                 QFileDialog::ShowDirsOnly
                                                 | QFileDialog::DontResolveSymlinks);
-   m_filePathEdit->setText(dir);
+   if (!dir.isEmpty())
+   {
+      m_filePathEdit->setText(dir);
+   }
 }
 std::string LoggingSettingDialog::convertGuiValues()
 {
