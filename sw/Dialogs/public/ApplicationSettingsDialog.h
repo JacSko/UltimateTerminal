@@ -104,6 +104,7 @@ private:
    void notifyTraceFiltersChanges();
    void notifyFileLoggingChanges();
    void saveLoggerGroups();
+   void saveThemeChange();
    void saveSystemSettingsGroup();
    void saveSystemU32Setting(int, QLineEdit*);
    void saveSystemBoolSetting(int, QLineEdit*);

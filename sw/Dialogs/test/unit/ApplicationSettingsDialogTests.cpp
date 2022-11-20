@@ -123,8 +123,10 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QTabWidget test_debug_tab;
 
    QScrollArea test_settings_scroll;
-   QFormLayout test_logger_layout;
    QComboBox test_logger_item;
+   QFormLayout test_general_layout;
+   QComboBox test_theme_combobox;
+   QFormLayout test_logger_layout;
    QFormLayout test_setting_layout;
    QLineEdit test_setting_item;
 
@@ -136,7 +138,6 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    trace_settings.background = 0x000000;
    trace_settings.font = 0x000001;
    trace_settings.regex = "OLD_REGEX";
-
    /* new settings */
    std::string test_new_logging_path = "TEST_NEW_PATH";
    Dialogs::PortSettingDialog::Settings new_port_settings = {};
@@ -152,9 +153,24 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
                                                       .WillOnce(Return(&test_filters_tab))
                                                       .WillOnce(Return(&test_debug_tab));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_general_layout))
+                                                       .WillOnce(Return(&test_logger_layout))
+                                                       .WillOnce(Return(&test_setting_layout));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_theme_combobox))
+                                                     .WillRepeatedly(Return(&test_logger_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillRepeatedly(Return(&test_setting_item));
+
    /* expect connecting the dialog button signals */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
+
+   /* expect GENERAL tab fill-in */
+   EXPECT_CALL(test_theme_controller, themeToName(_)).Times(AtLeast((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX + 1));
+   EXPECT_CALL(test_theme_controller, currentTheme()).WillOnce(Return(IThemeController::Theme::DARK))
+                                                     .WillOnce(Return(IThemeController::Theme::DEFAULT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_theme_combobox,_)).Times((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX);
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_theme_combobox, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_theme_combobox));
 
    /* expect PORTS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_ports_tab,_,HasSubstr("PORT"))).Times(PORT_HANDLERS_COUNT);
@@ -177,19 +193,17 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QScrollArea_setWidget(_,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("LOGGING")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,&test_settings_scroll,HasSubstr("SETTINGS")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_logger_layout))
-                                                       .WillOnce(Return(&test_setting_layout));
+
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_logger_layout, _, _)).Times(LOGGER_GROUP_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_setting_layout, _, _)).Times(SETTING_GROUP_MAX);
    /* expect creation of comboboxes to present current logging settings */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillRepeatedly(Return(&test_logger_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_logger_item, _)).Times(LOGGER_GROUP_MAX * LOGGER_LEVEL_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_logger_item, _)).Times(LOGGER_GROUP_MAX);
    /* expect creation of comboboxes to present current system settings */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillRepeatedly(Return(&test_setting_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_setting_item, _)).Times(SETTING_GROUP_MAX);
 
    /* expect all tab added to main tab view */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("GENERAL")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_ports_tab,QString("PORTS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_filters_tab,QString("FILTERS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("FILE LOGGING")));
@@ -197,6 +211,11 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* user accepted the dialog */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
+
+   /* expect readout of theme */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_theme_combobox)).WillOnce(Return("DARK"));
+   EXPECT_CALL(test_theme_controller, nameToTheme(_)).WillOnce(Return(IThemeController::Theme::DARK));
+   EXPECT_CALL(test_theme_controller, reloadTheme(_));
 
    /* expect settings readout for all ports, two of them returned the new settings */
    EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(new_port_settings_id,_)).WillOnce(DoAll(SetArgReferee<1>(new_port_settings), Return(true)));

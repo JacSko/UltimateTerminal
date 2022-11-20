@@ -502,6 +502,7 @@ void MainApplication::reloadTheme(IThemeController::Theme theme)
       setButtonState(ui->loggingButton, m_file_logger->isActive());
       setButtonState(ui->scrollButton, m_scrolling_active);
       setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
+      SETTING_SET_U32(GUI_Theme_ID, theme == IThemeController::Theme::DARK? SETTING_GET_U32(GUI_Dark_Theme_ID) : SETTING_GET_U32(GUI_Default_Theme_ID));
    }
 }
 IThemeController::Theme MainApplication::currentTheme()

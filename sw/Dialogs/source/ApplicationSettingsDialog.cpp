@@ -240,7 +240,14 @@ void ApplicationSettingsDialog::saveLoggerGroups()
 }
 void ApplicationSettingsDialog::saveThemeChange()
 {
-//TODO
+   std::string new_theme_text = m_theme_combobox->currentText().toStdString();
+   IThemeController::Theme new_theme = m_theme_controller.nameToTheme(new_theme_text);
+   IThemeController::Theme current_theme = m_theme_controller.currentTheme();
+   if (new_theme != current_theme)
+   {
+      UT_Log(GUI_DIALOG, LOW, "Theme change detected - %s -> %s", m_theme_controller.themeToName(current_theme).c_str(), new_theme_text.c_str());
+      m_theme_controller.reloadTheme(new_theme);
+   }
 }
 void ApplicationSettingsDialog::saveSystemSettingsGroup()
 {
