@@ -31,6 +31,10 @@ public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
 
+    void reloadTheme(Ui_MainWindow::Theme);
+    std::string themeToName(Ui_MainWindow::Theme);
+    Ui_MainWindow::Theme nameToTheme(const std::string& name);
+
     static const uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
 private:
     Ui::MainWindow *ui;
@@ -60,7 +64,6 @@ private:
     void onPersistenceRead(const std::vector<uint8_t>& data);
     void onPersistenceWrite(std::vector<uint8_t>& data);
     void addToCommandHistory(uint8_t port_id, const std::string& text);
-    void reloadTheme(Ui_MainWindow::Theme);
     uint8_t portNameToId(const std::string& name);
     std::string createLogFileName();
 public slots:

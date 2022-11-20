@@ -30,6 +30,11 @@ __attribute__((weak)) std::string getExecutablePath()
 }
 }
 
+#undef APPLICATION_THEME
+#define APPLICATION_THEME(name) #name,
+std::array<std::string, (uint32_t)Ui_MainWindow::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
+#undef APPLICATION_THEME
+
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
@@ -498,6 +503,22 @@ void MainApplication::reloadTheme(Ui_MainWindow::Theme theme)
       setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
    }
 }
+std::string MainApplication::themeToName(Ui_MainWindow::Theme theme)
+{
+   UT_Assert(theme < Ui_MainWindow::Theme::APPLICATION_THEMES_MAX);
+   return m_themes_names[(uint32_t)theme];
+}
+Ui_MainWindow::Theme MainApplication::nameToTheme(const std::string& name)
+{
+   Ui_MainWindow::Theme result = Ui_MainWindow::Theme::APPLICATION_THEMES_MAX;
+   auto it = std::find(m_themes_names.begin(), m_themes_names.end(), name);
+   if (it != m_themes_names.end())
+   {
+      result = (Ui_MainWindow::Theme)(std::distance(m_themes_names.begin(), it));
+   }
+   return result;
+}
+
 uint8_t MainApplication::portNameToId(const std::string& name)
 {
    auto result = std::find_if(m_port_id_name_map.begin(), m_port_id_name_map.end(), [&](const auto& obj){return obj.second == name;});
