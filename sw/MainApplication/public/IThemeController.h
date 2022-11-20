@@ -1,12 +1,26 @@
 #pragma once
 #include <string>
-#include "ui_MainWindow.h"
+
+#define APPLICATION_THEMES       \
+      APPLICATION_THEME(DEFAULT) \
+      APPLICATION_THEME(DARK)    \
 
 class IThemeController
 {
 public:
+
+#undef APPLICATION_THEME
+#define APPLICATION_THEME(name) name,
+enum class Theme
+{
+   APPLICATION_THEMES
+   APPLICATION_THEMES_MAX
+};
+#undef APPLICATION_THEME
+
+
    virtual ~IThemeController(){};
-   virtual void reloadTheme(Ui_MainWindow::Theme) = 0;
-   virtual std::string themeToName(Ui_MainWindow::Theme) = 0;
-   virtual Ui_MainWindow::Theme nameToTheme(const std::string& name) = 0;
+   virtual void reloadTheme(Theme) = 0;
+   virtual std::string themeToName(Theme) = 0;
+   virtual Theme nameToTheme(const std::string& name) = 0;
 };

@@ -32,7 +32,7 @@ __attribute__((weak)) std::string getExecutablePath()
 
 #undef APPLICATION_THEME
 #define APPLICATION_THEME(name) #name,
-std::array<std::string, (uint32_t)Ui_MainWindow::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
+std::array<std::string, (uint32_t)IThemeController::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
 #undef APPLICATION_THEME
 
 
@@ -54,13 +54,13 @@ m_trace_scrolling_active(false)
 
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
    {
-      ui->loadTheme(Ui::MainWindow::Theme::DARK);
-      m_current_theme = Ui::MainWindow::Theme::DARK;
+      ui->loadTheme(IThemeController::Theme::DARK);
+      m_current_theme = IThemeController::Theme::DARK;
    }
    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
    {
-      ui->loadTheme(Ui::MainWindow::Theme::DEFAULT);
-      m_current_theme = Ui::MainWindow::Theme::DEFAULT;
+      ui->loadTheme(IThemeController::Theme::DEFAULT);
+      m_current_theme = IThemeController::Theme::DEFAULT;
    }
    this->setWindowTitle("UltimateTerminal");
 
@@ -334,7 +334,7 @@ void MainApplication::onPortSwitchRequest()
 }
 void MainApplication::onSettingsButtonClicked()
 {
-   Dialogs::ApplicationSettingsDialog dialog (m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
+   Dialogs::ApplicationSettingsDialog dialog (m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path, *this);
    dialog.showDialog(this);
 }
 bool MainApplication::sendToPort(const std::string& string)
@@ -484,7 +484,7 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
       }
    }
 }
-void MainApplication::reloadTheme(Ui_MainWindow::Theme theme)
+void MainApplication::reloadTheme(IThemeController::Theme theme)
 {
    if (m_current_theme != theme)
    {
@@ -504,18 +504,18 @@ void MainApplication::reloadTheme(Ui_MainWindow::Theme theme)
       setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
    }
 }
-std::string MainApplication::themeToName(Ui_MainWindow::Theme theme)
+std::string MainApplication::themeToName(IThemeController::Theme theme)
 {
-   UT_Assert(theme < Ui_MainWindow::Theme::APPLICATION_THEMES_MAX);
+   UT_Assert(theme < IThemeController::Theme::APPLICATION_THEMES_MAX);
    return m_themes_names[(uint32_t)theme];
 }
-Ui_MainWindow::Theme MainApplication::nameToTheme(const std::string& name)
+IThemeController::Theme MainApplication::nameToTheme(const std::string& name)
 {
-   Ui_MainWindow::Theme result = Ui_MainWindow::Theme::APPLICATION_THEMES_MAX;
+   IThemeController::Theme result = IThemeController::Theme::APPLICATION_THEMES_MAX;
    auto it = std::find(m_themes_names.begin(), m_themes_names.end(), name);
    if (it != m_themes_names.end())
    {
-      result = (Ui_MainWindow::Theme)(std::distance(m_themes_names.begin(), it));
+      result = (IThemeController::Theme)(std::distance(m_themes_names.begin(), it));
    }
    return result;
 }

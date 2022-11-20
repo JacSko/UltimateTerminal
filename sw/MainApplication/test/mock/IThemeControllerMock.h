@@ -3,9 +3,9 @@
 #include "IThemeController.h"
 
 
-struct IThemeControllerMock
+struct IThemeControllerMock : public IThemeController
 {
-   MOCK_METHOD1(reloadTheme, void(Ui_MainWindow::Theme));
-   MOCK_METHOD1(themeToName, std::string(Ui_MainWindow::Theme));
-   MOCK_METHOD1(reloadTheme, Ui_MainWindow::Theme(const std::string&));
+   MOCK_METHOD1(reloadTheme, void(IThemeController::Theme));
+   MOCK_METHOD1(themeToName, std::string(IThemeController::Theme));
+   MOCK_METHOD1(nameToTheme, IThemeController::Theme(const std::string&));
 };

@@ -13,7 +13,7 @@
 #include "IFileLoggerMock.h"
 #include "ITimersMock.h"
 #include "PersistenceHandler.h"
-
+#include "IThemeControllerMock.h"
 #include "Logger.h"
 #include "Settings.h"
 #include "SerialDriverMock.h"
@@ -71,7 +71,7 @@ struct ApplicationSettingsDialogFixture : public testing::Test
          test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(nullptr, nullptr, nullptr, test_persistence)));
       }
       test_file_logger = IFileLogger::create();
-      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_handlers, test_filters, test_file_logger, test_logging_path));
+      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_handlers, test_filters, test_file_logger, test_logging_path, test_theme_controller));
    }
    void TearDown()
    {
@@ -93,6 +93,7 @@ struct ApplicationSettingsDialogFixture : public testing::Test
    std::unique_ptr<IFileLogger> test_file_logger;
    std::string test_logging_path;
    Persistence::PersistenceHandler test_persistence;
+   IThemeControllerMock test_theme_controller;
    std::unique_ptr<Dialogs::ApplicationSettingsDialog> m_test_subject;
 
 };

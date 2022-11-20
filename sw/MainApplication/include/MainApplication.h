@@ -48,11 +48,11 @@ private:
     uint32_t m_scroll_default_color;
     std::map<uint8_t,std::string> m_port_id_name_map;
     std::map<uint8_t, std::vector<std::string>> m_commands_history;
-    Ui_MainWindow::Theme m_current_theme;
+    IThemeController::Theme m_current_theme;
 
-    void reloadTheme(Ui_MainWindow::Theme) override;
-    std::string themeToName(Ui_MainWindow::Theme) override;
-    Ui_MainWindow::Theme nameToTheme(const std::string& name) override;
+    void reloadTheme(IThemeController::Theme) override;
+    std::string themeToName(IThemeController::Theme) override;
+    IThemeController::Theme nameToTheme(const std::string& name) override;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
