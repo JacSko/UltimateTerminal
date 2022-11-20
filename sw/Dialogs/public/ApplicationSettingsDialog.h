@@ -91,7 +91,7 @@ private:
       std::unique_ptr<IFileLogger>& logger;
    };
 
-   void createGeneralTab(QTabWidget*);
+   void createGeneralTab(QTabWidget*, QWidget* parent);
    void createPortHandlersTab(QTabWidget*, QWidget*);
    void createTraceFiltersTab(QTabWidget*, QWidget*);
    void createFileLoggerTab(QTabWidget*);
@@ -116,6 +116,7 @@ private:
    IThemeController& m_theme_controller;
    std::vector<QComboBox*> m_logger_comboboxes;
    std::vector<QLineEdit*> m_setting_lineedits;
+   QComboBox* m_theme_combobox;
 };
 
 }

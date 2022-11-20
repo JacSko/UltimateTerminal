@@ -36,7 +36,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    main_dialog->setPalette(parent->palette());
    QTabWidget* main_tab_view = new QTabWidget();
 
-   createGeneralTab(main_tab_view);
+   createGeneralTab(main_tab_view, parent);
    createPortHandlersTab(main_tab_view, parent);
    createTraceFiltersTab(main_tab_view, parent);
    createFileLoggerTab(main_tab_view);
@@ -59,6 +59,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
       notifyFileLoggingChanges();
       saveLoggerGroups();
       saveSystemSettingsGroup();
+      saveThemeChange();
       result = true;
    }
 
@@ -66,9 +67,24 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    delete main_dialog;
    return result;
 }
-void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab)
+void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab, QWidget* parent)
 {
-   //TODO
+   QWidget* tab_widget = new QWidget();
+   QFormLayout* tab_layout = new QFormLayout();
+   tab_widget->setLayout(tab_layout);
+   /* theme control */
+   m_theme_combobox = new QComboBox();
+   m_theme_combobox->setPalette(parent->palette());
+   m_theme_combobox->view()->setPalette(parent->palette());
+
+   for (uint8_t i = 0; i < (uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX; i++)
+   {
+      m_theme_combobox->addItem(QString(m_theme_controller.themeToName((IThemeController::Theme)i).c_str()));
+   }
+   m_theme_combobox->setCurrentText(QString(m_theme_controller.themeToName(m_theme_controller.currentTheme()).c_str()));
+   tab_layout->addRow("Theme", m_theme_combobox);
+
+   main_tab->addTab(tab_widget, "GENERAL");
 }
 void ApplicationSettingsDialog::createPortHandlersTab(QTabWidget* main_tab, QWidget* parent)
 {
@@ -222,7 +238,10 @@ void ApplicationSettingsDialog::saveLoggerGroups()
       UT_Log(GUI_DIALOG, LOW, "Logger group %s set to %s", LoggerEngine::get()->getGroupName(logger_id).c_str(), level_name.c_str());
    }
 }
-
+void ApplicationSettingsDialog::saveThemeChange()
+{
+//TODO
+}
 void ApplicationSettingsDialog::saveSystemSettingsGroup()
 {
    for (uint8_t i = 0; i < m_setting_lineedits.size(); i++)
@@ -287,6 +306,7 @@ void ApplicationSettingsDialog::onDialogClosed()
 {
    m_logger_comboboxes.clear();
    m_setting_lineedits.clear();
+   delete m_theme_combobox;
 }
 
 }

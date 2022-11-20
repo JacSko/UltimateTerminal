@@ -51,6 +51,7 @@ private:
     IThemeController::Theme m_current_theme;
 
     void reloadTheme(IThemeController::Theme) override;
+    IThemeController::Theme currentTheme() override;
     std::string themeToName(IThemeController::Theme) override;
     IThemeController::Theme nameToTheme(const std::string& name) override;
 

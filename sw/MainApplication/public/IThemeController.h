@@ -21,6 +21,7 @@ enum class Theme
 
    virtual ~IThemeController(){};
    virtual void reloadTheme(Theme) = 0;
+   virtual Theme currentTheme() = 0;
    virtual std::string themeToName(Theme) = 0;
    virtual Theme nameToTheme(const std::string& name) = 0;
 };

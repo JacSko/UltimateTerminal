@@ -504,6 +504,10 @@ void MainApplication::reloadTheme(IThemeController::Theme theme)
       setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
    }
 }
+IThemeController::Theme MainApplication::currentTheme()
+{
+   return m_current_theme;
+}
 std::string MainApplication::themeToName(IThemeController::Theme theme)
 {
    UT_Assert(theme < IThemeController::Theme::APPLICATION_THEMES_MAX);
