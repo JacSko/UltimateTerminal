@@ -1,5 +1,6 @@
 #include <array>
 #include <string>
+#include <QtWidgets/QScrollArea>
 
 #include "ApplicationSettingsDialog.h"
 #include "PortSettingDialog.h"
@@ -129,6 +130,8 @@ void ApplicationSettingsDialog::createLoggerTab(QTabWidget* debug_tab, QWidget* 
 }
 void ApplicationSettingsDialog::createSystemSettingsTab(QTabWidget* debug_tab, QWidget* parent)
 {
+   QScrollArea* scroll = new QScrollArea();
+
    QWidget* setting_widget = new QWidget();
    QFormLayout* setting_widget_layout = new QFormLayout();
    setting_widget->setLayout(setting_widget_layout);
@@ -144,7 +147,8 @@ void ApplicationSettingsDialog::createSystemSettingsTab(QTabWidget* debug_tab, Q
       setting_widget_layout->addRow(QString(name.c_str()), setting_value);
       m_setting_lineedits.push_back(setting_value);
    }
-   debug_tab->addTab(setting_widget, "SETTINGS");
+   scroll->setWidget(setting_widget);
+   debug_tab->addTab(scroll, "SETTINGS");
 }
 void ApplicationSettingsDialog::writeSettingValue(int id, QLineEdit* edit)
 {

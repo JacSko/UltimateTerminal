@@ -149,7 +149,15 @@ public:
    void* operator new(size_t );
    void operator delete(void*){};
 };
+class QScrollArea : public QWidget
+{
+public:
+   QScrollArea(){};
+   void setWidget(QWidget*);
+   void* operator new(size_t );
+   void operator delete(void*){};
 
+};
 class QMainWindow : public QWidget
 {
 public:
@@ -505,6 +513,9 @@ struct QtWidgetsMock
 
    MOCK_METHOD0(QTabWidget_new, void*());
    MOCK_METHOD3(QTabWidget_addTab, void(QTabWidget*, QWidget*, const QString&));
+
+   MOCK_METHOD0(QScrollArea_new, void*());
+   MOCK_METHOD2(QScrollArea_setWidget, void(QScrollArea*, QWidget*));
 
    MOCK_METHOD0(QCheckBox_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());

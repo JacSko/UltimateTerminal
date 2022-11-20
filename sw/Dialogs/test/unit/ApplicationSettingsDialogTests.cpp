@@ -121,6 +121,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QTabWidget test_filters_tab;
    QTabWidget test_debug_tab;
 
+   QScrollArea test_settings_scroll;
    QFormLayout test_logger_layout;
    QComboBox test_logger_item;
    QFormLayout test_setting_layout;
@@ -171,8 +172,10 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
 
    /* expect Debug subtabs creation, and their layout */
+   EXPECT_CALL(*QtWidgetsMock_get(), QScrollArea_new()).WillOnce(Return(&test_settings_scroll));
+   EXPECT_CALL(*QtWidgetsMock_get(), QScrollArea_setWidget(_,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("LOGGING")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("SETTINGS")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,&test_settings_scroll,HasSubstr("SETTINGS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_logger_layout))
                                                        .WillOnce(Return(&test_setting_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_logger_layout, _, _)).Times(LOGGER_GROUP_MAX);

@@ -288,3 +288,11 @@ void QTabWidget::addTab(QWidget* widget, const QString& text)
 {
    g_widgets_mock->QTabWidget_addTab(this, widget, text);
 }
+void QScrollArea::setWidget(QWidget* widget)
+{
+   g_widgets_mock->QScrollArea_setWidget(this, widget);
+}
+void* QScrollArea::operator new(size_t )
+{
+   return g_widgets_mock->QScrollArea_new();
+}
