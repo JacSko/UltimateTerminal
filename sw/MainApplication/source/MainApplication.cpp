@@ -35,6 +35,7 @@ __attribute__((weak)) std::string getExecutablePath()
 std::array<std::string, (uint32_t)Ui_MainWindow::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
 #undef APPLICATION_THEME
 
+
 MainApplication::MainApplication(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),

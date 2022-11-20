@@ -1,12 +1,11 @@
 #ifndef _MAIN_WINDOW_H_
 #define _MAIN_WINDOW_H_
-
-#include <QtWidgets/QMainWindow>
 #include "QtWidgets/QLabel"
 #include "QtWidgets/QPushButton"
 #include <vector>
 #include <map>
 
+#include "IThemeController.h"
 #include "ui_MainWindow.h"
 #include "ITimers.h"
 #include "PortHandler.h"
@@ -22,6 +21,7 @@ QT_END_NAMESPACE
 
 
 class MainApplication : public QMainWindow,
+                        public IThemeController,
                         public GUI::PortHandlerListener,
                         public Persistence::PersistenceListener
 {
@@ -30,10 +30,6 @@ class MainApplication : public QMainWindow,
 public:
     MainApplication(QWidget *parent = nullptr);
     ~MainApplication();
-
-    void reloadTheme(Ui_MainWindow::Theme);
-    std::string themeToName(Ui_MainWindow::Theme);
-    Ui_MainWindow::Theme nameToTheme(const std::string& name);
 
     static const uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
 private:
@@ -53,6 +49,10 @@ private:
     std::map<uint8_t,std::string> m_port_id_name_map;
     std::map<uint8_t, std::vector<std::string>> m_commands_history;
     Ui_MainWindow::Theme m_current_theme;
+
+    void reloadTheme(Ui_MainWindow::Theme) override;
+    std::string themeToName(Ui_MainWindow::Theme) override;
+    Ui_MainWindow::Theme nameToTheme(const std::string& name) override;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     void connectSignalsToSlots();
