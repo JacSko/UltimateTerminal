@@ -113,16 +113,13 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    const uint8_t new_port_settings_id = 3;
    const uint8_t new_trace_filter_settings_id = 4;
-
+   const uint32_t CURRENT_MAX_TRACE_NUMBER = SETTING_GET_U32(MainApplication_maxTerminalTraces);
+   const uint32_t NEW_MAX_TRACE_NUMBER = 1000;
    QDialog test_dialog;
    QTabWidget test_main_tab;
    QDialogButtonBox test_buttonbox;
 
-   QTabWidget test_ports_tab;
-   QTabWidget test_filters_tab;
-   QTabWidget test_debug_tab;
-   QLabel test_about_label;
-   /* GENERAL tab elements */
+   /* GENERAL tab widgets */
    QFormLayout test_general_layout;
    QComboBox test_theme_combobox;
    QLineEdit test_max_trace_edit;
@@ -130,12 +127,27 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QLabel test_settings_persistence_label;
    QLabel test_settingspath_label;
 
-   QScrollArea test_settings_scroll;
-   QComboBox test_logger_item;
+   /* PORTS tab widgets */
+   QTabWidget test_ports_tab;
+
+   /* TRACE FILTERS tab widgets */
+   QTabWidget test_filters_tab;
+
+   /* FILE LOGGER tab widgets */
+
+   /* DEBUG tab widgets */
+   QTabWidget test_debug_tab;
    QFormLayout test_logger_layout;
    QFormLayout test_setting_layout;
+   QScrollArea test_settings_scroll;
    QLineEdit test_setting_item;
+   QComboBox test_logger_item;
 
+   /* ABOUT tab widgets */
+   QLabel test_about_label;
+
+   /* assertions before test */
+   ASSERT_TRUE(CURRENT_MAX_TRACE_NUMBER != NEW_MAX_TRACE_NUMBER);
 
    /* current settings */
    test_logging_path = "TEST_PATH";
@@ -177,14 +189,14 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* expect GENERAL tab fill-in */
-   EXPECT_CALL(test_theme_controller, themeToName(_)).Times(AtLeast((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX + 1));
+   EXPECT_CALL(test_theme_controller, themeToName(_)).Times(AtLeast((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX + 1)); // translation of all themes + setting current
    EXPECT_CALL(test_theme_controller, currentTheme()).WillOnce(Return(IThemeController::Theme::DARK))
-                                                     .WillOnce(Return(IThemeController::Theme::DEFAULT));
+                                                     .WillOnce(Return(IThemeController::Theme::DARK));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_theme_combobox,_)).Times((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_theme_combobox, _));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_theme_combobox));
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_max_trace_edit, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_max_trace_edit, QString::number(CURRENT_MAX_TRACE_NUMBER)));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_max_trace_edit));
 
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_persistence_label, _));
@@ -210,12 +222,11 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*LoggingSettingDialogMock_get(), createLayout(_,_)).WillRepeatedly(Return(nullptr));
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
 
-   /* expect Debug subtabs creation, and their layout */
+   /* expect DEBUG subtabs creation, and their layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QScrollArea_new()).WillOnce(Return(&test_settings_scroll));
    EXPECT_CALL(*QtWidgetsMock_get(), QScrollArea_setWidget(_,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,_,HasSubstr("LOGGING")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_debug_tab,&test_settings_scroll,HasSubstr("SETTINGS")));
-
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_logger_layout, _, _)).Times(LOGGER_GROUP_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_setting_layout, _, _)).Times(SETTING_GROUP_MAX);
    /* expect creation of comboboxes to present current logging settings */
@@ -224,11 +235,11 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    /* expect creation of comboboxes to present current system settings */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_setting_item, _)).Times(SETTING_GROUP_MAX);
 
-   /* expect About tab fill-in*/
+   /* expect ABOUT tab fill-in*/
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_about_label, _));
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAlignment(&test_about_label, Qt::AlignCenter));
 
-   /* expect all tab added to main tab view */
+   /* expect all tabs added to main tab view */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("GENERAL")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_ports_tab,QString("PORTS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_filters_tab,QString("FILTERS")));
@@ -239,23 +250,24 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    /* user accepted the dialog */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
 
-   /* expect readout of general tab */
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_theme_combobox)).WillOnce(Return("DARK"));
-   EXPECT_CALL(test_theme_controller, nameToTheme(_)).WillOnce(Return(IThemeController::Theme::DARK));
-   EXPECT_CALL(test_theme_controller, reloadTheme(_));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_max_trace_edit)).WillOnce(Return("1000"));
+   /* expect readout of GENERAL tab */
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_theme_combobox)).WillOnce(Return("DEFAULT"));
+   EXPECT_CALL(test_theme_controller, nameToTheme(_)).WillOnce(Return(IThemeController::Theme::DEFAULT));
+   EXPECT_CALL(test_theme_controller, reloadTheme(IThemeController::Theme::DEFAULT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_max_trace_edit)).WillOnce(Return(QString::number(NEW_MAX_TRACE_NUMBER)));
 
-   /* expect settings readout for all ports, two of them returned the new settings */
+   /* expect settings readout for all PORTS, two of them returned the new settings */
    EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(new_port_settings_id,_)).WillOnce(DoAll(SetArgReferee<1>(new_port_settings), Return(true)));
    EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(Ne(new_port_settings_id),_)).WillRepeatedly(DoAll(SetArgReferee<1>(port_settings), Return(true)));
 
-   /* expect settings readout for all filters */
+   /* expect settings readout for all TRACE FILTERS */
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), convertGuiValues(new_trace_filter_settings_id, _)).WillOnce(DoAll(SetArgReferee<1>(new_trace_settings), Return(true)));
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), convertGuiValues(Ne(new_trace_filter_settings_id), _)).WillRepeatedly(DoAll(SetArgReferee<1>(trace_settings), Return(true)));
-   /* expect settings readout for file logging */
+
+   /* expect settings readout for FILE LOGGING */
    EXPECT_CALL(*LoggingSettingDialogMock_get(), convertGuiValues()).WillOnce(Return(test_new_logging_path));
 
-   /* expect readout of logging settings */
+   /* expect readout of system LOGGER settings */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_logger_item)).WillRepeatedly(Return("HIGH"));
 
    /* expect readout of system settings */
@@ -270,7 +282,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    ASSERT_TRUE(result.has_value());
    EXPECT_TRUE(result.value());
    EXPECT_EQ(test_logging_path, test_new_logging_path);
-   EXPECT_EQ(SETTING_GET_U32(MainApplication_maxTerminalTraces), 1000);
+   EXPECT_EQ(SETTING_GET_U32(MainApplication_maxTerminalTraces), NEW_MAX_TRACE_NUMBER);
 }
 
 }
