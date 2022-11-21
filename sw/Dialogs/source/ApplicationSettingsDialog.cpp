@@ -43,6 +43,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    createTraceFiltersTab(main_tab_view, parent);
    createFileLoggerTab(main_tab_view);
    createDebugTab(main_tab_view, parent);
+   createAboutTab(main_tab_view, parent);
 
    QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, main_dialog);
 
@@ -143,6 +144,15 @@ void ApplicationSettingsDialog::createDebugTab(QTabWidget* main_tab, QWidget* pa
    createLoggerTab(debug_tab, parent);
    createSystemSettingsTab(debug_tab, parent);
    main_tab->addTab(debug_tab, "DEBUG");
+}
+void ApplicationSettingsDialog::createAboutTab(QTabWidget* main_tab, QWidget*)
+{
+   QLabel* about_label = new QLabel();
+   std::string about_text = "UltimateTerminal\nv." + std::string(APPLICATION_VERSION) + '\n' +
+                            "Author: Jacek Skowronek\n" + "email:jacekskowronekk@gmail.com";
+   about_label->setText(about_text.c_str());
+   about_label->setAlignment(Qt::AlignCenter);
+   main_tab->addTab(about_label, "ABOUT");
 }
 void ApplicationSettingsDialog::createLoggerTab(QTabWidget* debug_tab, QWidget* parent)
 {

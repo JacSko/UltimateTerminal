@@ -96,6 +96,7 @@ private:
    void createTraceFiltersTab(QTabWidget*, QWidget*);
    void createFileLoggerTab(QTabWidget*);
    void createDebugTab(QTabWidget*, QWidget*);
+   void createAboutTab(QTabWidget*, QWidget*);
    void createLoggerTab(QTabWidget*, QWidget*);
    void createSystemSettingsTab(QTabWidget*, QWidget*);
    void writeSettingValue(int id, QLineEdit*);

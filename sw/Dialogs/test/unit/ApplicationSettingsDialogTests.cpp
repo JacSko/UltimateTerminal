@@ -121,7 +121,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QTabWidget test_ports_tab;
    QTabWidget test_filters_tab;
    QTabWidget test_debug_tab;
-
+   QLabel test_about_label;
    /* GENERAL tab elements */
    QFormLayout test_general_layout;
    QComboBox test_theme_combobox;
@@ -169,7 +169,8 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
                                                      .WillRepeatedly(Return(&test_setting_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_persistence_label))
                                                   .WillOnce(Return(&test_settings_persistence_label))
-                                                  .WillOnce(Return(&test_settingspath_label));
+                                                  .WillOnce(Return(&test_settingspath_label))
+                                                  .WillOnce(Return(&test_about_label));
 
    /* expect connecting the dialog button signals */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
@@ -223,12 +224,17 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    /* expect creation of comboboxes to present current system settings */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_setting_item, _)).Times(SETTING_GROUP_MAX);
 
+   /* expect About tab fill-in*/
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_about_label, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAlignment(&test_about_label, Qt::AlignCenter));
+
    /* expect all tab added to main tab view */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("GENERAL")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_ports_tab,QString("PORTS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_filters_tab,QString("FILTERS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("FILE LOGGING")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_debug_tab,HasSubstr("DEBUG")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_about_label,HasSubstr("ABOUT")));
 
    /* user accepted the dialog */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
