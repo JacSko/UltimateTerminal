@@ -180,8 +180,11 @@ public:
     * @return Type of the setting
     */
    SettingType getType(KeyID id);
-
-
+   /**
+    * @brief Get path to file with settings.
+    * @return Path as a string.
+    */
+   std::string getFilePath();
 private:
    void notifyListeners(KeyID id);
    std::vector<KeyID> applySettings();

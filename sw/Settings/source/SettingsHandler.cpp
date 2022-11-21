@@ -358,5 +358,10 @@ void SettingsHandler::notifyListeners(KeyID id)
    }
 }
 
+std::string SettingsHandler::getFilePath()
+{
+   return m_file_path;
+}
+
 
 }

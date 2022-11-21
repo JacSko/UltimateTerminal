@@ -20,7 +20,9 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(std::vector<std::unique_ptr
 m_handlers(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
-m_theme_controller(theme_controller)
+m_theme_controller(theme_controller),
+m_theme_combobox(nullptr),
+m_max_traces_edit(nullptr)
 {
 }
 ApplicationSettingsDialog::~ApplicationSettingsDialog()
@@ -59,7 +61,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
       notifyFileLoggingChanges();
       saveLoggerGroups();
       saveSystemSettingsGroup();
-      saveThemeChange();
+      notifyGeneralChanges();
       result = true;
    }
 
@@ -83,6 +85,23 @@ void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab, QWidget* 
    }
    m_theme_combobox->setCurrentText(QString(m_theme_controller.themeToName(m_theme_controller.currentTheme()).c_str()));
    tab_layout->addRow("Theme", m_theme_combobox);
+
+   /* trace count settings */
+   m_max_traces_edit = new QLineEdit();
+   m_max_traces_edit->setText(QString::number(SETTING_GET_U32(MainApplication_maxTerminalTraces)));
+   tab_layout->addRow("Maximum traces", m_max_traces_edit);
+
+   QLabel* persistence_path = new QLabel();
+   persistence_path->setText(QString(PERSISTENCE_PATH));
+   tab_layout->addRow("Data persistence", persistence_path);
+
+   QLabel* settings_persistence_path = new QLabel();
+   settings_persistence_path->setText(QString(SETTINGS_PERSISTENCE_PATH));
+   tab_layout->addRow("Settings persistence", settings_persistence_path);
+
+   QLabel* settings_path = new QLabel();
+   settings_path->setText(QString(Settings::SettingsHandler::get()->getFilePath().c_str()));
+   tab_layout->addRow("Settings file", settings_path);
 
    main_tab->addTab(tab_widget, "GENERAL");
 }
@@ -227,6 +246,18 @@ void ApplicationSettingsDialog::notifyFileLoggingChanges()
    }
 }
 
+void ApplicationSettingsDialog::notifyGeneralChanges()
+{
+   saveThemeChange();
+   bool conversion_ok;
+   uint32_t max_trace_count = m_max_traces_edit->text().toUInt(&conversion_ok);
+   if (conversion_ok && max_trace_count)
+   {
+      UT_Log(GUI_DIALOG, LOW, "New maximum number of traces: %u", max_trace_count);
+      SETTING_SET_U32(MainApplication_maxTerminalTraces, max_trace_count);
+   }
+}
+
 void ApplicationSettingsDialog::saveLoggerGroups()
 {
    for (uint8_t i = 0; i < m_logger_comboboxes.size(); i++)
@@ -314,6 +345,7 @@ void ApplicationSettingsDialog::onDialogClosed()
    m_logger_comboboxes.clear();
    m_setting_lineedits.clear();
    delete m_theme_combobox;
+   delete m_max_traces_edit;
 }
 
 }

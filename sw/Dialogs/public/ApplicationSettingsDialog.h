@@ -103,6 +103,7 @@ private:
    void notifyPortHandlersChanges();
    void notifyTraceFiltersChanges();
    void notifyFileLoggingChanges();
+   void notifyGeneralChanges();
    void saveLoggerGroups();
    void saveThemeChange();
    void saveSystemSettingsGroup();
@@ -118,6 +119,7 @@ private:
    std::vector<QComboBox*> m_logger_comboboxes;
    std::vector<QLineEdit*> m_setting_lineedits;
    QComboBox* m_theme_combobox;
+   QLineEdit* m_max_traces_edit;
 };
 
 }

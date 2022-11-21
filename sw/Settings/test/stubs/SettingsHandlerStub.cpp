@@ -198,5 +198,8 @@ SettingType SettingsHandler::getType(KeyID id)
    }
    return SettingType::UNKNOWN;
 }
-
+std::string SettingsHandler::getFilePath()
+{
+   return m_file_path;
+}
 }

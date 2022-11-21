@@ -122,13 +122,20 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QTabWidget test_filters_tab;
    QTabWidget test_debug_tab;
 
-   QScrollArea test_settings_scroll;
-   QComboBox test_logger_item;
+   /* GENERAL tab elements */
    QFormLayout test_general_layout;
    QComboBox test_theme_combobox;
+   QLineEdit test_max_trace_edit;
+   QLabel test_persistence_label;
+   QLabel test_settings_persistence_label;
+   QLabel test_settingspath_label;
+
+   QScrollArea test_settings_scroll;
+   QComboBox test_logger_item;
    QFormLayout test_logger_layout;
    QFormLayout test_setting_layout;
    QLineEdit test_setting_item;
+
 
    /* current settings */
    test_logging_path = "TEST_PATH";
@@ -158,7 +165,11 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
                                                        .WillOnce(Return(&test_setting_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_theme_combobox))
                                                      .WillRepeatedly(Return(&test_logger_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillRepeatedly(Return(&test_setting_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_max_trace_edit))
+                                                     .WillRepeatedly(Return(&test_setting_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_persistence_label))
+                                                  .WillOnce(Return(&test_settings_persistence_label))
+                                                  .WillOnce(Return(&test_settingspath_label));
 
    /* expect connecting the dialog button signals */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
@@ -171,6 +182,16 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_theme_combobox,_)).Times((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_theme_combobox, _));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_theme_combobox));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_max_trace_edit, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_max_trace_edit));
+
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_persistence_label, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_settings_persistence_label, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_settingspath_label, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_persistence_label));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_settings_persistence_label));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_settingspath_label));
 
    /* expect PORTS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_ports_tab,_,HasSubstr("PORT"))).Times(PORT_HANDLERS_COUNT);
@@ -212,10 +233,11 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    /* user accepted the dialog */
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(QDialog::Accepted));
 
-   /* expect readout of theme */
+   /* expect readout of general tab */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_theme_combobox)).WillOnce(Return("DARK"));
    EXPECT_CALL(test_theme_controller, nameToTheme(_)).WillOnce(Return(IThemeController::Theme::DARK));
    EXPECT_CALL(test_theme_controller, reloadTheme(_));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_max_trace_edit)).WillOnce(Return("1000"));
 
    /* expect settings readout for all ports, two of them returned the new settings */
    EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(new_port_settings_id,_)).WillOnce(DoAll(SetArgReferee<1>(new_port_settings), Return(true)));
@@ -242,6 +264,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    ASSERT_TRUE(result.has_value());
    EXPECT_TRUE(result.value());
    EXPECT_EQ(test_logging_path, test_new_logging_path);
+   EXPECT_EQ(SETTING_GET_U32(MainApplication_maxTerminalTraces), 1000);
 }
 
 }
