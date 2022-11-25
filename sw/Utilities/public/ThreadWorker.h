@@ -66,12 +66,6 @@ public:
     */
    void stop();
    /**
-    * @brief Sets thread priority.
-    * @param[in] prio_level - thread priority
-    * @return void
-    */
-   bool setPriority(int prio_level);
-   /**
     * @brief Informs about current worker thread state.
     * @return Corresponding ThreadState
     */

@@ -69,24 +69,6 @@ void ThreadWorker::stop()
    }
 }
 
-bool ThreadWorker::setPriority(int prio_level)
-{
-   int status = 0;
-   std::lock_guard<std::mutex> guard(m_lock);
-   int policy;
-   struct sched_param params;
-   status = pthread_getschedparam(m_thread.native_handle(), &policy, &params);
-   if (status == 0)
-   {
-      if(SCHED_RR != policy)
-      {
-         policy = SCHED_RR;
-      };
-      params.sched_priority = prio_level;
-      status = pthread_setschedparam(m_thread.native_handle(), policy, &params);
-   }
-   return status == 0;
-}
 bool ThreadWorker::isRunning()
 {
    std::lock_guard<std::mutex> guard(m_lock);
