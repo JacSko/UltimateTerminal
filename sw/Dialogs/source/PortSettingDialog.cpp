@@ -62,6 +62,7 @@ m_ipAddressEdit(nullptr),
 m_ipPortEdit(nullptr),
 m_traceColorSelectionButton(nullptr),
 m_fontColorSelectionButton(nullptr),
+m_info_label(nullptr),
 m_editable(true)
 {
 }
@@ -116,6 +117,14 @@ QLayout* PortSettingDialog::createLayout(QWidget* parent, const Settings& curren
    {
       UT_Assert(false && "Invalid port type");
    }
+
+   m_info_label = new QLabel();
+   if (!allow_edit)
+   {
+      m_info_label->setText("Change locked!\nDisable this port to change settings");
+   }
+   m_form->addRow("", m_info_label);
+
    return m_form;
 }
 void PortSettingDialog::destroyLayout()

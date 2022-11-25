@@ -30,6 +30,7 @@
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
 
 namespace Dialogs
 {
@@ -105,6 +106,7 @@ private:
    QLineEdit* m_regexEdit;
    QPushButton* m_backgroundButton;
    QPushButton* m_fontButton;
+   QLabel* m_info_label;
    Settings m_settings;
 
    void addDialogButtons();

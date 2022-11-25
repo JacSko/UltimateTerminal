@@ -1,4 +1,5 @@
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QLabel>
 
 #include "LoggingSettingDialog.h"
 #include "Logger.h"
@@ -13,6 +14,7 @@ m_buttonBox(nullptr),
 m_fileNameEdit(nullptr),
 m_filePathEdit(nullptr),
 m_pathSelectButton(nullptr),
+m_info_label(nullptr),
 m_autoNameBox(nullptr),
 m_editable(true)
 {
@@ -65,6 +67,13 @@ QLayout* LoggingSettingDialog::createLayout(const std::string& current_path, boo
    m_pathSelectButton->setDisabled(!m_editable);
    m_form->insertRow(2, path_select_label, m_pathSelectButton);
    QObject::connect(m_pathSelectButton, SIGNAL(clicked()), this, SLOT(onPathSelectButtonClicked()));
+
+   m_info_label = new QLabel();
+   if (!allow_edit)
+   {
+      m_info_label->setText("Change locked!\nDisable file logging to change this setting");
+   }
+   m_form->insertRow(3, "", m_info_label);
 
    return m_form;
 }

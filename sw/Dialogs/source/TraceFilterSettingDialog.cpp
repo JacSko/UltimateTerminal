@@ -13,7 +13,8 @@ m_form(nullptr),
 m_buttonBox(nullptr),
 m_regexEdit(nullptr),
 m_backgroundButton(nullptr),
-m_fontButton(nullptr)
+m_fontButton(nullptr),
+m_info_label(nullptr)
 {
 }
 TraceFilterSettingDialog::~TraceFilterSettingDialog()
@@ -77,6 +78,12 @@ QLayout* TraceFilterSettingDialog::createLayout(QWidget* parent, const Settings&
    m_form->addRow("Font color", m_fontButton);
    QObject::connect(m_fontButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
 
+   m_info_label = new QLabel();
+   if (!allow_edit)
+   {
+      m_info_label->setText("Change locked!\nDisable this filter to change settings");
+   }
+   m_form->addRow("", m_info_label);
    return m_form;
 }
 void TraceFilterSettingDialog::destroyLayout()

@@ -61,6 +61,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    QPushButton test_fontButton;
    QLineEdit test_regexEdit;
    QDialogButtonBox test_buttonbox;
+   QLabel test_info_label;
    TraceFilterSettingDialog dialog;
 
    /* current settings */
@@ -88,12 +89,14 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_accepted)
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_backgroundButton))
                                                        .WillOnce(Return(&test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_info_label));
 
    /* all GUI widgets added to layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_backgroundButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_info_label));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_backgroundButton,"clicked()",&dialog,"onBackgroundColorButtonClicked()"));
@@ -156,6 +159,7 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    QPushButton test_fontButton;
    QLineEdit test_regexEdit;
    QDialogButtonBox test_buttonbox;
+   QLabel test_info_label;
    TraceFilterSettingDialog dialog;
 
    /* current settings */
@@ -182,12 +186,14 @@ TEST_F(TraceFilterSettingDialogFixture, dialog_presented_user_rejected)
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_backgroundButton))
                                                        .WillOnce(Return(&test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_info_label));
 
    /* all GUI widgets added to layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_backgroundButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_fontButton));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_regexEdit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_info_label));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_backgroundButton,"clicked()",&dialog,"onBackgroundColorButtonClicked()"));

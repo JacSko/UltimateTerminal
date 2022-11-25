@@ -11,7 +11,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLineEdit>
-
+#include <QtWidgets/QLabel>
 
 #include "Logger.h"
 #include "ISerialDriver.h"
@@ -231,6 +231,7 @@ private:
    QLineEdit* m_ipPortEdit;
    QPushButton* m_traceColorSelectionButton;
    QPushButton* m_fontColorSelectionButton;
+   QLabel* m_info_label;
 
    std::vector<QWidget*> m_current_widgets;
    bool m_editable;

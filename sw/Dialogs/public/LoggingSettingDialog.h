@@ -76,6 +76,7 @@ private:
    QLineEdit* m_fileNameEdit;
    QLineEdit* m_filePathEdit;
    QPushButton* m_pathSelectButton;
+   QLabel* m_info_label;
    QCheckBox* m_autoNameBox;
    bool m_editable;
    std::string m_current_path;
