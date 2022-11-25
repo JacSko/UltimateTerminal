@@ -40,16 +40,7 @@ enum class DataMode
 };
 
 #define DEF_BAUD_RATES          \
-   DEF_BAUD_RATE(BR_50)         \
-   DEF_BAUD_RATE(BR_75)         \
-   DEF_BAUD_RATE(BR_110)        \
-   DEF_BAUD_RATE(BR_134)        \
-   DEF_BAUD_RATE(BR_150)        \
-   DEF_BAUD_RATE(BR_200)        \
-   DEF_BAUD_RATE(BR_300)        \
-   DEF_BAUD_RATE(BR_600)        \
    DEF_BAUD_RATE(BR_1200)       \
-   DEF_BAUD_RATE(BR_1800)       \
    DEF_BAUD_RATE(BR_2400)       \
    DEF_BAUD_RATE(BR_4800)       \
    DEF_BAUD_RATE(BR_9600)       \

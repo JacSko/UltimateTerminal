@@ -122,23 +122,14 @@ namespace Drivers
 namespace Serial
 {
 
-static const std::map<BaudRate, int> g_baudrates_map = {{BaudRate::BR_50, B50},
-                                                        {BaudRate::BR_75, B75},
-                                                        {BaudRate::BR_110, B110},
-                                                        {BaudRate::BR_134, B134},
-                                                        {BaudRate::BR_150, B150},
-                                                        {BaudRate::BR_200, B200},
-                                                        {BaudRate::BR_300, B300},
-                                                        {BaudRate::BR_600, B600},
-                                                        {BaudRate::BR_1200, B1200},
-                                                        {BaudRate::BR_1800, B1800},
+static const std::map<BaudRate, int> g_baudrates_map = {{BaudRate::BR_1200, B1200},
                                                         {BaudRate::BR_2400, B2400},
                                                         {BaudRate::BR_4800, B4800},
                                                         {BaudRate::BR_9600, B9600},
                                                         {BaudRate::BR_19200, B19200},
                                                         {BaudRate::BR_38400, B38400},
                                                         {BaudRate::BR_57600, B57600},
-                                                        {BaudRate::BR_115200, B115200},};
+                                                        {BaudRate::BR_115200, B115200}};
 
 std::unique_ptr<ISerialDriver> ISerialDriver::create()
 {
