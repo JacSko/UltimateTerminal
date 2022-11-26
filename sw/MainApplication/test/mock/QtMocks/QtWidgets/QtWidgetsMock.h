@@ -410,6 +410,7 @@ public:
    void operator delete(void*){};
    void addItem(QListWidgetItem *);
    void scrollToBottom();
+   void setUniformItemSizes(bool){};
    int count();
    void clear();
 

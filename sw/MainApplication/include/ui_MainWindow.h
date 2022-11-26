@@ -170,6 +170,7 @@ public:
       terminalLayout->setContentsMargins(0, 0, 0, 0);
       terminalView = new QListWidget(gridLayoutWidget_2);
       terminalView->setObjectName(QString::fromUtf8("terminalView"));
+      terminalView->setUniformItemSizes(true);
       terminalLayout->addWidget(terminalView, 1, 0, 1, 5);
 
       portComboBox = new QComboBox(gridLayoutWidget_2);
@@ -240,6 +241,7 @@ public:
 
       traceView = new QListWidget(gridLayoutWidget_3);
       traceView->setObjectName(QString::fromUtf8("traceView"));
+      traceView->setUniformItemSizes(true);
       QSizePolicy sizePolicy4(QSizePolicy::Expanding, QSizePolicy::Expanding);
       sizePolicy4.setHorizontalStretch(0);
       sizePolicy4.setVerticalStretch(0);
