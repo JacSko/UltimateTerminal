@@ -119,11 +119,12 @@ m_trace_scrolling_active(false)
 }
 MainApplication::~MainApplication()
 {
+   UT_Log(MAIN, INFO, "Closing application!");
    if (!m_persistence.save(PERSISTENCE_PATH))
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }
-
+   m_timers->stop();
    m_persistence.removeListener(*this);
    Settings::SettingsHandler::get()->stop();
    Settings::SettingsHandler::destroy();

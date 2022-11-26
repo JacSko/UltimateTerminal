@@ -17,7 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(DRIVER_VARIANT_NATIVE 0)
 set(DRIVER_VARIANT_QT     1)
-set(DRIVER_VARIANT ${DRIVER_VARIANT_QT})
+set(DRIVER_VARIANT ${DRIVER_VARIANT_NATIVE})
 
 #########################################
 #  File paths configurations
@@ -37,6 +37,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS SerialPort REQUIRED)
+find_package(Qt5 COMPONENTS Network REQUIRED)
 
 if (NOT UNIT_TESTS)
    #########################################
