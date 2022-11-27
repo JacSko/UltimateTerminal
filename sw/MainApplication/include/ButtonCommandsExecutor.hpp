@@ -48,12 +48,20 @@ public:
    Utilities::ThreadWorker(std::bind(&ButtonCommandsExecutor::threadLoop, this), "CmdExec"),
    m_writer(writer),
    m_callback(callback),
-   m_isActive(false)
+   m_isActive(false),
+   m_stop_request(false)
    {
 
    }
    ~ButtonCommandsExecutor()
    {
+      if (isRunning())
+      {
+         std::unique_lock<std::mutex> lock(m_mutex);
+         m_stop_request = true;
+         m_cond_var.notify_all();
+         m_cond_var.wait_for(lock, std::chrono::milliseconds(200), [&](){return !isRunning();});
+      }
       Utilities::ThreadWorker::stop();
    }
    /**
@@ -137,12 +145,20 @@ private:
    }
    void threadLoop()
    {
+      UT_Log(USER_BTN_HANDLER, HIGH, "starting thread");
       while(Utilities::ThreadWorker::isRunning())
       {
          bool activated = false;
          {
             std::unique_lock<std::mutex> lock(m_mutex);
-            activated = m_cond_var.wait_for(lock, std::chrono::milliseconds(200), [&](){return m_isActive;});
+            m_cond_var.wait(lock);
+            activated = m_isActive;
+            if (m_stop_request)
+            {
+               UT_Log(USER_BTN_HANDLER, HIGH, "stop request received");
+               m_cond_var.notify_all();
+               break;
+            }
          }
 
          if (activated)
@@ -173,6 +189,8 @@ private:
             }
          }
       }
+      UT_Log(USER_BTN_HANDLER, HIGH, "stopping thread");
+
    }
 
    std::string m_raw_text;
@@ -182,6 +200,7 @@ private:
    bool m_isActive;
    std::condition_variable m_cond_var;
    std::mutex m_mutex;
+   bool m_stop_request;
 };
 
 }
