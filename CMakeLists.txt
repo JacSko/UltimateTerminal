@@ -23,8 +23,15 @@ set(DRIVER_VARIANT ${DRIVER_VARIANT_QT})
 #  File paths configurations
 #########################################
 set(CONFIG_FILE ".system_config.json") 
-set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
-set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistence.bin")
+if (UNIX)
+   message(STATUS "Building for UNIX")
+   set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
+   set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistence.bin")
+else()
+   message(STATUS "Building for WINDOWS")
+   set(PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_persistence.bin")
+   set(SETTINGS_PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_settings_persistence.bin")
+endif()
 #########################################
 #  Global project definitions
 #########################################

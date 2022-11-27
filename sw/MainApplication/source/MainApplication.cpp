@@ -19,6 +19,7 @@ namespace system_call
 {
 __attribute__((weak)) std::string getExecutablePath()
 {
+#if defined unix
    constexpr uint32_t MAX_PATH_LENGTH = 4096;
    char result[MAX_PATH_LENGTH];
    ssize_t count = readlink("/proc/self/exe", result, MAX_PATH_LENGTH);
@@ -27,6 +28,14 @@ __attribute__((weak)) std::string getExecutablePath()
        path = dirname(result);
    }
    return std::string(path);
+#elif defined _WIN32
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+    TCHAR path [MAX_PATH];
+    (void) GetModuleFileName( NULL, path, MAX_PATH );
+    PathCchRemoveFileSpec(path, MAX_PATH);
+    return std::string(path);
+#endif
 }
 }
 
