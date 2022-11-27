@@ -49,7 +49,6 @@ if (NOT UNIT_TESTS)
    add_executable(UltimateTerminal
       sw/main.cpp)
    target_link_libraries(UltimateTerminal
-      pthread
       MainApplication)
    # copying-out system config file to bin
    add_custom_command(TARGET UltimateTerminal POST_BUILD
