@@ -673,8 +673,6 @@ TEST_F(PortHandlerFixture, settings_set_and_get_tests)
     * <b>expected</b>: Settings shall be rejected. <br>
     * ************************************************
     */
-   ASSERT_TRUE(user_settings.areValid());
-
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
    EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
@@ -691,8 +689,6 @@ TEST_F(PortHandlerFixture, settings_set_and_get_tests)
     * <b>expected</b>: Settings shall be accepted. <br>
     * ************************************************
     */
-   ASSERT_TRUE(user_settings.areValid());
-
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
    EXPECT_CALL(*g_serial_mock, close());
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_));
@@ -704,20 +700,6 @@ TEST_F(PortHandlerFixture, settings_set_and_get_tests)
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_label,_));
    EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(user_settings.port_name.c_str())));
    EXPECT_TRUE(m_test_subject->setSettings(user_settings));
-
-   /**
-    * <b>scenario</b>: Providing invalid new settings when port is closed.<br>
-    * <b>expected</b>: Settings shall be rejected. <br>
-    * ************************************************
-    */
-   user_settings.port_name = "TEST_NAME2";
-   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
-   user_settings.ip_address = "xx.yy..";
-
-   ASSERT_FALSE(user_settings.areValid());
-   EXPECT_FALSE(m_test_subject->setSettings(user_settings));
-   current_settings = m_test_subject->getSettings();
-   EXPECT_THAT(current_settings.port_name, Ne(user_settings.port_name));
 
 }
 

@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string>
 #include <optional>
-#include <arpa/inet.h>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFormLayout>
 #include <QtWidgets/QDialogButtonBox>
@@ -116,22 +115,6 @@ enum class PortType
          }
          return result;
       }
-      bool areValid() const
-      {
-         bool result = true;
-         m_error_strings.clear();
-         if (type == PortType::ETHERNET)
-         {
-            result &= validateIpAddress(ip_address);
-            result &= validatePort(port);
-         }
-         return result;
-      }
-      std::vector<std::string> getErrorStrings()
-      {
-         return m_error_strings;
-      }
-
       bool operator== (const Settings& rhs)
       {
          return (type == rhs.type) &&
@@ -146,33 +129,6 @@ enum class PortType
       {
          return !(*this == rhs);
       }
-   private:
-      bool validateIpAddress(const std::string& ip_address) const
-      {
-         struct sockaddr_in sa;
-         int result = inet_pton(AF_INET, ip_address.c_str(), &(sa.sin_addr));
-         if (result == 0)
-         {
-            std::string error = "Invalid IP address: ";
-            error += ip_address;
-            m_error_strings.push_back(error);
-         }
-         return result != 0;
-      }
-      bool validatePort(uint32_t port) const
-      {
-         if (port > MAX_IPPORT_VALUE)
-         {
-            std::string error = "Invalid IP port: ";
-            error += std::to_string(port);
-            m_error_strings.push_back(error);
-         }
-         return (port >= MIN_IPPORT_VALUE) && (port <= MAX_IPPORT_VALUE);
-      }
-
-      static const uint32_t MIN_IPPORT_VALUE = 1;
-      static const uint32_t MAX_IPPORT_VALUE = 99999;
-      mutable std::vector<std::string> m_error_strings;
    };
 
    /**

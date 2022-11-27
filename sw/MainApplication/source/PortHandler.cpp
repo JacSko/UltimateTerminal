@@ -116,7 +116,7 @@ void PortHandler::refreshUi()
 bool PortHandler::setSettings(const Dialogs::PortSettingDialog::Settings& settings)
 {
    bool result = false;
-   if (settings.areValid() && (m_button_state == ButtonState::DISCONNECTED))
+   if (m_button_state == ButtonState::DISCONNECTED)
    {
       handleNewSettings(settings);
       result = true;
@@ -201,28 +201,9 @@ void PortHandler::onPortButtonContextMenuRequested()
    Dialogs::PortSettingDialog dialog;
    Dialogs::PortSettingDialog::Settings new_settings = {};
    std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, m_button_state == ButtonState::DISCONNECTED);
-   if (result)
+   if (result && result.value())
    {
-      if (result.value())
-      {
-         handleNewSettings(new_settings);
-      }
-      else
-      {
-         QString error_message = "";
-         auto errors = new_settings.getErrorStrings();
-         for (const auto& error : errors)
-         {
-            error_message += error.c_str();
-            error_message += "\n";
-         }
-         QMessageBox messageBox;
-         messageBox.setText(error_message);
-         messageBox.setWindowTitle("Error");
-         messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(m_parent->palette());
-         messageBox.exec();
-      }
+      handleNewSettings(new_settings);
    }
 }
 void PortHandler::onPortButtonClicked()
@@ -376,20 +357,7 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    new_settings.serialSettings.stopBits.fromName(stopbits_name);
    new_settings.type.fromName(porttype_name);
 
-   if (new_settings.areValid())
-   {
-      handleNewSettings(new_settings);
-   }
-   else
-   {
-      UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Error restoring from persistence, errors:", m_settings.port_id, m_settings.port_name.c_str());
-      auto errors = new_settings.getErrorStrings();
-      for (auto& error : errors)
-      {
-         UT_Log(PORT_HANDLER, ERROR, "%s", error.c_str());
-      }
-   }
-
+   handleNewSettings(new_settings);
 }
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {

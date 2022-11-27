@@ -391,10 +391,8 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_current_settings.trace_color;
    out_settings.font_color = m_current_settings.font_color;
-   bool result = out_settings.areValid()? true : false;
-   UT_Log_If(!out_settings.areValid(), GUI_DIALOG, ERROR, "got invalid settings from GUI: %s", out_settings.shortSettingsString().c_str());
 
-   return result;
+   return true;
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {

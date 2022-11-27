@@ -426,32 +426,25 @@ TEST_P(PortSettingDialogParam, some_test)
    if (dialog_accepted)
    {
       EXPECT_EQ(result.has_value(), true);
-      if (user_settings.areValid())
+      EXPECT_TRUE(result.value());
+      EXPECT_EQ(new_settings.type, user_settings.type);
+      EXPECT_EQ(new_settings.port_name, user_settings.port_name);
+      EXPECT_EQ(new_settings.trace_color, user_settings.trace_color);
+      EXPECT_EQ(new_settings.font_color, user_settings.font_color);
+      EXPECT_EQ(new_settings.port_id, user_settings.port_id);
+      if (user_settings.type == PortSettingDialog::PortType::ETHERNET)
       {
-         EXPECT_TRUE(result.value());
-         EXPECT_EQ(new_settings.type, user_settings.type);
-         EXPECT_EQ(new_settings.port_name, user_settings.port_name);
-         EXPECT_EQ(new_settings.trace_color, user_settings.trace_color);
-         EXPECT_EQ(new_settings.font_color, user_settings.font_color);
-         EXPECT_EQ(new_settings.port_id, user_settings.port_id);
-         if (user_settings.type == PortSettingDialog::PortType::ETHERNET)
-         {
-            EXPECT_EQ(new_settings.ip_address, user_settings.ip_address);
-            EXPECT_EQ(new_settings.port, user_settings.port);
-         }
-         else
-         {
-            EXPECT_EQ(new_settings.serialSettings.baudRate.value, user_settings.serialSettings.baudRate.value);
-            EXPECT_EQ(new_settings.serialSettings.dataBits.value, user_settings.serialSettings.dataBits.value);
-            EXPECT_EQ(new_settings.serialSettings.device, user_settings.serialSettings.device);
-            EXPECT_EQ(new_settings.serialSettings.mode, user_settings.serialSettings.mode);
-            EXPECT_EQ(new_settings.serialSettings.parityBits.value, user_settings.serialSettings.parityBits.value);
-            EXPECT_EQ(new_settings.serialSettings.stopBits.value, user_settings.serialSettings.stopBits.value);
-         }
+         EXPECT_EQ(new_settings.ip_address, user_settings.ip_address);
+         EXPECT_EQ(new_settings.port, user_settings.port);
       }
       else
       {
-         EXPECT_FALSE(result.value());
+         EXPECT_EQ(new_settings.serialSettings.baudRate.value, user_settings.serialSettings.baudRate.value);
+         EXPECT_EQ(new_settings.serialSettings.dataBits.value, user_settings.serialSettings.dataBits.value);
+         EXPECT_EQ(new_settings.serialSettings.device, user_settings.serialSettings.device);
+         EXPECT_EQ(new_settings.serialSettings.mode, user_settings.serialSettings.mode);
+         EXPECT_EQ(new_settings.serialSettings.parityBits.value, user_settings.serialSettings.parityBits.value);
+         EXPECT_EQ(new_settings.serialSettings.stopBits.value, user_settings.serialSettings.stopBits.value);
       }
    }
    else
