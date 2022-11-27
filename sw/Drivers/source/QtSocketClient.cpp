@@ -20,6 +20,11 @@ constexpr uint32_t CLIENT_CONNECTION_TIMEOUT = 500;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
 
+std::unique_ptr<ISocketClient> ISocketClient::create()
+{
+   return std::unique_ptr<ISocketClient>(new QtSocketClient());
+}
+
 QtSocketClient::QtSocketClient():
 m_worker(std::bind(&QtSocketClient::receivingThread, this), "CLIENT_WORKER"),
 m_mode(DataMode::NEW_LINE_DELIMITER),

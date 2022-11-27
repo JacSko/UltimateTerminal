@@ -1,19 +1,19 @@
 #include "ISocketDriverFactory.h"
 
-#include "SocketServer.h"
-#include "SocketClient.h"
+#include "ISocketServer.h"
+#include "ISocketClient.h"
 
 namespace Drivers
 {
 
 std::unique_ptr<SocketClient::ISocketClient> SocketFactory::createClient()
 {
-   return std::unique_ptr<SocketClient::ISocketClient>(new SocketClient::SocketClient());
+   return SocketClient::ISocketClient::create();
 }
 
 std::unique_ptr<SocketServer::ISocketServer> SocketFactory::createServer()
 {
-   return std::unique_ptr<SocketServer::ISocketServer>(new SocketServer::SocketServer());
+   return SocketServer::ISocketServer::create();
 }
 
 }

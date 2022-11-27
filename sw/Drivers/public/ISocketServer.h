@@ -68,6 +68,8 @@ public:
 class ISocketServer
 {
 public:
+
+   static std::unique_ptr<ISocketServer> create();
    /**
     * @brief Starts server.
     * @param[in] mode - server mode

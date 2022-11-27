@@ -4,20 +4,25 @@ set(DRIVER_SOURCES
    source/QtSerialDriver.cpp
    source/QtSocketClient.cpp
    source/QtSocketServer.cpp
-   source/ISocketDriverFactory.cpp
    source/QtClientHandler.cpp
+   source/ISocketDriverFactory.cpp
 )
 set(DRIVER_DEPENDENCIES Qt5::SerialPort Qt5::Network)
 
-else()
+elseif(DRIVER_VARIANT EQUAL DRIVER_VARIANT_NATIVE)
 
 set(DRIVER_SOURCES 
    source/SocketClient.cpp
    source/SocketServer.cpp
-   source/ISocketDriverFactory.cpp
    source/ClientHandler.cpp
-   source/SerialDriver.cpp)
+   source/SerialDriver.cpp
+   source/ISocketDriverFactory.cpp
+)
 set(DRIVER_DEPENDENCIES )
+
+else()
+
+message(ERROR "Please provide drivers variant!")
 
 endif()
 

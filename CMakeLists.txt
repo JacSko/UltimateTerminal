@@ -17,7 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(DRIVER_VARIANT_NATIVE 0)
 set(DRIVER_VARIANT_QT     1)
-set(DRIVER_VARIANT ${DRIVER_VARIANT_NATIVE})
+set(DRIVER_VARIANT ${DRIVER_VARIANT_QT})
 
 #########################################
 #  File paths configurations
@@ -28,7 +28,10 @@ set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistenc
 #########################################
 #  Global project definitions
 #########################################
-add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}")
+add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" 
+                -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
+                -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" 
+                -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}")
 
 #########################################
 #  QT related settings

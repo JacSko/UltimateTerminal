@@ -65,6 +65,8 @@ public:
 class ISocketClient
 {
 public:
+
+   static std::unique_ptr<ISocketClient> create();
    /**
     * @brief Connects to server.
     * @param[in] mode - server mode
