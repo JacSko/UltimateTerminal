@@ -10,6 +10,9 @@
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 #include "ApplicationSettingsDialog.h"
+#if defined _WIN32
+#include <Shlwapi.h>
+#endif
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
@@ -29,11 +32,10 @@ __attribute__((weak)) std::string getExecutablePath()
    }
    return std::string(path);
 #elif defined _WIN32
-#include <Shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
+//#pragma comment(lib, "shlwapi.lib")
     TCHAR path [MAX_PATH];
     (void) GetModuleFileName( NULL, path, MAX_PATH );
-    PathCchRemoveFileSpec(path, MAX_PATH);
+    PathRemoveFileSpec(path);
     return std::string(path);
 #endif
 }

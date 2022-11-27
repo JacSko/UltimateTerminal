@@ -29,8 +29,8 @@ if (UNIX)
    set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistence.bin")
 else()
    message(STATUS "Building for WINDOWS")
-   set(PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_persistence.bin")
-   set(SETTINGS_PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_settings_persistence.bin")
+   cmake_path(SET PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_persistence.bin")
+   cmake_path(SET SETTINGS_PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_settings_persistence.bin")
 endif()
 #########################################
 #  Global project definitions
@@ -57,6 +57,9 @@ if (NOT UNIT_TESTS)
       sw/main.cpp)
    target_link_libraries(UltimateTerminal
       MainApplication)
+if (NOT UNIX)
+   target_link_libraries(UltimateTerminal shlwapi)
+endif()
    # copying-out system config file to bin
    add_custom_command(TARGET UltimateTerminal POST_BUILD
                       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
