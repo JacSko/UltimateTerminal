@@ -2,11 +2,10 @@ if(DRIVER_VARIANT EQUAL DRIVER_VARIANT_QT)
 
 set(DRIVER_SOURCES
    source/QtSerialDriver.cpp
-# TEMPORARY ADD NATIVE DRIVERS   
    source/QtSocketClient.cpp
-   source/SocketServer.cpp
+   source/QtSocketServer.cpp
    source/ISocketDriverFactory.cpp
-   source/ClientHandler.cpp
+   source/QtClientHandler.cpp
 )
 set(DRIVER_DEPENDENCIES Qt5::SerialPort Qt5::Network)
 
