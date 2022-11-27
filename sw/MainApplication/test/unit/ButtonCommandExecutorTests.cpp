@@ -46,14 +46,14 @@ TEST_F(ButtonCommandExecutorTests, no_commands_execution)
    std::optional<bool> callback_result;
    auto callback = [&](bool result)
          {
+            std::unique_lock<std::mutex> lock(mutex);
             callback_result = result;
             condition_variable.notify_all();
          };
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
    test_subject.start(THREAD_START_TIMEOUT);
-   test_subject.execute();
-
    std::unique_lock<std::mutex> lock(mutex);
+   test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
 
    EXPECT_TRUE(callback_result.has_value());
@@ -74,6 +74,7 @@ TEST_F(ButtonCommandExecutorTests, executing_one_command)
    std::optional<bool> callback_result;
    auto callback = [&](bool result)
          {
+            std::unique_lock<std::mutex> lock(mutex);
             callback_result = result;
             condition_variable.notify_all();
          };
@@ -83,10 +84,10 @@ TEST_F(ButtonCommandExecutorTests, executing_one_command)
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   test_subject.execute();
-
    std::unique_lock<std::mutex> lock(mutex);
+   test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
+
 
    EXPECT_TRUE(callback_result.has_value());
    EXPECT_TRUE(callback_result.value());
@@ -106,6 +107,7 @@ TEST_F(ButtonCommandExecutorTests, executing_more_than_one_command)
    std::optional<bool> callback_result;
    auto callback = [&](bool result)
          {
+            std::unique_lock<std::mutex> lock(mutex);
             callback_result = result;
             condition_variable.notify_all();
          };
@@ -117,9 +119,8 @@ TEST_F(ButtonCommandExecutorTests, executing_more_than_one_command)
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
-   test_subject.execute();
-
    std::unique_lock<std::mutex> lock(mutex);
+   test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
 
    EXPECT_TRUE(callback_result.has_value());
@@ -139,6 +140,7 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
    std::optional<bool> callback_result;
    auto callback = [&](bool result)
          {
+            std::unique_lock<std::mutex> lock(mutex);
             callback_result = result;
             condition_variable.notify_all();
          };
@@ -156,11 +158,9 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
 
    {
       /* first execution */
-      test_subject.execute();
-
       std::unique_lock<std::mutex> lock(mutex);
+      test_subject.execute();
       condition_variable.wait(lock, [&](){ return callback_result;});
-
       EXPECT_TRUE(callback_result.has_value());
       EXPECT_TRUE(callback_result.value());
    }
@@ -168,11 +168,9 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
    {
       /* second execution */
       callback_result.reset();
-      test_subject.execute();
-
       std::unique_lock<std::mutex> lock(mutex);
+      test_subject.execute();
       condition_variable.wait(lock, [&](){ return callback_result;});
-
       EXPECT_TRUE(callback_result.has_value());
       EXPECT_TRUE(callback_result.value());
    }
@@ -191,6 +189,7 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_added)
    std::optional<bool> callback_result;
    auto callback = [&](bool result)
          {
+            std::unique_lock<std::mutex> lock(mutex);
             callback_result = result;
             condition_variable.notify_all();
          };
@@ -201,9 +200,8 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_added)
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
-   test_subject.execute();
-
    std::unique_lock<std::mutex> lock(mutex);
+   test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
 
    EXPECT_TRUE(callback_result.has_value());
@@ -239,16 +237,13 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_started_and_aborted)
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
+
    test_subject.execute();
 
    std::this_thread::sleep_for(std::chrono::seconds(3));
    test_subject.stop();
 
-   std::unique_lock<std::mutex> lock(mutex);
-   condition_variable.wait(lock, [&](){ return callback_result;});
-
    execution_finish = std::chrono::high_resolution_clock::now();
-
    execution_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(execution_finish - execution_start).count();
 
    EXPECT_TRUE(callback_result.has_value());

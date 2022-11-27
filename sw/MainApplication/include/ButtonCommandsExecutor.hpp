@@ -48,21 +48,48 @@ public:
    Utilities::ThreadWorker(std::bind(&ButtonCommandsExecutor::threadLoop, this), "CmdExec"),
    m_writer(writer),
    m_callback(callback),
-   m_isActive(false),
-   m_stop_request(false)
+   m_stop_request(false),
+   m_state(State::IDLE)
    {
 
    }
    ~ButtonCommandsExecutor()
    {
-      if (isRunning())
+      stop();
+   }
+   bool start(uint32_t timeout)
+   {
+      bool result = false;
+      std::unique_lock<std::mutex> lock(m_mutex);
+      UT_Log(USER_BTN_HANDLER, LOW, "start request");
+      if (m_state == State::IDLE)
       {
-         std::unique_lock<std::mutex> lock(m_mutex);
-         m_stop_request = true;
+         Utilities::ThreadWorker::start(timeout);
+         result = m_cond_var.wait_for(lock, std::chrono::milliseconds(500), [&](){return m_state == State::RUNNING;});
+      }
+      return result;
+   }
+   void stop()
+   {
+      UT_Log(USER_BTN_HANDLER, LOW, "stop request");
+      std::unique_lock<std::mutex> lock(m_mutex);
+      if ((m_state != State::IDLE) && (m_state != State::STOPPING))
+      {
+         m_state = State::STOPPING;
          m_cond_var.notify_all();
-         m_cond_var.wait_for(lock, std::chrono::milliseconds(200), [&](){return !isRunning();});
+         m_cond_var.wait_for(lock, std::chrono::milliseconds(5000), [&](){return (m_state == State::IDLE);});
       }
       Utilities::ThreadWorker::stop();
+   }
+   bool isWorking()
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      return (m_state != State::IDLE);
+   }
+   bool isExecution()
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      return m_state == State::TRIGGER;
    }
    /**
     * @brief Starts execution of  currently stored commands.
@@ -71,10 +98,13 @@ public:
     */
    void execute()
    {
-      UT_Log(USER_BTN_HANDLER, LOW, "starting execution");
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_isActive = true;
-      m_cond_var.notify_all();
+      if (m_state == State::RUNNING)
+      {
+         UT_Log(USER_BTN_HANDLER, LOW, "starting execution");
+         m_state = State::TRIGGER;
+         m_cond_var.notify_all();
+      }
    }
    /**
     * @brief Process new text input to commands.
@@ -89,7 +119,7 @@ public:
 
       std::lock_guard<std::mutex> lock(m_mutex);
       int result = 0;
-      if (!m_isActive)
+      if (m_state != State::TRIGGER)
       {
          m_commands.clear();
          m_raw_text = text;
@@ -113,6 +143,14 @@ public:
       return result;
    }
 private:
+   enum class State
+   {
+      IDLE,
+      RUNNING,
+      TRIGGER,
+      STOPPING,
+   };
+
    bool isSpecialCommand(const std::string& command)
    {
       return command.find("__", 0) == 0;
@@ -146,26 +184,30 @@ private:
    void threadLoop()
    {
       UT_Log(USER_BTN_HANDLER, HIGH, "starting thread");
+
       while(Utilities::ThreadWorker::isRunning())
       {
          bool activated = false;
          {
             std::unique_lock<std::mutex> lock(m_mutex);
-            m_cond_var.wait(lock);
-            activated = m_isActive;
-            if (m_stop_request)
+            if (m_state == State::STOPPING)
             {
                UT_Log(USER_BTN_HANDLER, HIGH, "stop request received");
                m_cond_var.notify_all();
                break;
             }
+            m_state = State::RUNNING;
+            m_cond_var.notify_all();
+            UT_Log(USER_BTN_HANDLER, HIGH, "waiting for trigger");
+            m_cond_var.wait(lock);
+            activated = m_state == State::TRIGGER;
          }
 
          if (activated)
          {
             UT_Log(USER_BTN_HANDLER, HIGH, "Thread unlocked");
             std::vector<std::function<bool()>>::iterator it = m_commands.begin();
-            while (it != m_commands.end() && Utilities::ThreadWorker::isRunning())
+            while (it != m_commands.end() && isExecution())
             {
                if (*it)
                {
@@ -180,7 +222,6 @@ private:
 
             {
                std::lock_guard<std::mutex> lock(m_mutex);
-               m_isActive = false;
                if (m_callback)
                {
                   UT_Log(USER_BTN_HANDLER, LOW, "Command execution result %u", it == m_commands.end());
@@ -190,17 +231,20 @@ private:
          }
       }
       UT_Log(USER_BTN_HANDLER, HIGH, "stopping thread");
-
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_state = State::IDLE;
+      m_cond_var.notify_all();
+      UT_Log(USER_BTN_HANDLER, HIGH, "stopped");
    }
 
    std::string m_raw_text;
    std::function<bool(const std::string&)> m_writer;
    std::vector<std::function<bool()>> m_commands;
    std::function<void(bool)> m_callback;
-   bool m_isActive;
    std::condition_variable m_cond_var;
    std::mutex m_mutex;
    bool m_stop_request;
+   State m_state;
 };
 
 }
