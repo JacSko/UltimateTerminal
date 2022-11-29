@@ -69,7 +69,7 @@ else()
    #########################################
    #  Unit tests executable
    #########################################
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage -fno-exceptions -fPIC -O0")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
    enable_testing()
    set(UNIT_TESTS ON)
    add_definitions(-DUNIT_TESTS)
