@@ -88,3 +88,34 @@ add_subdirectory(sw/Settings)
 add_subdirectory(sw/Logger)
 add_subdirectory(config)
 add_subdirectory(sw/Dialogs)
+
+
+#########################################
+#  Print project summary
+#########################################
+function(printVariable name type)
+   set(value ${ARGN})
+   if(type STREQUAL "BOOL")
+      if(value)
+         set(value "ON")
+      else()
+         set(value "OFF")
+      endif()
+   endif()
+   message(STATUS "${name} : ${value}")
+endfunction()
+
+
+message(STATUS "Project configuration summary:")
+printVariable("Version" STRING ${PROJECT_VERSION})
+printVariable("Target OS UNIX" BOOL ${UNIX})
+printVariable("Target OS WIN32" BOOL ${WIN32})
+printVariable("Unit Tests" BOOL ${UNIT_TESTS})
+printVariable("Config file path" BOOL ${CONFIG_FILE})
+printVariable("Persistence path" STRING ${PERSISTENCE_FILE})
+printVariable("Settings persistence path" STRING ${SETTINGS_PERSISTENCE_FILE})
+printVariable("CXX flags" STRING ${CMAKE_CXX_FLAGS})
+printVariable("C flags" STRING ${CMAKE_C_FLAGS})
+
+
+
