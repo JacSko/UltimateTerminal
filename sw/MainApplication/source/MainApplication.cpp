@@ -135,6 +135,11 @@ MainApplication::~MainApplication()
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }
+
+   m_user_button_handlers.clear();
+   m_trace_filter_handlers.clear();
+   m_port_handlers.clear();
+
    m_timers->stop();
    m_persistence.removeListener(*this);
    Settings::SettingsHandler::get()->stop();
