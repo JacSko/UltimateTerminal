@@ -1,5 +1,6 @@
 export CFLAGS='-fprofile-arcs -ftest-coverage'
 export CXXFLAGS='-fprofile-arcs -ftest-coverage'
+export CMAKE_PARAMETERS="-DUNIT_TESTS=On -DUT_NO_DEBUG_OUTPUT=On"
 BUILD_FOLDER=build_ut_coverage
 
 . ./run_ut.sh
@@ -12,5 +13,5 @@ then
     mkdir html
 fi
 
-gcovr -f ../sw/ --root=. -e /.*/test/.* -e /.*/tests/.* --html --html-details --output=html/coverage.html --exclude-unreachable-branches
-firefox html/coverage.html
+gcovr -f ../sw/ -s --root=. -e /.*/test/.* -e /.*/tests/.* --html --html-details --output=html/coverage.html --exclude-unreachable-branches
+#firefox html/coverage.html

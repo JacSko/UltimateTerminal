@@ -6,7 +6,12 @@ then
 fi
 
 EXECUTOR_NUMBER=8
-CMAKE_PARAMETERS="-DUNIT_TESTS=On -DCMAKE_BUILD_TYPE=Debug"
+
+if [ ! ${CMAKE_PARAMETERS+x} ]
+then
+   CMAKE_PARAMETERS="-DUNIT_TESTS=On -DCMAKE_BUILD_TYPE=Debug"
+fi
+
 CTEST_PARAMETERS="--output-on-failure --schedule-random --no-compress-output"
 
 mkdir -p ${BUILD_FOLDER}

@@ -96,6 +96,7 @@ typedef enum
 
 #define __FILENAME__ (strrchr(__FILE__,'/')?strrchr(__FILE__,'/')+1:__FILE__)
 
+#if !defined UT_NO_DEBUG_OUTPUT
 /**
  * @brief Puts data into logger, to be save according to current settings.
  * @param[in] logger_group - Logger group according to LoggerGroupID
@@ -165,5 +166,15 @@ typedef enum
  */
 #define UT_Get_Level(group) LoggerEngine::get()->getLevel(group)
 
+#else
+#define UT_Log(group,level,fmt,...)
+#define UT_Log_If(cond,group,level,fmt,...)
+#define UT_Assert(cond)
+#define UT_Stdout_Log(group,level,fmt,...)
+#define UT_Stdout_Log_If(cond,group,level,fmt,...)
+#define UT_Stdout_Assert(cond)
+#define UT_Set_Level(group, level)
+#define UT_Get_Level(group)
+#endif
 
 #endif
