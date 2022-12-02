@@ -17,7 +17,17 @@ class QtSerialDriver : public ISerialDriver
 {
 public:
    QtSerialDriver();
+   ~QtSerialDriver();
 private:
+
+   enum class State
+   {
+      IDLE,
+      CONNECTION_REQUESTED,
+      CONNECTED,
+      DESTROYING,
+   };
+
    bool open(DataMode mode, const Settings& settings) override;
    void close() override;
    bool isOpened() override;
@@ -34,7 +44,11 @@ private:
    std::vector<SerialListener*> m_listeners;
    std::mutex m_listeners_mutex;
 
-   QSerialPort m_serial_port;
+   QSerialPort* m_serial_port;
+   Settings m_settings;
+   std::condition_variable m_cond_var;
+   std::mutex m_mutex;
+   State m_state;
 };
 
 

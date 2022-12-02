@@ -143,42 +143,40 @@ std::unique_ptr<ISerialDriver> ISerialDriver::create()
 QtSerialDriver::QtSerialDriver():
 m_worker(std::bind(&QtSerialDriver::receivingThread, this), "SERIAL_WORKER"),
 m_recv_buffer(SERIAL_MAX_PAYLOAD_LENGTH, 0x00),
-m_recv_buffer_idx(0)
+m_recv_buffer_idx(0),
+m_state(State::IDLE)
 {
+   m_worker.start(SERIAL_THREAD_START_TIMEOUT);
 }
-
+QtSerialDriver::~QtSerialDriver()
+{
+   close();
+   {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::DESTROYING;
+   }
+   m_cond_var.notify_all();
+   m_worker.stop();
+}
 bool QtSerialDriver::open(DataMode mode, const Settings& settings)
 {
    bool result = false;
-   m_mode = mode;
-   UT_Log(SERIAL_DRV, INFO, "Opening serial port %s with baudrate %s, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
-         settings.stopBits.toName().c_str(), settings.dataBits.toName().c_str());
 
-   if ((g_baudrates_map.find(settings.baudRate.value) != g_baudrates_map.end()) &&
-         (g_databits_map.find(settings.dataBits.value) != g_databits_map.end()) &&
-         (g_paritytype_map.find(settings.parityBits.value) != g_paritytype_map.end()) &&
-         (g_stopbits_map.find(settings.stopBits.value) != g_stopbits_map.end()))
+   std::unique_lock<std::mutex> lock(m_mutex);
+   if (m_state == State::IDLE)
    {
-      m_serial_port.setBaudRate(g_baudrates_map.at(settings.baudRate.value));
-      m_serial_port.setDataBits(g_databits_map.at(settings.dataBits.value));
-      m_serial_port.setParity(g_paritytype_map.at(settings.parityBits.value));
-      m_serial_port.setStopBits(g_stopbits_map.at(settings.stopBits.value));
-      m_serial_port.setPortName(QString(settings.device.c_str()));
+      m_mode = mode;
+      m_settings = settings;
+      UT_Log(SERIAL_DRV, INFO, "Opening serial port %s with baudrate %s, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
+            settings.stopBits.toName().c_str(), settings.dataBits.toName().c_str());
+      m_state = State::CONNECTION_REQUESTED;
+      m_cond_var.notify_all();
+      if (m_cond_var.wait_for(lock, std::chrono::milliseconds(SERIAL_THREAD_START_TIMEOUT), [&]()->bool{return (m_state == State::CONNECTED) || (m_state == State::IDLE);}))
+      {
+         result = (m_state == State::CONNECTED);
+         UT_Log(SERIAL_DRV, LOW, "Port openend!");
+      }
 
-      if (m_serial_port.open(QIODevice::ReadWrite))
-      {
-         result = true;
-         m_worker.start(SERIAL_THREAD_START_TIMEOUT);
-         UT_Log(SERIAL_DRV, LOW, "Successfully opened %s!", settings.device.c_str());
-      }
-      else
-      {
-         UT_Log(SERIAL_DRV, ERROR, "Error opening serial port %s, error %u", settings.device.c_str(), (uint8_t)m_serial_port.error());
-      }
-   }
-   else
-   {
-      UT_Log(SERIAL_DRV, ERROR, "Invalid settings, not found in translation map");
    }
    return result;
 }
@@ -187,53 +185,113 @@ void QtSerialDriver::close()
 {
    if (isOpened())
    {
-      m_serial_port.close();
-      m_worker.stop();
+      m_serial_port->close();
    }
 }
 bool QtSerialDriver::isOpened()
 {
-   return m_worker.isRunning();
+   std::lock_guard<std::mutex> lock(m_mutex);
+   return m_state == State::CONNECTED;
 }
 void QtSerialDriver::receivingThread()
 {
+   bool is_started = false;
+   m_serial_port = new QSerialPort();
+   UT_Assert(m_serial_port);
+
    while(m_worker.isRunning())
    {
-
-      if (m_serial_port.waitForReadyRead(500))
       {
-         int recv_bytes = m_serial_port.read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SERIAL_MAX_PAYLOAD_LENGTH);
-         if (recv_bytes > 0)
+         std::unique_lock<std::mutex> lock(m_mutex);
+         is_started = false;
+         m_cond_var.wait(lock);
+         if (m_state == State::CONNECTION_REQUESTED)
          {
-            m_recv_buffer_idx += recv_bytes;
-            bool is_next_new_line = true;
-            do
+            is_started = true;
+         }
+         else if (m_state == State::DESTROYING)
+         {
+            break;
+         }
+      }
+
+      if (is_started)
+      {
+         if ((g_baudrates_map.find(m_settings.baudRate.value) != g_baudrates_map.end()) &&
+               (g_databits_map.find(m_settings.dataBits.value) != g_databits_map.end()) &&
+               (g_paritytype_map.find(m_settings.parityBits.value) != g_paritytype_map.end()) &&
+               (g_stopbits_map.find(m_settings.stopBits.value) != g_stopbits_map.end()))
+         {
+            m_serial_port->setBaudRate(g_baudrates_map.at(m_settings.baudRate.value));
+            m_serial_port->setDataBits(g_databits_map.at(m_settings.dataBits.value));
+            m_serial_port->setParity(g_paritytype_map.at(m_settings.parityBits.value));
+            m_serial_port->setStopBits(g_stopbits_map.at(m_settings.stopBits.value));
+            m_serial_port->setPortName(QString(m_settings.device.c_str()));
+
+            if (m_serial_port->open(QIODevice::ReadWrite))
             {
-               auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)DATA_DELIMITER);
-               if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+               UT_Log(SERIAL_DRV, LOW, "Successfully opened %s!", m_settings.device.c_str());
+
                {
-                  it++; //include the found newline too
-                  notifyListeners(DriverEvent::DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
-                  std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
-                  m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+                  std::unique_lock<std::mutex> lock(m_mutex);
+                  m_state = State::CONNECTED;
+                  m_cond_var.notify_all();
                }
-               else
+               while(m_worker.isRunning())
                {
-                  is_next_new_line = false;
+                  if (m_serial_port->waitForReadyRead(500))
+                  {
+                     int recv_bytes = m_serial_port->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SERIAL_MAX_PAYLOAD_LENGTH);
+                     if (recv_bytes > 0)
+                     {
+                        m_recv_buffer_idx += recv_bytes;
+                        bool is_next_new_line = true;
+                        do
+                        {
+                           auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)DATA_DELIMITER);
+                           if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+                           {
+                              it++; //include the found newline too
+                              notifyListeners(DriverEvent::DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
+                              std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
+                              m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+                           }
+                           else
+                           {
+                              is_next_new_line = false;
+                           }
+                        }
+                        while(is_next_new_line);
+                     }
+                     else if (recv_bytes == 0)
+                     {
+                        UT_Log(SERIAL_DRV, HIGH, "No more bytes to read");
+                     }
+                     else
+                     {
+                        UT_Log(SERIAL_DRV, ERROR, "Error reading from serial port");
+                     }
+                  }
                }
             }
-            while(is_next_new_line);
-         }
-         else if (recv_bytes == 0)
-         {
-            UT_Log(SERIAL_DRV, HIGH, "No more bytes to read");
+            else
+            {
+               UT_Log(SERIAL_DRV, ERROR, "Error opening serial port %s, error %u", m_settings.device.c_str(), (uint8_t)m_serial_port->error());
+            }
          }
          else
          {
-            UT_Log(SERIAL_DRV, ERROR, "Error reading from serial port");
+            UT_Log(SERIAL_DRV, ERROR, "Invalid settings, not found in translation map");
          }
       }
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::IDLE;
+      m_cond_var.notify_all();
    }
+
+   UT_Log(SERIAL_DRV, HIGH, "Exiting main loop...");
+   m_serial_port->close();
+   delete m_serial_port;
 }
 void QtSerialDriver::addListener(SerialListener* callback)
 {
@@ -262,7 +320,12 @@ void QtSerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>&
 }
 bool QtSerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
-   return m_serial_port.write((const char*)data.data(), data.size()) == size;
+   bool result = false;
+   if (m_serial_port)
+   {
+      result = m_serial_port->write((const char*)data.data(), data.size()) == size;
+   }
+   return result;
 }
 
 }

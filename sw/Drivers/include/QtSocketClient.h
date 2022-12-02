@@ -56,7 +56,11 @@ private:
    void receivingThread();
    void notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
 
+   QTcpSocket* m_socket;
    Utilities::ThreadWorker m_worker;
+   std::condition_variable m_cond_var;
+   std::mutex m_mutex;
+   State m_state;
    DataMode m_mode;
    std::string m_ip_address;
    uint16_t m_port;
@@ -67,10 +71,7 @@ private:
 
    std::vector<ClientListener*> m_listeners;
    std::mutex m_listeners_mutex;
-   QTcpSocket* m_socket;
-   std::condition_variable m_cond_var;
-   std::mutex m_mutex;
-   State m_state;
+
 };
 
 }
