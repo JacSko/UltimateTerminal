@@ -25,6 +25,7 @@ private:
       IDLE,
       CONNECTION_REQUESTED,
       CONNECTED,
+      DISCONNECTING,
       DESTROYING,
    };
 

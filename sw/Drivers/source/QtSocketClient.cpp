@@ -65,8 +65,11 @@ void QtSocketClient::disconnect()
    UT_Log(SOCK_DRV, INFO, "Trying to disconnect from %s:%u", m_ip_address.c_str(), m_port);
 
    std::unique_lock<std::mutex> lock(m_mutex);
-   m_state = State::DISCONNECTING;
-   m_cond_var.wait_for(lock, std::chrono::milliseconds(CLIENT_THREAD_START_TIMEOUT), [&]()->bool{return m_state == State::IDLE;});
+   if (m_state == State::CONNECTED)
+   {
+      m_state = State::DISCONNECTING;
+      m_cond_var.wait_for(lock, std::chrono::milliseconds(5000), [&]()->bool{return m_state == State::IDLE;});
+   }
 }
 bool QtSocketClient::isConnected()
 {

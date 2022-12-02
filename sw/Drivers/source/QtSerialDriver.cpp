@@ -183,9 +183,12 @@ bool QtSerialDriver::open(DataMode mode, const Settings& settings)
 
 void QtSerialDriver::close()
 {
-   if (isOpened())
+   UT_Log(SERIAL_DRV, LOW, "closing serial port!");
+   std::unique_lock<std::mutex> lock(m_mutex);
+   if(m_state == State::CONNECTED)
    {
-      m_serial_port->close();
+      m_state = State::DISCONNECTING;
+      m_cond_var.wait_for(lock, std::chrono::milliseconds(SERIAL_THREAD_START_TIMEOUT), [&]()->bool{return m_state == State::IDLE;});
    }
 }
 bool QtSerialDriver::isOpened()
@@ -204,6 +207,7 @@ void QtSerialDriver::receivingThread()
       {
          std::unique_lock<std::mutex> lock(m_mutex);
          is_started = false;
+         UT_Log(SERIAL_DRV, LOW, "Waiting for start request!");
          m_cond_var.wait(lock);
          if (m_state == State::CONNECTION_REQUESTED)
          {
@@ -270,6 +274,18 @@ void QtSerialDriver::receivingThread()
                      else
                      {
                         UT_Log(SERIAL_DRV, ERROR, "Error reading from serial port");
+                     }
+                  }
+                  else
+                  {
+                     std::lock_guard<std::mutex> lock (m_mutex);
+                     if (m_state == State::DISCONNECTING)
+                     {
+                        UT_Log(SOCK_DRV, HIGH, "Disconnecting");
+                        m_state = State::IDLE;
+                        m_serial_port->close();
+                        m_cond_var.notify_all();
+                        break;
                      }
                   }
                }
