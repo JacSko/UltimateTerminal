@@ -5,7 +5,7 @@
 
 #include <QtCore/QObject>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QShortcut>
+#include <QtGui/QShortcut>
 
 #include "GenericListener.hpp"
 #include "ISocketDriverFactory.h"
