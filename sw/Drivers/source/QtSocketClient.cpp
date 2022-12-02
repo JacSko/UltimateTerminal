@@ -27,13 +27,13 @@ std::unique_ptr<ISocketClient> ISocketClient::create()
 
 QtSocketClient::QtSocketClient():
 m_worker(std::bind(&QtSocketClient::receivingThread, this), "CLIENT_WORKER"),
+m_state(State::IDLE),
 m_mode(DataMode::NEW_LINE_DELIMITER),
 m_ip_address(""),
 m_port(0),
 m_recv_buffer(SOCKET_MAX_PAYLOAD_LENGTH, 0x00),
 m_recv_buffer_idx(0),
-m_listeners {},
-m_state(State::IDLE)
+m_listeners {}
 {
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
    m_worker.start(CLIENT_THREAD_START_TIMEOUT);
@@ -64,11 +64,9 @@ void QtSocketClient::disconnect()
 {
    UT_Log(SOCK_DRV, INFO, "Trying to disconnect from %s:%u", m_ip_address.c_str(), m_port);
 
-   std::lock_guard<std::mutex> lock(m_mutex);
-   if (m_socket)
-   {
-      m_socket->abort();
-   }
+   std::unique_lock<std::mutex> lock(m_mutex);
+   m_state = State::DISCONNECTING;
+   m_cond_var.wait_for(lock, std::chrono::milliseconds(CLIENT_THREAD_START_TIMEOUT), [&]()->bool{return m_state == State::IDLE;});
 }
 bool QtSocketClient::isConnected()
 {
@@ -199,7 +197,15 @@ void QtSocketClient::receivingThread()
                }
                else
                {
-                  UT_Log(SOCK_DRV, HIGH, "no new data");
+                  std::lock_guard<std::mutex> lock (m_mutex);
+                  if (m_state == State::DISCONNECTING)
+                  {
+                     UT_Log(SOCK_DRV, HIGH, "Disconnecting");
+                     m_state = State::IDLE;
+                     m_socket->abort();
+                     m_cond_var.notify_all();
+                     break;
+                  }
                }
             }
          }
