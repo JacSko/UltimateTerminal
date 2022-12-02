@@ -220,13 +220,10 @@ private:
                it++;
             }
 
+            if (m_callback)
             {
-               std::lock_guard<std::mutex> lock(m_mutex);
-               if (m_callback)
-               {
-                  UT_Log(USER_BTN_HANDLER, LOW, "Command execution result %u", it == m_commands.end());
-                  m_callback(it == m_commands.end());
-               }
+               UT_Log(USER_BTN_HANDLER, LOW, "Command execution result %u", it == m_commands.end());
+               m_callback(it == m_commands.end());
             }
          }
       }
