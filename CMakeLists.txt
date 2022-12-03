@@ -90,7 +90,7 @@ add_subdirectory(sw/Settings)
 add_subdirectory(sw/Logger)
 add_subdirectory(config)
 add_subdirectory(sw/Dialogs)
-
+add_subdirectory(tools)
 
 #########################################
 #  Print project summary
