@@ -12,6 +12,8 @@
 #include "ApplicationSettingsDialog.h"
 #if defined _WIN32
 #include <Shlwapi.h>
+#include <locale>
+#include <codecvt>
 #endif
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
@@ -36,7 +38,9 @@ __attribute__((weak)) std::string getExecutablePath()
     TCHAR path [MAX_PATH];
     (void) GetModuleFileName( NULL, path, MAX_PATH );
     PathRemoveFileSpec(path);
-    return std::string(path);
+    using converter_type = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<converter_type, wchar_t> converter;
+    return converter.to_bytes(path);
 #endif
 }
 }
