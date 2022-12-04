@@ -111,7 +111,19 @@ bool SocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients)
                UT_Stdout_Log(SOCK_DRV, MEDIUM, "bind OK, starting thread");
                result = m_listening_thread.start(SERVER_THREAD_START_TIMEOUT);
             }
+            else
+            {
+               UT_Stdout_Log(SOCK_DRV, ERROR, "cannot bind");
+            }
          }
+         else
+         {
+            UT_Stdout_Log(SOCK_DRV, ERROR, "cannot set sockopt");
+         }
+      }
+      else
+      {
+         UT_Stdout_Log(SOCK_DRV, ERROR, "cannot set sockopt");
       }
    }
 

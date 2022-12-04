@@ -163,27 +163,36 @@ void QtSocketClient::receivingThread()
             {
                if (m_socket->waitForReadyRead(CLIENT_RECEIVE_TIMEOUT))
                {
-                  int recv_bytes = m_socket->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH);
-                  if (recv_bytes > 0)
+                  bool bytes_available = true;
+                  while (bytes_available)
                   {
-                     m_recv_buffer_idx += recv_bytes;
-                     bool is_next_new_line = true;
-                     do
+                     int recv_bytes = m_socket->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH);
+                     if (recv_bytes > 0)
                      {
-                        auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)CLIENT_DELIMITER);
-                        if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+                        m_recv_buffer_idx += recv_bytes;
+                        bool is_next_new_line = true;
+                        do
                         {
-                           it++; //include the found newline too
-                           notifyListeners(ClientEvent::SERVER_DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
-                           std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
-                           m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+                           auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)CLIENT_DELIMITER);
+                           if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+                           {
+                              it++; //include the found newline too
+                              UT_Log(SOCK_DRV, HIGH, "received %u bytes from server", (uint32_t)std::distance(m_recv_buffer.begin(), it));
+                              notifyListeners(ClientEvent::SERVER_DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
+                              std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
+                              m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+                           }
+                           else
+                           {
+                              is_next_new_line = false;
+                           }
                         }
-                        else
-                        {
-                           is_next_new_line = false;
-                        }
+                        while(is_next_new_line);
                      }
-                     while(is_next_new_line);
+                     else if (recv_bytes == 0)
+                     {
+                        bytes_available = false;
+                     }
                   }
                }
                else if (m_socket->error() == QAbstractSocket::RemoteHostClosedError)
