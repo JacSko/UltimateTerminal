@@ -1,20 +1,211 @@
 #include "ISocketDriverFactory.h"
 #include <iostream>
+#include <sstream>
+#include <memory>
+#include <thread>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <atomic>
 
 #define APP_VERSION "1.0"
 
-bool processCommands()
-{
-   return false;
-}
+bool g_isClient = true;
+uint8_t g_maxServerClients = 1;
+std::string g_ipAddress = "127.0.0.1";
+uint32_t g_ipPort = 1234;
+uint32_t g_payloadRate = 100;
+uint32_t g_payloadSize = 100;
+std::string g_payload = "";
+bool g_exitOnLastClient = true;
 
+bool isCommand (const std::string& text)
+{
+   bool result = false;
+   if (text.size() > 2)
+   {
+      if (text.find("--", 0) == 0)
+      {
+         if (text.find("=", 0) != std::string::npos)
+         {
+            result = true;
+         }
+      }
+   }
+   return result;
+}
+bool parseModeCommand(const std::string& value)
+{
+   bool result = false;
+   if (value == "server")
+   {
+      g_isClient = false;
+      result = true;
+   }
+   else if (value == "client")
+   {
+      g_isClient = true;
+      result = true;
+   }
+   return result;
+}
+bool parseMaxServerClients(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      uint32_t max_clients = std::stoi(value);
+      if ((max_clients >= 1) && (max_clients <= 10))
+      {
+         result = true;
+         g_maxServerClients = max_clients;
+      }
+   }
+   return result;
+}
+bool parseAddress(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      result = true;
+      g_ipAddress = value;
+   }
+   return result;
+}
+bool parsePort(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      uint32_t port = std::stoi(value);
+      if (port != 0)
+      {
+         result = true;
+         g_ipPort = port;
+      }
+   }
+   return result;
+}
+bool parsePayloadRate(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      uint32_t payload_rate = std::stoi(value);
+      if ((payload_rate >= 1) && (payload_rate <= 10000))
+      {
+         result = true;
+         g_payloadRate = payload_rate;
+      }
+   }
+   return result;
+}
+bool parsePayloadSize(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      uint32_t payload_size = std::stoi(value);
+      if ((payload_size >= 1) && (payload_size <= 4096))
+      {
+         result = true;
+         g_payloadSize = payload_size;
+      }
+   }
+   return result;
+}
+bool parsePayload(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      result = true;
+      g_payload = value;
+      g_payloadSize = value.size();
+   }
+   return result;
+}
+bool parseExitOnLastClient(const std::string& value)
+{
+   bool result = false;
+   if (value.size())
+   {
+      result = true;
+      g_exitOnLastClient = (bool)std::stoi(value);
+   }
+   return result;
+}
+bool parseCommand(const std::string& command, const std::string& value)
+{
+   bool result = false;
+   if (command == "--mode")
+   {
+      result = parseModeCommand(value);
+   }
+   else if (command == "--max_server_clients")
+   {
+      result = parseMaxServerClients(value);
+   }
+   else if (command == "--address")
+   {
+      result = parseAddress(value);
+   }
+   else if (command == "--port")
+   {
+      result = parsePort(value);
+   }
+   else if (command == "--payload_rate")
+   {
+      result = parsePayloadRate(value);
+   }
+   else if (command == "--payload_size")
+   {
+      result = parsePayloadSize(value);
+   }
+   else if (command == "--payload")
+   {
+      result = parsePayload(value);
+   }
+   else if (command == "--exit_on_last_client")
+   {
+      result = parseExitOnLastClient(value);
+   }
+   return result;
+}
+bool processCommands(int argc, char** argv)
+{
+   bool result = false;
+
+   for (uint8_t i = 1; i < argc; i++)
+   {
+      if (isCommand(argv[1]))
+      {
+         std::stringstream ss (argv[i]);
+         std::string command = "";
+         std::string value = "";
+         std::getline(ss, command, '=');
+         std::getline(ss, value, '=');
+         result = parseCommand(command, value);
+         if (!result)
+         {
+            break;
+         }
+      }
+      else
+      {
+         std::cout << "[" << argv[1] << "] is not a valid option!" << std::endl;
+         break;
+      }
+   }
+   return result;
+}
 void printVersion()
 {
    std::cout << "SocketDataGenerator v" << std::string(APP_VERSION) << std::endl;
    std::cout << "Author: Jacek Skowronek (jacekskowronekk@gmail.com)" << std::endl;
    std::cout << "Application designed to generate adjustable traffic on socket, acting as server or client" << std::endl;
 }
-
 void printHelp()
 {
    printVersion();
@@ -27,7 +218,7 @@ void printHelp()
    std::cout << "--payload_rate [1-10000] - data send period in ms. The default value is 100ms, it means that payload will be end every 100ms" << std::endl;
    std::cout << "--payload_size [1-4096] - size of the payload in bytes. The default value is 100 bytes. Ignored when option --payload provided." << std::endl;
    std::cout << "--payload [data] - Payload to send. Defaults are \"0\" as text (0x30 hex)" << std::endl;
-   std::cout << "--exit_on_last_client [0-1] - Control if application shall be closed on last client disconnection. If no, application keeps listening for clients until manually closed." << std::endl;
+   std::cout << "--exit_on_last_client [0-1] - Control if application shall be closed on last client disconnection. If no, application keeps listening for clients until manually closed. Default is true" << std::endl;
    std::cout << std::endl;
    std::cout << "Example usage as server:" << std::endl;
    std::cout << std::endl;
@@ -39,10 +230,133 @@ void printHelp()
    std::cout << std::endl;
 }
 
+void runClientMode()
+{
+   std::unique_ptr<Drivers::SocketClient::ISocketClient> socket_client = Drivers::SocketFactory::createClient();
+   if (socket_client)
+   {
+      if (socket_client->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, g_ipAddress, g_ipPort))
+      {
+         while(1)
+         {
+            socket_client->write({g_payload.begin(), g_payload.end()}, g_payloadSize);
+            std::this_thread::sleep_for(std::chrono::milliseconds(g_payloadRate));
+         }
+      }
+      else
+      {
+         std::cout << "Cannot connect to server " << g_ipAddress << ":" << g_ipPort << std::endl;
+      }
+   }
+   else
+   {
+      std::cout << "Cannot create ISocketClient interface" << std::endl;
+   }
+}
+
+void runServerMode()
+{
+   std::unique_ptr<Drivers::SocketServer::ISocketServer> socket_server = Drivers::SocketFactory::createServer();
+   std::condition_variable cond_var;
+   std::mutex mutex;
+   std::atomic<uint8_t> clients_count = 0;
+
+   if (socket_server)
+   {
+      class ServerCallback : public Drivers::SocketServer::ServerListener
+      {
+      public:
+         ServerCallback(std::mutex& mutex, std::condition_variable& cond_var, std::atomic<uint8_t>& clients_count):
+         cond_var(cond_var),
+         mutex(mutex),
+         clients_count(clients_count)
+         {
+
+         }
+         void onServerEvent(int, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>&, size_t)
+         {
+            if (ev == Drivers::SocketServer::ServerEvent::CLIENT_CONNECTED)
+            {
+               std::unique_lock<std::mutex> lock(mutex);
+               clients_count++;
+               cond_var.notify_all();
+            }
+            else if (ev == Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED)
+            {
+               std::unique_lock<std::mutex> lock(mutex);
+               clients_count--;
+            }
+         }
+      private:
+         std::condition_variable& cond_var;
+         std::mutex& mutex;
+         std::atomic<uint8_t>& clients_count ;
+      };
+
+      ServerCallback callback (mutex, cond_var, clients_count);
+      socket_server->addListener(&callback);
+      if (socket_server->start(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER, g_ipPort, g_maxServerClients))
+      {
+         do
+         {
+            {
+               std::unique_lock<std::mutex> lock(mutex);
+               std::cout << "Waiting for client on port " << g_ipPort << std::endl;
+               cond_var.wait(lock, [&](){return clients_count.load();});
+               std::cout << "First client connected, starting..." << std::endl;
+            }
+            while (clients_count)
+            {
+               socket_server->write({g_payload.begin(), g_payload.end()}, g_payloadSize);
+               std::this_thread::sleep_for(std::chrono::milliseconds(g_payloadRate));
+            }
+            std::cout << "Last client disconnected, stopping" << std::endl;
+         } while(!g_exitOnLastClient);
+      }
+      else
+      {
+         std::cout << "Cannot connect to server " << g_ipAddress << ":" << g_ipPort << std::endl;
+      }
+   }
+   else
+   {
+      std::cout << "Cannot create ISocketClient interface" << std::endl;
+   }
+}
+
 int main(int argc, char** argv)
 {
-   if (!processCommands())
+   if (!processCommands(argc, argv))
    {
       printHelp();
+      return -1;
    }
+   if (g_payload.empty())
+   {
+      g_payload = std::string(g_payloadSize, '0');
+   }
+   g_payload += '\n';
+   g_payloadSize ++;
+
+   std::cout << "Starting program with parameters:" << std::endl;
+   std::cout << "Server? "<< g_isClient << std::endl;
+   std::cout << "Max server clients? " << g_maxServerClients << std::endl;
+   std::cout << "IP Address? " << g_ipAddress << std::endl;
+   std::cout << "IP Port? " << g_ipPort << std::endl;
+   std::cout << "Payload rate? " << g_payloadRate << std::endl;
+   std::cout << "Payload size? " << g_payloadSize  << std::endl;
+   std::cout << "Payload? " << g_payload << std::endl;
+   std::cout << "Exit on last client? " << g_exitOnLastClient << std::endl;
+
+   if (g_isClient)
+   {
+      std::cout << "Starting socket client" << std::endl;
+      runClientMode();
+   }
+   else
+   {
+      std::cout << "Starting socket server" << std::endl;
+      runServerMode();
+   }
+
 }
