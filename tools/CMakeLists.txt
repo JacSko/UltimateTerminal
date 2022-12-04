@@ -1,2 +1,5 @@
 add_executable(SocketDataGenerator SocketDataGenerator.cpp)
 target_link_libraries(SocketDataGenerator PRIVATE Drivers)
+
+add_executable(SerialDataGenerator SerialDataGenerator.cpp)
+target_link_libraries(SerialDataGenerator PRIVATE Drivers UtilitiesIf)
