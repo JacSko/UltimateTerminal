@@ -17,7 +17,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(DRIVER_VARIANT_NATIVE 0)
 set(DRIVER_VARIANT_QT     1)
-set(DRIVER_VARIANT ${DRIVER_VARIANT_NATIVE})
 
 #########################################
 #  File paths configurations
@@ -27,10 +26,12 @@ if (UNIX)
    message(STATUS "Building for UNIX")
    set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
    set(SETTINGS_PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_settings_persistence.bin")
+   set(DRIVER_VARIANT ${DRIVER_VARIANT_NATIVE})
 else()
    message(STATUS "Building for WINDOWS")
    cmake_path(SET PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_persistence.bin")
    cmake_path(SET SETTINGS_PERSISTENCE_FILE "$ENV{LOCALAPPDATA}/.Ultimate_terminal_settings_persistence.bin")
+   set(DRIVER_VARIANT ${DRIVER_VARIANT_QT})
 endif()
 #########################################
 #  Global project definitions
