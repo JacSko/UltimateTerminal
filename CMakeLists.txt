@@ -46,6 +46,7 @@ add_definitions(-DCONFIG_FILE="${CONFIG_FILE}"
 #########################################
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 find_package(Qt6 COMPONENTS SerialPort REQUIRED)
 find_package(Qt6 COMPONENTS Network REQUIRED)

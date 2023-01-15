@@ -14,6 +14,8 @@
 class QWidget;
 class QObject;
 
+template<typename T>
+using QVector = std::vector<T>;
 
 class QString : public std::string
 {
@@ -81,8 +83,6 @@ public:
 struct QtCoreMock
 {
    MOCK_METHOD4(QObject_connect, void(QObject*, std::string, QObject*, std::string));
-   MOCK_METHOD1(QObject_objectName, QString(QObject*));
-   MOCK_METHOD2(QObject_setObjectName, void(QObject*, const QString&));
 };
 
 void QtCoreMock_init();
@@ -206,6 +206,8 @@ public:
    QObject(){}
    QObject(QWidget*){}
    void connect(QObject* source, const char* signal_name, QObject* dest, const char* slot_name);
-   QString objectName();
-   void setObjectName(const QString&);
+   QString objectName(){return QString(name.c_str());}
+   void setObjectName(const QString& new_name) {name = new_name.toStdString();};
+private:
+   std::string name;
 };

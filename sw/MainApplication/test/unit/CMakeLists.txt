@@ -109,3 +109,25 @@ target_link_libraries(MainApplicationTests PUBLIC
         DialogsMocks
 )
 add_test(NAME MainApplicationTests COMMAND MainApplicationTests)
+
+#####################################################################################
+
+add_executable(GUIControllerTests
+            GUIControllerTests.cpp
+            ../../source/GUIController.cpp
+)
+
+target_include_directories(GUIControllerTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(GUIControllerTests PUBLIC
+        gtest_main
+        gmock_main
+        QtMocks
+        SettingsHandler
+        UtilitiesIf
+        Logger
+)
+add_test(NAME GUIControllerTests COMMAND GUIControllerTests)

@@ -56,9 +56,6 @@ struct MainApplicationFixture : public testing::Test
       g_timers_mock = new Utilities::ITimersMock;
       g_logger_mock = new IFileLoggerMock;
 
-      EXPECT_CALL(*QtCoreMock_get(), QObject_objectName(_)).WillOnce(Return(QString("")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_setObjectName(_, _)).Times(AtLeast(1));
-
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_marker_button))
                                                          .WillOnce(Return(&test_logging_button))
                                                          .WillOnce(Return(&test_settings_button))

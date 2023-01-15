@@ -545,7 +545,6 @@ IThemeController::Theme MainApplication::nameToTheme(const std::string& name)
    }
    return result;
 }
-
 uint8_t MainApplication::portNameToId(const std::string& name)
 {
    auto result = std::find_if(m_port_id_name_map.begin(), m_port_id_name_map.end(), [&](const auto& obj){return obj.second == name;});

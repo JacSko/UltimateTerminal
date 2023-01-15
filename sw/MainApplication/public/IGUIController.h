@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include <string>
 
+#define APPLICATION_THEMES       \
+      APPLICATION_THEME(DEFAULT) \
+      APPLICATION_THEME(DARK)    \
+
 enum class ButtonEvent
 {
    CLICKED,
@@ -12,30 +16,63 @@ enum class ButtonEvent
 class IGUIController
 {
 public:
-   virtual ~IGUIController(){};
+
+#undef APPLICATION_THEME
+#define APPLICATION_THEME(name) name,
+enum class Theme
+{
+   APPLICATION_THEMES
+   APPLICATION_THEMES_MAX
+};
+#undef APPLICATION_THEME
+
+   class ThemeListener
+   {
+   public:
+      virtual ~ThemeListener(){};
+      virtual void onThemeChange(IGUIController::Theme theme) = 0;
+   };
+
+   class ButtonEventListener
+   {
+   public:
+      virtual ~ButtonEventListener(){};
+      virtual void onButtonEvent(uint32_t button_id, ButtonEvent event) = 0;
+   };
+
+   virtual ~IGUIController() {};
+   static std::unique_ptr<IGUIController> create(QWidget *parent);
+
    /**
     * @brief Returns the unique button ID basing on button name.
     * @param[in] name - name of the button
     * @return ID of the button if found.
-    * @return If not button found, UINT32_MAX is returned
+    * @return If no button found, UINT32_MAX is returned
     */
    virtual uint32_t getButtonID(const std::string& name) = 0;
+   /**
+    * @brief Returns the unique label ID basing on label name.
+    * @param[in] name - name of the label
+    * @return ID of the label if found.
+    * @return If no label found, UINT32_MAX is returned
+    */
+   virtual uint32_t getLabelID(const std::string& name) = 0;
    /**
     * @brief Register callback to receive the buttons event.
     * @param[in] button_id - ID of the button
     * @param[in[ event - type of event
-    * @param[in[ callback - function to be called
+    * @param[in[ listener - listening interface
     * @return None
     */
-   virtual void subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, std::function<bool()> callback) = 0;
+   virtual void subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener) = 0;
    /**
     * @brief Unregister callback.
     * @param[in] button_id - ID of the button
     * @param[in[ event - type of event
-    * @param[in[ callback - function to be called
+    * @param[in[ listener - listening interface
     * @return None
     */
-   virtual void unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent event, std::function<bool()> callback) = 0;
+   virtual void unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener) = 0;
    /**
     * @brief Sets button background color.
     * @param[in] button_id - ID of the button
@@ -70,14 +107,14 @@ public:
     * @param[in[ enable - enable value
     * @return None
     */
-   virtual void setButtonEnabled(uint32_t button_id, bool enabled);
+   virtual void setButtonEnabled(uint32_t button_id, bool enabled) = 0;
    /**
     * @brief Set the text visible on button.
     * @param[in] button_id - ID of the button
     * @param[in[ text - text to display
     * @return None
     */
-   virtual void setButtonText(uint32_t button_id, const std::string& text);
+   virtual void setButtonText(uint32_t button_id, const std::string& text) = 0;
    /**
     * @brief Removes all the items from terminal view.
     * @return None
@@ -119,13 +156,13 @@ public:
     * @param[in] enabled - if true, the view is scrolled down after every item added
     * @return None
     */
-   virtual void setTerminalScrollingEnabled(bool enabled);
+   virtual void setTerminalScrollingEnabled(bool enabled) = 0;
    /**
     * @brief Controls trace view scrolling.
     * @param[in] enabled - if true, the view is scrolled down after every item added
     * @return None
     */
-   virtual void setTraceScrollingEnabled(bool enabled);
+   virtual void setTraceScrollingEnabled(bool enabled) = 0;
    /**
     * @brief Registers callback to be called on active port change event.
     * @param[in] callback - function to be called.
@@ -172,7 +209,7 @@ public:
     * @return ID of the trace filter if found.
     * @return If no trace filter found, UINT32_MAX is returned
     */
-   virtual uint32_t getTraceFilerID(const std::string& name) = 0;
+   virtual uint32_t getTraceFilterID(const std::string& name) = 0;
    /**
     * @brief Sets the new filtering regular expression for given filter.
     * @param[in] id - ID of the filter
@@ -184,7 +221,7 @@ public:
     * @param[in] id - ID of the filter
     * @return Regular expression as a string
     */
-   virtual std::string getTraceFilter(uint8_t id);
+   virtual std::string getTraceFilter(uint8_t id) = 0;
    /**
     * @brief Controls editability of trace filters. If set to true, user is not able to edit the regular expression.
     * @param[in] id - ID of the filter
@@ -220,5 +257,55 @@ public:
     * @return None
     */
    virtual void setPortLabelStylesheet(uint8_t id, const std::string& stylesheet) = 0;
-
+   /**
+    * @brief Reloads the current application theme.
+    * @param[in] theme - ID of the theme
+    * @return None
+    */
+   virtual void reloadTheme(Theme theme) = 0;
+   /**
+    * @brief Returns the currently loaded theme.
+    * @return ID of the theme
+    */
+   virtual Theme currentTheme() = 0;
+   /**
+    * @brief Converts theme to text name.
+    * @param[in] theme - ID of the theme
+    * @return Theme name in text form
+    */
+   virtual std::string themeToName(Theme theme) = 0;
+   /**
+    * @brief Converts theme name to ID.
+    * @param[in] name - name of the theme
+    * @return ID of the theme
+    */
+   virtual Theme nameToTheme(const std::string& name) = 0;
+   /**
+    * @brief Returns the current application background color.
+    * @return Color in RGB format.
+    */
+   virtual uint32_t getBackgroundColor() = 0;
+   /**
+    * @brief Returns the current terminal background color.
+    * @return Color in RGB format.
+    */
+   virtual uint32_t getTerminalBackgroundColor() = 0;
+   /**
+    * @brief Returns the current text color.
+    * @return Color in RGB format.
+    */
+   virtual uint32_t getTextColor() = 0;
+   /**
+    * @brief Register listener to get theme reloading events.
+    * @param[in] listener - listening interface.
+    * @return None.
+    */
+   virtual void subscribeForThemeReloadEvent(ThemeListener* listener) = 0;
+   /**
+    * @brief Unregister from theme reloading events.
+    * @param[in] listener - already registered listening interface.
+    * @return None.
+    */
+   virtual void unsubscribeFromThemeReloadEvent(ThemeListener*) = 0;
 };
+

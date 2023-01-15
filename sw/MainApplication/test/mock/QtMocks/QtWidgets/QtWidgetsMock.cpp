@@ -25,6 +25,12 @@ QtWidgetsMock* QtWidgetsMock_get()
    UT_Assert(g_widgets_mock && "Create widgets mock first!");
    return g_widgets_mock;
 }
+
+QObject* sender()
+{
+   return g_widgets_mock->QSender();
+}
+
 void* QDialog::operator new(size_t)
 {
    return g_widgets_mock->QDialog_new();
@@ -85,6 +91,11 @@ QString QLineEdit::text()
 {
    return QString(g_widgets_mock->QLineEdit_text(this).c_str());
 }
+void QLineEdit::setStyleSheet(const QString& styleSheet)
+{
+   g_widgets_mock->QLineEdit_setStyleSheet(this, styleSheet);
+}
+
 void* QTextEdit::operator new(size_t)
 {
    return g_widgets_mock->QTextEdit_new();

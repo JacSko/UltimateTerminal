@@ -12,6 +12,8 @@ class QMenuBar;
 class QStatusBar;
 class QLayout;
 
+QObject* sender();
+
 constexpr uint32_t DEFAULT_APP_COLOR = 0xDEAD;
 
 class QColor
@@ -209,6 +211,7 @@ public:
    void setText(const QString &);
    void setMaxLength(int);
    void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
+   void setStyleSheet(const QString& styleSheet);
    QString text();
    void clear(){}
 };
@@ -455,6 +458,7 @@ struct QtWidgetsMock
    MOCK_METHOD1(QLineEdit_text, QString(QLineEdit*));
    MOCK_METHOD2(QLineEdit_setMaxLength, void(QLineEdit*, int));
    MOCK_METHOD2(QLineEdit_setContextMenuPolicy, void(QLineEdit*, Qt::ContextMenuPolicy));
+   MOCK_METHOD2(QLineEdit_setStyleSheet, void(QLineEdit*, const QString&));
 
    MOCK_METHOD0(QTextEdit_new, void*());
    MOCK_METHOD2(QTextEdit_setText, void(QTextEdit*, const std::string&));
@@ -521,6 +525,8 @@ struct QtWidgetsMock
    MOCK_METHOD0(QCheckBox_new, void*());
    MOCK_METHOD0(QMenuBar_new, void*());
    MOCK_METHOD0(QShortcut_new, void*());
+
+   MOCK_METHOD0(QSender, QObject*());
 };
 
 void QtWidgetsMock_init();
