@@ -114,9 +114,10 @@ private:
    std::vector<ThemeListener*> m_theme_listeners;
    std::mutex m_button_listeners_mutex;
    std::vector<ButtonEventItem> m_button_listeners;
+   //maps widgets to related buttons (i.e. traceFilter to traceFilterButton)
+   std::map<QObject*, QPushButton*> m_shortcuts_map;
 
-   uint32_t getButtonID(const std::string& name) override;
-   uint32_t getLabelID(const std::string& name) override;
+   uint32_t getElementID(const std::string& name) override;
    void subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener*) override;
    void unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener*) override;
    void setButtonBackgroundColor(uint32_t button_id, uint32_t color) override;

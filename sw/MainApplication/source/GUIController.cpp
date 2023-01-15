@@ -107,36 +107,29 @@ m_current_command(nullptr)
    connect(this, SIGNAL(setPortLabelStylesheetSignal(uint8_t, QString)), this, SLOT(onSetPortLabelStylesheetSignal(uint8_t, QString)));
    connect(this, SIGNAL(reloadThemeSignal(uint8_t)), this, SLOT(onReloadThemeSignal(uint8_t)));
 
-
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
+
+   m_shortcuts_map[ui->textEdit->lineEdit()] = ui->sendButton;
+   m_shortcuts_map[ui->traceFilter_1] = ui->traceFilterButton_1;
+   m_shortcuts_map[ui->traceFilter_2] = ui->traceFilterButton_2;
+   m_shortcuts_map[ui->traceFilter_3] = ui->traceFilterButton_3;
+   m_shortcuts_map[ui->traceFilter_4] = ui->traceFilterButton_4;
+   m_shortcuts_map[ui->traceFilter_5] = ui->traceFilterButton_5;
+   m_shortcuts_map[ui->traceFilter_6] = ui->traceFilterButton_6;
+   m_shortcuts_map[ui->traceFilter_7] = ui->traceFilterButton_7;
 }
 GUIController::~GUIController()
 {
    delete ui;
 }
-uint32_t GUIController::getButtonID(const std::string& name)
+uint32_t GUIController::getElementID(const std::string& name)
 {
    uint32_t result = UINT32_MAX;
-   auto buttons = ui->getButtons();
-   for (uint32_t i = 0; i < buttons.size(); i++)
+   auto elements = ui->getElements();
+   for (uint32_t i = 0; i < elements.size(); i++)
    {
-      UT_Assert(buttons[i]);
-      if (buttons[i]->objectName() == name)
-      {
-         result = i;
-         break;
-      }
-   }
-   return result;
-}
-uint32_t GUIController::getLabelID(const std::string& name)
-{
-   uint32_t result = UINT32_MAX;
-   auto& labels = ui->getLabels();
-   for (uint32_t i = 0; i < labels.size(); i++)
-   {
-      UT_Assert(labels[i]);
-      if (labels[i]->objectName() == name)
+      UT_Assert(elements[i]);
+      if (elements[i]->objectName() == name)
       {
          result = i;
          break;
@@ -403,9 +396,21 @@ bool GUIController::executeGUIRequest(CommandExecutor* request)
 }
 void GUIController::onButtonClicked()
 {
-   QPushButton* object = reinterpret_cast<QPushButton*>(sender());
+   QObject* object = sender();
+   QPushButton* button = nullptr;
+   if (m_shortcuts_map.find(object) != m_shortcuts_map.end())
+   {
+      // check if sender has respective button alternative
+      button = m_shortcuts_map[object];
+   }
+   else
+   {
+      button = reinterpret_cast<QPushButton*>(object);
+   }
+
+   //find button id
    auto& buttons = ui->getButtons();
-   auto it = std::find(buttons.begin(), buttons.end(), object);
+   auto it = std::find(buttons.begin(), buttons.end(), button);
    if (it != buttons.end())
    {
       uint32_t id = std::distance(buttons.begin(), it);

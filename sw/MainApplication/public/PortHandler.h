@@ -69,7 +69,8 @@ class PortHandler : public QObject,
                     public Drivers::SocketClient::ClientListener,
                     public Drivers::Serial::SerialListener,
                     public Utilities::ITimerClient,
-                    public Persistence::PersistenceListener
+                    public Persistence::PersistenceListener,
+                    public IGUIController::ButtonEventListener
 {
    Q_OBJECT
 public:
@@ -142,6 +143,7 @@ private:
 
    uint32_t m_button_id;
    uint32_t m_label_id;
+   IGUIController& m_gui_controller;
    QWidget* m_parent;
    Dialogs::PortSettingDialog::Settings m_settings;
    uint32_t m_connect_retry_period;
@@ -154,6 +156,9 @@ private:
    std::mutex m_event_mutex;
    std::mutex m_listener_mutex;
    Persistence::PersistenceHandler& m_persistence;
+
+   /* ButtonEventListener */
+   void onButtonEvent(uint32_t button_id, ButtonEvent event);
 
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
@@ -170,12 +175,10 @@ private:
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;
    void serialize(std::vector<uint8_t>& buffer);
-public slots:
+
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
    void onPortEvent();
-signals:
-   void portEvent();
 };
 
 

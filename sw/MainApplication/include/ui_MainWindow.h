@@ -445,6 +445,48 @@ public:
       m_trace_filters.push_back({traceFilter_6, traceFilterButton_6});
       m_trace_filters.push_back({traceFilter_7, traceFilterButton_7});
 
+      m_all_widgets.push_back(markerButton);
+      m_all_widgets.push_back(loggingButton);
+      m_all_widgets.push_back(settingsButton);
+      m_all_widgets.push_back(sendButton);
+      m_all_widgets.push_back(scrollButton);
+      m_all_widgets.push_back(clearButton);
+      m_all_widgets.push_back(traceClearButton);
+      m_all_widgets.push_back(traceScrollButton);
+      m_all_widgets.push_back(traceFilterButton_1);
+      m_all_widgets.push_back(traceFilterButton_2);
+      m_all_widgets.push_back(traceFilterButton_3);
+      m_all_widgets.push_back(traceFilterButton_4);
+      m_all_widgets.push_back(traceFilterButton_5);
+      m_all_widgets.push_back(traceFilterButton_6);
+      m_all_widgets.push_back(traceFilterButton_7);
+      m_all_widgets.push_back(portButton_1);
+      m_all_widgets.push_back(portButton_2);
+      m_all_widgets.push_back(portButton_3);
+      m_all_widgets.push_back(portButton_4);
+      m_all_widgets.push_back(portButton_5);
+      m_all_widgets.push_back(infoLabel);
+      m_all_widgets.push_back(portLabel_1);
+      m_all_widgets.push_back(portLabel_2);
+      m_all_widgets.push_back(portLabel_3);
+      m_all_widgets.push_back(portLabel_4);
+      m_all_widgets.push_back(portLabel_5);
+
+      m_all_widgets.push_back(traceFilter_1);
+      m_all_widgets.push_back(traceFilter_2);
+      m_all_widgets.push_back(traceFilter_3);
+      m_all_widgets.push_back(traceFilter_4);
+      m_all_widgets.push_back(traceFilter_5);
+      m_all_widgets.push_back(traceFilter_6);
+      m_all_widgets.push_back(traceFilter_7);
+      m_all_widgets.push_back(traceFilterButton_1);
+      m_all_widgets.push_back(traceFilterButton_2);
+      m_all_widgets.push_back(traceFilterButton_3);
+      m_all_widgets.push_back(traceFilterButton_4);
+      m_all_widgets.push_back(traceFilterButton_5);
+      m_all_widgets.push_back(traceFilterButton_6);
+      m_all_widgets.push_back(traceFilterButton_7);
+
    }
 
    void retranslateUi(QMainWindow *MainWindow)
@@ -502,7 +544,10 @@ public:
    {
       return m_labels;
    }
-
+   const std::vector<QWidget*>& getElements()
+   {
+      return m_all_widgets;
+   }
 private:
 
    void renderDarkTheme()
@@ -580,6 +625,7 @@ private:
    std::vector<QPushButton*> m_buttons;
    std::vector<QLabel*> m_labels;
    std::vector<TraceFilterItem> m_trace_filters;
+   std::vector<QWidget*> m_all_widgets;
 
 };
 

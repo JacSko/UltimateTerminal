@@ -23,17 +23,34 @@ m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, 
 
    Persistence::PersistenceListener::setName(std::string("BUTTON") + std::to_string(USER_BUTTON_ID));
    m_persistence.addListener(*this);
-
-   object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   connect(object, SIGNAL(clicked()), this, SLOT(onUserButtonClicked()));
-   connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onUserButtonContextMenuRequested()));
+   m_button_id = m_gui_controller.getElementID(button_name);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.setButtonCheckable(m_button_id, true);
    connect(this, SIGNAL(commandsFinished()), this, SLOT(onCommandsFinished()));
-   m_object->setCheckable(true);
 }
 UserButtonHandler::~UserButtonHandler()
 {
+   m_gui_controller.unsubscribeFromButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+
    m_persistence.removeListener(*this);
 }
+void UserButtonHandler::onButtonEvent(uint32_t button_id, ButtonEvent event)
+{
+   if (button_id == m_button_id)
+   {
+      if (event == ButtonEvent::CLICKED)
+      {
+         onUserButtonClicked();
+      }
+      else if (event == ButtonEvent::CONTEXT_MENU_REQUESTED)
+      {
+         onUserButtonContextMenuRequested();
+      }
+   }
+}
+
 bool UserButtonHandler::startThread()
 {
    return m_executor.start(THREAD_START_TIMEOUT);
@@ -62,15 +79,13 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
 void UserButtonHandler::onUserButtonClicked()
 {
    UT_Log(USER_BTN_HANDLER, HIGH, "Sending commands for button %s [%s]", getName().c_str(), m_settings.button_name.c_str());
-   m_object->setChecked(true);
-   m_object->setDisabled(true);
-   m_object->repaint();
-
+   m_gui_controller.setButtonChecked(m_button_id, true);
+   m_gui_controller.setButtonEnabled(m_button_id, false);
    m_executor.execute();
 }
 void UserButtonHandler::setButtonName(const std::string name)
 {
-   m_object->setText(QString(name.c_str()));
+   m_gui_controller.setButtonText(m_button_id, name);
 }
 void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {
@@ -90,15 +105,9 @@ void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 }
 void UserButtonHandler::onCommandExecutionEvent(bool result)
 {
-   emit commandsFinished();
+   m_gui_controller.setButtonChecked(m_button_id, false);
+   m_gui_controller.setButtonEnabled(m_button_id, true);
    UT_Log(USER_BTN_HANDLER, LOW, "Commands executed %scorrectly", result? "" : "not ");
-}
-
-void UserButtonHandler::onCommandsFinished()
-{
-   m_object->setChecked(false);
-   m_object->setDisabled(false);
-   m_object->repaint();
 }
 
 }

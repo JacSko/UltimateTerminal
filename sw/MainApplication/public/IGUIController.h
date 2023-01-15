@@ -49,14 +49,7 @@ enum class Theme
     * @return ID of the button if found.
     * @return If no button found, UINT32_MAX is returned
     */
-   virtual uint32_t getButtonID(const std::string& name) = 0;
-   /**
-    * @brief Returns the unique label ID basing on label name.
-    * @param[in] name - name of the label
-    * @return ID of the label if found.
-    * @return If no label found, UINT32_MAX is returned
-    */
-   virtual uint32_t getLabelID(const std::string& name) = 0;
+   virtual uint32_t getElementID(const std::string& name) = 0;
    /**
     * @brief Register callback to receive the buttons event.
     * @param[in] button_id - ID of the button

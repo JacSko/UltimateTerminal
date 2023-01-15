@@ -79,8 +79,39 @@ m_trace_scrolling_active(false)
    m_gui_contoller->setTraceScrollingEnabled(true);
    m_trace_scrolling_active = true;
 
-   m_logging_button_id = m_gui_contoller->getButtonID("loggingButton");
+   m_marker_button_id  = m_gui_contoller->getElementID("markerButton");
+   m_logging_button_id = m_gui_contoller->getElementID("loggingButton");
+   m_settings_button_id = m_gui_contoller->getElementID("settingsButton");
+   m_send_button_id = m_gui_contoller->getElementID("sendButton");
+   m_scroll_button_id = m_gui_contoller->getElementID("scrollButton");
+   m_clear_button_id = m_gui_contoller->getElementID("clearButton");
+   m_trace_clear_button = m_gui_contoller->getElementID("traceClearButton");
+   m_trace_scroll_button = m_gui_contoller->getElementID("traceScrollButton");
+
+   m_gui_contoller->subscribeForButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
+   m_gui_contoller->subscribeForButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
+
+   m_button_listeners.push_back({m_marker_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onMarkerButtonClicked, this)});
+   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onLoggingButtonClicked, this)});
+   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, std::bind(&MainApplication::onLoggingButtonContextMenuRequested, this)});
+   m_button_listeners.push_back({m_settings_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onSettingsButtonClicked, this)});
+   m_button_listeners.push_back({m_send_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onSendButtonClicked, this)});
+   m_button_listeners.push_back({m_scroll_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onScrollButtonClicked, this)});
+   m_button_listeners.push_back({m_clear_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onClearButtonClicked, this)});
+   m_button_listeners.push_back({m_trace_clear_button, ButtonEvent::CLICKED, std::bind(&MainApplication::onTraceClearButtonClicked, this)});
+   m_button_listeners.push_back({m_trace_scroll_button, ButtonEvent::CLICKED, std::bind(&MainApplication::onTraceScrollButtonClicked, this)});
+
    setButtonState(m_logging_button_id, false);
+
+   m_gui_contoller->subscribeForActivePortChangedEvent(std::bind(&MainApplication::onCurrentPortSelectionChanged, this));
+   m_gui_contoller->subscribeForThemeReloadEvent(this);
 
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
        new GUI::PortHandler(*m_gui_contoller, "portButton_1", "portLabel_1", *m_timers, this, this, m_persistence)));
@@ -125,14 +156,21 @@ m_trace_scrolling_active(false)
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
 
-   //TODO register for:
-   // -> button clicked
-   // -> button context menu
-   // -> active port changed
-   // -> theme changed
 }
 MainApplication::~MainApplication()
 {
+   m_gui_contoller->unsubscribeFromButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
+   m_gui_contoller->unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+
+   m_button_listeners.clear();
+
    UT_Log(MAIN, INFO, "Closing application!");
    if (!m_persistence.save(PERSISTENCE_PATH))
    {
@@ -148,8 +186,26 @@ MainApplication::~MainApplication()
    Settings::SettingsHandler::get()->stop();
    Settings::SettingsHandler::destroy();
 }
+void MainApplication::onButtonEvent(uint32_t button_id, ButtonEvent event)
+{
+   UT_Log(MAIN, INFO, "%s: btn %u ev %u", __func__, button_id, (uint32_t)event);
+
+   for (auto& listener : m_button_listeners)
+   {
+      if (listener.button_id == button_id && listener.event == event)
+      {
+         listener.listener();
+      }
+   }
+}
+void MainApplication::onThemeChange(IGUIController::Theme theme)
+{
+   UT_Log(MAIN, INFO, "%s: theme %s", __func__, m_gui_contoller->themeToName(theme).c_str());
+   //TODO refresh whole Ui here
+}
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
+   std::lock_guard<std::mutex> lock(m_port_handler_mutex);
    if (event.event == GUI::Event::NEW_DATA)
    {
       addToTerminal(event.name, std::string(event.data.begin(), event.data.end()), event.background_color, event.font_color);
@@ -280,7 +336,7 @@ void MainApplication::onClearButtonClicked()
    UT_Log(MAIN, MEDIUM, "Clearing terminal window requested");
    m_gui_contoller->clearTerminalView();
 }
-void MainApplication::onCurrentPortSelectionChanged(const std::string& port_name)
+bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name)
 {
    uint8_t port_id = portNameToId(port_name);
    UT_Log(MAIN, LOW, "Selected port changed, new port %s with id %u", port_name.c_str(), port_id);
@@ -288,6 +344,8 @@ void MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
    std::vector<std::string>& commands_history = m_commands_history[port_id];
    m_gui_contoller->setCommandsHistory(commands_history);
    m_current_port_name = port_name;
+
+   return true;
 }
 void MainApplication::onSettingsButtonClicked()
 {

@@ -205,39 +205,23 @@ public:
    MOCK_METHOD1(onThemeChange, void(IGUIController::Theme));
 };
 
-TEST_F(IGUIControllerFixture, getting_button_ids)
+TEST_F(IGUIControllerFixture, getting_element_ids)
 {
    /**
-    * <b>scenario</b>: Getting existing button ID. <br>
+    * <b>scenario</b>: Getting existing element ID. <br>
     * <b>expected</b>: ID different than UINT32_MAX returned. <br>
     * ************************************************
     */
-   EXPECT_THAT(m_test_subject->getButtonID("markerButton"), Ne(UINT32_MAX));
+   EXPECT_THAT(m_test_subject->getElementID("markerButton"), Ne(UINT32_MAX));
+   EXPECT_THAT(m_test_subject->getElementID("traceFilter_5"), Ne(UINT32_MAX));
 
    /**
     * <b>scenario</b>: Getting non-existing button ID. <br>
     * <b>expected</b>: ID equal to UINT32_MAX returned. <br>
     * ************************************************
     */
-   EXPECT_EQ(m_test_subject->getButtonID("non existing button"), UINT32_MAX);
+   EXPECT_EQ(m_test_subject->getElementID("non existing button"), UINT32_MAX);
 
-}
-
-TEST_F(IGUIControllerFixture, getting_label_ids)
-{
-   /**
-    * <b>scenario</b>: Getting existing label ID. <br>
-    * <b>expected</b>: ID different than UINT32_MAX returned. <br>
-    * ************************************************
-    */
-   EXPECT_THAT(m_test_subject->getLabelID("portLabel_1"), Ne(UINT32_MAX));
-
-   /**
-    * <b>scenario</b>: Getting non-existing button ID. <br>
-    * <b>expected</b>: ID equal to UINT32_MAX returned. <br>
-    * ************************************************
-    */
-   EXPECT_EQ(m_test_subject->getLabelID("non existing label"), UINT32_MAX);
 }
 
 TEST_F(IGUIControllerFixture, button_events_receiving)
@@ -246,8 +230,8 @@ TEST_F(IGUIControllerFixture, button_events_receiving)
    ButtonEventListenerMock listener2;
    ButtonEventListenerMock listener3;
    ButtonEventListenerMock listener4;
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
-   uint32_t test_button_id2 = m_test_subject->getButtonID("loggingButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
+   uint32_t test_button_id2 = m_test_subject->getElementID("loggingButton");
 
    /**
     * <b>scenario</b>: Triggering button event when not subscribed. <br>
@@ -311,7 +295,7 @@ TEST_F(IGUIControllerFixture, button_events_receiving)
 
 TEST_F(IGUIControllerFixture, setting_button_background_color)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonBackgroundColor requested. <br>
@@ -324,7 +308,7 @@ TEST_F(IGUIControllerFixture, setting_button_background_color)
 
 TEST_F(IGUIControllerFixture, setting_button_font_color)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonFontColor requested. <br>
@@ -337,7 +321,7 @@ TEST_F(IGUIControllerFixture, setting_button_font_color)
 
 TEST_F(IGUIControllerFixture, setting_button_checkable)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonCheckable requested. <br>
@@ -350,7 +334,7 @@ TEST_F(IGUIControllerFixture, setting_button_checkable)
 
 TEST_F(IGUIControllerFixture, setting_button_checked)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonChecked requested. <br>
@@ -363,7 +347,7 @@ TEST_F(IGUIControllerFixture, setting_button_checked)
 
 TEST_F(IGUIControllerFixture, setting_button_enabled)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonEnabled requested. <br>
@@ -376,7 +360,7 @@ TEST_F(IGUIControllerFixture, setting_button_enabled)
 
 TEST_F(IGUIControllerFixture, setting_button_text)
 {
-   uint32_t test_button_id = m_test_subject->getButtonID("markerButton");
+   uint32_t test_button_id = m_test_subject->getElementID("markerButton");
 
    /**
     * <b>scenario</b>: setButtonText requested. <br>

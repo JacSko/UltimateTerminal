@@ -22,8 +22,7 @@ PortHandler::PortHandler(IGUIController& gui_controller,
                          PortHandlerListener* listener,
                          QWidget* parent,
                          Persistence::PersistenceHandler& persistence):
-m_object(object),
-m_summary_label(label),
+m_gui_controller(gui_controller),
 m_parent(parent),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
@@ -36,7 +35,11 @@ m_persistence(persistence)
 {
    PORT_ID++;
 
-   UT_Assert(object && "invalid QObject pointer");
+   m_button_id = m_gui_controller.getElementID(button_name);
+   m_label_id  = m_gui_controller.getElementID(label_name);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+
    GenericListener::addListener(*listener);
    m_socket->addListener(this);
    m_serial->addListener(this);
@@ -52,13 +55,8 @@ m_persistence(persistence)
    setButtonName(m_settings.port_name);
    notifyListeners(Event::DISCONNECTED);
 
-   object->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   m_summary_label->setAutoFillBackground(true);
-   m_summary_label->setAlignment(Qt::AlignCenter);
-   m_summary_label->setText(m_settings.shortSettingsString().c_str());
+   m_gui_controller.setPortLabelText(m_label_id, m_settings.shortSettingsString().c_str());
 
-   connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
-   connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
    connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
 }
 PortHandler::~PortHandler()
@@ -72,6 +70,20 @@ PortHandler::~PortHandler()
    m_socket->disconnect();
    m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
+}
+void PortHandler::onButtonEvent(uint32_t button_id, ButtonEvent event)
+{
+   if (button_id == m_button_id)
+   {
+      if (event == ButtonEvent::CLICKED)
+      {
+         onPortButtonClicked();
+      }
+      else if (event == ButtonEvent::CONTEXT_MENU_REQUESTED)
+      {
+         onPortButtonContextMenuRequested();
+      }
+   }
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
@@ -139,17 +151,16 @@ void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
-   emit portEvent();
+   onPortEvent();
 }
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
-   emit portEvent();
+   onPortEvent();
 }
 void PortHandler::onPortEvent()
 {
-   std::lock_guard<std::mutex> lock(m_event_mutex);
    while (m_events.size())
    {
       PortHandlerEvent& event = m_events.front();
@@ -190,12 +201,12 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
       m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    }
 
-   m_summary_label->setText(m_settings.shortSettingsString().c_str());
+   m_gui_controller.setPortLabelText(m_label_id, m_settings.shortSettingsString().c_str());
 
    char stylesheet [300];
    std::snprintf(stylesheet, 300, "background-color: #%.6x;color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color, settings.font_color);
 
-   m_summary_label->setStyleSheet(QString(stylesheet));
+   m_gui_controller.setPortLabelStylesheet(m_label_id, stylesheet);
    setButtonName(m_settings.port_name);
    setButtonState(m_button_state);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
@@ -249,7 +260,7 @@ void PortHandler::handleButtonClickSerial()
          messageBox.setText(error_message);
          messageBox.setWindowTitle("Error");
          messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(m_parent->palette());
+         messageBox.setPalette(m_gui_controller.getApplicationPalette());
          messageBox.exec();
       }
    }
@@ -297,39 +308,40 @@ void PortHandler::tryConnectToSocket()
 }
 void PortHandler::setButtonState(ButtonState state)
 {
+   constexpr uint32_t GREEN = 0x00FF00;
+   constexpr uint32_t BLUE = 0x0000FF;
+   constexpr uint32_t BLACK = 0x000000;
+   const uint32_t DEFAULT_BACKGROUND = m_gui_controller.getBackgroundColor();
+   const uint32_t DEFAULT_FONT = m_gui_controller.getTextColor();
+
+
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] setting button state %.6x", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)state);
    m_button_state = state;
    switch(m_button_state)
    {
       case ButtonState::CONNECTED:
       {
-         QPalette palette = m_parent->palette();
-         palette.setColor(QPalette::Button, Qt::green);
-         palette.setColor(QPalette::ButtonText, Qt::black);
-         m_object->setPalette(palette);
-         m_object->update();
+         m_gui_controller.setButtonBackgroundColor(m_button_id, GREEN);
+         m_gui_controller.setButtonFontColor(m_button_id, BLACK);
          break;
       }
       case ButtonState::CONNECTING:
       {
-         QPalette palette = m_parent->palette();
-         palette.setColor(QPalette::Button, Qt::blue);
-         palette.setColor(QPalette::ButtonText, Qt::black);
-         m_object->setPalette(palette);
-         m_object->update();
+         m_gui_controller.setButtonBackgroundColor(m_button_id, BLUE);
+         m_gui_controller.setButtonFontColor(m_button_id, BLACK);
          break;
       }
       default:
       {
-         m_object->setPalette(m_parent->palette());
-         m_object->update();
+         m_gui_controller.setButtonBackgroundColor(m_button_id, DEFAULT_BACKGROUND);
+         m_gui_controller.setButtonFontColor(m_button_id, DEFAULT_FONT);
          break;
       }
    }
 }
 void PortHandler::setButtonName(const std::string name)
 {
-   m_object->setText(QString(name.c_str()));
+   m_gui_controller.setButtonText(m_button_id, name);
 }
 void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 {

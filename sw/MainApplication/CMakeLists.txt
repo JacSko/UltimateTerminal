@@ -4,10 +4,12 @@ add_library(MainApplication STATIC
    source/UserButtonHandler.cpp
    source/TraceFilterHandler.cpp
    source/FileLogger.cpp
+   source/GUIController.cpp
    include/MainApplication.h
    include/UserButtonHandler.h
    public/PortHandler.h
    public/TraceFilterHandler.h
+   include/GUIController.h
 )
 
 target_include_directories(MainApplication PUBLIC 

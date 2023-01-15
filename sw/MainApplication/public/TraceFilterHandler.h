@@ -27,7 +27,8 @@
  */
 
 class TraceFilterHandler : public QObject,
-                           public Persistence::PersistenceListener
+                           public Persistence::PersistenceListener,
+                           public IGUIController::ButtonEventListener
 {
    Q_OBJECT
 
@@ -74,17 +75,21 @@ public:
    bool isActive();
 
 private:
+   /* ButtonEventListener */
+   void onButtonEvent(uint32_t button_id, ButtonEvent event);
+
    void onPersistenceRead(const std::vector<uint8_t>& data);
    void onPersistenceWrite(std::vector<uint8_t>& data);
    void handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
 
+   IGUIController& m_gui_controller;
    QWidget* m_parent;
    uint32_t m_button_id;
-   uint32_t m_lineedit_id;
    Persistence::PersistenceHandler& m_persistence;
    std::regex m_regex;
    Dialogs::TraceFilterSettingDialog::Settings m_settings;
    bool m_user_defined;
+   bool m_is_active;
 
    void setButtonState(bool state);
    void setLineEditColor(uint32_t background_color, uint32_t font_color);

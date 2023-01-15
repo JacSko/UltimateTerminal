@@ -12,7 +12,8 @@ namespace GUI
 {
 
 class UserButtonHandler : public QObject,
-                          public Persistence::PersistenceListener
+                          public Persistence::PersistenceListener,
+                          public IGUIController::ButtonEventListener
 {
    Q_OBJECT
 public:
@@ -28,6 +29,9 @@ private:
    Persistence::PersistenceHandler& m_persistence;
    ButtonCommandsExecutor m_executor;
 
+   /* ButtonEventListener */
+   void onButtonEvent(uint32_t button_id, ButtonEvent event);
+
    void handleNewSettings(const Dialogs::UserButtonDialog::Settings&);
    void setButtonName(const std::string name);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
@@ -36,10 +40,6 @@ private:
 public slots:
    void onUserButtonContextMenuRequested();
    void onUserButtonClicked();
-   void onCommandsFinished();
-signals:
-   void commandsFinished();
-
 };
 
 
