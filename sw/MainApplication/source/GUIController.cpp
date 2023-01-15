@@ -334,6 +334,7 @@ IGUIController::Theme GUIController::nameToTheme(const std::string& name)
    }
    return result;
 }
+<<<<<<< HEAD
 uint32_t GUIController::getBackgroundColor()
 {
    return ui->mainWindow->palette().color(QPalette::Window).rgb();
@@ -346,6 +347,8 @@ uint32_t GUIController::getTextColor()
 {
    return ui->mainWindow->palette().color(QPalette::Text).rgb();
 }
+=======
+>>>>>>> 0502d66 (IGUIController iterface implementation added)
 void GUIController::subscribeForThemeReloadEvent(ThemeListener* listener)
 {
    std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);

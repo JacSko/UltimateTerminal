@@ -152,9 +152,12 @@ private:
    Theme currentTheme() override;
    std::string themeToName(Theme theme) override;
    Theme nameToTheme(const std::string& name) override;
+<<<<<<< HEAD
    uint32_t getBackgroundColor() override;
    uint32_t getTerminalBackgroundColor() override;
    uint32_t getTextColor() override;
+=======
+>>>>>>> 0502d66 (IGUIController iterface implementation added)
    void subscribeForThemeReloadEvent(ThemeListener*) override;
    void unsubscribeFromThemeReloadEvent(ThemeListener*) override;
 
