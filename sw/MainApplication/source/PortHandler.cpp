@@ -15,10 +15,15 @@ static uint8_t PORT_ID = 0;
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
 
-PortHandler::PortHandler(QPushButton* object, QLabel* label, QShortcut* shortcut, Utilities::ITimers& timers, PortHandlerListener* listener, QWidget* parent, Persistence::PersistenceHandler& persistence):
+PortHandler::PortHandler(IGUIController& gui_controller,
+                         const std::string& button_name,
+                         const std::string& label_name,
+                         Utilities::ITimers& timers,
+                         PortHandlerListener* listener,
+                         QWidget* parent,
+                         Persistence::PersistenceHandler& persistence):
 m_object(object),
 m_summary_label(label),
-m_shortcut(shortcut),
 m_parent(parent),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
@@ -55,7 +60,6 @@ m_persistence(persistence)
    connect(object, SIGNAL(clicked()), this, SLOT(onPortButtonClicked()));
    connect(object, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onPortButtonContextMenuRequested()));
    connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
-   connect(shortcut, SIGNAL(activated()), this, SLOT(onPortButtonClicked()));
 }
 PortHandler::~PortHandler()
 {

@@ -12,16 +12,14 @@ namespace GUI
 static uint8_t USER_BUTTON_ID = 0;
 const uint32_t THREAD_START_TIMEOUT = 1000;
 
-UserButtonHandler::UserButtonHandler(QPushButton* object, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
-m_object(object),
+UserButtonHandler::UserButtonHandler(IGUIController& controller, const std::string& button_name, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
+m_gui_controller(controller),
 m_parent(parent),
 m_persistence(persistence),
 m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, std::placeholders::_1))
 {
    USER_BUTTON_ID++;
    UT_Log(USER_BTN_HANDLER, INFO, "Creating user button handler for button %u", USER_BUTTON_ID);
-
-   UT_Assert(object && "invalid QObject pointer");
 
    Persistence::PersistenceListener::setName(std::string("BUTTON") + std::to_string(USER_BUTTON_ID));
    m_persistence.addListener(*this);

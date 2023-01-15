@@ -137,9 +137,11 @@ private:
    void registerPortOpened(const std::string& port_name) override;
    void registerPortClosed(const std::string& port_name) override;
    void setCommandsHistory(const std::vector<std::string>& history) override;
+   void addCommandToHistory(const std::string& history) override;
    std::string getCurrentCommand() override;
    std::string getCurrentLineEnding() override;
    void addLineEnding(const std::string& ending) override;
+   void setCurrentLineEnding(const std::string& ending) override;
    uint32_t getTraceFilterID(const std::string& name) override;
    void setTraceFilter(uint8_t id, const std::string& filter) override;
    std::string getTraceFilter(uint8_t id) override;
@@ -152,12 +154,10 @@ private:
    Theme currentTheme() override;
    std::string themeToName(Theme theme) override;
    Theme nameToTheme(const std::string& name) override;
-<<<<<<< HEAD
    uint32_t getBackgroundColor() override;
    uint32_t getTerminalBackgroundColor() override;
    uint32_t getTextColor() override;
-=======
->>>>>>> 0502d66 (IGUIController iterface implementation added)
+   QPalette getApplicationPalette() override;
    void subscribeForThemeReloadEvent(ThemeListener*) override;
    void unsubscribeFromThemeReloadEvent(ThemeListener*) override;
 
@@ -180,8 +180,10 @@ signals:
    void registerPortOpenedSignal(QString name);
    void registerPortClosedSignal(QString name);
    void setCommandHistorySignal(QVector<QString> history);
+   void addCommandToHistorySignal(QString command);
    void guiRequestSignal();
    void addLineEndingSignal(QString ending);
+   void setCurrentLineEndingSignal(QString ending);
    void setTraceFilterSignal(uint8_t id, QString filter);
    void setTraceFilterEnabledSignal(uint8_t id, bool enabled);
    void setTraceFilterBackgroundColorSignal(uint32_t id, uint32_t color);
@@ -210,8 +212,10 @@ public slots:
    void onRegisterPortOpenedSignal(QString name);
    void onRegisterPortClosedSignal(QString name);
    void onSetCommandHistorySignal(QVector<QString> history);
+   void onAddCommandToHistorySignal(QString command);
    void onGuiRequestSignal();
    void onAddLineEndingSignal(QString ending);
+   void onSetCurrentLineEndingSignal(QString ending);
    void onSetTraceFilterSignal(uint8_t id, QString filter);
    void onSetTraceFilterEnabledSignal(uint8_t id, bool enabled);
    void onSetTraceFilterBackgroundColorSignal(uint32_t id, uint32_t color);

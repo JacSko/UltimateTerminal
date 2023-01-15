@@ -4,7 +4,7 @@
 
 static uint8_t TRACE_FILTER_FIELD_ID = 0;
 
-TraceFilterHandler::TraceFilterHandler(QWidget* parent, QLineEdit* line_edit, QPushButton* button, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(IGUIController& controller, const std::string& button_name, const std::string& lineedit_name, QWidget* parent, Persistence::PersistenceHandler& persistence):
 m_parent(parent),
 m_line_edit(line_edit),
 m_button(button),

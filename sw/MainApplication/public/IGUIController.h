@@ -183,10 +183,16 @@ enum class Theme
    virtual void registerPortClosed(const std::string& port_name) = 0;
    /**
     * @brief Sets the current command history. This can be called i.e. after active port change event.
-    * @param[in] port_name - name of the port.
+    * @param[in] history - commands history.
     * @return None
     */
    virtual void setCommandsHistory(const std::vector<std::string>& history) = 0;
+   /**
+    * @brief Adds a new item to the current command history.
+    * @param[in] history - command to be added.
+    * @return None
+    */
+   virtual void addCommandToHistory(const std::string& history) = 0;
    /**
     * @brief Returns current command entered by user.
     * @return Command as a text
@@ -203,6 +209,12 @@ enum class Theme
     * @return None
     */
    virtual void addLineEnding(const std::string& ending) = 0;
+   /**
+    * @brief Sets the current line ending.
+    * @param[in] ending - new line ending to be selected
+    * @return None
+    */
+   virtual void setCurrentLineEnding(const std::string& ending) = 0;
    /**
     * @brief Returns the unique trace filter ID basing on line edit name.
     * @param[in] name - name of the filter
@@ -296,6 +308,11 @@ enum class Theme
     */
    virtual uint32_t getTextColor() = 0;
    /**
+    * @brief Returns current application palette.
+    * @return Application pallete.
+    */
+   virtual QPalette getApplicationPalette() = 0;
+   /**
     * @brief Register listener to get theme reloading events.
     * @param[in] listener - listening interface.
     * @return None.
@@ -307,5 +324,10 @@ enum class Theme
     * @return None.
     */
    virtual void unsubscribeFromThemeReloadEvent(ThemeListener*) = 0;
+
+   //TODO add status bar notification
+   //TODO add info label text method
+   //TODO set window title method
+
 };
 

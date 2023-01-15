@@ -13,6 +13,7 @@
 #include "PortSettingDialog.h"
 #include "ITimers.h"
 #include "PersistenceHandler.h"
+#include "IGUIController.h"
 
 /**
  * @file PortHandler.h
@@ -74,8 +75,9 @@ class PortHandler : public QObject,
 public:
    /**
     * @brief Creates object.
-    * @param[in] object - Button related to port.
-    * @param[in] label - Label related to port.
+    * @param[in] gui_controller - GUI controlling object.
+    * @param[in] button_name - name of the button.
+    * @param[in] label_name - name of the label.
     * @param[in] shortcut - Key shortcut object.
     * @param[in] timer - timers instance.
     * @param[in] listener - pointer to event listener.
@@ -85,13 +87,14 @@ public:
     *
     * @return None.
     */
-   PortHandler(QPushButton* object,
-               QLabel* label,
-               QShortcut* shortcut,
-               Utilities::ITimers& timer,
+   PortHandler(IGUIController& gui_controller,
+               const std::string& button_name,
+               const std::string& label_name,
+               Utilities::ITimers& timers,
                PortHandlerListener* listener,
                QWidget* parent,
                Persistence::PersistenceHandler& persistence);
+
    ~PortHandler();
    /**
     * @brief Returns the user-defined name of port.
@@ -137,9 +140,8 @@ private:
       CONNECTED,
    };
 
-   QPushButton* m_object;
-   QLabel* m_summary_label;
-   QShortcut* m_shortcut;
+   uint32_t m_button_id;
+   uint32_t m_label_id;
    QWidget* m_parent;
    Dialogs::PortSettingDialog::Settings m_settings;
    uint32_t m_connect_retry_period;

@@ -6,6 +6,8 @@
 #include "UserButtonDialog.h"
 #include "PersistenceHandler.h"
 #include "ButtonCommandsExecutor.hpp"
+#include "IGUIController.h"
+
 namespace GUI
 {
 
@@ -14,12 +16,13 @@ class UserButtonHandler : public QObject,
 {
    Q_OBJECT
 public:
-   UserButtonHandler(QPushButton* object, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
+   UserButtonHandler(IGUIController& controller, const std::string& button_name, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
    ~UserButtonHandler();
    bool startThread();
 private:
 
-   QPushButton* m_object;
+   IGUIController& m_gui_controller;
+   uint32_t m_button_id;
    QWidget* m_parent;
    Dialogs::UserButtonDialog::Settings m_settings;
    Persistence::PersistenceHandler& m_persistence;

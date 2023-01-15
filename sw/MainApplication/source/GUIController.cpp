@@ -96,7 +96,9 @@ m_current_command(nullptr)
    connect(this, SIGNAL(registerPortOpenedSignal(QString)), this, SLOT(onRegisterPortOpenedSignal(QString)));
    connect(this, SIGNAL(registerPortClosedSignal(QString)), this, SLOT(onRegisterPortClosedSignal(QString)));
    connect(this, SIGNAL(setCommandHistorySignal(QVector<QString>)), this, SLOT(onsetCommandHistorySignal(QVector<QString>)));
+   connect(this, SIGNAL(addCommandToHistorySignal(QString)), this, SLOT(onAddCommandToHistorySignal(QString)));
    connect(this, SIGNAL(addLineEndingSignal(QString)), this, SLOT(onAddLineEndingSignal(QString)));
+   connect(this, SIGNAL(setCurrentLineEndingSignal(QString)), this, SLOT(onSetCurrentLineEndingSignal(QString)));
    connect(this, SIGNAL(setTraceFilterSignal(uint8_t, QString)), this, SLOT(onSetTraceFilterSignal(uint8_t, QString)));
    connect(this, SIGNAL(setTraceFilterEnabledSignal(uint8_t, bool)), this, SLOT(onSetTraceFilterEnabledSignal(uint8_t, bool)));
    connect(this, SIGNAL(setTraceFilterBackgroundColorSignal(uint32_t, uint32_t)), this, SLOT(onSetTraceFilterBackgroundColorSignal(uint32_t, uint32_t)));
@@ -248,6 +250,10 @@ void GUIController::setCommandsHistory(const std::vector<std::string>& history)
    }
    emit setCommandHistorySignal(commands);
 }
+void GUIController::addCommandToHistory(const std::string& history)
+{
+   emit addCommandToHistorySignal(QString(history.c_str()));
+}
 std::string GUIController::getCurrentCommand()
 {
    GetCommandRequest request;
@@ -263,6 +269,10 @@ std::string GUIController::getCurrentLineEnding()
 void GUIController::addLineEnding(const std::string& ending)
 {
    emit addLineEndingSignal(QString(ending.c_str()));
+}
+void GUIController::setCurrentLineEnding(const std::string& ending)
+{
+   emit setCurrentLineEndingSignal(QString(ending.c_str()));
 }
 uint32_t GUIController::getTraceFilterID(const std::string& name)
 {
@@ -334,7 +344,6 @@ IGUIController::Theme GUIController::nameToTheme(const std::string& name)
    }
    return result;
 }
-<<<<<<< HEAD
 uint32_t GUIController::getBackgroundColor()
 {
    return ui->mainWindow->palette().color(QPalette::Window).rgb();
@@ -347,8 +356,10 @@ uint32_t GUIController::getTextColor()
 {
    return ui->mainWindow->palette().color(QPalette::Text).rgb();
 }
-=======
->>>>>>> 0502d66 (IGUIController iterface implementation added)
+QPalette GUIController::getApplicationPalette()
+{
+   return ui->mainWindow->palette();
+}
 void GUIController::subscribeForThemeReloadEvent(ThemeListener* listener)
 {
    std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
@@ -574,6 +585,10 @@ void GUIController::onSetCommandHistorySignal(QVector<QString> history)
       ui->textEdit->insertItem(0, command);
    }
 }
+void GUIController::onAddCommandToHistorySignal(QString command)
+{
+   ui->textEdit->insertItem(0, command);
+}
 void GUIController::onGuiRequestSignal()
 {
    UT_Assert(m_current_command && "Create m_current_command first!");
@@ -583,6 +598,11 @@ void GUIController::onAddLineEndingSignal(QString ending)
 {
    UT_Log(MAIN_GUI, HIGH, "%s", __func__);
    ui->lineEndingComboBox->addItem(ending);
+}
+void GUIController::onSetCurrentLineEndingSignal(QString ending)
+{
+   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   ui->lineEndingComboBox->setCurrentText(ending);
 }
 void GUIController::onSetTraceFilterSignal(uint8_t id, QString filter)
 {

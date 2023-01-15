@@ -1,4 +1,4 @@
-#include <QtWidgets/QMessageBox>
+   #include <QtWidgets/QMessageBox>
 #include <libgen.h>
 #include <unistd.h>
 #include <string.h>
@@ -45,17 +45,10 @@ __attribute__((weak)) std::string getExecutablePath()
 }
 }
 
-#undef APPLICATION_THEME
-#define APPLICATION_THEME(name) #name,
-std::array<std::string, (uint32_t)IThemeController::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
-#undef APPLICATION_THEME
-
-
 MainApplication::MainApplication(QWidget *parent):
-QMainWindow(parent),
-ui(new Ui::MainWindow),
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
+m_gui_contoller(IGUIController::create(parent)),
 m_marker_index(0),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
@@ -65,60 +58,61 @@ m_trace_scrolling_active(false)
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
-   ui->setupUi(this);
 
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
    {
-      ui->loadTheme(IThemeController::Theme::DARK);
-      m_current_theme = IThemeController::Theme::DARK;
+      m_gui_contoller->reloadTheme(IGUIController::Theme::DARK);
    }
    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
    {
-      ui->loadTheme(IThemeController::Theme::DEFAULT);
-      m_current_theme = IThemeController::Theme::DEFAULT;
+      m_gui_contoller->reloadTheme(IGUIController::Theme::DEFAULT);
    }
-   this->setWindowTitle("UltimateTerminal");
-
+   //TODO set window title
    UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
-   ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
+   //TODO add application version string to infoLabel
 
    Settings::SettingsHandler::get()->printSettings();
    m_timers->start();
 
-   setScrolling(true);
-   setTraceScrolling(true);
-   setButtonState(ui->loggingButton, false);
+   m_gui_contoller->setTerminalScrollingEnabled(true);
+   m_scrolling_active = true;
+   m_gui_contoller->setTraceScrollingEnabled(true);
+   m_trace_scrolling_active = true;
+
+   m_logging_button_id = m_gui_contoller->getButtonID("loggingButton");
+   setButtonState(m_logging_button_id, false);
 
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(ui->portButton_1, ui->portLabel_1, ui->port1ButtonShortcut, *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(*m_gui_contoller, "portButton_1", "portLabel_1", *m_timers, this, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(ui->portButton_2, ui->portLabel_2, ui->port2ButtonShortcut, *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(*m_gui_contoller, "portButton_2", "portLabel_2", *m_timers, this, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(ui->portButton_3, ui->portLabel_3, ui->port3ButtonShortcut, *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(*m_gui_contoller, "portButton_3", "portLabel_3", *m_timers, this, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(ui->portButton_4, ui->portLabel_4, ui->port4ButtonShortcut, *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(*m_gui_contoller, "portButton_4", "portLabel_4", *m_timers, this, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(ui->portButton_5, ui->portLabel_5, ui->port5ButtonShortcut, *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(*m_gui_contoller, "portButton_5", "portLabel_5", *m_timers, this, this, m_persistence)));
 
    /* create handlers for user buttons */
-   auto buttons = ui->getUserButtons();
-   for (QPushButton* button : buttons)
+   uint32_t user_buttons_count = SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
+   for (uint32_t i = 0; i < user_buttons_count; i++)
    {
+      std::string name = "BUTTON" + std::to_string(i);
       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
-          new GUI::UserButtonHandler(button, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+          new GUI::UserButtonHandler(*m_gui_contoller, name, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
 
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_1, ui->traceFilterButton_1, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_2, ui->traceFilterButton_2, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_3, ui->traceFilterButton_3, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_4, ui->traceFilterButton_4, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_5, ui->traceFilterButton_5, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_6, ui->traceFilterButton_6, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(this, ui->traceFilter_7, ui->traceFilterButton_7, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_1", "traceFilter_1", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_2", "traceFilter_2", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_3", "traceFilter_3", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_4", "traceFilter_4", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_5", "traceFilter_5", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_6", "traceFilter_6", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_7", "traceFilter_7", this, m_persistence)));
 
-   ui->lineEndingComboBox->addItem("\\r\\n");
-   ui->lineEndingComboBox->addItem("\\n");
-   ui->lineEndingComboBox->addItem("EMPTY");
+   m_gui_contoller->addLineEnding("\\r\\n");
+   m_gui_contoller->addLineEnding("\\n");
+   m_gui_contoller->addLineEnding("EMPTY");
 
    m_file_logging_path = system_call::getExecutablePath();
 
@@ -130,7 +124,12 @@ m_trace_scrolling_active(false)
    {
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
-   connectSignalsToSlots();
+
+   //TODO register for:
+   // -> button clicked
+   // -> button context menu
+   // -> active port changed
+   // -> theme changed
 }
 MainApplication::~MainApplication()
 {
@@ -148,7 +147,6 @@ MainApplication::~MainApplication()
    m_persistence.removeListener(*this);
    Settings::SettingsHandler::get()->stop();
    Settings::SettingsHandler::destroy();
-   delete ui;
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
@@ -159,17 +157,12 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
    else if (event.event == GUI::Event::CONNECTED)
    {
       m_port_id_name_map[event.port_id] = event.name;
-      ui->portComboBox->addItem(QString(event.name.c_str()));
+      m_gui_contoller->registerPortOpened(event.name);
       UT_Log(MAIN, INFO, "Port opened: %u [%s]", event.port_id, event.name.c_str());
    }
    else if (event.event == GUI::Event::DISCONNECTED)
    {
-      int index = ui->portComboBox->findText(event.name.c_str());
-      if (index != -1)
-      {
-         ui->portComboBox->removeItem(index);
-      }
-      m_port_id_name_map[event.port_id] = "";
+      m_gui_contoller->registerPortClosed(event.name);      m_port_id_name_map[event.port_id] = "";
       UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
    }
 }
@@ -192,67 +185,28 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       new_line.chop(1);
    }
 
-   if((uint32_t)ui->terminalView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if(m_gui_contoller->countTerminalItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
-      ui->terminalView->clear();
+      m_gui_contoller->clearTerminalView();
    }
 
-   if((uint32_t)ui->traceView->count() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if(m_gui_contoller->countTraceItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
-      ui->traceView->clear();
+      m_gui_contoller->clearTraceView();
    }
 
-   QListWidgetItem* item = new QListWidgetItem();
-   item->setText(new_line);
-   item->setBackground(QColor(background_color));
-   item->setForeground(QColor(font_color));
-   ui->terminalView->addItem(item);
+   m_gui_contoller->addToTerminalView(new_line.toStdString(), background_color, font_color);
 
    for (auto& filter : m_trace_filter_handlers)
    {
       std::optional<Dialogs::TraceFilterSettingDialog::Settings> color_set = filter->tryMatch(data);
       if (color_set.has_value())
       {
-         QListWidgetItem* item = new QListWidgetItem();
-         item->setText(new_line);
-         item->setBackground(QColor(color_set.value().background));
-         item->setForeground(QColor(color_set.value().font));
-         ui->traceView->addItem(item);
+         m_gui_contoller->addToTraceView(new_line.toStdString(), background_color, font_color);
       }
    }
-
-   if (m_scrolling_active)
-   {
-      ui->terminalView->scrollToBottom();
-   }
-
-   if (m_trace_scrolling_active)
-   {
-      ui->traceView->scrollToBottom();
-   }
-
-}
-void MainApplication::connectSignalsToSlots()
-{
-   connect(ui->markerButton, SIGNAL(clicked()), this, SLOT(onMarkerButtonClicked()));
-   connect(ui->markerButtonShortcut, SIGNAL(activated()), this, SLOT(onMarkerButtonClicked()));
-   connect(ui->clearButton, SIGNAL(clicked()), this, SLOT(onClearButtonClicked()));
-   connect(ui->clearButtonShortcut, SIGNAL(activated()), this, SLOT(onClearButtonClicked()));
-   connect(ui->traceClearButton, SIGNAL(clicked()), this, SLOT(onTraceClearButtonClicked()));
-   connect(ui->traceClearButtonShortcut, SIGNAL(activated()), this, SLOT(onTraceClearButtonClicked()));
-   connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(onSendButtonClicked()));
-   connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendButtonClicked()));
-   ui->loggingButton->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-   connect(ui->loggingButton, SIGNAL(clicked()), this, SLOT(onLoggingButtonClicked()));
-   connect(ui->loggingButton, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onLoggingButtonContextMenuRequested()));
-   connect(ui->loggingButtonShortcut, SIGNAL(activated()), this, SLOT(onLoggingButtonClicked()));
-   connect(ui->scrollButton, SIGNAL(clicked()), this, SLOT(onScrollButtonClicked()));
-   connect(ui->traceScrollButton, SIGNAL(clicked()), this, SLOT(onTraceScrollButtonClicked()));
-   connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
-   connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
-   connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(onSettingsButtonClicked()));
 }
 void MainApplication::onMarkerButtonClicked()
 {
@@ -260,7 +214,7 @@ void MainApplication::onMarkerButtonClicked()
    std::string log = "MARKER";
    log += std::to_string(m_marker_index);
    log += '\n';
-   addToTerminal("MARKER", log, TRACE_MARKER_COLOR, this->palette().color(QPalette::Text).rgb());
+   addToTerminal("MARKER", log, TRACE_MARKER_COLOR, m_gui_contoller->getTextColor());
 }
 void MainApplication::onLoggingButtonClicked()
 {
@@ -271,8 +225,9 @@ void MainApplication::onLoggingButtonClicked()
       if (m_file_logger->openFile(m_log_file_name))
       {
          UT_Log(MAIN, INFO, "Logging started, new logfile created: %s", m_log_file_name.c_str());
-         ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
-         setButtonState(ui->loggingButton, true);
+         //TODO display message on status bar
+         //ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
+         setButtonState(m_logging_button_id, true);
       }
       else
       {
@@ -281,30 +236,33 @@ void MainApplication::onLoggingButtonClicked()
          messageBox.setText(error_message);
          messageBox.setWindowTitle("Error");
          messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(this->palette());
+         messageBox.setPalette(m_gui_contoller->getApplicationPalette());
          messageBox.exec();
       }
    }
    else
    {
       UT_Log(MAIN, LOW, "stopping file logging");
-      ui->statusbar->showMessage(QString("").asprintf("Log file ready: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
+      //TODO display message on status bar
+      //ui->statusbar->showMessage(QString("").asprintf("Log file ready: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
       m_file_logger->closeFile();
-      setButtonState(ui->loggingButton, false);
+      setButtonState(m_logging_button_id, false);
    }
 }
 void MainApplication::onScrollButtonClicked()
 {
-   setScrolling(!m_scrolling_active);
+   m_gui_contoller->setTerminalScrollingEnabled(!m_scrolling_active);
+   m_scrolling_active = !m_scrolling_active;
 }
 void MainApplication::onTraceScrollButtonClicked()
 {
-   setTraceScrolling(!m_trace_scrolling_active);
+   m_gui_contoller->setTraceScrollingEnabled(!m_trace_scrolling_active);
+   m_trace_scrolling_active = !m_trace_scrolling_active;
 }
 void MainApplication::onTraceClearButtonClicked()
 {
    UT_Log(MAIN, MEDIUM, "Clearing trace window requested");
-   ui->traceView->clear();
+   m_gui_contoller->clearTraceView();
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
@@ -319,39 +277,17 @@ void MainApplication::onLoggingButtonContextMenuRequested()
 }
 void MainApplication::onClearButtonClicked()
 {
-   UT_Log(MAIN, MEDIUM, "Clearing requested");
-   ui->terminalView->clear();
+   UT_Log(MAIN, MEDIUM, "Clearing terminal window requested");
+   m_gui_contoller->clearTerminalView();
 }
-void MainApplication::onCurrentPortSelectionChanged(int index)
+void MainApplication::onCurrentPortSelectionChanged(const std::string& port_name)
 {
-   std::string port_name = ui->portComboBox->itemText(index).toStdString();
-   UT_Log(MAIN, LOW, "Selected port changed, idx %u, name %s", (uint8_t) index, port_name.c_str());
-
    uint8_t port_id = portNameToId(port_name);
-   std::vector<std::string>& commands_history = m_commands_history[port_id];
-   ui->textEdit->clear();
+   UT_Log(MAIN, LOW, "Selected port changed, new port %s with id %u", port_name.c_str(), port_id);
 
-   for (const std::string& command : commands_history)
-   {
-      ui->textEdit->insertItem(0, QString(command.c_str()));
-   }
-   ui->textEdit->lineEdit()->clear();
-}
-void MainApplication::onPortSwitchRequest()
-{
-   int element_count = ui->portComboBox->count();
-   if (element_count > 1)
-   {
-      int idx = ui->portComboBox->currentIndex();
-      if (idx == (element_count - 1))
-      {
-         ui->portComboBox->setCurrentIndex(0);
-      }
-      else
-      {
-         ui->portComboBox->setCurrentIndex(idx+1);
-      }
-   }
+   std::vector<std::string>& commands_history = m_commands_history[port_id];
+   m_gui_contoller->setCommandsHistory(commands_history);
+   m_current_port_name = port_name;
 }
 void MainApplication::onSettingsButtonClicked()
 {
@@ -361,11 +297,10 @@ void MainApplication::onSettingsButtonClicked()
 bool MainApplication::sendToPort(const std::string& string)
 {
    bool result = false;
-   std::string port_name = ui->portComboBox->currentText().toStdString();
-   uint8_t port_id = portNameToId(port_name);
+   uint8_t port_id = portNameToId(m_current_port_name);
    std::string data_to_send = string;
-   UT_Log(MAIN, HIGH, "Trying to send data to port %u[%s] - %s", port_id, port_name.c_str(), string.c_str());
-   std::string current_ending = ui->lineEndingComboBox->currentText().toStdString();
+   UT_Log(MAIN, HIGH, "Trying to send data to port %u[%s] - %s", port_id, m_current_port_name.c_str(), string.c_str());
+   std::string current_ending = m_gui_contoller->getCurrentLineEnding();
    if (current_ending == "\\r\\n")
    {
       data_to_send += "\r\n";
@@ -377,21 +312,21 @@ bool MainApplication::sendToPort(const std::string& string)
 
    for (const auto& handler : m_port_handlers)
    {
-      if (handler->getName() == port_name)
+      if (handler->getName() == m_current_port_name)
       {
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(port_name, data_to_send, ui->terminalView->palette().color(QPalette::Base).rgb(), this->palette().color(QPalette::Text).rgb());
+            addToTerminal(m_current_port_name, data_to_send, m_gui_contoller->getBackgroundColor(), m_gui_contoller->getTextColor());
             addToCommandHistory(port_id, string);
          }
          else
          {
             std::string error = "Cannot send data to port ";
-            error += port_name;
+            error += m_current_port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(port_name, error, ui->terminalView->palette().color(QPalette::Base).rgb(), this->palette().color(QPalette::Text).rgb());
+            addToTerminal(m_current_port_name, error, m_gui_contoller->getBackgroundColor(), m_gui_contoller->getTextColor());
          }
       }
    }
@@ -400,35 +335,25 @@ bool MainApplication::sendToPort(const std::string& string)
 void MainApplication::onSendButtonClicked()
 {
    UT_Log(MAIN, LOW, "Send button clicked");
-   (void)sendToPort(ui->textEdit->currentText().toStdString());
+   (void)sendToPort(m_gui_contoller->getCurrentCommand());
 }
-void MainApplication::setButtonState(QPushButton* button, bool state)
+void MainApplication::setButtonState(uint32_t button_id, bool state)
 {
+   constexpr uint32_t GREEN = 0x00FF00;
+   constexpr uint32_t BLACK = 0x000000;
+   const uint32_t DEFAULT_BACKGROUND = m_gui_contoller->getBackgroundColor();
+   const uint32_t DEFAULT_FONT = m_gui_contoller->getTextColor();
    if (state)
    {
-      QPalette palette = this->palette();
-      palette.setColor(QPalette::Button, Qt::green);
-      palette.setColor(QPalette::ButtonText, Qt::black);
-      button->setPalette(palette);
-      button->update();
+      m_gui_contoller->setButtonBackgroundColor(button_id, GREEN);
+      m_gui_contoller->setButtonFontColor(button_id, BLACK);
+
    }
    else
    {
-      button->setPalette(this->palette());
-      button->update();
+      m_gui_contoller->setButtonBackgroundColor(button_id, DEFAULT_BACKGROUND);
+      m_gui_contoller->setButtonFontColor(button_id, DEFAULT_FONT);
    }
-}
-void MainApplication::setScrolling(bool active)
-{
-   UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
-   m_scrolling_active = active;
-   setButtonState(ui->scrollButton, m_scrolling_active);
-}
-void MainApplication::setTraceScrolling(bool active)
-{
-   UT_Log(MAIN, MEDIUM, "%s %u", __func__, active);
-   m_trace_scrolling_active = active;
-   setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {
@@ -464,9 +389,9 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       }
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
-   setScrolling(m_scrolling_active);
-   setTraceScrolling(m_trace_scrolling_active);
-   ui->lineEndingComboBox->setCurrentText(QString(line_ending.c_str()));
+   m_gui_contoller->setTerminalScrollingEnabled(m_scrolling_active);
+   m_gui_contoller->setTraceScrollingEnabled(m_trace_scrolling_active);
+   m_gui_contoller->setCurrentLineEnding(line_ending);
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
@@ -475,7 +400,7 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_file_logging_path);
    ::serialize(data, m_scrolling_active);
    ::serialize(data, m_trace_scrolling_active);
-   ::serialize(data, ui->lineEndingComboBox->currentText().toStdString());
+   ::serialize(data, m_gui_contoller->getCurrentLineEnding());
    ::serialize(data, (uint8_t)m_commands_history.size());
    for (const auto& item : m_commands_history)
    {
@@ -493,57 +418,15 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
 {
    if (!text.empty())
    {
-      /* insert item at the top of combobox */
-      ui->textEdit->insertItem(0, QString(text.c_str()));
       /* put in history */
       std::vector<std::string>& history = m_commands_history[port_id];
       history.push_back(text);
       while(history.size() >= MAX_COMMANDS_HISTORY_ITEMS)
       {
-         ui->textEdit->removeItem(history.size());
          history.erase(history.begin());
       }
+      m_gui_contoller->setCommandsHistory(history);
    }
-}
-void MainApplication::reloadTheme(IThemeController::Theme theme)
-{
-   if (m_current_theme != theme)
-   {
-      UT_Log(MAIN_GUI, INFO, "reloading theme %u -> %u", (uint8_t)m_current_theme, (uint8_t)theme);
-      m_current_theme = theme;
-      ui->loadTheme(theme);
-      for (const auto& port : m_port_handlers)
-      {
-         port->refreshUi();
-      }
-      for (const auto& handler : m_trace_filter_handlers)
-      {
-         handler->refreshUi();
-      }
-      setButtonState(ui->loggingButton, m_file_logger->isActive());
-      setButtonState(ui->scrollButton, m_scrolling_active);
-      setButtonState(ui->traceScrollButton, m_trace_scrolling_active);
-      SETTING_SET_U32(GUI_Theme_ID, theme == IThemeController::Theme::DARK? SETTING_GET_U32(GUI_Dark_Theme_ID) : SETTING_GET_U32(GUI_Default_Theme_ID));
-   }
-}
-IThemeController::Theme MainApplication::currentTheme()
-{
-   return m_current_theme;
-}
-std::string MainApplication::themeToName(IThemeController::Theme theme)
-{
-   UT_Assert(theme < IThemeController::Theme::APPLICATION_THEMES_MAX);
-   return m_themes_names[(uint32_t)theme];
-}
-IThemeController::Theme MainApplication::nameToTheme(const std::string& name)
-{
-   IThemeController::Theme result = IThemeController::Theme::APPLICATION_THEMES_MAX;
-   auto it = std::find(m_themes_names.begin(), m_themes_names.end(), name);
-   if (it != m_themes_names.end())
-   {
-      result = (IThemeController::Theme)(std::distance(m_themes_names.begin(), it));
-   }
-   return result;
 }
 uint8_t MainApplication::portNameToId(const std::string& name)
 {
