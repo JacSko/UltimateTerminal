@@ -6,25 +6,24 @@
 #include "UserButtonDialog.h"
 #include "PersistenceHandler.h"
 #include "ButtonCommandsExecutor.hpp"
-#include "IGUIController.h"
+#include "GUIController.h"
 
 namespace GUI
 {
 
 class UserButtonHandler : public QObject,
                           public Persistence::PersistenceListener,
-                          public IGUIController::ButtonEventListener
+                          public ButtonEventListener
 {
    Q_OBJECT
 public:
-   UserButtonHandler(IGUIController& controller, const std::string& button_name, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
+   UserButtonHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
    ~UserButtonHandler();
    bool startThread();
 private:
 
-   IGUIController& m_gui_controller;
+   GUIController& m_gui_controller;
    uint32_t m_button_id;
-   QWidget* m_parent;
    Dialogs::UserButtonDialog::Settings m_settings;
    Persistence::PersistenceHandler& m_persistence;
    ButtonCommandsExecutor m_executor;
@@ -37,7 +36,6 @@ private:
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;
    void onCommandExecutionEvent(bool result);
-public slots:
    void onUserButtonContextMenuRequested();
    void onUserButtonClicked();
 };

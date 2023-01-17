@@ -16,8 +16,7 @@
 #include "TraceFilterHandler.h"
 #include "LoggingSettingDialog.h"
 #include "IFileLogger.h"
-#include "IThemeController.h"
-
+#include "GUIController.h"
 
 /**
  * @file ApplicationSettingsDialog.cpp
@@ -40,11 +39,11 @@ class ApplicationSettingsDialog : public QObject
    Q_OBJECT
 
 public:
-   ApplicationSettingsDialog(std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
+   ApplicationSettingsDialog(GUIController& gui_controller,
+                             std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
                              std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                              std::unique_ptr<IFileLogger>& logger,
-                             std::string& logging_path,
-                             IThemeController& theme_controller);
+                             std::string& logging_path);
    ~ApplicationSettingsDialog();
 
    /**
@@ -116,7 +115,7 @@ private:
    PortHandlerItems m_handlers;
    TraceFilterItems m_filters;
    FileLoggingItems m_file_logging;
-   IThemeController& m_theme_controller;
+   GUIController& m_gui_controller;
    std::vector<QComboBox*> m_logger_comboboxes;
    std::vector<QLineEdit*> m_setting_lineedits;
    QComboBox* m_theme_combobox;

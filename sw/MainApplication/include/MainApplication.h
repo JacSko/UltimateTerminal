@@ -13,21 +13,15 @@
 #include "UserButtonHandler.h"
 #include "TraceFilterHandler.h"
 #include "IFileLogger.h"
-#include "IGUIController.h"
-
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
-
+#include "GUIController.h"
 
 class MainApplication : public GUI::PortHandlerListener,
                         public Persistence::PersistenceListener,
-                        public IGUIController::ButtonEventListener
+                        public ButtonEventListener,
+                        public ThemeListener
 {
-    Q_OBJECT
-
 public:
-    MainApplication(QWidget *parent = nullptr);
+    MainApplication();
     ~MainApplication();
 
     static const uint32_t MAX_COMMANDS_HISTORY_ITEMS = 100;
@@ -42,7 +36,7 @@ private:
 
     std::unique_ptr<Utilities::ITimers> m_timers;
     std::unique_ptr<IFileLogger> m_file_logger;
-    std::unique_ptr<IGUIController> m_gui_contoller;
+    GUIController m_gui_controller;
     std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
     std::mutex m_port_handler_mutex;
     std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
@@ -71,7 +65,7 @@ private:
     /* ButtonEventListener */
     void onButtonEvent(uint32_t button_id, ButtonEvent event);
     /* ThemeChangedListener */
-    void onThemeChange(IGUIController::Theme theme);
+    void onThemeChange(Theme theme);
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     bool sendToPort(const std::string&);

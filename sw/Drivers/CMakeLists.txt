@@ -7,7 +7,7 @@ set(DRIVER_SOURCES
    source/QtClientHandler.cpp
    source/ISocketDriverFactory.cpp
 )
-set(DRIVER_DEPENDENCIES Qt6::SerialPort Qt6::Network)
+set(DRIVER_DEPENDENCIES Qt5::SerialPort Qt5::Network)
 
 elseif(DRIVER_VARIANT EQUAL DRIVER_VARIANT_NATIVE)
 

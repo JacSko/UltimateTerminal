@@ -15,15 +15,13 @@ static uint8_t PORT_ID = 0;
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
 
-PortHandler::PortHandler(IGUIController& gui_controller,
+PortHandler::PortHandler(GUIController& gui_controller,
                          const std::string& button_name,
                          const std::string& label_name,
                          Utilities::ITimers& timers,
                          PortHandlerListener* listener,
-                         QWidget* parent,
                          Persistence::PersistenceHandler& persistence):
 m_gui_controller(gui_controller),
-m_parent(parent),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
 m_timers(timers),
@@ -35,8 +33,7 @@ m_persistence(persistence)
 {
    PORT_ID++;
 
-   m_button_id = m_gui_controller.getElementID(button_name);
-   m_label_id  = m_gui_controller.getElementID(label_name);
+   m_button_id = m_gui_controller.getButtonID(button_name);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
 
@@ -55,9 +52,7 @@ m_persistence(persistence)
    setButtonName(m_settings.port_name);
    notifyListeners(Event::DISCONNECTED);
 
-   m_gui_controller.setPortLabelText(m_label_id, m_settings.shortSettingsString().c_str());
-
-   connect(this, SIGNAL(portEvent()), this, SLOT(onPortEvent()));
+   m_gui_controller.setPortLabelText(m_settings.port_id, m_settings.shortSettingsString().c_str());
 }
 PortHandler::~PortHandler()
 {
@@ -201,12 +196,12 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
       m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    }
 
-   m_gui_controller.setPortLabelText(m_label_id, m_settings.shortSettingsString().c_str());
+   m_gui_controller.setPortLabelText(m_settings.port_id, m_settings.shortSettingsString().c_str());
 
    char stylesheet [300];
    std::snprintf(stylesheet, 300, "background-color: #%.6x;color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color, settings.font_color);
 
-   m_gui_controller.setPortLabelStylesheet(m_label_id, stylesheet);
+   m_gui_controller.setPortLabelStylesheet(m_settings.port_id, stylesheet);
    setButtonName(m_settings.port_name);
    setButtonState(m_button_state);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
@@ -215,7 +210,7 @@ void PortHandler::onPortButtonContextMenuRequested()
 {
    Dialogs::PortSettingDialog dialog;
    Dialogs::PortSettingDialog::Settings new_settings = {};
-   std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, m_button_state == ButtonState::DISCONNECTED);
+   std::optional<bool> result = dialog.showDialog(m_gui_controller.getParent(), m_settings, new_settings, m_button_state == ButtonState::DISCONNECTED);
    if (result && result.value())
    {
       handleNewSettings(new_settings);

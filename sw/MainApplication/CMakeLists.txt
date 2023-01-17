@@ -9,7 +9,7 @@ add_library(MainApplication STATIC
    include/UserButtonHandler.h
    public/PortHandler.h
    public/TraceFilterHandler.h
-   include/GUIController.h
+   public/GUIController.h
 )
 
 target_include_directories(MainApplication PUBLIC 
@@ -18,7 +18,7 @@ target_include_directories(MainApplication PUBLIC
 )
 
 target_link_libraries(MainApplication
-   Qt6::Widgets
+   Qt5::Widgets
    SettingsHandler
    Logger
    Utilities

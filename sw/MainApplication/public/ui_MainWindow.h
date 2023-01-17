@@ -15,15 +15,26 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
-#include <QtGui/QShortcut>
+#include <QtWidgets/QShortcut>
 #include <QtWidgets/QTabWidget>
 
 #include "Settings.h"
 #include "Logger.h"
-#include "IGUIController.h"
 
 QT_BEGIN_NAMESPACE
 
+#define APPLICATION_THEMES       \
+      APPLICATION_THEME(DEFAULT) \
+      APPLICATION_THEME(DARK)    \
+
+#undef APPLICATION_THEME
+#define APPLICATION_THEME(theme_name) theme_name,
+enum class Theme
+{
+   APPLICATION_THEMES
+   APPLICATION_THEMES_MAX
+};
+#undef APPLICATION_THEME
 
 class Ui_MainWindow
 {
@@ -117,7 +128,7 @@ public:
    QShortcut* traceClearButtonShortcut;
    QShortcut* switchSendPortShortcut;
 
-   IGUIController::Theme theme;
+   Theme theme;
 
    void setupUi(QMainWindow *MainWindow)
    {
@@ -437,6 +448,7 @@ public:
       m_labels.push_back(portLabel_4);
       m_labels.push_back(portLabel_5);
 
+      m_trace_filters.push_back({}); //TODO dummy trace filter
       m_trace_filters.push_back({traceFilter_1, traceFilterButton_1});
       m_trace_filters.push_back({traceFilter_2, traceFilterButton_2});
       m_trace_filters.push_back({traceFilter_3, traceFilterButton_3});
@@ -444,49 +456,6 @@ public:
       m_trace_filters.push_back({traceFilter_5, traceFilterButton_5});
       m_trace_filters.push_back({traceFilter_6, traceFilterButton_6});
       m_trace_filters.push_back({traceFilter_7, traceFilterButton_7});
-
-      m_all_widgets.push_back(markerButton);
-      m_all_widgets.push_back(loggingButton);
-      m_all_widgets.push_back(settingsButton);
-      m_all_widgets.push_back(sendButton);
-      m_all_widgets.push_back(scrollButton);
-      m_all_widgets.push_back(clearButton);
-      m_all_widgets.push_back(traceClearButton);
-      m_all_widgets.push_back(traceScrollButton);
-      m_all_widgets.push_back(traceFilterButton_1);
-      m_all_widgets.push_back(traceFilterButton_2);
-      m_all_widgets.push_back(traceFilterButton_3);
-      m_all_widgets.push_back(traceFilterButton_4);
-      m_all_widgets.push_back(traceFilterButton_5);
-      m_all_widgets.push_back(traceFilterButton_6);
-      m_all_widgets.push_back(traceFilterButton_7);
-      m_all_widgets.push_back(portButton_1);
-      m_all_widgets.push_back(portButton_2);
-      m_all_widgets.push_back(portButton_3);
-      m_all_widgets.push_back(portButton_4);
-      m_all_widgets.push_back(portButton_5);
-      m_all_widgets.push_back(infoLabel);
-      m_all_widgets.push_back(portLabel_1);
-      m_all_widgets.push_back(portLabel_2);
-      m_all_widgets.push_back(portLabel_3);
-      m_all_widgets.push_back(portLabel_4);
-      m_all_widgets.push_back(portLabel_5);
-
-      m_all_widgets.push_back(traceFilter_1);
-      m_all_widgets.push_back(traceFilter_2);
-      m_all_widgets.push_back(traceFilter_3);
-      m_all_widgets.push_back(traceFilter_4);
-      m_all_widgets.push_back(traceFilter_5);
-      m_all_widgets.push_back(traceFilter_6);
-      m_all_widgets.push_back(traceFilter_7);
-      m_all_widgets.push_back(traceFilterButton_1);
-      m_all_widgets.push_back(traceFilterButton_2);
-      m_all_widgets.push_back(traceFilterButton_3);
-      m_all_widgets.push_back(traceFilterButton_4);
-      m_all_widgets.push_back(traceFilterButton_5);
-      m_all_widgets.push_back(traceFilterButton_6);
-      m_all_widgets.push_back(traceFilterButton_7);
-
    }
 
    void retranslateUi(QMainWindow *MainWindow)
@@ -520,14 +489,14 @@ public:
       portLabel_5->setText(QString());
    }
 
-   void loadTheme(IGUIController::Theme new_theme)
+   void loadTheme(Theme new_theme)
    {
       theme = new_theme;
-      if(new_theme == IGUIController::Theme::DEFAULT)
+      if(new_theme == Theme::DEFAULT)
       {
          renderDefaultTheme();
       }
-      else if(new_theme == IGUIController::Theme::DARK)
+      else if(new_theme == Theme::DARK)
       {
          renderDarkTheme();
       }
@@ -543,10 +512,6 @@ public:
    const std::vector<QLabel*>& getLabels()
    {
       return m_labels;
-   }
-   const std::vector<QWidget*>& getElements()
-   {
-      return m_all_widgets;
    }
 private:
 
@@ -610,7 +575,8 @@ private:
             QPushButton* button = new QPushButton(centralwidget);
             m_buttons.push_back(button);
             /* button name in format BUTTON<tab>:<row>:<idx>*/
-            std::string button_name = "BUTTON" + std::to_string(index) + std::to_string(i) + std::to_string(j);
+            std::string button_name = "BUTTON" + std::to_string(((index * buttons_rows * buttons_per_row) + (i * buttons_per_row) + j));
+            UT_Log(MAIN_GUI, LOW, "button with name %s created", button_name.c_str());
             button->setObjectName(QString(button_name.c_str()));
             widget_layout->addWidget(button, current_row, j, 1, 1);
          }
@@ -625,8 +591,6 @@ private:
    std::vector<QPushButton*> m_buttons;
    std::vector<QLabel*> m_labels;
    std::vector<TraceFilterItem> m_trace_filters;
-   std::vector<QWidget*> m_all_widgets;
-
 };
 
 namespace Ui {

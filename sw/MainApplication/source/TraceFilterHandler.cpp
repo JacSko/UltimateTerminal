@@ -4,15 +4,12 @@
 
 static uint8_t TRACE_FILTER_FIELD_ID = 0;
 
-TraceFilterHandler::TraceFilterHandler(IGUIController& controller, const std::string& button_name, const std::string& lineedit_name, QWidget* parent, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string& button_name, const std::string& lineedit_name, Persistence::PersistenceHandler& persistence):
 m_gui_controller(controller),
-m_parent(parent),
 m_persistence(persistence),
 m_user_defined(false),
 m_is_active(false)
 {
-   UT_Assert(parent && "Parent cannot be NULL");
-
    TRACE_FILTER_FIELD_ID++;
 
    Persistence::PersistenceListener::setName(std::string("TRACE_FILTER") + std::to_string(TRACE_FILTER_FIELD_ID));
@@ -22,7 +19,8 @@ m_is_active(false)
    m_settings.font = m_gui_controller.getApplicationPalette().color(QPalette::Text).rgb();
    m_settings.id = TRACE_FILTER_FIELD_ID;
 
-   m_button_id = m_gui_controller.getElementID(button_name);
+   m_button_id = m_gui_controller.getButtonID(button_name);
+   UT_Assert(m_button_id != UINT32_MAX);
    m_gui_controller.setButtonCheckable(m_button_id, true);
    m_gui_controller.setTraceFilterEnabled(m_settings.id, true);
    setButtonState(false);
@@ -166,7 +164,7 @@ void TraceFilterHandler::onContextMenuRequested()
       UT_Log(TRACE_FILTER, LOW, "showing color dialog for %s", getName().c_str());
       Dialogs::TraceFilterSettingDialog::Settings new_settings;
       Dialogs::TraceFilterSettingDialog dialog;
-      std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, true);
+      std::optional<bool> result = dialog.showDialog(m_gui_controller.getParent(), m_settings, new_settings, true);
       if (result.has_value() && result.value())
       {
          m_user_defined = true;

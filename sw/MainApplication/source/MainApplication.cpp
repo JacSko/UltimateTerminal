@@ -45,10 +45,10 @@ __attribute__((weak)) std::string getExecutablePath()
 }
 }
 
-MainApplication::MainApplication(QWidget *parent):
+MainApplication::MainApplication():
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
-m_gui_contoller(IGUIController::create(parent)),
+m_gui_controller(nullptr),
 m_marker_index(0),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
@@ -59,70 +59,71 @@ m_trace_scrolling_active(false)
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
 
+   m_gui_controller.run();
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
    {
-      m_gui_contoller->reloadTheme(IGUIController::Theme::DARK);
+      m_gui_controller.reloadTheme(Theme::DARK);
    }
    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
    {
-      m_gui_contoller->reloadTheme(IGUIController::Theme::DEFAULT);
+      m_gui_controller.reloadTheme(Theme::DEFAULT);
    }
-   //TODO set window title
+   m_gui_controller.setApplicationTitle(std::string("UltimateTerminal"));
    UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
-   //TODO add application version string to infoLabel
+   m_gui_controller.setInfoLabelText(std::string("UltimateTerminal v") + std::string(APPLICATION_VERSION));
 
    Settings::SettingsHandler::get()->printSettings();
    m_timers->start();
 
-   m_gui_contoller->setTerminalScrollingEnabled(true);
+   m_gui_controller.setTerminalScrollingEnabled(true);
    m_scrolling_active = true;
-   m_gui_contoller->setTraceScrollingEnabled(true);
+   m_gui_controller.setTraceScrollingEnabled(true);
    m_trace_scrolling_active = true;
 
-   m_marker_button_id  = m_gui_contoller->getElementID("markerButton");
-   m_logging_button_id = m_gui_contoller->getElementID("loggingButton");
-   m_settings_button_id = m_gui_contoller->getElementID("settingsButton");
-   m_send_button_id = m_gui_contoller->getElementID("sendButton");
-   m_scroll_button_id = m_gui_contoller->getElementID("scrollButton");
-   m_clear_button_id = m_gui_contoller->getElementID("clearButton");
-   m_trace_clear_button = m_gui_contoller->getElementID("traceClearButton");
-   m_trace_scroll_button = m_gui_contoller->getElementID("traceScrollButton");
+   m_marker_button_id  = m_gui_controller.getButtonID("markerButton");
+   m_logging_button_id = m_gui_controller.getButtonID("loggingButton");
+   m_settings_button_id = m_gui_controller.getButtonID("settingsButton");
+   m_send_button_id = m_gui_controller.getButtonID("sendButton");
+   m_scroll_button_id = m_gui_controller.getButtonID("scrollButton");
+   m_clear_button_id = m_gui_controller.getButtonID("clearButton");
+   m_trace_clear_button = m_gui_controller.getButtonID("traceClearButton");
+   m_trace_scroll_button = m_gui_controller.getButtonID("traceScrollButton");
 
-   m_gui_contoller->subscribeForButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
-   m_gui_contoller->subscribeForButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.subscribeForButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
 
-   m_button_listeners.push_back({m_marker_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onMarkerButtonClicked, this)});
-   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onLoggingButtonClicked, this)});
-   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, std::bind(&MainApplication::onLoggingButtonContextMenuRequested, this)});
-   m_button_listeners.push_back({m_settings_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onSettingsButtonClicked, this)});
-   m_button_listeners.push_back({m_send_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onSendButtonClicked, this)});
-   m_button_listeners.push_back({m_scroll_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onScrollButtonClicked, this)});
-   m_button_listeners.push_back({m_clear_button_id, ButtonEvent::CLICKED, std::bind(&MainApplication::onClearButtonClicked, this)});
-   m_button_listeners.push_back({m_trace_clear_button, ButtonEvent::CLICKED, std::bind(&MainApplication::onTraceClearButtonClicked, this)});
-   m_button_listeners.push_back({m_trace_scroll_button, ButtonEvent::CLICKED, std::bind(&MainApplication::onTraceScrollButtonClicked, this)});
+   m_button_listeners.push_back({m_marker_button_id, ButtonEvent::CLICKED, [&](){onMarkerButtonClicked();}});
+   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CLICKED, [&](){onLoggingButtonClicked();}});
+   m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, [&](){onLoggingButtonContextMenuRequested();}});
+   m_button_listeners.push_back({m_settings_button_id, ButtonEvent::CLICKED, [&](){onSettingsButtonClicked();}});
+   m_button_listeners.push_back({m_send_button_id, ButtonEvent::CLICKED, [&](){onSendButtonClicked();}});
+   m_button_listeners.push_back({m_scroll_button_id, ButtonEvent::CLICKED, [&](){onScrollButtonClicked();}});
+   m_button_listeners.push_back({m_clear_button_id, ButtonEvent::CLICKED, [&](){onClearButtonClicked();}});
+   m_button_listeners.push_back({m_trace_clear_button, ButtonEvent::CLICKED, [&](){onTraceClearButtonClicked();}});
+   m_button_listeners.push_back({m_trace_scroll_button, ButtonEvent::CLICKED, [&](){onTraceScrollButtonClicked();}});
 
    setButtonState(m_logging_button_id, false);
 
-   m_gui_contoller->subscribeForActivePortChangedEvent(std::bind(&MainApplication::onCurrentPortSelectionChanged, this));
-   m_gui_contoller->subscribeForThemeReloadEvent(this);
+   m_gui_controller.subscribeForActivePortChangedEvent([&](const std::string& name)->bool{return onCurrentPortSelectionChanged(name);});
+   m_gui_controller.subscribeForThemeReloadEvent(this);
 
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(*m_gui_contoller, "portButton_1", "portLabel_1", *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_1", "portLabel_1", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(*m_gui_contoller, "portButton_2", "portLabel_2", *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_2", "portLabel_2", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(*m_gui_contoller, "portButton_3", "portLabel_3", *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_3", "portLabel_3", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(*m_gui_contoller, "portButton_4", "portLabel_4", *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_4", "portLabel_4", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(*m_gui_contoller, "portButton_5", "portLabel_5", *m_timers, this, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_5", "portLabel_5", *m_timers, this, m_persistence)));
 
    /* create handlers for user buttons */
    uint32_t user_buttons_count = SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
@@ -130,20 +131,20 @@ m_trace_scrolling_active(false)
    {
       std::string name = "BUTTON" + std::to_string(i);
       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
-          new GUI::UserButtonHandler(*m_gui_contoller, name, this, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+          new GUI::UserButtonHandler(m_gui_controller, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
 
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_1", "traceFilter_1", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_2", "traceFilter_2", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_3", "traceFilter_3", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_4", "traceFilter_4", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_5", "traceFilter_5", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_6", "traceFilter_6", this, m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(*m_gui_contoller, "traceFilterButton_7", "traceFilter_7", this, m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_1", "traceFilter_1", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_2", "traceFilter_2", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_3", "traceFilter_3", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_4", "traceFilter_4", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_5", "traceFilter_5", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_6", "traceFilter_6", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_7", "traceFilter_7", m_persistence)));
 
-   m_gui_contoller->addLineEnding("\\r\\n");
-   m_gui_contoller->addLineEnding("\\n");
-   m_gui_contoller->addLineEnding("EMPTY");
+   m_gui_controller.addLineEnding("\\r\\n");
+   m_gui_controller.addLineEnding("\\n");
+   m_gui_controller.addLineEnding("EMPTY");
 
    m_file_logging_path = system_call::getExecutablePath();
 
@@ -156,18 +157,20 @@ m_trace_scrolling_active(false)
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
 
+   m_gui_controller.show();
+
 }
 MainApplication::~MainApplication()
 {
-   m_gui_contoller->unsubscribeFromButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
-   m_gui_contoller->unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_send_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_scroll_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_clear_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
+   m_gui_controller.unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
 
    m_button_listeners.clear();
 
@@ -198,9 +201,9 @@ void MainApplication::onButtonEvent(uint32_t button_id, ButtonEvent event)
       }
    }
 }
-void MainApplication::onThemeChange(IGUIController::Theme theme)
+void MainApplication::onThemeChange(Theme theme)
 {
-   UT_Log(MAIN, INFO, "%s: theme %s", __func__, m_gui_contoller->themeToName(theme).c_str());
+   UT_Log(MAIN, INFO, "%s: theme %s", __func__, m_gui_controller.themeToName(theme).c_str());
    //TODO refresh whole Ui here
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
@@ -213,12 +216,12 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
    else if (event.event == GUI::Event::CONNECTED)
    {
       m_port_id_name_map[event.port_id] = event.name;
-      m_gui_contoller->registerPortOpened(event.name);
+      m_gui_controller.registerPortOpened(event.name);
       UT_Log(MAIN, INFO, "Port opened: %u [%s]", event.port_id, event.name.c_str());
    }
    else if (event.event == GUI::Event::DISCONNECTED)
    {
-      m_gui_contoller->registerPortClosed(event.name);      m_port_id_name_map[event.port_id] = "";
+      m_gui_controller.registerPortClosed(event.name);      m_port_id_name_map[event.port_id] = "";
       UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
    }
 }
@@ -241,26 +244,26 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       new_line.chop(1);
    }
 
-   if(m_gui_contoller->countTerminalItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if(m_gui_controller.countTerminalItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in main terminal, cleaning trace view");
-      m_gui_contoller->clearTerminalView();
+      m_gui_controller.clearTerminalView();
    }
 
-   if(m_gui_contoller->countTraceItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
+   if(m_gui_controller.countTraceItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
       UT_Log(MAIN, MEDIUM, "Reached maximum lines in trace view, cleaning trace view");
-      m_gui_contoller->clearTraceView();
+      m_gui_controller.clearTraceView();
    }
 
-   m_gui_contoller->addToTerminalView(new_line.toStdString(), background_color, font_color);
+   m_gui_controller.addToTerminalView(new_line.toStdString(), background_color, font_color);
 
    for (auto& filter : m_trace_filter_handlers)
    {
       std::optional<Dialogs::TraceFilterSettingDialog::Settings> color_set = filter->tryMatch(data);
       if (color_set.has_value())
       {
-         m_gui_contoller->addToTraceView(new_line.toStdString(), background_color, font_color);
+         m_gui_controller.addToTraceView(new_line.toStdString(), background_color, font_color);
       }
    }
 }
@@ -270,7 +273,7 @@ void MainApplication::onMarkerButtonClicked()
    std::string log = "MARKER";
    log += std::to_string(m_marker_index);
    log += '\n';
-   addToTerminal("MARKER", log, TRACE_MARKER_COLOR, m_gui_contoller->getTextColor());
+   addToTerminal("MARKER", log, TRACE_MARKER_COLOR, m_gui_controller.getTextColor());
 }
 void MainApplication::onLoggingButtonClicked()
 {
@@ -292,7 +295,7 @@ void MainApplication::onLoggingButtonClicked()
          messageBox.setText(error_message);
          messageBox.setWindowTitle("Error");
          messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(m_gui_contoller->getApplicationPalette());
+         messageBox.setPalette(m_gui_controller.getApplicationPalette());
          messageBox.exec();
       }
    }
@@ -307,24 +310,24 @@ void MainApplication::onLoggingButtonClicked()
 }
 void MainApplication::onScrollButtonClicked()
 {
-   m_gui_contoller->setTerminalScrollingEnabled(!m_scrolling_active);
+   m_gui_controller.setTerminalScrollingEnabled(!m_scrolling_active);
    m_scrolling_active = !m_scrolling_active;
 }
 void MainApplication::onTraceScrollButtonClicked()
 {
-   m_gui_contoller->setTraceScrollingEnabled(!m_trace_scrolling_active);
+   m_gui_controller.setTraceScrollingEnabled(!m_trace_scrolling_active);
    m_trace_scrolling_active = !m_trace_scrolling_active;
 }
 void MainApplication::onTraceClearButtonClicked()
 {
    UT_Log(MAIN, MEDIUM, "Clearing trace window requested");
-   m_gui_contoller->clearTraceView();
+   m_gui_controller.clearTraceView();
 }
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
    Dialogs::LoggingSettingDialog dialog;
    UT_Log(MAIN, MEDIUM, "Opening log setting dialog with path %s", m_file_logging_path.c_str());
-   auto result = dialog.showDialog(this, m_file_logging_path, !m_file_logger->isActive());
+   auto result = dialog.showDialog(m_gui_controller.getParent(), m_file_logging_path, !m_file_logger->isActive());
    if (result)
    {
       UT_Log(MAIN, LOW, "got new logging path %s", result.value().c_str());
@@ -334,7 +337,7 @@ void MainApplication::onLoggingButtonContextMenuRequested()
 void MainApplication::onClearButtonClicked()
 {
    UT_Log(MAIN, MEDIUM, "Clearing terminal window requested");
-   m_gui_contoller->clearTerminalView();
+   m_gui_controller.clearTerminalView();
 }
 bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name)
 {
@@ -342,15 +345,15 @@ bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
    UT_Log(MAIN, LOW, "Selected port changed, new port %s with id %u", port_name.c_str(), port_id);
 
    std::vector<std::string>& commands_history = m_commands_history[port_id];
-   m_gui_contoller->setCommandsHistory(commands_history);
+   m_gui_controller.setCommandsHistory(commands_history);
    m_current_port_name = port_name;
 
    return true;
 }
 void MainApplication::onSettingsButtonClicked()
 {
-   Dialogs::ApplicationSettingsDialog dialog (m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path, *this);
-   dialog.showDialog(this);
+   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
+   dialog.showDialog(m_gui_controller.getParent());
 }
 bool MainApplication::sendToPort(const std::string& string)
 {
@@ -358,7 +361,7 @@ bool MainApplication::sendToPort(const std::string& string)
    uint8_t port_id = portNameToId(m_current_port_name);
    std::string data_to_send = string;
    UT_Log(MAIN, HIGH, "Trying to send data to port %u[%s] - %s", port_id, m_current_port_name.c_str(), string.c_str());
-   std::string current_ending = m_gui_contoller->getCurrentLineEnding();
+   std::string current_ending = m_gui_controller.getCurrentLineEnding();
    if (current_ending == "\\r\\n")
    {
       data_to_send += "\r\n";
@@ -375,7 +378,7 @@ bool MainApplication::sendToPort(const std::string& string)
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(m_current_port_name, data_to_send, m_gui_contoller->getBackgroundColor(), m_gui_contoller->getTextColor());
+            addToTerminal(m_current_port_name, data_to_send, m_gui_controller.getBackgroundColor(), m_gui_controller.getTextColor());
             addToCommandHistory(port_id, string);
          }
          else
@@ -384,7 +387,7 @@ bool MainApplication::sendToPort(const std::string& string)
             error += m_current_port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(m_current_port_name, error, m_gui_contoller->getBackgroundColor(), m_gui_contoller->getTextColor());
+            addToTerminal(m_current_port_name, error, m_gui_controller.getBackgroundColor(), m_gui_controller.getTextColor());
          }
       }
    }
@@ -393,24 +396,24 @@ bool MainApplication::sendToPort(const std::string& string)
 void MainApplication::onSendButtonClicked()
 {
    UT_Log(MAIN, LOW, "Send button clicked");
-   (void)sendToPort(m_gui_contoller->getCurrentCommand());
+   (void)sendToPort(m_gui_controller.getCurrentCommand());
 }
 void MainApplication::setButtonState(uint32_t button_id, bool state)
 {
    constexpr uint32_t GREEN = 0x00FF00;
    constexpr uint32_t BLACK = 0x000000;
-   const uint32_t DEFAULT_BACKGROUND = m_gui_contoller->getBackgroundColor();
-   const uint32_t DEFAULT_FONT = m_gui_contoller->getTextColor();
+   const uint32_t DEFAULT_BACKGROUND = m_gui_controller.getBackgroundColor();
+   const uint32_t DEFAULT_FONT = m_gui_controller.getTextColor();
    if (state)
    {
-      m_gui_contoller->setButtonBackgroundColor(button_id, GREEN);
-      m_gui_contoller->setButtonFontColor(button_id, BLACK);
+      m_gui_controller.setButtonBackgroundColor(button_id, GREEN);
+      m_gui_controller.setButtonFontColor(button_id, BLACK);
 
    }
    else
    {
-      m_gui_contoller->setButtonBackgroundColor(button_id, DEFAULT_BACKGROUND);
-      m_gui_contoller->setButtonFontColor(button_id, DEFAULT_FONT);
+      m_gui_controller.setButtonBackgroundColor(button_id, DEFAULT_BACKGROUND);
+      m_gui_controller.setButtonFontColor(button_id, DEFAULT_FONT);
    }
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
@@ -447,9 +450,9 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       }
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
-   m_gui_contoller->setTerminalScrollingEnabled(m_scrolling_active);
-   m_gui_contoller->setTraceScrollingEnabled(m_trace_scrolling_active);
-   m_gui_contoller->setCurrentLineEnding(line_ending);
+   m_gui_controller.setTerminalScrollingEnabled(m_scrolling_active);
+   m_gui_controller.setTraceScrollingEnabled(m_trace_scrolling_active);
+   m_gui_controller.setCurrentLineEnding(line_ending);
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
@@ -458,7 +461,7 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_file_logging_path);
    ::serialize(data, m_scrolling_active);
    ::serialize(data, m_trace_scrolling_active);
-   ::serialize(data, m_gui_contoller->getCurrentLineEnding());
+   ::serialize(data, m_gui_controller.getCurrentLineEnding());
    ::serialize(data, (uint8_t)m_commands_history.size());
    for (const auto& item : m_commands_history)
    {
@@ -483,7 +486,7 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
       {
          history.erase(history.begin());
       }
-      m_gui_contoller->setCommandsHistory(history);
+      m_gui_controller.setCommandsHistory(history);
    }
 }
 uint8_t MainApplication::portNameToId(const std::string& name)

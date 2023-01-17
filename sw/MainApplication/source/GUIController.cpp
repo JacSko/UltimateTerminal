@@ -2,35 +2,37 @@
 #include <QtCore/QVector>
 
 #undef APPLICATION_THEME
-#define APPLICATION_THEME(name) #name,
-std::array<std::string, (uint32_t)GUIController::Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
+#define APPLICATION_THEME(theme_name) #theme_name,
+std::array<std::string, (uint32_t)Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
 #undef APPLICATION_THEME
 
-
-std::unique_ptr<IGUIController> IGUIController::create(QWidget *parent)
-{
-   return std::unique_ptr<IGUIController>(new GUIController(parent));
-}
 
 GUIController::GUIController(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
-m_current_theme(IGUIController::Theme::DEFAULT),
+m_current_theme(Theme::DEFAULT),
 m_terminal_view_status{},
 m_trace_view_status{},
 m_current_command(nullptr)
+{
+}
+GUIController::~GUIController()
+{
+   delete ui;
+}
+void GUIController::run()
 {
    ui->setupUi(this);
 
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
    {
-      ui->loadTheme(GUIController::Theme::DARK);
-      m_current_theme = GUIController::Theme::DARK;
+      ui->loadTheme(Theme::DARK);
+      m_current_theme = Theme::DARK;
    }
    else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
    {
-      ui->loadTheme(GUIController::Theme::DEFAULT);
-      m_current_theme = GUIController::Theme::DEFAULT;
+      ui->loadTheme(Theme::DEFAULT);
+      m_current_theme = Theme::DEFAULT;
    }
    this->setWindowTitle("UltimateTerminal");
    ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
@@ -81,31 +83,34 @@ m_current_command(nullptr)
    connect(ui->traceFilter_6, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
    connect(ui->traceFilter_7, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
 
-   connect(this, SIGNAL(setButtonBackgroundColorSignal(uint32_t, uint32_t)), this, SLOT(onButtonBackgroundColorSignal(uint32_t, uint32_t)));
-   connect(this, SIGNAL(setButtonFontColorSignal(uint32_t, uint32_t)), this, SLOT(onButtonFontColorSignal(uint32_t, uint32_t)));
-   connect(this, SIGNAL(setButtonCheckableSignal(uint32_t, bool)), this, SLOT(onButtonCheckableSignal(uint32_t, bool)));
-   connect(this, SIGNAL(setButtonCheckedSignal(uint32_t, bool)), this, SLOT(onButtonCheckedSignal(uint32_t, bool)));
-   connect(this, SIGNAL(setButtonEnabledSignal(uint32_t, bool)), this, SLOT(onButtonEnabledSignal(uint32_t, bool)));
-   connect(this, SIGNAL(setButtonTextSignal(uint32_t, QString)), this, SLOT(onButtonTextSignal(uint32_t, QString)));
+   connect(this, SIGNAL(setButtonBackgroundColorSignal(qint32, qint32)), this, SLOT(onButtonBackgroundColorSignal(qint32, qint32)));
+   connect(this, SIGNAL(setButtonFontColorSignal(qint32, qint32)), this, SLOT(onButtonFontColorSignal(qint32, qint32)));
+   connect(this, SIGNAL(setButtonCheckableSignal(qint32, bool)), this, SLOT(onButtonCheckableSignal(qint32, bool)));
+   connect(this, SIGNAL(setButtonCheckedSignal(qint32, bool)), this, SLOT(onButtonCheckedSignal(qint32, bool)));
+   connect(this, SIGNAL(setButtonEnabledSignal(qint32, bool)), this, SLOT(onButtonEnabledSignal(qint32, bool)));
+   connect(this, SIGNAL(setButtonTextSignal(qint32, QString)), this, SLOT(onButtonTextSignal(qint32, QString)));
    connect(this, SIGNAL(clearTerminalViewSignal()), this, SLOT(onClearTerminalViewSignal()));
    connect(this, SIGNAL(clearTraceViewSignal()), this, SLOT(onClearTraceViewSignal()));
-   connect(this, SIGNAL(addToTerminalViewSignal(QString, uint32_t, uint32_t)), this, SLOT(onAddToTerminalViewSignal(QString, uint32_t, uint32_t)));
-   connect(this, SIGNAL(addToTraceViewSignal(QString, uint32_t, uint32_t)), this, SLOT(onAddToTraceViewSignal(QString, uint32_t, uint32_t)));
+   connect(this, SIGNAL(addToTerminalViewSignal(QString, qint32, qint32)), this, SLOT(onAddToTerminalViewSignal(QString, qint32, qint32)));
+   connect(this, SIGNAL(addToTraceViewSignal(QString, qint32, qint32)), this, SLOT(onAddToTraceViewSignal(QString, qint32, qint32)));
    connect(this, SIGNAL(setTerminalScrollingEnabledSignal(bool)), this, SLOT(onSetTerminalScrollingEnabledSignal(bool)));
    connect(this, SIGNAL(setTraceScrollingEnabledSignal(bool)), this, SLOT(onSetTraceScrollingEnabledSignal(bool)));
    connect(this, SIGNAL(registerPortOpenedSignal(QString)), this, SLOT(onRegisterPortOpenedSignal(QString)));
    connect(this, SIGNAL(registerPortClosedSignal(QString)), this, SLOT(onRegisterPortClosedSignal(QString)));
-   connect(this, SIGNAL(setCommandHistorySignal(QVector<QString>)), this, SLOT(onsetCommandHistorySignal(QVector<QString>)));
+   connect(this, SIGNAL(setCommandHistorySignal(QVector<QString>)), this, SLOT(onSetCommandHistorySignal(QVector<QString>)));
    connect(this, SIGNAL(addCommandToHistorySignal(QString)), this, SLOT(onAddCommandToHistorySignal(QString)));
    connect(this, SIGNAL(addLineEndingSignal(QString)), this, SLOT(onAddLineEndingSignal(QString)));
    connect(this, SIGNAL(setCurrentLineEndingSignal(QString)), this, SLOT(onSetCurrentLineEndingSignal(QString)));
-   connect(this, SIGNAL(setTraceFilterSignal(uint8_t, QString)), this, SLOT(onSetTraceFilterSignal(uint8_t, QString)));
-   connect(this, SIGNAL(setTraceFilterEnabledSignal(uint8_t, bool)), this, SLOT(onSetTraceFilterEnabledSignal(uint8_t, bool)));
-   connect(this, SIGNAL(setTraceFilterBackgroundColorSignal(uint32_t, uint32_t)), this, SLOT(onSetTraceFilterBackgroundColorSignal(uint32_t, uint32_t)));
-   connect(this, SIGNAL(setTraceFilterFontColorSignal(uint32_t, uint32_t)), this, SLOT(onSetTraceFilterFontColorSignal(uint32_t, uint32_t)));
-   connect(this, SIGNAL(setPortLabelTextSignal(uint8_t, QString)), this, SLOT(onSetPortLabelTextSignal(uint8_t, QString)));
-   connect(this, SIGNAL(setPortLabelStylesheetSignal(uint8_t, QString)), this, SLOT(onSetPortLabelStylesheetSignal(uint8_t, QString)));
-   connect(this, SIGNAL(reloadThemeSignal(uint8_t)), this, SLOT(onReloadThemeSignal(uint8_t)));
+   connect(this, SIGNAL(setTraceFilterSignal(qint8, QString)), this, SLOT(onSetTraceFilterSignal(qint8, QString)));
+   connect(this, SIGNAL(setTraceFilterEnabledSignal(qint8, bool)), this, SLOT(onSetTraceFilterEnabledSignal(qint8, bool)));
+   connect(this, SIGNAL(setTraceFilterBackgroundColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterBackgroundColorSignal(qint32, qint32)));
+   connect(this, SIGNAL(setTraceFilterFontColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterFontColorSignal(qint32, qint32)));
+   connect(this, SIGNAL(setPortLabelTextSignal(qint8, QString)), this, SLOT(onSetPortLabelTextSignal(qint8, QString)));
+   connect(this, SIGNAL(setPortLabelStylesheetSignal(qint8, QString)), this, SLOT(onSetPortLabelStylesheetSignal(qint8, QString)));
+   connect(this, SIGNAL(reloadThemeSignal(qint8)), this, SLOT(onReloadThemeSignal(qint8)));
+   connect(this, SIGNAL(setStatusBarNotificationSignal(QString, qint32)), this, SLOT(onSetStatusBarNotificationSignal(QString, qint32)));
+   connect(this, SIGNAL(setInfoLabelTextSignal(QString)), this, SLOT(onSetInfoLabelTextSignal(QString)));
+   connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 
@@ -118,23 +123,20 @@ m_current_command(nullptr)
    m_shortcuts_map[ui->traceFilter_6] = ui->traceFilterButton_6;
    m_shortcuts_map[ui->traceFilter_7] = ui->traceFilterButton_7;
 }
-GUIController::~GUIController()
-{
-   delete ui;
-}
-uint32_t GUIController::getElementID(const std::string& name)
+uint32_t GUIController::getButtonID(const std::string& name)
 {
    uint32_t result = UINT32_MAX;
-   auto elements = ui->getElements();
+   auto elements = ui->getButtons();
    for (uint32_t i = 0; i < elements.size(); i++)
    {
       UT_Assert(elements[i]);
-      if (elements[i]->objectName() == name)
+      if (elements[i]->objectName().toStdString() == name)
       {
          result = i;
          break;
       }
    }
+   UT_Log_If(result == UINT32_MAX, MAIN_GUI, ERROR, "Element with name %s not found", name.c_str());
    return result;
 }
 void GUIController::subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener)
@@ -275,8 +277,8 @@ uint32_t GUIController::getTraceFilterID(const std::string& name)
    {
       UT_Assert(filters[i].button);
       UT_Assert(filters[i].line_edit);
-      if ((filters[i].button->objectName() == name) ||
-          (filters[i].line_edit->objectName() == name))
+      if ((filters[i].button->objectName().toStdString() == name) ||
+          (filters[i].line_edit->objectName().toStdString() == name))
       {
          result = i;
          break;
@@ -314,26 +316,26 @@ void GUIController::setPortLabelStylesheet(uint8_t id, const std::string& styles
 {
    emit setPortLabelStylesheetSignal(id, QString(stylesheet.c_str()));
 }
-void GUIController::reloadTheme(IGUIController::Theme theme)
+void GUIController::reloadTheme(Theme theme)
 {
    emit reloadThemeSignal((uint8_t)theme);
 }
-GUIController::Theme GUIController::currentTheme()
+Theme GUIController::currentTheme()
 {
    return ui->theme;
 }
-std::string GUIController::themeToName(IGUIController::Theme theme)
+std::string GUIController::themeToName(Theme theme)
 {
-   UT_Assert(theme < IGUIController::Theme::APPLICATION_THEMES_MAX);
+   UT_Assert(theme < Theme::APPLICATION_THEMES_MAX);
    return m_themes_names[(uint32_t)theme];
 }
-IGUIController::Theme GUIController::nameToTheme(const std::string& name)
+Theme GUIController::nameToTheme(const std::string& name)
 {
-   IGUIController::Theme result = IGUIController::Theme::APPLICATION_THEMES_MAX;
+   Theme result = Theme::APPLICATION_THEMES_MAX;
    auto it = std::find(m_themes_names.begin(), m_themes_names.end(), name);
    if (it != m_themes_names.end())
    {
-      result = (IGUIController::Theme)(std::distance(m_themes_names.begin(), it));
+      result = (Theme)(std::distance(m_themes_names.begin(), it));
    }
    return result;
 }
@@ -377,6 +379,22 @@ void GUIController::unsubscribeFromThemeReloadEvent(ThemeListener* listener)
       UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u unregistered");
       m_theme_listeners.erase(it);
    }
+}
+QWidget* GUIController::getParent()
+{
+   return this;
+}
+void GUIController::setStatusBarNotification(const std::string& notification, uint32_t timeout)
+{
+   emit setStatusBarNotificationSignal(QString(notification.c_str()), timeout);
+}
+void GUIController::setInfoLabelText(const std::string& text)
+{
+   emit setInfoLabelTextSignal(QString(text.c_str()));
+}
+void GUIController::setApplicationTitle(const std::string& title)
+{
+   emit setApplicationTitle(QString(title.c_str()));
 }
 bool GUIController::executeGUIRequest(CommandExecutor* request)
 {
@@ -466,7 +484,7 @@ void GUIController::onPortSwitchRequest()
       }
    }
 }
-void GUIController::onButtonBackgroundColorSignal(uint32_t id, uint32_t color)
+void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
@@ -476,7 +494,7 @@ void GUIController::onButtonBackgroundColorSignal(uint32_t id, uint32_t color)
    buttons[id]->setPalette(palette);
    buttons[id]->update();
 }
-void GUIController::onButtonFontColorSignal(uint32_t id, uint32_t color)
+void GUIController::onButtonFontColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
@@ -486,28 +504,28 @@ void GUIController::onButtonFontColorSignal(uint32_t id, uint32_t color)
    buttons[id]->setPalette(palette);
    buttons[id]->update();
 }
-void GUIController::onButtonCheckableSignal(uint32_t id, bool checkable)
+void GUIController::onButtonCheckableSignal(qint32 id, bool checkable)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u checkable %u", __func__, id, checkable);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > id);
    buttons[id]->setCheckable(checkable);
 }
-void GUIController::onButtonCheckedSignal(uint32_t id, bool checked)
+void GUIController::onButtonCheckedSignal(qint32 id, bool checked)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u checked %u", __func__, id, checked);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > id);
    buttons[id]->setChecked(checked);
 }
-void GUIController::onButtonEnabledSignal(uint32_t id, bool enabled)
+void GUIController::onButtonEnabledSignal(qint32 id, bool enabled)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u enabled %u", __func__, id, enabled);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > id);
    buttons[id]->setEnabled(enabled);
 }
-void GUIController::onButtonTextSignal(uint32_t id, QString text)
+void GUIController::onButtonTextSignal(qint32 id, QString text)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u text %s", __func__, id, text.toStdString().c_str());
    auto buttons = ui->getButtons();
@@ -526,7 +544,7 @@ void GUIController::onClearTraceViewSignal()
    ui->traceView->clear();
    m_trace_view_status.item_count = 0;
 }
-void GUIController::onAddToTerminalViewSignal(QString text, uint32_t background_color, uint32_t font_color)
+void GUIController::onAddToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s bg color %.6x font %.6x", __func__, background_color, font_color);
    QListWidgetItem* item = new QListWidgetItem();
@@ -541,7 +559,7 @@ void GUIController::onAddToTerminalViewSignal(QString text, uint32_t background_
       ui->terminalView->scrollToBottom();
    }
 }
-void GUIController::onAddToTraceViewSignal(QString text, uint32_t background_color, uint32_t font_color)
+void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s bg color %.6x font %.6x", __func__, background_color, font_color);
    QListWidgetItem* item = new QListWidgetItem();
@@ -609,21 +627,21 @@ void GUIController::onSetCurrentLineEndingSignal(QString ending)
    UT_Log(MAIN_GUI, HIGH, "%s", __func__);
    ui->lineEndingComboBox->setCurrentText(ending);
 }
-void GUIController::onSetTraceFilterSignal(uint8_t id, QString filter)
+void GUIController::onSetTraceFilterSignal(qint8 id, QString filter)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u filter %s", __func__, id, filter.toStdString().c_str());
    auto filters = ui->getTraceFilters();
    UT_Assert(filters.size() > id);
    filters[id].line_edit->setText(filter);
 }
-void GUIController::onSetTraceFilterEnabledSignal(uint8_t id, bool enabled)
+void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u state %u", __func__, id, enabled);
    auto filters = ui->getTraceFilters();
    UT_Assert(filters.size() > id);
    filters[id].line_edit->setEnabled(enabled);
 }
-void GUIController::onSetTraceFilterBackgroundColorSignal(uint32_t id, uint32_t color)
+void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %u", __func__, id, color);
    auto& filters = ui->getTraceFilters();
@@ -632,7 +650,7 @@ void GUIController::onSetTraceFilterBackgroundColorSignal(uint32_t id, uint32_t 
    std::snprintf(stylesheet, 300, "background-color: #%.6x;", color);
    filters[id].line_edit->setStyleSheet(QString(stylesheet));
 }
-void GUIController::onSetTraceFilterFontColorSignal(uint32_t id, uint32_t color)
+void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %u", __func__, id, color);
    auto& filters = ui->getTraceFilters();
@@ -641,27 +659,42 @@ void GUIController::onSetTraceFilterFontColorSignal(uint32_t id, uint32_t color)
    std::snprintf(stylesheet, 300, "color: #%.6x;", color);
    filters[id].line_edit->setStyleSheet(QString(stylesheet));
 }
-void GUIController::onSetPortLabelTextSignal(uint8_t id, QString description)
+void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u text %u", __func__, id, description.toStdString().c_str());
    auto& labels = ui->getLabels();
    UT_Assert(id < labels.size());
    labels[id]->setText(description);
 }
-void GUIController::onSetPortLabelStylesheetSignal(uint8_t id, QString stylesheet)
+void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %u", __func__, id, stylesheet.toStdString().c_str());
    auto& labels = ui->getLabels();
    UT_Assert(id < labels.size());
    labels[id]->setStyleSheet(stylesheet);
 }
-void GUIController::onReloadThemeSignal(uint8_t id)
+void GUIController::onReloadThemeSignal(qint8 id)
 {
-   UT_Assert((GUIController::Theme)id < GUIController::Theme::APPLICATION_THEMES_MAX);
-   UT_Log(MAIN_GUI, HIGH, "%s id %u name %s", __func__, id, themeToName((GUIController::Theme)id).c_str());
-   ui->loadTheme((GUIController::Theme)id);
+   UT_Assert((Theme)id < Theme::APPLICATION_THEMES_MAX);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u name %s", __func__, id, themeToName((Theme)id).c_str());
+   ui->loadTheme((Theme)id);
    for (auto& listener : m_theme_listeners)
    {
-      if (listener) listener->onThemeChange((GUIController::Theme)id);
+      if (listener) listener->onThemeChange((Theme)id);
    }
+}
+void GUIController::onSetStatusBarNotificationSignal(QString notification, qint32 timeout)
+{
+   UT_Log(MAIN_GUI, HIGH, "%s %s time %u", __func__, notification.toStdString().c_str(), timeout);
+   ui->statusbar->showMessage(notification, timeout);
+}
+void GUIController::onSetInfoLabelTextSignal(QString text)
+{
+   UT_Log(MAIN_GUI, HIGH, "%s %s ", __func__, text.toStdString().c_str());
+   ui->infoLabel->setText(text);
+}
+void GUIController::onSetApplicationTitle(QString title)
+{
+   UT_Log(MAIN_GUI, HIGH, "%s %s ", __func__, title.toStdString().c_str());
+   this->setWindowTitle(title);
 }

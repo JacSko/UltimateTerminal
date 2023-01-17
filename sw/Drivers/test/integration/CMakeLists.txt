@@ -35,6 +35,6 @@ target_link_libraries(QtSocketDriverIntegrationTests PUBLIC
         Logger
         Utilities
         Drivers
-        Qt6::Network
+        Qt5::Network
 )
 add_test(NAME QtSocketDriverIntegrationTests COMMAND QtSocketDriverIntegrationTests)

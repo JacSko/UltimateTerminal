@@ -12,9 +12,8 @@ namespace GUI
 static uint8_t USER_BUTTON_ID = 0;
 const uint32_t THREAD_START_TIMEOUT = 1000;
 
-UserButtonHandler::UserButtonHandler(IGUIController& controller, const std::string& button_name, QWidget* parent, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
+UserButtonHandler::UserButtonHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
 m_gui_controller(controller),
-m_parent(parent),
 m_persistence(persistence),
 m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, std::placeholders::_1))
 {
@@ -23,11 +22,11 @@ m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, 
 
    Persistence::PersistenceListener::setName(std::string("BUTTON") + std::to_string(USER_BUTTON_ID));
    m_persistence.addListener(*this);
-   m_button_id = m_gui_controller.getElementID(button_name);
+   m_button_id = m_gui_controller.getButtonID(button_name);
+   UT_Assert(m_button_id != UINT32_MAX);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
    m_gui_controller.setButtonCheckable(m_button_id, true);
-   connect(this, SIGNAL(commandsFinished()), this, SLOT(onCommandsFinished()));
 }
 UserButtonHandler::~UserButtonHandler()
 {
@@ -67,7 +66,7 @@ void UserButtonHandler::onUserButtonContextMenuRequested()
    Dialogs::UserButtonDialog dialog;
    Dialogs::UserButtonDialog::Settings new_settings = {};
 
-   std::optional<bool> result = dialog.showDialog(m_parent, m_settings, new_settings, true);
+   std::optional<bool> result = dialog.showDialog(m_gui_controller.getParent(), m_settings, new_settings, true);
    if (result)
    {
       if (result.value())

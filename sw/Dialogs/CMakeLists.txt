@@ -16,7 +16,7 @@ target_include_directories(Dialogs PUBLIC
 )
 
 target_link_libraries(Dialogs
-   Qt6::Widgets
+   Qt5::Widgets
    SettingsHandler
    Logger
    Utilities

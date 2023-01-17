@@ -6,7 +6,7 @@
 #include <regex>
 #include "PersistenceHandler.h"
 #include "TraceFilterSettingDialog.h"
-#include "IGUIController.h"
+#include "GUIController.h"
 
 /**
  * @file TraceFilterHandler.h
@@ -28,7 +28,7 @@
 
 class TraceFilterHandler : public QObject,
                            public Persistence::PersistenceListener,
-                           public IGUIController::ButtonEventListener
+                           public ButtonEventListener
 {
    Q_OBJECT
 
@@ -42,7 +42,7 @@ public:
     *
     * @return None.
     */
-   TraceFilterHandler(IGUIController& controller, const std::string& button_name, const std::string& lineedit_name, QWidget* parent, Persistence::PersistenceHandler& persistence);
+   TraceFilterHandler(GUIController& controller, const std::string& button_name, const std::string& lineedit_name, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
    /**
     * @brief Checks matching of provided text with regular expression defined by user.
@@ -82,8 +82,7 @@ private:
    void onPersistenceWrite(std::vector<uint8_t>& data);
    void handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
 
-   IGUIController& m_gui_controller;
-   QWidget* m_parent;
+   GUIController& m_gui_controller;
    uint32_t m_button_id;
    Persistence::PersistenceHandler& m_persistence;
    std::regex m_regex;

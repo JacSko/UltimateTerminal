@@ -12,15 +12,15 @@
 namespace Dialogs
 {
 
-ApplicationSettingsDialog::ApplicationSettingsDialog(std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
+ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controller,
+                                                     std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
                                                      std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                                                      std::unique_ptr<IFileLogger>& logger,
-                                                     std::string& logging_path,
-                                                     IThemeController& theme_controller):
+                                                     std::string& logging_path):
 m_handlers(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
-m_theme_controller(theme_controller),
+m_gui_controller(gui_controller),
 m_theme_combobox(nullptr),
 m_max_traces_edit(nullptr)
 {
@@ -80,11 +80,11 @@ void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab, QWidget* 
    m_theme_combobox->setPalette(parent->palette());
    m_theme_combobox->view()->setPalette(parent->palette());
 
-   for (uint8_t i = 0; i < (uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX; i++)
+   for (uint8_t i = 0; i < (uint8_t)Theme::APPLICATION_THEMES_MAX; i++)
    {
-      m_theme_combobox->addItem(QString(m_theme_controller.themeToName((IThemeController::Theme)i).c_str()));
+      m_theme_combobox->addItem(QString(m_gui_controller.themeToName((Theme)i).c_str()));
    }
-   m_theme_combobox->setCurrentText(QString(m_theme_controller.themeToName(m_theme_controller.currentTheme()).c_str()));
+   m_theme_combobox->setCurrentText(QString(m_gui_controller.themeToName(m_gui_controller.currentTheme()).c_str()));
    tab_layout->addRow("Theme", m_theme_combobox);
 
    /* trace count settings */
@@ -282,12 +282,12 @@ void ApplicationSettingsDialog::saveLoggerGroups()
 void ApplicationSettingsDialog::saveThemeChange()
 {
    std::string new_theme_text = m_theme_combobox->currentText().toStdString();
-   IThemeController::Theme new_theme = m_theme_controller.nameToTheme(new_theme_text);
-   IThemeController::Theme current_theme = m_theme_controller.currentTheme();
+   Theme new_theme = m_gui_controller.nameToTheme(new_theme_text);
+   Theme current_theme = m_gui_controller.currentTheme();
    if (new_theme != current_theme)
    {
-      UT_Log(GUI_DIALOG, LOW, "Theme change detected - %s -> %s", m_theme_controller.themeToName(current_theme).c_str(), new_theme_text.c_str());
-      m_theme_controller.reloadTheme(new_theme);
+      UT_Log(GUI_DIALOG, LOW, "Theme change detected - %s -> %s", m_gui_controller.themeToName(current_theme).c_str(), new_theme_text.c_str());
+      m_gui_controller.reloadTheme(new_theme);
    }
 }
 void ApplicationSettingsDialog::saveSystemSettingsGroup()
