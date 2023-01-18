@@ -89,6 +89,7 @@ void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<
 void PortHandler::onTimeout(uint32_t){};
 void PortHandler::onPersistenceRead(const std::vector<uint8_t>&){};
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>&){};
+void PortHandler::onButtonEvent(uint32_t, ButtonEvent){};
 
 
 }

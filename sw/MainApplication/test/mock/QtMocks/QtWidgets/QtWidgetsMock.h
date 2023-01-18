@@ -170,6 +170,7 @@ public:
    void setMenuBar(QMenuBar *){};
    void setStatusBar(QStatusBar *){};
    void setWindowTitle(const QString &){};
+   void show(){};
 };
 
 class QDialog : public QWidget

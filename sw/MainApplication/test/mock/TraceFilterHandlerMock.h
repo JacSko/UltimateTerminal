@@ -69,4 +69,5 @@ bool TraceFilterHandler::isActive()
 }
 void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>&){}
 void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>&){}
+void TraceFilterHandler::onButtonEvent(uint32_t, ButtonEvent){};
 

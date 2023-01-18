@@ -254,6 +254,7 @@ public:
    void setInfoLabelText(const std::string& text);
    void setApplicationTitle(const std::string& title);
 
+private:
    bool executeGUIRequest(CommandExecutor* request);
 
 signals:

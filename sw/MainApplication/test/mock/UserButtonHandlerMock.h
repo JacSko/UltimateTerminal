@@ -29,5 +29,5 @@ bool UserButtonHandler::startThread()
 {
    return true;
 }
-
+void UserButtonHandler::onButtonEvent(uint32_t, ButtonEvent){};
 }
