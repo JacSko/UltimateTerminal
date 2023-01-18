@@ -145,6 +145,8 @@ m_trace_scrolling_active(false)
    m_gui_controller.addLineEnding("\\r\\n");
    m_gui_controller.addLineEnding("\\n");
    m_gui_controller.addLineEnding("EMPTY");
+   setButtonState(m_scroll_button_id, m_scrolling_active);
+   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
 
    m_file_logging_path = system_call::getExecutablePath();
 
@@ -263,7 +265,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       std::optional<Dialogs::TraceFilterSettingDialog::Settings> color_set = filter->tryMatch(data);
       if (color_set.has_value())
       {
-         m_gui_controller.addToTraceView(new_line.toStdString(), background_color, font_color);
+         m_gui_controller.addToTraceView(new_line.toStdString(), color_set->background, color_set->font);
       }
    }
 }
@@ -312,11 +314,13 @@ void MainApplication::onScrollButtonClicked()
 {
    m_gui_controller.setTerminalScrollingEnabled(!m_scrolling_active);
    m_scrolling_active = !m_scrolling_active;
+   setButtonState(m_scroll_button_id, m_scrolling_active);
 }
 void MainApplication::onTraceScrollButtonClicked()
 {
    m_gui_controller.setTraceScrollingEnabled(!m_trace_scrolling_active);
    m_trace_scrolling_active = !m_trace_scrolling_active;
+   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
 }
 void MainApplication::onTraceClearButtonClicked()
 {

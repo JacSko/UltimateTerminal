@@ -16,6 +16,8 @@ class QObject;
 
 template<typename T>
 using QVector = std::vector<T>;
+using qint32 = uint32_t;
+using qint8 = uint8_t;
 
 class QString : public std::string
 {

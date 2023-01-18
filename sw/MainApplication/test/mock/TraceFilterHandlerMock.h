@@ -39,7 +39,8 @@ TraceFilterHandlerMock* TraceFilterHandlerMock_get()
 }
 
 
-TraceFilterHandler::TraceFilterHandler(QWidget*, QLineEdit*, QPushButton*, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string& button_name, const std::string& lineedit_name, Persistence::PersistenceHandler& persistence):
+m_gui_controller(controller),
 m_persistence(persistence)
 {
    TRACE_HANDLER_ID++;

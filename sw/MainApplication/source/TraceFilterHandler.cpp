@@ -21,6 +21,8 @@ m_is_active(false)
 
    m_button_id = m_gui_controller.getButtonID(button_name);
    UT_Assert(m_button_id != UINT32_MAX);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
    m_gui_controller.setButtonCheckable(m_button_id, true);
    m_gui_controller.setTraceFilterEnabled(m_settings.id, true);
    setButtonState(false);
@@ -142,9 +144,9 @@ void TraceFilterHandler::onButtonClicked()
    if (!filteringActive())
    {
       UT_Log(TRACE_FILTER, INFO, "enabling filter %s", getName().c_str());
-      m_regex = std::regex(m_gui_controller.getTraceFilter(m_settings.id));
+      m_settings.regex = m_gui_controller.getTraceFilter(m_settings.id);
+      m_regex = std::regex(m_settings.regex);
       setButtonState(true);
-      m_gui_controller.setButtonEnabled(m_button_id, false);
       m_gui_controller.setTraceFilterEnabled(m_settings.id, false);
       m_is_active = true;
    }
@@ -152,8 +154,7 @@ void TraceFilterHandler::onButtonClicked()
    {
       UT_Log(TRACE_FILTER, INFO, "disabling filter %s", getName().c_str());
       setButtonState(false);
-      m_gui_controller.setButtonEnabled(m_button_id, false);
-      m_gui_controller.setTraceFilterEnabled(m_settings.id, false);
+      m_gui_controller.setTraceFilterEnabled(m_settings.id, true);
       m_is_active = false;
    }
 }

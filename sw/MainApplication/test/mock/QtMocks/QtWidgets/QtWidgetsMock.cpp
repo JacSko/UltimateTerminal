@@ -93,6 +93,7 @@ QString QLineEdit::text()
 }
 void QLineEdit::setStyleSheet(const QString& styleSheet)
 {
+   stylesheet = styleSheet;
    g_widgets_mock->QLineEdit_setStyleSheet(this, styleSheet);
 }
 

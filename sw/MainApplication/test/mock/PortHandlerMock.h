@@ -42,9 +42,15 @@ PortHandlerMock* PortHandlerMock_get()
 }
 
 
-PortHandler::PortHandler(QPushButton*, QLabel*, QShortcut*, Utilities::ITimers& timer, PortHandlerListener*, QWidget*, Persistence::PersistenceHandler& persistence)
-:m_timers(timer),
- m_persistence(persistence)
+PortHandler::PortHandler(GUIController& gui_controller,
+                         const std::string& button_name,
+                         const std::string& label_name,
+                         Utilities::ITimers& timers,
+                         PortHandlerListener* listener,
+                         Persistence::PersistenceHandler& persistence)
+: m_gui_controller(gui_controller),
+m_timers(timers),
+m_persistence(persistence)
 {
    PORT_ID++;
    m_settings.port_id = PORT_ID;

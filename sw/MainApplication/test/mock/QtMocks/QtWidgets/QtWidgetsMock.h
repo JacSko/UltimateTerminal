@@ -212,8 +212,11 @@ public:
    void setMaxLength(int);
    void setContextMenuPolicy(Qt::ContextMenuPolicy policy);
    void setStyleSheet(const QString& styleSheet);
+   const QString& styleSheet(){return stylesheet;}
    QString text();
    void clear(){}
+private:
+   QString stylesheet;
 };
 
 class QTextEdit : public QWidget

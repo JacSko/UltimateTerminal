@@ -273,7 +273,7 @@ uint32_t GUIController::getTraceFilterID(const std::string& name)
 {
    uint32_t result = UINT32_MAX;
    auto filters = ui->getTraceFilters();
-   for (uint32_t i = 0; i < filters.size(); i++)
+   for (uint32_t i = 1; i < filters.size(); i++)
    {
       UT_Assert(filters[i].button);
       UT_Assert(filters[i].line_edit);
@@ -431,6 +431,7 @@ void GUIController::onButtonClicked()
    auto it = std::find(buttons.begin(), buttons.end(), button);
    if (it != buttons.end())
    {
+
       uint32_t id = std::distance(buttons.begin(), it);
       for (auto& listener : m_button_listeners)
       {
@@ -643,21 +644,21 @@ void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled)
 }
 void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %u", __func__, id, color);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert(id < filters.size());
-   char stylesheet [300];
-   std::snprintf(stylesheet, 300, "background-color: #%.6x;", color);
-   filters[id].line_edit->setStyleSheet(QString(stylesheet));
+   Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
+   ss.setColor(Stylesheet::Item::BACKGROUND_COLOR, color);
+   filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
 }
 void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %u", __func__, id, color);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert(id < filters.size());
-   char stylesheet [300];
-   std::snprintf(stylesheet, 300, "color: #%.6x;", color);
-   filters[id].line_edit->setStyleSheet(QString(stylesheet));
+   Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
+   ss.setColor(Stylesheet::Item::COLOR, color);
+   filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
 }
 void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {

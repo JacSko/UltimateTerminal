@@ -521,6 +521,8 @@ private:
       const QColor TERMINAL_BACKGROUND_COLOR = SETTING_GET_U32(GUI_Dark_TerminalBackground);
       const QColor TEXT_COLOR = SETTING_GET_U32(GUI_Dark_WindowText);
 
+      printf("COLORS bg %x ter %x text %x\n", BACKGROUND_COLOR.rgb(), TERMINAL_BACKGROUND_COLOR.rgb(), TEXT_COLOR.rgb());
+
       QPalette combobox_palette {};
       combobox_palette.setColor(QPalette::Window, BACKGROUND_COLOR);
       combobox_palette.setColor(QPalette::WindowText, TEXT_COLOR);

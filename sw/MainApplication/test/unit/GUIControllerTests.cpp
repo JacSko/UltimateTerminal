@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "QtWidgets/QtWidgetsMock.h"
-#include "IGUIController.h"
 #include "GUIController.h"
 #include "Settings.h"
 
@@ -89,8 +88,8 @@ struct IGUIControllerFixture : public testing::Test
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, _, _, _)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAutoFillBackground(_, true)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAlignment(_, Qt::AlignCenter)).Times(AtLeast(1));
-      m_test_subject = IGUIController::create(&m_parent);
-
+      m_test_subject = std::unique_ptr<GUIController>(new GUIController(&m_parent));
+      m_test_subject->run();
       Mock::VerifyAndClearExpectations(QtCoreMock_get());
       Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
    }
@@ -101,7 +100,7 @@ struct IGUIControllerFixture : public testing::Test
       QtCoreMock_deinit();
    }
 
-   std::unique_ptr<IGUIController> m_test_subject;
+   std::unique_ptr<GUIController> m_test_subject;
    QMainWindow m_parent;
    QTabWidget test_tab_widget;
    QPushButton test_user_button_1;
@@ -191,18 +190,22 @@ void GUIController::setTraceFilterFontColorSignal(uint32_t id, uint32_t color){o
 void GUIController::setPortLabelTextSignal(uint8_t id, QString description){onSetPortLabelTextSignal(id, description);}
 void GUIController::setPortLabelStylesheetSignal(uint8_t id, QString stylesheet){onSetPortLabelStylesheetSignal(id, stylesheet);}
 void GUIController::reloadThemeSignal(uint8_t id){onReloadThemeSignal(id);}
+void GUIController::setStatusBarNotificationSignal(QString notification, qint32 timeout){onSetStatusBarNotificationSignal(notification, timeout);}
+void GUIController::setInfoLabelTextSignal(QString text){onSetInfoLabelTextSignal(text);}
+void GUIController::setApplicationTitle(QString title){onSetApplicationTitle(title);}
+void GUIController::addCommandToHistorySignal(QString command){onAddCommandToHistorySignal(command);}
+void GUIController::setCurrentLineEndingSignal(QString ending){onSetCurrentLineEndingSignal(ending);}
 
-
-class ButtonEventListenerMock : public IGUIController::ButtonEventListener
+class ButtonEventListenerMock : public ButtonEventListener
 {
 public:
    MOCK_METHOD2(onButtonEvent, void(uint32_t, ButtonEvent event));
 };
 
-class ThemeListenerMock : public IGUIController::ThemeListener
+class ThemeListenerMock : public ThemeListener
 {
 public:
-   MOCK_METHOD1(onThemeChange, void(IGUIController::Theme));
+   MOCK_METHOD1(onThemeChange, void(Theme));
 };
 
 TEST_F(IGUIControllerFixture, getting_element_ids)
@@ -213,7 +216,7 @@ TEST_F(IGUIControllerFixture, getting_element_ids)
     * ************************************************
     */
    EXPECT_THAT(m_test_subject->getButtonID("markerButton"), Ne(UINT32_MAX));
-   EXPECT_THAT(m_test_subject->getButtonID("traceFilter_5"), Ne(UINT32_MAX));
+   EXPECT_THAT(m_test_subject->getButtonID("traceFilterButton_5"), Ne(UINT32_MAX));
 
    /**
     * <b>scenario</b>: Getting non-existing button ID. <br>
@@ -569,11 +572,11 @@ TEST_F(IGUIControllerFixture, getting_trace_filter_ids)
    EXPECT_THAT(m_test_subject->getTraceFilterID("traceFilterButton_1"), Ne(UINT32_MAX));
 
    /**
-    * <b>scenario</b>: Getting non-existing trace filter ID. <br>
-    * <b>expected</b>: ID equal to UINT32_MAX returned. <br>
+    * <b>scenario</b>: Getting non existing trace filter ID by button name. <br>
+    * <b>expected</b>: ID different than UINT32_MAX returned. <br>
     * ************************************************
     */
-   EXPECT_EQ(m_test_subject->getLabelID("non existing filter"), UINT32_MAX);
+   EXPECT_EQ(m_test_subject->getTraceFilterID("not_existing"), UINT32_MAX);
 
 }
 
@@ -671,16 +674,16 @@ TEST_F(IGUIControllerFixture, theme_translation)
     * <b>expected</b>: Corrent names in textual form returned. <br>
     * ************************************************
     */
-   EXPECT_EQ(m_test_subject->themeToName(IGUIController::Theme::DEFAULT), "DEFAULT");
-   EXPECT_EQ(m_test_subject->themeToName(IGUIController::Theme::DARK), "DARK");
+   EXPECT_EQ(m_test_subject->themeToName(Theme::DEFAULT), "DEFAULT");
+   EXPECT_EQ(m_test_subject->themeToName(Theme::DARK), "DARK");
 
    /**
     * <b>scenario</b>: Translating from theme name to enum. <br>
     * <b>expected</b>: Corrent names in textual form returned. <br>
     * ************************************************
     */
-   EXPECT_EQ(m_test_subject->nameToTheme("DEFAULT"), IGUIController::Theme::DEFAULT);
-   EXPECT_EQ(m_test_subject->nameToTheme("DARK"), IGUIController::Theme::DARK);
+   EXPECT_EQ(m_test_subject->nameToTheme("DEFAULT"), Theme::DEFAULT);
+   EXPECT_EQ(m_test_subject->nameToTheme("DARK"), Theme::DARK);
 }
 
 TEST_F(IGUIControllerFixture, theme_reload)
@@ -695,18 +698,18 @@ TEST_F(IGUIControllerFixture, theme_reload)
     * <b>expected</b>: Listener notified. <br>
     * ************************************************
     */
-   EXPECT_CALL(theme_listener, onThemeChange(IGUIController::Theme::DARK));
-   m_test_subject->reloadTheme(IGUIController::Theme::DARK);
-   EXPECT_EQ(m_test_subject->currentTheme(), IGUIController::Theme::DARK);
+   EXPECT_CALL(theme_listener, onThemeChange(Theme::DARK));
+   m_test_subject->reloadTheme(Theme::DARK);
+   EXPECT_EQ(m_test_subject->currentTheme(), Theme::DARK);
 
    /**
     * <b>scenario</b>: Reloading from dark theme to default. <br>
     * <b>expected</b>: Listener notified. <br>
     * ************************************************
     */
-   EXPECT_CALL(theme_listener, onThemeChange(IGUIController::Theme::DEFAULT));
-   m_test_subject->reloadTheme(IGUIController::Theme::DEFAULT);
-   EXPECT_EQ(m_test_subject->currentTheme(), IGUIController::Theme::DEFAULT);
+   EXPECT_CALL(theme_listener, onThemeChange(Theme::DEFAULT));
+   m_test_subject->reloadTheme(Theme::DEFAULT);
+   EXPECT_EQ(m_test_subject->currentTheme(), Theme::DEFAULT);
 
    m_test_subject->unsubscribeFromThemeReloadEvent(&theme_listener);
 }

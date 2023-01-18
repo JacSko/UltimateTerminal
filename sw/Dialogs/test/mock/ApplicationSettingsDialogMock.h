@@ -36,15 +36,15 @@ ApplicationSettingsDialogMock* ApplicationSettingsDialogMock_get()
 namespace Dialogs
 {
 
-ApplicationSettingsDialog::ApplicationSettingsDialog(std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
+ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controller,
+                                                     std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
                                                      std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                                                      std::unique_ptr<IFileLogger>& logger,
-                                                     std::string& logging_path,
-                                                     IThemeController& controller):
+                                                     std::string& logging_path):
 m_handlers(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
-m_theme_controller(controller)
+m_gui_controller(gui_controller)
 {
 
 }

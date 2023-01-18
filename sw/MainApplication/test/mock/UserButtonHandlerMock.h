@@ -6,8 +6,9 @@
 namespace GUI
 {
 
-UserButtonHandler::UserButtonHandler(QPushButton*, QWidget*, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
-:m_persistence(persistence),
+UserButtonHandler::UserButtonHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
+: m_gui_controller(controller),
+ m_persistence(persistence),
  m_executor(writer, {})
 {
 
