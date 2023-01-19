@@ -173,6 +173,7 @@ MainApplication::~MainApplication()
    m_gui_controller.unsubscribeFromButtonEvent(m_trace_clear_button, ButtonEvent::CLICKED, this);
    m_gui_controller.unsubscribeFromButtonEvent(m_trace_scroll_button, ButtonEvent::CLICKED, this);
    m_gui_controller.unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.unsubscribeFromThemeReloadEvent(this);
 
    m_button_listeners.clear();
 
@@ -286,8 +287,7 @@ void MainApplication::onLoggingButtonClicked()
       if (m_file_logger->openFile(m_log_file_name))
       {
          UT_Log(MAIN, INFO, "Logging started, new logfile created: %s", m_log_file_name.c_str());
-         //TODO display message on status bar
-         //ui->statusbar->showMessage(QString("").asprintf("New log file: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
+         m_gui_controller.setStatusBarNotification("New log file: " + m_log_file_name, SETTING_GET_U32(MainApplication_statusBarTimeout));
          setButtonState(m_logging_button_id, true);
       }
       else
@@ -304,8 +304,7 @@ void MainApplication::onLoggingButtonClicked()
    else
    {
       UT_Log(MAIN, LOW, "stopping file logging");
-      //TODO display message on status bar
-      //ui->statusbar->showMessage(QString("").asprintf("Log file ready: %s", m_log_file_name.c_str()), SETTING_GET_U32(MainApplication_statusBarTimeout));
+      m_gui_controller.setStatusBarNotification("Log file ready: " + m_log_file_name, SETTING_GET_U32(MainApplication_statusBarTimeout));
       m_file_logger->closeFile();
       setButtonState(m_logging_button_id, false);
    }

@@ -82,7 +82,7 @@ GUIControllerMock* GUIControllerMock_get()
 }
 
 
-GUIController::GUIController(QWidget *parent)
+GUIController::GUIController(QWidget *)
 {
 }
 GUIController::~GUIController()

@@ -43,10 +43,10 @@ PortHandlerMock* PortHandlerMock_get()
 
 
 PortHandler::PortHandler(GUIController& gui_controller,
-                         const std::string& button_name,
-                         const std::string& label_name,
+                         const std::string&,
+                         const std::string&,
                          Utilities::ITimers& timers,
-                         PortHandlerListener* listener,
+                         PortHandlerListener*,
                          Persistence::PersistenceHandler& persistence)
 : m_gui_controller(gui_controller),
 m_timers(timers),

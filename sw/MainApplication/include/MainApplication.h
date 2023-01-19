@@ -63,9 +63,9 @@ private:
     std::string m_current_port_name;
 
     /* ButtonEventListener */
-    void onButtonEvent(uint32_t button_id, ButtonEvent event);
+    void onButtonEvent(uint32_t button_id, ButtonEvent event) override;
     /* ThemeChangedListener */
-    void onThemeChange(Theme theme);
+    void onThemeChange(Theme theme) override;
 
     void onPortHandlerEvent(const GUI::PortHandlerEvent&);
     bool sendToPort(const std::string&);
