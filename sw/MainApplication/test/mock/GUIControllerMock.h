@@ -118,7 +118,7 @@ void GUIController::setButtonCheckable(uint32_t button_id, bool checkable)
 }
 void GUIController::setButtonChecked(uint32_t button_id, bool checked)
 {
-   g_gui_controller_mock->setButtonChecked(checked, button_id);
+   g_gui_controller_mock->setButtonChecked(button_id, checked);
 }
 void GUIController::setButtonEnabled(uint32_t button_id, bool enabled)
 {

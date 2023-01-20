@@ -90,7 +90,6 @@ public:
     */
    PortHandler(GUIController& gui_controller,
                const std::string& button_name,
-               const std::string& label_name,
                Utilities::ITimers& timers,
                PortHandlerListener* listener,
                Persistence::PersistenceHandler& persistence);

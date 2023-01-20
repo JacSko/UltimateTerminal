@@ -44,7 +44,6 @@ PortHandlerMock* PortHandlerMock_get()
 
 PortHandler::PortHandler(GUIController& gui_controller,
                          const std::string&,
-                         const std::string&,
                          Utilities::ITimers& timers,
                          PortHandlerListener*,
                          Persistence::PersistenceHandler& persistence)

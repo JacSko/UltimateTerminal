@@ -32,6 +32,7 @@ target_link_libraries(UserButtonHandlerTests PUBLIC
         gmock_main
         Logger
         Utilities
+        SettingsHandler
         UtilitiesMocks
         QtMocks
         DialogsMocks
@@ -77,6 +78,7 @@ target_link_libraries(PortHandlerTests PUBLIC
         gtest_main
         gmock_main
         Logger
+        SettingsHandler
         Utilities
         UtilitiesMocks
         QtMocks

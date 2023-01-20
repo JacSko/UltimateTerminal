@@ -5,9 +5,7 @@
 #include "UserButtonHandler.h"
 #include "UserButtonDialogMock.h"
 #include "Logger.h"
-
-#include "QtWidgets/QtWidgetsMock.h"
-#include <QtWidgets/QPushButton>
+#include "GUIControllerMock.h"
 
 namespace GUI
 {
@@ -27,45 +25,46 @@ auto WriterFunction = [](const std::string& str)->bool
          return g_writer_mock->write(str);
       };
 
+const std::string TEST_BUTTON_NAME = "TEST_NAME";
+constexpr uint32_t TEST_BUTTON_ID = 1;
+
 struct UserButtonHandlerFixture : public testing::Test
 {
+   UserButtonHandlerFixture():
+   test_controller(nullptr)
+   {}
+
    void SetUp()
    {
-      QtCoreMock_init();
-      QtWidgetsMock_init();
       g_writer_mock = new WriterMock();
       UserButtonDialogMock_init();
-
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&test_button, Qt::ContextMenuPolicy::CustomContextMenu));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("clicked"), _, HasSubstr("onUserButtonClicked")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onUserButtonContextMenuRequested")));
-      EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, HasSubstr("commandsFinished"), _, HasSubstr("onCommandsFinished")));
-      EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&test_button, true));
-
-      m_test_subject.reset(new UserButtonHandler(&test_button, nullptr, fake_persistence, WriterFunction));
+      GUIControllerMock_init();
+      EXPECT_CALL(*GUIControllerMock_get(), getButtonID(TEST_BUTTON_NAME)).WillOnce(Return(TEST_BUTTON_ID));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+      EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
+      m_test_subject.reset(new UserButtonHandler(test_controller, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
       m_test_subject->startThread();
 
    }
    void TearDown()
    {
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+
       m_test_subject.reset(nullptr);
+      GUIControllerMock_deinit();
       UserButtonDialogMock_deinit();
       delete g_writer_mock;
       g_writer_mock = nullptr;
-      QtWidgetsMock_deinit();
-      QtCoreMock_deinit();
    }
 
    std::unique_ptr<UserButtonHandler> m_test_subject;
    QPushButton test_button;
+   GUIController test_controller;
    Persistence::PersistenceHandler fake_persistence;
+   ButtonEventListener* m_button_listener;
 };
-
-/* implementation of signal emited on commands execution finish */
-void UserButtonHandler::commandsFinished()
-{
-   onCommandsFinished();
-}
 
 TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
 {
@@ -78,17 +77,15 @@ TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
     */
    std::atomic<bool> test_wait (true);
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, false)).WillOnce(Invoke([&](QWidget*, bool)
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, false));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, true)).WillOnce(Invoke([&](uint32_t,  bool)
          {
             test_wait = false;
          }));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, false));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_repaint(&test_button)).Times(2);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
    EXPECT_CALL(*g_writer_mock, write(_)).Times(0);
-
-   m_test_subject->onUserButtonClicked();
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -114,32 +111,27 @@ TEST_F(UserButtonHandlerFixture, commands_sending_requested)
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
                .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;
                      }));
-
-   m_test_subject->onUserButtonContextMenuRequested();
-
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
    /* request commands send */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, false));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, false))
-               .WillOnce(Invoke([&](QPushButton*, bool)
-                     {
-                        test_wait = false;
-                     }));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_repaint(&test_button)).Times(2);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, false));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, true)).WillOnce(Invoke([&](uint32_t,  bool)
+         {
+            test_wait = false;
+         }));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
 
-
-   m_test_subject->onUserButtonClicked();
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -164,31 +156,28 @@ TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
                .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;
                      }));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
-   m_test_subject->onUserButtonContextMenuRequested();
 
    /* request commands send */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, true));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_button, false));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setChecked(&test_button, false))
-               .WillOnce(Invoke([&](QPushButton*, bool)
-                     {
-                        test_wait = false;
-                     }));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_repaint(&test_button)).Times(2);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, false));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, true)).WillOnce(Invoke([&](uint32_t,  bool)
+         {
+            test_wait = false;
+         }));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(false));
 
-
-   m_test_subject->onUserButtonClicked();
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -212,40 +201,35 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
    new_settings.button_name = "some button name";
    new_settings.raw_commands = "command1\ncommand2\n__wait(100)\ncommand3\n";
 
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_button, QString(new_settings.button_name.c_str())));
    EXPECT_CALL(*UserButtonDialogMock_get(), showDialog(_, _, _, true))
                .WillOnce(Invoke([&](QWidget*, const Dialogs::UserButtonDialog::Settings&, Dialogs::UserButtonDialog::Settings& out, bool)->std::optional<bool>
                      {
                         out = new_settings;
                         return true;
                      }));
-
-   m_test_subject->onUserButtonContextMenuRequested();
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* simulate persistence write request */
    ASSERT_EQ(data_buffer.size(), 0);
    reinterpret_cast<Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_THAT(data_buffer.size(), Gt(0));
 
-
    /* create new test object to test if persistence is read correctly */
-   QPushButton new_test_button;
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(&new_test_button, Qt::ContextMenuPolicy::CustomContextMenu));
-   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_button, HasSubstr("clicked"), _, HasSubstr("onUserButtonClicked")));
-   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&new_test_button, HasSubstr("customContextMenuRequested"), _, HasSubstr("onUserButtonContextMenuRequested")));
-   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, HasSubstr("commandsFinished"), _, HasSubstr("onCommandsFinished")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setCheckable(&new_test_button, true));
+   EXPECT_CALL(*GUIControllerMock_get(), getButtonID(TEST_BUTTON_NAME)).WillOnce(Return(TEST_BUTTON_ID));
+   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
+   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
 
    /* expect that button name will be set to value read from persistence */
-   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&new_test_button, QString(new_settings.button_name.c_str())));
-
-   std::unique_ptr<UserButtonHandler> new_test_subject = std::unique_ptr<UserButtonHandler>(new UserButtonHandler(&new_test_button, nullptr, fake_persistence, WriterFunction));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
+   std::unique_ptr<UserButtonHandler> new_test_subject = std::unique_ptr<UserButtonHandler>(new UserButtonHandler(test_controller, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
 
    /* simulate persistence read notification */
    reinterpret_cast<Persistence::PersistenceListener*>(new_test_subject.get())->onPersistenceRead(data_buffer);
 
-
-
+   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _));
+   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
 
 }
 

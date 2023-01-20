@@ -454,7 +454,9 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
    m_gui_controller.setTerminalScrollingEnabled(m_scrolling_active);
+   setButtonState(m_scroll_button_id, m_scrolling_active);
    m_gui_controller.setTraceScrollingEnabled(m_trace_scrolling_active);
+   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
    m_gui_controller.setCurrentLineEnding(line_ending);
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }

@@ -109,11 +109,12 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\r\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("EMPTY"));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForActivePortChangedEvent(_));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForActivePortChangedEvent(_)).WillOnce(SaveArg<0>(&m_port_change_listener));
 
       m_test_subject = std::unique_ptr<MainApplication>(new MainApplication());
 
       ASSERT_TRUE(m_button_listener);
+      ASSERT_TRUE(m_port_change_listener);
 
       Mock::VerifyAndClearExpectations(g_timers_mock);
       Mock::VerifyAndClearExpectations(GUIControllerMock_get());
@@ -149,6 +150,7 @@ struct MainApplicationFixture : public testing::Test
    }
    std::unique_ptr<MainApplication> m_test_subject;
    ButtonEventListener* m_button_listener;
+   std::function<bool(const std::string&)> m_port_change_listener;
 };
 
 TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
@@ -431,12 +433,12 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    /* scrolling button colors change */
    EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
                                                               .WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR)) // setting logging button to green
-                                                        .WillOnce(Return(DEFAULT_FONT_COLOR));// setting logging button to default
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR)) // setting scrolling button to green
+                                                        .WillOnce(Return(DEFAULT_FONT_COLOR));// setting scrolling button to default
 
    /* user requested to disable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, GREEN_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, BLACK_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
    m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
 
@@ -453,8 +455,8 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
    /* user requested to enable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, GREEN_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, BLACK_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(true));
    m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
 
@@ -472,501 +474,294 @@ TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activati
 
 }
 
-//TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
-//{
-//   /**
-//    * <b>scenario</b>: Trace scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
-//    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
-//    *                  scrollToBottom() shall not be called when adding new trace. <br>
-//    *                  Button should be green when scrolling enabled. <br>
-//    *                  scrollToBottom() shall be called when adding new trace. <br>
-//    * ************************************************
-//    */
-//   constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
-//   constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
-//   constexpr uint32_t TEST_FILTER_BG_COLOR = 0x999999;
-//   constexpr uint32_t TEST_FILTER_TEXT_COLOR = 0x888888;
-//   const std::string TEST_FILTER_REGEX = "SOME REGEX";
-//   constexpr uint8_t TEST_PORT_INDEX = 3;
-//   GUI::PortHandlerEvent port_open_event;
-//   port_open_event.name = "PORT_NAME";
-//   port_open_event.port_id = 2;
-//   port_open_event.event = GUI::Event::CONNECTED;
-//   QListWidgetItem terminal_item;
-//   QListWidgetItem trace_item;
-//   GUI::PortHandlerEvent port_data_event;
-//   port_data_event.name = "PORT_NAME";
-//   port_data_event.event = GUI::Event::NEW_DATA;
-//   port_data_event.port_id = 2;
-//   port_data_event.background_color = TEST_BACKGROUND_COLOR;
-//   port_data_event.font_color = TEST_FONT_COLOR;
-//   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-//   Dialogs::TraceFilterSettingDialog::Settings trace_filter_settings;
-//   trace_filter_settings.background = TEST_FILTER_BG_COLOR;
-//   trace_filter_settings.font = TEST_FILTER_TEXT_COLOR;
-//   trace_filter_settings.regex = TEST_FILTER_REGEX;
-//   GUI::PortHandlerEvent port_close_event;
-//   port_close_event.name = "PORT_NAME";
-//   port_close_event.port_id = 2;
-//   port_close_event.event = GUI::Event::DISCONNECTED;
-//
-//
-//   /* user requested to disable scrolling */
-//   m_test_subject->onTraceScrollButtonClicked();
-//   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-//
-//   /* port opening */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString("PORT_NAME")));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
-//
-//   /* writing data */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item)).WillOnce(Return(&trace_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&trace_item, HasSubstr("some text")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_BACKGROUND_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, QColor(TEST_FONT_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&trace_item, QColor(TEST_FILTER_BG_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&trace_item, QColor(TEST_FILTER_TEXT_COLOR)));
-//   /* trace view shall not be scrolled, by terminal view MUST be scrolled */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
-//                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-//
-//   /* user requested to enable scrolling */
-//   m_test_subject->onTraceScrollButtonClicked();
-//   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
-//
-//
-//   /* writing data */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item)).WillOnce(Return(&trace_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("some text")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&trace_item, HasSubstr("some text")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, QColor(TEST_BACKGROUND_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, QColor(TEST_FONT_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&trace_item, QColor(TEST_FILTER_BG_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&trace_item, QColor(TEST_FILTER_TEXT_COLOR)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &trace_item));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
-//                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-//
-//   /* closing port */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_findText(&test_port_box, QString("PORT_NAME"))).WillOnce(Return(TEST_PORT_INDEX));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_port_box, TEST_PORT_INDEX));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
-//
-//}
-//
-//TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
-//{
-//   /**
-//    * <b>scenario</b>: User requested to clear trace view and terminal view. <br>
-//    * <b>expected</b>: clear() method called on terminal view. <br>
-//    *                  clear() method called on trace view. <br>
-//    * ************************************************
-//    */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_terminal_view));
-//   m_test_subject->onClearButtonClicked();
-//   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_trace_view));
-//   m_test_subject->onTraceClearButtonClicked();
-//   Mock::VerifyAndClearExpectations(QtWidgetsMock_get());
-//
-//}
-//
-//TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
-//{
-//   /**
-//    * <b>scenario</b>: No port opened, data send requested by user. <br>
-//    * <b>expected</b>: PortHandler shall be asked about write <br>
-//    * ************************************************
-//    */
-//   const std::string PORT_HANDLER_NAME = "NAME1";
-//   const std::string DATA_TO_SEND = "some command to send";
-//   const std::string LINE_ENDING = "\n";
-//   QListWidgetItem terminal_item;
-//
-//   /* no port opened, so combobox shall be empty*/
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString("")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
-//   m_test_subject->onSendButtonClicked();
-//}
-//
-//TEST_F(MainApplicationFixture, sending_data_to_port)
-//{
-//   /**
-//    * <b>scenario</b>: Port opened, data send requested by user. <br>
-//    * <b>expected</b>: Current port name shall be read from combobox. <br>
-//    *                  PortHandlers shall be asked about names. <br>
-//    *                  Data shall be sent to correct handler. <br>
-//    *                  Data shall be added to terminal view. <br>
-//    * ************************************************
-//    */
-//   const std::string PORT_HANDLER_NAME = "NAME1";
-//   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
-//   const std::string DATA_TO_SEND = "some command to send";
-//   const std::string LINE_ENDING = "\\n";
-//   QListWidgetItem terminal_item;
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-//                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-//   /* size to write should be 1 byte more because \n is added */
-//   std::string data_payload = DATA_TO_SEND + '\n';
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
-//
-//   /* writing data to terminal */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
-//
-//   m_test_subject->onSendButtonClicked();
-//}
-//
-//TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
-//{
-//   /**
-//    * <b>scenario</b>: Port opened, data send requested by user with empty line ending. <br>
-//    * <b>expected</b>: Current port name shall be read from combobox. <br>
-//    *                  PortHandlers shall be asked about names. <br>
-//    *                  Data shall be sent to correct handler. <br>
-//    *                  Data shall be added to terminal view. <br>
-//    * ************************************************
-//    */
-//   const std::string PORT_HANDLER_NAME = "NAME1";
-//   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
-//   const std::string DATA_TO_SEND = "some command to send";
-//   const std::string LINE_ENDING = "EMPTY";
-//   QListWidgetItem terminal_item;
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-//                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-//   /* size to write should be 1 byte more because \n is added */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()),DATA_TO_SEND.size())).WillOnce(Return(true));
-//
-//   /* writing data to terminal */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND)));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str())));
-//
-//   m_test_subject->onSendButtonClicked();
-//}
-//
-//TEST_F(MainApplicationFixture, sending_data_to_port_failed)
-//{
-//   /**
-//    * <b>scenario</b>: Port opened, data send requested by user with empty line ending, but write to port fails. <br>
-//    * <b>expected</b>: Current port name shall be read from combobox. <br>
-//    *                  PortHandlers shall be asked about names. <br>
-//    *                  Data shall be sent to correct handler. <br>
-//    *                  Error information shall be added to terminal. <br>
-//    * ************************************************
-//    */
-//   const std::string PORT_HANDLER_NAME = "NAME1";
-//   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
-//   const std::string DATA_TO_SEND = "some command to send";
-//   const std::string LINE_ENDING = "EMPTY";
-//   QListWidgetItem terminal_item;
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(PORT_HANDLER_NAME.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(DATA_TO_SEND.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(LINE_ENDING.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-//                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-//   /* size to write should be 1 byte more because \n is added */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
-//
-//   /* writing data to terminal */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr("Cannot send data to port")));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, _));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillOnce(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//
-//   m_test_subject->onSendButtonClicked();
-//}
-//
-//TEST_F(MainApplicationFixture, persistence_write_and_read)
-//{
-//   /**
-//    * <b>scenario</b>: Persistence write and read sequence to verify data serialization <br>
-//    * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
-//    * ************************************************
-//    */
-//   std::vector<uint8_t> data_buffer;
-//   std::string current_ending = "\\n";
-//   std::string log_path = "/home/user";
-//
-//   /* replace all persistent data, to get known state */
-//   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-//   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
-//   m_test_subject->onLoggingButtonContextMenuRequested();
-//   m_test_subject->onScrollButtonClicked();
-//   m_test_subject->onTraceScrollButtonClicked();
-//   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-//   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-//   /* expectations before write */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillOnce(Return(QString(current_ending.c_str())));
-//   ASSERT_EQ(data_buffer.size(), 0);
-//   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
-//   EXPECT_THAT(data_buffer.size(), Gt(0));
-//
-//
-//   /* replace all persistent data, to make sure that has been restored from persistence correctly */
-//   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
-//   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
-//   m_test_subject->onLoggingButtonContextMenuRequested();
-//   m_test_subject->onScrollButtonClicked();
-//   m_test_subject->onTraceScrollButtonClicked();
-//   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
-//   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(Qt::green));
-//
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_line_ending_box, QString(current_ending.c_str())));
-//
-//   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
-//   EXPECT_EQ(test_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-//   EXPECT_EQ(test_trace_scroll_button.palette().color(QPalette::Button), QColor(SETTING_GET_U32(GUI_Dark_WindowBackground)));
-//
-//}
-//
-//TEST_F(MainApplicationFixture, command_history_item_removing)
-//{
-//   /**
-//    * <b>scenario</b>: Port opened, command history is full, removing the oldest items started. <br>
-//    * <b>expected</b>: Last items shall be removed from combobox. <br>
-//    * ************************************************
-//    */
-//
-//   const std::string DATA_TO_SEND = "some command to send";
-//   const std::string LINE_ENDING = "\\n";
-//   GUI::PortHandlerEvent port_open_event;
-//   port_open_event.name = "PORT_NAME";
-//   port_open_event.port_id = 2;
-//   port_open_event.event = GUI::Event::CONNECTED;
-//   QListWidgetItem terminal_item;
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(port_open_event.name.c_str())));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
-//
-//   /* start writing data to this port */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillRepeatedly(Return(QString(port_open_event.name.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillRepeatedly(Return(QString(DATA_TO_SEND.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(port_open_event.name));
-//   /* size to write should be 1 byte more because \n is added */
-//   std::string data_payload = DATA_TO_SEND + '\n';
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillRepeatedly(Return(true));
-//
-//   /* writing data to terminal */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillRepeatedly(Return(&terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, HasSubstr(DATA_TO_SEND))).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillRepeatedly(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillRepeatedly(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND))).Times(AtLeast(1));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(DATA_TO_SEND.c_str()))).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_removeItem(&test_text_edit, _)).Times(AtLeast(1));
-//   for (uint8_t i = 0; i < MainApplication::MAX_COMMANDS_HISTORY_ITEMS + 10; i++)
-//   {
-//      m_test_subject->onSendButtonClicked();
-//   }
-//}
-//
-//TEST_F(MainApplicationFixture, command_history_reloading)
-//{
-//   /**
-//    * <b>scenario</b>: Two ports opened, data sent to both of them, should be added correctly to history. Then user changed the current port, correct commands should be restored. <br>
-//    * <b>expected</b>: Newly opened ports added to combobox. <br>
-//    *                  Initial commands sent successfully to both of them, added to history.<br>
-//    *                  On current port switch, commands for new port shall be restored to combobox. <br>
-//    * ************************************************
-//    */
-//
-//   const std::string LINE_ENDING = "\\n";
-//   const std::string EMPTY_PORT_NAME = "";
-//   GUI::PortHandlerEvent open_port_1;
-//   open_port_1.name = "PORT_NAME1";
-//   open_port_1.port_id = 1;
-//   open_port_1.event = GUI::Event::CONNECTED;
-//   std::string port1_command1 = "port1_command1";
-//   std::string port1_command2 = "port1_command2";
-//   std::string port1_command3 = "port1_command3";
-//   GUI::PortHandlerEvent open_port_2;
-//   open_port_2.name = "PORT_NAME2";
-//   open_port_2.port_id = 2;
-//   open_port_2.event = GUI::Event::CONNECTED;
-//   std::string port2_command1 = "port2_command1";
-//   std::string port2_command2 = "port2_command2";
-//   std::string port2_command3 = "port2_command3";
-//   QListWidgetItem terminal_item;
-//
-//   /* common expectations */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_line_ending_box)).WillRepeatedly(Return(QString(LINE_ENDING.c_str())));
-//   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(_)).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(_,_)).WillRepeatedly(Return(true));
-//   EXPECT_CALL(*g_logger_mock, putLog(_)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillRepeatedly(Return(&terminal_item));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&terminal_item, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&terminal_item, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&terminal_item, _)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view)).Times(AtLeast(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_terminal_view)).WillRepeatedly(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_count(&test_trace_view)).WillRepeatedly(Return(1));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, _)).Times(AtLeast(1));
-//
-//
-//   /* open two ports */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(open_port_1.name.c_str())));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(open_port_1);
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_port_box, QString(open_port_2.name.c_str())));
-//   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(open_port_2);
-//
-//   /* start writing data to PORT_NAME1 */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(open_port_1.name.c_str())))
-//                                                                           .WillOnce(Return(QString(open_port_1.name.c_str())))
-//                                                                           .WillOnce(Return(QString(open_port_1.name.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(port1_command1.c_str())))
-//                                                                            .WillOnce(Return(QString(port1_command2.c_str())))
-//                                                                            .WillOnce(Return(QString(port1_command3.c_str())));
-//   /* different name to not match empty name from combobox */
-//   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(Invoke([&](uint8_t id)->const std::string&
-//         {
-//            if (id == 1) return open_port_1.name;
-//            if (id == 2) return open_port_2.name;
-//            return EMPTY_PORT_NAME;
-//         }));
-//
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command1.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command2.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command3.c_str())));
-//
-//   /* send commands for PORT_NAME 1*/
-//   m_test_subject->onSendButtonClicked();
-//   m_test_subject->onSendButtonClicked();
-//   m_test_subject->onSendButtonClicked();
-//
-//   /* user selected the PORT_NAME2 */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_itemText(&test_port_box, 0)).WillOnce(Return(QString(open_port_2.name.c_str())));
-//   m_test_subject->onCurrentPortSelectionChanged(0);
-//
-//   /* start writing data to PORT_NAME2 */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_port_box)).WillOnce(Return(QString(open_port_2.name.c_str())))
-//                                                                           .WillOnce(Return(QString(open_port_2.name.c_str())))
-//                                                                           .WillOnce(Return(QString(open_port_2.name.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_text_edit)).WillOnce(Return(QString(port2_command1.c_str())))
-//                                                                            .WillOnce(Return(QString(port2_command2.c_str())))
-//                                                                            .WillOnce(Return(QString(port2_command3.c_str())));
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command1.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command2.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port2_command3.c_str())));
-//
-//   /* send commands for PORT_NAME 2*/
-//   m_test_subject->onSendButtonClicked();
-//   m_test_subject->onSendButtonClicked();
-//   m_test_subject->onSendButtonClicked();
-//
-//   /* user switched back to PORT_NAME1, expect history restoration */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command1.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command2.c_str())));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString(port1_command3.c_str())));
-//
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_itemText(&test_port_box, 0)).WillOnce(Return(QString(open_port_1.name.c_str())));
-//   m_test_subject->onCurrentPortSelectionChanged(0);
-//}
-//
-//TEST_F(MainApplicationFixture, port_switch_request_handling)
-//{
-//   /**
-//    * <b>scenario</b>: No ports opened, shortcut to switch port requested. <br>
-//    * <b>expected</b>: No action. <br>
-//    * ************************************************
-//    */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(0));
-//   m_test_subject->onPortSwitchRequest();
-//
-//   /**
-//    * <b>scenario</b>: One ports opened, shortcut to switch port requested. <br>
-//    * <b>expected</b>: No action. <br>
-//    * ************************************************
-//    */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(1));
-//   m_test_subject->onPortSwitchRequest();
-//
-//   /**
-//    * <b>scenario</b>: Three ports opened, index 0 is selected, shortcut to switch port requested. <br>
-//    * <b>expected</b>: Index 1 shall be selected. <br>
-//    * ************************************************
-//    */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(3));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentIndex(&test_port_box)).WillOnce(Return(0));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentIndex(&test_port_box, 1));
-//   m_test_subject->onPortSwitchRequest();
-//
-//   /**
-//    * <b>scenario</b>: Three ports opened, index 2 is selected, shortcut to switch port requested. <br>
-//    * <b>expected</b>: Index 0 shall be selected. <br>
-//    * ************************************************
-//    */
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_count(&test_port_box)).WillOnce(Return(3));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentIndex(&test_port_box)).WillOnce(Return(2));
-//   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentIndex(&test_port_box, 0));
-//   m_test_subject->onPortSwitchRequest();
-//}
+TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
+{
+   /**
+    * <b>scenario</b>: Trace scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
+    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
+    *                  scrollToBottom() shall not be called when adding new trace. <br>
+    *                  Button should be green when scrolling enabled. <br>
+    *                  scrollToBottom() shall be called when adding new trace. <br>
+    * ************************************************
+    */
+   constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
+   constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
+   constexpr uint32_t TEST_FILTER_BG_COLOR = 0x999999;
+   constexpr uint32_t TEST_FILTER_TEXT_COLOR = 0x888888;
+   const std::string TEST_FILTER_REGEX = "SOME REGEX";
+   GUI::PortHandlerEvent port_open_event;
+   port_open_event.name = "PORT_NAME";
+   port_open_event.port_id = 2;
+   port_open_event.event = GUI::Event::CONNECTED;
+   QListWidgetItem terminal_item;
+   QListWidgetItem trace_item;
+   GUI::PortHandlerEvent port_data_event;
+   port_data_event.name = "PORT_NAME";
+   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.port_id = 2;
+   port_data_event.background_color = TEST_BACKGROUND_COLOR;
+   port_data_event.font_color = TEST_FONT_COLOR;
+   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
+   Dialogs::TraceFilterSettingDialog::Settings trace_filter_settings;
+   trace_filter_settings.background = TEST_FILTER_BG_COLOR;
+   trace_filter_settings.font = TEST_FILTER_TEXT_COLOR;
+   trace_filter_settings.regex = TEST_FILTER_REGEX;
+   GUI::PortHandlerEvent port_close_event;
+   port_close_event.name = "PORT_NAME";
+   port_close_event.port_id = 2;
+   port_close_event.event = GUI::Event::DISCONNECTED;
+
+   /* scrolling button colors change */
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
+                                                              .WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR)) // setting scrolling button to green
+                                                        .WillOnce(Return(DEFAULT_FONT_COLOR));// setting scrolling button to default
+
+   /* user requested to disable scrolling */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
+   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+
+   /* port opening */
+   EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+
+   /* writing data */
+   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTraceView(HasSubstr("some text"), trace_filter_settings.background, trace_filter_settings.font));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
+                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* user requested to enable scrolling */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, GREEN_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, BLACK_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(true));
+   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+
+   /* writing data */
+   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTraceView(HasSubstr("some text"), trace_filter_settings.background, trace_filter_settings.font));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
+                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+
+   /* closing port */
+   EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
+   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+}
+
+TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
+{
+   /**
+    * <b>scenario</b>: User requested to clear trace view and terminal view. <br>
+    * <b>expected</b>: clear() method called on terminal view. <br>
+    *                  clear() method called on trace view. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*GUIControllerMock_get(), clearTerminalView());
+   m_button_listener->onButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED);
+
+   EXPECT_CALL(*GUIControllerMock_get(), clearTraceView());
+   m_button_listener->onButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED);
+
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
+{
+   /**
+    * <b>scenario</b>: No port opened, data send requested by user. <br>
+    * <b>expected</b>: PortHandler shall be asked about write <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "\n";
+
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+
+   /* different name to not match empty name from combobox */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Data shall be added to terminal view. <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "\\n";
+
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+
+   /* simulate user action that changing the current port */
+   EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
+   m_port_change_listener(PORT_HANDLER_NAME);
+
+   /* size to write should be 1 byte more because \n is added */
+   std::string data_payload = DATA_TO_SEND + '\n';
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user with empty line ending. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Data shall be added to terminal view. <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "EMPTY";
+
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+
+   /* simulate user action that changing the current port */
+   EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
+   m_port_change_listener(PORT_HANDLER_NAME);
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+}
+
+TEST_F(MainApplicationFixture, sending_data_to_port_failed)
+{
+   /**
+    * <b>scenario</b>: Port opened, data send requested by user with empty line ending, but write to port fails. <br>
+    * <b>expected</b>: Current port name shall be read from combobox. <br>
+    *                  PortHandlers shall be asked about names. <br>
+    *                  Data shall be sent to correct handler. <br>
+    *                  Error information shall be added to terminal. <br>
+    * ************************************************
+    */
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "EMPTY";
+
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+
+   /* simulate user action that changing the current port */
+   EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_));
+   m_port_change_listener(PORT_HANDLER_NAME);
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
+
+   /* writing data to terminal */
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
+   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
+   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("Cannot send data to port"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+}
+
+TEST_F(MainApplicationFixture, persistence_write_and_read)
+{
+   /**
+    * <b>scenario</b>: Persistence write and read sequence to verify data serialization <br>
+    * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
+    * ************************************************
+    */
+   std::vector<uint8_t> data_buffer;
+   std::string log_path = "/home/user";
+   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string DATA_TO_SEND = "some command to send";
+   const std::string LINE_ENDING = "\\n";
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillRepeatedly(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillRepeatedly(Return(DEFAULT_FONT_COLOR));
+
+   /* replace all persistent data, to get known state */
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
+   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
+   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+   ASSERT_EQ(data_buffer.size(), 0);
+   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
+   EXPECT_THAT(data_buffer.size(), Gt(0));
+
+   // change object state to verify data restoration
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
+   EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(""));
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, GREEN_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, BLACK_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(true));
+   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, GREEN_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, BLACK_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(true));
+   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
+
+   //restore
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
+   EXPECT_CALL(*GUIControllerMock_get(), setCurrentLineEnding(LINE_ENDING));
+   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
+
+}
+
+//TODO add tests for command history handling
