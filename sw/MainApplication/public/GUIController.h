@@ -44,6 +44,7 @@ private:
       std::unique_lock<std::mutex> lock(mutex);
       command = ui->textEdit->currentText().toStdString();
       ready = true;
+      cond_var.notify_all();
    }
 };
 
@@ -57,6 +58,7 @@ private:
       std::unique_lock<std::mutex> lock(mutex);
       line_ending = ui->lineEndingComboBox->currentText().toStdString();
       ready = true;
+      cond_var.notify_all();
    }
 };
 
@@ -76,6 +78,7 @@ private:
       UT_Assert(filters.size() > id);
       trace_filter = filters[id].line_edit->text().toStdString();
       ready = true;
+      cond_var.notify_all();
    }
 };
 

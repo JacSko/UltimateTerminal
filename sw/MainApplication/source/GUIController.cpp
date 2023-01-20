@@ -399,6 +399,7 @@ void GUIController::setApplicationTitle(const std::string& title)
 bool GUIController::executeGUIRequest(CommandExecutor* request)
 {
    std::lock_guard<std::mutex> lock(m_command_mutex);
+   UT_Log(MAIN_GUI, INFO, "%s", __func__);
    bool result = true;
    m_current_command = request;
 
@@ -409,6 +410,7 @@ bool GUIController::executeGUIRequest(CommandExecutor* request)
       result = false;
    }
    m_current_command = nullptr;
+   UT_Log(MAIN_GUI, INFO, "%s finished", __func__);
 
    return result;
 }
