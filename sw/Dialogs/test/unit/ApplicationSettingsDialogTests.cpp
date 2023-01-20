@@ -13,11 +13,10 @@
 #include "IFileLoggerMock.h"
 #include "ITimersMock.h"
 #include "PersistenceHandler.h"
-#include "IThemeControllerMock.h"
 #include "Logger.h"
 #include "Settings.h"
 #include "SerialDriverMock.h"
-
+#include "GUIControllerMock.h"
 #include "ApplicationSettingsDialog.h"
 
 /**
@@ -49,6 +48,9 @@ namespace Dialogs
 
 struct ApplicationSettingsDialogFixture : public testing::Test
 {
+   ApplicationSettingsDialogFixture():
+   test_controller(nullptr)
+   {}
    void SetUp()
    {
       QtCoreMock_init();
@@ -58,25 +60,27 @@ struct ApplicationSettingsDialogFixture : public testing::Test
       LoggingSettingDialogMock_init();
       GUI::PortHandlerMock_init();
       TraceFilterHandlerMock_init();
+      GUIControllerMock_init();
       g_timers_mock = new Utilities::ITimersMock;
       g_logger_mock = new IFileLoggerMock;
 
       for (uint8_t i = 0; i < PORT_HANDLERS_COUNT; i++)
       {
          test_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-             new GUI::PortHandler(nullptr, nullptr, nullptr, *g_timers_mock, nullptr, nullptr, test_persistence)));
+             new GUI::PortHandler(test_controller, "", *g_timers_mock, nullptr, test_persistence)));
       }
       for(uint8_t i = 0; i < TRACE_FILTERS_COUNT; i++)
       {
-         test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(nullptr, nullptr, nullptr, test_persistence)));
+         test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(test_controller, "", test_persistence)));
       }
       test_file_logger = IFileLogger::create();
-      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_handlers, test_filters, test_file_logger, test_logging_path, test_theme_controller));
+      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path));
    }
    void TearDown()
    {
       m_test_subject.reset(nullptr);
       delete g_timers_mock;
+      GUIControllerMock_deinit();
       TraceFilterHandlerMock_deinit();
       GUI::PortHandlerMock_deinit();
       LoggingSettingDialogMock_deinit();
@@ -93,7 +97,7 @@ struct ApplicationSettingsDialogFixture : public testing::Test
    std::unique_ptr<IFileLogger> test_file_logger;
    std::string test_logging_path;
    Persistence::PersistenceHandler test_persistence;
-   IThemeControllerMock test_theme_controller;
+   GUIController test_controller;
    std::unique_ptr<Dialogs::ApplicationSettingsDialog> m_test_subject;
 
 };
@@ -189,10 +193,10 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
 
    /* expect GENERAL tab fill-in */
-   EXPECT_CALL(test_theme_controller, themeToName(_)).Times(AtLeast((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX + 1)); // translation of all themes + setting current
-   EXPECT_CALL(test_theme_controller, currentTheme()).WillOnce(Return(IThemeController::Theme::DARK))
-                                                     .WillOnce(Return(IThemeController::Theme::DARK));
-   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_theme_combobox,_)).Times((uint8_t)IThemeController::Theme::APPLICATION_THEMES_MAX);
+   EXPECT_CALL(*GUIControllerMock_get(), themeToName(_)).Times(AtLeast((uint8_t)Theme::APPLICATION_THEMES_MAX + 1)); // translation of all themes + setting current
+   EXPECT_CALL(*GUIControllerMock_get(), currentTheme()).WillOnce(Return(Theme::DARK))
+                                                        .WillOnce(Return(Theme::DARK));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_theme_combobox,_)).Times((uint8_t)Theme::APPLICATION_THEMES_MAX);
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_theme_combobox, _));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_theme_combobox));
 
@@ -252,8 +256,8 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* expect readout of GENERAL tab */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_currentText(&test_theme_combobox)).WillOnce(Return("DEFAULT"));
-   EXPECT_CALL(test_theme_controller, nameToTheme(_)).WillOnce(Return(IThemeController::Theme::DEFAULT));
-   EXPECT_CALL(test_theme_controller, reloadTheme(IThemeController::Theme::DEFAULT));
+   EXPECT_CALL(*GUIControllerMock_get(), nameToTheme(_)).WillOnce(Return(Theme::DEFAULT));
+   EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(Theme::DEFAULT));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_max_trace_edit)).WillOnce(Return(QString::number(NEW_MAX_TRACE_NUMBER)));
 
    /* expect settings readout for all PORTS, two of them returned the new settings */

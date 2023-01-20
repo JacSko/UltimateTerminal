@@ -4,7 +4,7 @@
 
 static uint8_t TRACE_FILTER_FIELD_ID = 0;
 
-TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string& button_name, const std::string& lineedit_name, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence):
 m_gui_controller(controller),
 m_persistence(persistence),
 m_user_defined(false),
@@ -117,10 +117,10 @@ void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    settings.regex = text;
    settings.id = id;
    handleNewSettings(settings);
-   setButtonState(!is_active);
+   setButtonState(is_active);
 
-   m_gui_controller.setButtonChecked(m_button_id, !is_active);
-   m_gui_controller.setTraceFilterEnabled(m_settings.id, is_active);
+   m_gui_controller.setButtonChecked(m_button_id, is_active);
+   m_gui_controller.setTraceFilterEnabled(m_settings.id, !is_active);
    m_is_active = is_active;
 
    UT_Log(TRACE_FILTER, HIGH, "Persistent data for %s : background color %.6x, font color %.6x active %u, text %s", getName().c_str(), m_settings.background, m_settings.font, is_active, text.c_str());
@@ -189,7 +189,6 @@ void TraceFilterHandler::handleNewSettings(const Dialogs::TraceFilterSettingDial
 void TraceFilterHandler::setButtonState(bool active)
 {
    constexpr uint32_t GREEN = 0x00FF00;
-   constexpr uint32_t BLUE = 0x0000FF;
    constexpr uint32_t BLACK = 0x000000;
    const uint32_t DEFAULT_BACKGROUND = m_gui_controller.getBackgroundColor();
    const uint32_t DEFAULT_FONT = m_gui_controller.getTextColor();

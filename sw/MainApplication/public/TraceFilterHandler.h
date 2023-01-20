@@ -42,7 +42,7 @@ public:
     *
     * @return None.
     */
-   TraceFilterHandler(GUIController& controller, const std::string& button_name, const std::string& lineedit_name, Persistence::PersistenceHandler& persistence);
+   TraceFilterHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
    /**
     * @brief Checks matching of provided text with regular expression defined by user.

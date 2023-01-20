@@ -39,7 +39,7 @@ TraceFilterHandlerMock* TraceFilterHandlerMock_get()
 }
 
 
-TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string&, const std::string&, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string&, Persistence::PersistenceHandler& persistence):
 m_gui_controller(controller),
 m_persistence(persistence)
 {

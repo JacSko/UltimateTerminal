@@ -115,15 +115,15 @@ m_trace_scrolling_active(false)
    m_gui_controller.subscribeForThemeReloadEvent(this);
 
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_1", "portLabel_1", *m_timers, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_1", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_2", "portLabel_2", *m_timers, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_2", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_3", "portLabel_3", *m_timers, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_3", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_4", "portLabel_4", *m_timers, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_4", *m_timers, this, m_persistence)));
    m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_5", "portLabel_5", *m_timers, this, m_persistence)));
+       new GUI::PortHandler(m_gui_controller, "portButton_5", *m_timers, this, m_persistence)));
 
    /* create handlers for user buttons */
    uint32_t user_buttons_count = SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
@@ -134,13 +134,13 @@ m_trace_scrolling_active(false)
           new GUI::UserButtonHandler(m_gui_controller, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
 
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_1", "traceFilter_1", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_2", "traceFilter_2", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_3", "traceFilter_3", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_4", "traceFilter_4", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_5", "traceFilter_5", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_6", "traceFilter_6", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_7", "traceFilter_7", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_1", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_2", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_3", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_4", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_5", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_6", m_persistence)));
+   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_7", m_persistence)));
 
    m_gui_controller.addLineEnding("\\r\\n");
    m_gui_controller.addLineEnding("\\n");

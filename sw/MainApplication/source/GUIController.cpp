@@ -489,7 +489,7 @@ void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    QPalette palette = buttons[id]->palette();
    palette.setColor(QPalette::Button, color);
    buttons[id]->setPalette(palette);
@@ -499,7 +499,7 @@ void GUIController::onButtonFontColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    QPalette palette = buttons[id]->palette();
    palette.setColor(QPalette::ButtonText, color);
    buttons[id]->setPalette(palette);
@@ -509,28 +509,28 @@ void GUIController::onButtonCheckableSignal(qint32 id, bool checkable)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u checkable %u", __func__, id, checkable);
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setCheckable(checkable);
 }
 void GUIController::onButtonCheckedSignal(qint32 id, bool checked)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u checked %u", __func__, id, checked);
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setChecked(checked);
 }
 void GUIController::onButtonEnabledSignal(qint32 id, bool enabled)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u enabled %u", __func__, id, enabled);
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setEnabled(enabled);
 }
 void GUIController::onButtonTextSignal(qint32 id, QString text)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u text %s", __func__, id, text.toStdString().c_str());
    auto buttons = ui->getButtons();
-   UT_Assert(buttons.size() > id);
+   UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setText(text);
 }
 void GUIController::onClearTerminalViewSignal()
@@ -632,21 +632,21 @@ void GUIController::onSetTraceFilterSignal(qint8 id, QString filter)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u filter %s", __func__, id, filter.toStdString().c_str());
    auto filters = ui->getTraceFilters();
-   UT_Assert(filters.size() > id);
+   UT_Assert(filters.size() > (size_t)id);
    filters[id].line_edit->setText(filter);
 }
 void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u state %u", __func__, id, enabled);
    auto filters = ui->getTraceFilters();
-   UT_Assert(filters.size() > id);
+   UT_Assert(filters.size() > (size_t)id);
    filters[id].line_edit->setEnabled(enabled);
 }
 void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
-   UT_Assert(id < filters.size());
+   UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::BACKGROUND_COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
@@ -655,7 +655,7 @@ void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
-   UT_Assert(id < filters.size());
+   UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
@@ -664,14 +664,14 @@ void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u text %u", __func__, id, description.toStdString().c_str());
    auto& labels = ui->getLabels();
-   UT_Assert(id < labels.size());
+   UT_Assert((size_t)id < labels.size());
    labels[id]->setText(description);
 }
 void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet)
 {
    UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %u", __func__, id, stylesheet.toStdString().c_str());
    auto& labels = ui->getLabels();
-   UT_Assert(id < labels.size());
+   UT_Assert((size_t)id < labels.size());
    labels[id]->setStyleSheet(stylesheet);
 }
 void GUIController::onReloadThemeSignal(qint8 id)

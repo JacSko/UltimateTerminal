@@ -55,6 +55,7 @@ target_link_libraries(TraceFilterHandlerTests PUBLIC
         gtest_main
         gmock_main
         Logger
+        SettingsHandler
         Utilities
         UtilitiesMocks
         QtMocks
