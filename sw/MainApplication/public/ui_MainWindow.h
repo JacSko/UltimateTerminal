@@ -48,6 +48,11 @@ public:
       QLineEdit* line_edit;
       QPushButton* button;
    };
+   struct PortItem
+   {
+      QLabel* label;
+      QPushButton* button;
+   };
 
    QWidget *centralwidget;
 
@@ -459,6 +464,13 @@ public:
       m_trace_filters.push_back({traceFilter_5, traceFilterButton_5});
       m_trace_filters.push_back({traceFilter_6, traceFilterButton_6});
       m_trace_filters.push_back({traceFilter_7, traceFilterButton_7});
+
+      m_ports.push_back({}); //TODO dummy port
+      m_ports.push_back({portLabel_1, portButton_1});
+      m_ports.push_back({portLabel_2, portButton_2});
+      m_ports.push_back({portLabel_3, portButton_3});
+      m_ports.push_back({portLabel_4, portButton_4});
+      m_ports.push_back({portLabel_5, portButton_5});
    }
 
    void retranslateUi(QMainWindow *MainWindow)
@@ -511,6 +523,10 @@ public:
    const std::vector<TraceFilterItem>& getTraceFilters()
    {
       return m_trace_filters;
+   }
+   const std::vector<PortItem>& getPorts()
+   {
+      return m_ports;
    }
    const std::vector<QLabel*>& getLabels()
    {
@@ -606,6 +622,7 @@ private:
    std::vector<QPushButton*> m_buttons;
    std::vector<QLabel*> m_labels;
    std::vector<TraceFilterItem> m_trace_filters;
+   std::vector<PortItem> m_ports;
 };
 
 namespace Ui {
