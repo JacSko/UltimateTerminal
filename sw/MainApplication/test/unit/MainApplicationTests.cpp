@@ -110,6 +110,9 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("EMPTY"));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForActivePortChangedEvent(_)).WillOnce(SaveArg<0>(&m_port_change_listener));
+      EXPECT_CALL(*GUIControllerMock_get(), countUserButtons()).WillOnce(Return(10));
+      EXPECT_CALL(*GUIControllerMock_get(), countPorts()).WillOnce(Return(5));
+      EXPECT_CALL(*GUIControllerMock_get(), countTraceFilters()).WillOnce(Return(7));
 
       m_test_subject = std::unique_ptr<MainApplication>(new MainApplication());
 

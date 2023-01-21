@@ -396,6 +396,18 @@ void GUIController::setApplicationTitle(const std::string& title)
 {
    emit setApplicationTitle(QString(title.c_str()));
 }
+uint32_t GUIController::countUserButtons()
+{
+   return ui->countUserButtons();
+}
+uint32_t GUIController::countPorts()
+{
+   return ui->countPorts();
+}
+uint32_t GUIController::countTraceFilters()
+{
+   return ui->countTraceFilters();
+}
 bool GUIController::executeGUIRequest(CommandExecutor* request)
 {
    std::lock_guard<std::mutex> lock(m_command_mutex);

@@ -97,22 +97,21 @@ public:
     }
     Stylesheet(const std::string& stylesheet)
     {
-       printf("%s stylesheet %s\n", __func__, stylesheet.c_str());
-        m_colors_map[Item::BACKGROUND_COLOR] = 0;
-        m_colors_map[Item::COLOR] = 0;
-        m_stylesheet = stylesheet;
-        parseStylesheet();
+       m_colors_map[Item::BACKGROUND_COLOR] = 0;
+       m_colors_map[Item::COLOR] = 0;
+       m_stylesheet = stylesheet;
+       parseStylesheet();
     }
 
     uint32_t getColor(Item type)
     {
-        return m_colors_map[type];
+       return m_colors_map[type];
     }
 
     void setColor(Item type, uint32_t color)
     {
-        m_colors_map[type] = color;
-        createStylesheet();
+       m_colors_map[type] = color;
+       createStylesheet();
     }
 
     const std::string& stylesheet() {return m_stylesheet;}
@@ -120,34 +119,33 @@ public:
 private:
     void createStylesheet()
     {
-        char stylesheet [512];
-        std::snprintf(stylesheet, 512, "background-color: #%.6x;color: #%.6x;", m_colors_map[Item::BACKGROUND_COLOR], m_colors_map[Item::COLOR]);
-        m_stylesheet = std::string(stylesheet);
+       char stylesheet [512];
+       std::snprintf(stylesheet, 512, "background-color: #%.6x;color: #%.6x;", m_colors_map[Item::BACKGROUND_COLOR], m_colors_map[Item::COLOR]);
+       m_stylesheet = std::string(stylesheet);
     }
     void parseStylesheet()
     {
-        std::stringstream ss(m_stylesheet);
-        std::string tag;
-        while(std::getline(ss, tag, ';'))
-        {
-            printf("tag: %s\n", tag.c_str());
-            std::string property = tag.substr(0, tag.find(':'));
-            std::string value = tag.substr(tag.find('#') + 1, tag.size());
-            uint32_t color = strtol(value.c_str(), NULL, 16);
-            Item type = Item::BACKGROUND_COLOR;
-            if (property == "background-color")
-            {
-                type = Item::BACKGROUND_COLOR;
-            }
-            else if (property == "color")
-            {
-                type = Item::COLOR;
-            }
-            m_colors_map[type] = color;
-        }
-    }
-    std::string m_stylesheet;
-    std::map<Item, uint32_t> m_colors_map;
+       std::stringstream ss(m_stylesheet);
+       std::string tag;
+       while(std::getline(ss, tag, ';'))
+       {
+           std::string property = tag.substr(0, tag.find(':'));
+           std::string value = tag.substr(tag.find('#') + 1, tag.size());
+           uint32_t color = strtol(value.c_str(), NULL, 16);
+           Item type = Item::BACKGROUND_COLOR;
+           if (property == "background-color")
+           {
+               type = Item::BACKGROUND_COLOR;
+           }
+           else if (property == "color")
+           {
+               type = Item::COLOR;
+           }
+           m_colors_map[type] = color;
+       }
+   }
+   std::string m_stylesheet;
+   std::map<Item, uint32_t> m_colors_map;
 };
 
 enum class ButtonEvent
@@ -256,6 +254,9 @@ public:
    void setStatusBarNotification(const std::string& notification, uint32_t timeout);
    void setInfoLabelText(const std::string& text);
    void setApplicationTitle(const std::string& title);
+   uint32_t countUserButtons();
+   uint32_t countPorts();
+   uint32_t countTraceFilters();
 
 private:
    bool executeGUIRequest(CommandExecutor* request);

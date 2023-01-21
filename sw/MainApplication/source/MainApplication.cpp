@@ -114,33 +114,34 @@ m_trace_scrolling_active(false)
    m_gui_controller.subscribeForActivePortChangedEvent([&](const std::string& name)->bool{return onCurrentPortSelectionChanged(name);});
    m_gui_controller.subscribeForThemeReloadEvent(this);
 
-   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_1", *m_timers, this, m_persistence)));
-   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_2", *m_timers, this, m_persistence)));
-   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_3", *m_timers, this, m_persistence)));
-   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_4", *m_timers, this, m_persistence)));
-   m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-       new GUI::PortHandler(m_gui_controller, "portButton_5", *m_timers, this, m_persistence)));
+   uint32_t port_numbers = m_gui_controller.countPorts();
+   for (uint32_t i = 0; i < port_numbers; i++)
+   {
+      //TODO count buttons from 0
+      std::string button_name = "portButton_" + std::to_string(i+1);
+      m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
+          new GUI::PortHandler(m_gui_controller, button_name, *m_timers, this, m_persistence)));
+   }
+   UT_Log(MAIN, ALWAYS, "%u PortHandlers created", port_numbers);
 
    /* create handlers for user buttons */
-   uint32_t user_buttons_count = SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
+   uint32_t user_buttons_count = m_gui_controller.countUserButtons();
    for (uint32_t i = 0; i < user_buttons_count; i++)
    {
       std::string name = "BUTTON" + std::to_string(i);
       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
           new GUI::UserButtonHandler(m_gui_controller, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
+   UT_Log(MAIN, ALWAYS, "%u UserButtonHandlers created", user_buttons_count);
 
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_1", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_2", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_3", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_4", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_5", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_6", m_persistence)));
-   m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, "traceFilterButton_7", m_persistence)));
+   uint32_t filters_count = m_gui_controller.countTraceFilters();
+   for (uint32_t i = 0; i < filters_count; i++)
+   {
+      //TODO count filters from 0
+      std::string button_name = "traceFilterButton_" + std::to_string(i+1);
+      m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(m_gui_controller, button_name, m_persistence)));
+   }
+   UT_Log(MAIN, ALWAYS, "%u TraceFilterHandlers created", filters_count);
 
    m_gui_controller.addLineEnding("\\r\\n");
    m_gui_controller.addLineEnding("\\n");

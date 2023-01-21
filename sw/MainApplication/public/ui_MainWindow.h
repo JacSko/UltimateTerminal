@@ -36,6 +36,9 @@ enum class Theme
 };
 #undef APPLICATION_THEME
 
+constexpr uint32_t NUMBER_OF_PORTS = 5;
+constexpr uint32_t NUMBER_OF_TRACE_FILTERS = 7;
+
 class Ui_MainWindow
 {
 public:
@@ -513,6 +516,18 @@ public:
    {
       return m_labels;
    }
+   uint32_t countUserButtons()
+   {
+      return SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
+   }
+   uint32_t countPorts()
+   {
+      return NUMBER_OF_PORTS;
+   }
+   uint32_t countTraceFilters()
+   {
+      return NUMBER_OF_TRACE_FILTERS;
+   }
 private:
 
    void renderDarkTheme()
@@ -520,8 +535,6 @@ private:
       const QColor BACKGROUND_COLOR = SETTING_GET_U32(GUI_Dark_WindowBackground);
       const QColor TERMINAL_BACKGROUND_COLOR = SETTING_GET_U32(GUI_Dark_TerminalBackground);
       const QColor TEXT_COLOR = SETTING_GET_U32(GUI_Dark_WindowText);
-
-      printf("COLORS bg %x ter %x text %x\n", BACKGROUND_COLOR.rgb(), TERMINAL_BACKGROUND_COLOR.rgb(), TEXT_COLOR.rgb());
 
       QPalette combobox_palette {};
       combobox_palette.setColor(QPalette::Window, BACKGROUND_COLOR);

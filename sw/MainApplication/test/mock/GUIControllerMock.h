@@ -55,7 +55,9 @@ struct GUIControllerMock
    MOCK_METHOD2(setStatusBarNotification, void(const std::string&, uint32_t));
    MOCK_METHOD1(setInfoLabelText, void(const std::string&));
    MOCK_METHOD1(setApplicationTitle, void(const std::string&));
-
+   MOCK_METHOD0(countUserButtons, uint32_t());
+   MOCK_METHOD0(countPorts, uint32_t());
+   MOCK_METHOD0(countTraceFilters, uint32_t());
 };
 
 GUIControllerMock* g_gui_controller_mock;
@@ -283,4 +285,16 @@ void GUIController::setInfoLabelText(const std::string& text)
 void GUIController::setApplicationTitle(const std::string& title)
 {
    g_gui_controller_mock->setApplicationTitle(title);
+}
+uint32_t GUIController::countUserButtons()
+{
+   return g_gui_controller_mock->countUserButtons();
+}
+uint32_t GUIController::GUIController::countPorts()
+{
+   return g_gui_controller_mock->countPorts();
+}
+uint32_t GUIController::GUIController::countTraceFilters()
+{
+   return g_gui_controller_mock->countTraceFilters();
 }
