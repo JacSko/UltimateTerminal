@@ -80,7 +80,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, HasSubstr("PORT")));
       EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-      m_test_subject.reset(new PortHandler(gui_controller, TEST_BUTTON_NAME, timer_mock, &listener_mock, fake_persistence));
+      m_test_subject.reset(new PortHandler(0, gui_controller, TEST_BUTTON_NAME, timer_mock, &listener_mock, fake_persistence));
       Mock::VerifyAndClearExpectations(g_socket_mock);
       Mock::VerifyAndClearExpectations(g_serial_mock);
       Mock::VerifyAndClearExpectations(&timer_mock);

@@ -2,22 +2,18 @@
 #include "Logger.h"
 #include "Serialize.hpp"
 
-static uint8_t TRACE_FILTER_FIELD_ID = 0;
-
-TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(uint8_t id, GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence):
 m_gui_controller(controller),
 m_persistence(persistence),
 m_user_defined(false),
 m_is_active(false)
 {
-   TRACE_FILTER_FIELD_ID++;
-
-   Persistence::PersistenceListener::setName(std::string("TRACE_FILTER") + std::to_string(TRACE_FILTER_FIELD_ID));
+   Persistence::PersistenceListener::setName(std::string("TRACE_FILTER") + std::to_string(id));
    m_persistence.addListener(*this);
 
    m_settings.background = m_gui_controller.getApplicationPalette().color(QPalette::Base).rgb();
    m_settings.font = m_gui_controller.getApplicationPalette().color(QPalette::Text).rgb();
-   m_settings.id = TRACE_FILTER_FIELD_ID;
+   m_settings.id = id;
 
    m_button_id = m_gui_controller.getButtonID(button_name);
    UT_Assert(m_button_id != UINT32_MAX);
@@ -28,7 +24,7 @@ m_is_active(false)
    setButtonState(false);
    setLineEditColor(m_settings.background, m_settings.font);
 
-   UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", TRACE_FILTER_FIELD_ID);
+   UT_Log(TRACE_FILTER, LOW, "Created trace filter with id %u", id);
 }
 TraceFilterHandler::~TraceFilterHandler()
 {

@@ -17,14 +17,12 @@ struct PortHandlerMock
 };
 
 PortHandlerMock* g_port_handler_mock;
-static uint8_t PORT_ID = 0;
 
 void PortHandlerMock_init()
 {
    if (!g_port_handler_mock)
    {
       g_port_handler_mock = new PortHandlerMock();
-      PORT_ID = 0;
    }
 }
 void PortHandlerMock_deinit()
@@ -42,7 +40,8 @@ PortHandlerMock* PortHandlerMock_get()
 }
 
 
-PortHandler::PortHandler(GUIController& gui_controller,
+PortHandler::PortHandler(uint8_t id,
+                         GUIController& gui_controller,
                          const std::string&,
                          Utilities::ITimers& timers,
                          PortHandlerListener*,
@@ -51,8 +50,7 @@ PortHandler::PortHandler(GUIController& gui_controller,
 m_timers(timers),
 m_persistence(persistence)
 {
-   PORT_ID++;
-   m_settings.port_id = PORT_ID;
+   m_settings.port_id = id;
 }
 PortHandler::~PortHandler()
 {}

@@ -43,8 +43,8 @@ namespace Dialogs
 
 TraceFilterSettingDialog::TraceFilterSettingDialog()
 {
-   TRACE_FILTER_DIALOG_ID++;
    m_settings.id = TRACE_FILTER_DIALOG_ID;
+   TRACE_FILTER_DIALOG_ID++;
 }
 TraceFilterSettingDialog::~TraceFilterSettingDialog() {}
 

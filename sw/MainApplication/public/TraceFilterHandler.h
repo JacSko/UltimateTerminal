@@ -35,14 +35,14 @@ class TraceFilterHandler : public QObject,
 public:
    /**
     * @brief Creates object.
-    * @param[in] parent - parent widget.
-    * @param[in] line_edit - pointer to related line edit.
-    * @param[in] button - pointer to related push button
+    * @param[in] id - id of the filter in system.
+    * @param[in] controller - GUI controller.
+    * @param[in] button_name - name of the related button.
     * @param[in] persistence - persistence instance.
     *
     * @return None.
     */
-   TraceFilterHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence);
+   TraceFilterHandler(uint8_t id, GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence);
    ~TraceFilterHandler();
    /**
     * @brief Checks matching of provided text with regular expression defined by user.

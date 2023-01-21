@@ -76,19 +76,17 @@ class PortHandler : public QObject,
 public:
    /**
     * @brief Creates object.
+    * @param[in] id - ID of the port.
     * @param[in] gui_controller - GUI controlling object.
     * @param[in] button_name - name of the button.
-    * @param[in] label_name - name of the label.
-    * @param[in] shortcut - Key shortcut object.
     * @param[in] timer - timers instance.
     * @param[in] listener - pointer to event listener.
-    * @param[in] parent - parent widget.
     * @param[in] persistence - persistence instance.
-    * @param[in] callback - function called on command execution finish
     *
     * @return None.
     */
-   PortHandler(GUIController& gui_controller,
+   PortHandler(uint8_t id,
+               GUIController& gui_controller,
                const std::string& button_name,
                Utilities::ITimers& timers,
                PortHandlerListener* listener,

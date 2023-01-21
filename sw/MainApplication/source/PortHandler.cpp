@@ -11,11 +11,10 @@
 namespace GUI
 {
 
-static uint8_t PORT_ID = 0;
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
-
-PortHandler::PortHandler(GUIController& gui_controller,
+PortHandler::PortHandler(uint8_t id,
+                         GUIController& gui_controller,
                          const std::string& button_name,
                          Utilities::ITimers& timers,
                          PortHandlerListener* listener,
@@ -30,9 +29,9 @@ m_timer_id(TIMERS_INVALID_ID),
 m_button_state(ButtonState::DISCONNECTED),
 m_persistence(persistence)
 {
-   PORT_ID++;
 
    m_button_id = m_gui_controller.getButtonID(button_name);
+   UT_Assert(m_button_id != UINT32_MAX);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
 
@@ -41,7 +40,7 @@ m_persistence(persistence)
    m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
 
-   m_settings.port_id = PORT_ID;
+   m_settings.port_id = id;
    m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    UT_Log(PORT_HANDLER, INFO, "Creating port handler for PORT%u", m_settings.port_id);
 

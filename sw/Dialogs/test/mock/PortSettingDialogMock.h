@@ -81,8 +81,8 @@ namespace Dialogs
 
 PortSettingDialog::PortSettingDialog()
 {
-   DIALOG_ID++;
    m_current_settings.port_id = DIALOG_ID;
+   DIALOG_ID++;
 }
 PortSettingDialog::~PortSettingDialog() {}
 

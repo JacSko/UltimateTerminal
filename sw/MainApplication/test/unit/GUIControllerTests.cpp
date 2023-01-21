@@ -36,36 +36,36 @@ struct IGUIControllerFixture : public testing::Test
                                                          .WillOnce(Return(&test_clear_button))
                                                          .WillOnce(Return(&test_trace_clear_button))
                                                          .WillOnce(Return(&test_trace_scroll_button))
+                                                         .WillOnce(Return(&test_trace_filter_button_0))
                                                          .WillOnce(Return(&test_trace_filter_button_1))
                                                          .WillOnce(Return(&test_trace_filter_button_2))
                                                          .WillOnce(Return(&test_trace_filter_button_3))
                                                          .WillOnce(Return(&test_trace_filter_button_4))
                                                          .WillOnce(Return(&test_trace_filter_button_5))
                                                          .WillOnce(Return(&test_trace_filter_button_6))
-                                                         .WillOnce(Return(&test_trace_filter_button_7))
+                                                         .WillOnce(Return(&test_port_button_0))
                                                          .WillOnce(Return(&test_port_button_1))
                                                          .WillOnce(Return(&test_port_button_2))
                                                          .WillOnce(Return(&test_port_button_3))
-                                                         .WillOnce(Return(&test_port_button_4))
-                                                         .WillOnce(Return(&test_port_button_5));
+                                                         .WillOnce(Return(&test_port_button_4));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_info_label))
+                                                     .WillOnce(Return(&test_port_label_0))
                                                      .WillOnce(Return(&test_port_label_1))
                                                      .WillOnce(Return(&test_port_label_2))
                                                      .WillOnce(Return(&test_port_label_3))
-                                                     .WillOnce(Return(&test_port_label_4))
-                                                     .WillOnce(Return(&test_port_label_5));
+                                                     .WillOnce(Return(&test_port_label_4));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
                                                         .WillOnce(Return(&test_line_ending_box))
                                                         .WillOnce(Return(&test_text_edit));
       EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_terminal_view))
                                                           .WillOnce(Return(&test_trace_view));
-      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_trace_filter_1))
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_trace_filter_0))
+                                                        .WillOnce(Return(&test_trace_filter_1))
                                                         .WillOnce(Return(&test_trace_filter_2))
                                                         .WillOnce(Return(&test_trace_filter_3))
                                                         .WillOnce(Return(&test_trace_filter_4))
                                                         .WillOnce(Return(&test_trace_filter_5))
-                                                        .WillOnce(Return(&test_trace_filter_6))
-                                                        .WillOnce(Return(&test_trace_filter_7));
+                                                        .WillOnce(Return(&test_trace_filter_6));
       EXPECT_CALL(*QtWidgetsMock_get(), QMenuBar_new()).WillOnce(Return(&test_menu_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_new()).WillOnce(Return(&test_status_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(_,_)).Times(AtLeast(1));
@@ -73,11 +73,11 @@ struct IGUIControllerFixture : public testing::Test
 
       EXPECT_CALL(*QtWidgetsMock_get(), QShortcut_new()).WillOnce(Return(&test_loggingButtonShortcut))
                                                         .WillOnce(Return(&test_markerButtonShortcut))
+                                                        .WillOnce(Return(&test_port0ButtonShortcut))
                                                         .WillOnce(Return(&test_port1ButtonShortcut))
                                                         .WillOnce(Return(&test_port2ButtonShortcut))
                                                         .WillOnce(Return(&test_port3ButtonShortcut))
                                                         .WillOnce(Return(&test_port4ButtonShortcut))
-                                                        .WillOnce(Return(&test_port5ButtonShortcut))
                                                         .WillOnce(Return(&test_clearButtonShortcut))
                                                         .WillOnce(Return(&test_traceClearButtonShortcut))
                                                         .WillOnce(Return(&test_switchSendPortShortcut));
@@ -121,45 +121,45 @@ struct IGUIControllerFixture : public testing::Test
    QPushButton test_clear_button;
    QPushButton test_trace_clear_button;
    QPushButton test_trace_scroll_button;
+   QPushButton test_trace_filter_button_0;
    QPushButton test_trace_filter_button_1;
    QPushButton test_trace_filter_button_2;
    QPushButton test_trace_filter_button_3;
    QPushButton test_trace_filter_button_4;
    QPushButton test_trace_filter_button_5;
    QPushButton test_trace_filter_button_6;
-   QPushButton test_trace_filter_button_7;
+   QPushButton test_port_button_0;
    QPushButton test_port_button_1;
    QPushButton test_port_button_2;
    QPushButton test_port_button_3;
    QPushButton test_port_button_4;
-   QPushButton test_port_button_5;
    QLabel test_info_label;
+   QLabel test_port_label_0;
    QLabel test_port_label_1;
    QLabel test_port_label_2;
    QLabel test_port_label_3;
    QLabel test_port_label_4;
-   QLabel test_port_label_5;
    QComboBox test_port_box;
    QComboBox test_line_ending_box;
    QComboBox test_text_edit;
    QListWidget test_terminal_view;
    QListWidget test_trace_view;
+   QLineEdit test_trace_filter_0;
    QLineEdit test_trace_filter_1;
    QLineEdit test_trace_filter_2;
    QLineEdit test_trace_filter_3;
    QLineEdit test_trace_filter_4;
    QLineEdit test_trace_filter_5;
    QLineEdit test_trace_filter_6;
-   QLineEdit test_trace_filter_7;
    QMenuBar test_menu_bar;
    QStatusBar test_status_bar;
    QShortcut test_loggingButtonShortcut;
    QShortcut test_markerButtonShortcut;
+   QShortcut test_port0ButtonShortcut;
    QShortcut test_port1ButtonShortcut;
    QShortcut test_port2ButtonShortcut;
    QShortcut test_port3ButtonShortcut;
    QShortcut test_port4ButtonShortcut;
-   QShortcut test_port5ButtonShortcut;
    QShortcut test_clearButtonShortcut;
    QShortcut test_traceClearButtonShortcut;
    QShortcut test_switchSendPortShortcut;
@@ -562,7 +562,7 @@ TEST_F(IGUIControllerFixture, getting_trace_filter_ids)
     * <b>expected</b>: ID different than UINT32_MAX returned. <br>
     * ************************************************
     */
-   EXPECT_THAT(m_test_subject->getTraceFilterID("traceFilter_1"), Ne(UINT32_MAX));
+   EXPECT_THAT(m_test_subject->getTraceFilterID("traceFilter_0"), Ne(UINT32_MAX));
 
    /**
     * <b>scenario</b>: Getting existing trace filter ID by button name. <br>
@@ -582,66 +582,66 @@ TEST_F(IGUIControllerFixture, getting_trace_filter_ids)
 
 TEST_F(IGUIControllerFixture, setting_trace_filters)
 {
-   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_1");
+   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_0");
 
    /**
     * <b>scenario</b>: setTraceFilter requested. <br>
     * <b>expected</b>: New trace filter set correctly. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_trace_filter_1, "TEST_FILTER"));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_trace_filter_0, "TEST_FILTER"));
    m_test_subject->setTraceFilter(test_filter_id, "TEST_FILTER");
 }
 
 TEST_F(IGUIControllerFixture, getting_trace_filters)
 {
-   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_1");
+   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_0");
 
    /**
     * <b>scenario</b>: getTraceFilter requested. <br>
     * <b>expected</b>: Correct trace filter returned. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_trace_filter_1)).WillOnce(Return(QString("TEST_FILTER")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_trace_filter_0)).WillOnce(Return(QString("TEST_FILTER")));
    EXPECT_EQ(m_test_subject->getTraceFilter(test_filter_id), "TEST_FILTER");
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_enabled)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_1");
+   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
 
    /**
     * <b>scenario</b>: setTraceFilterEnabled requested. <br>
     * <b>expected</b>: Line edit enabled state changed. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_trace_filter_1, false));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_trace_filter_0, false));
    m_test_subject->setTraceFilterEnabled(test_button_id, false);
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_background_color)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_1");
+   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
 
    /**
     * <b>scenario</b>: setTraceFilterBackgroundColor requested. <br>
     * <b>expected</b>: Line edit background color changed. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_1, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_0, _));
    m_test_subject->setTraceFilterBackgroundColor(test_button_id, 0xDEAD);
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_font_color)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_1");
+   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
 
    /**
     * <b>scenario</b>: setTraceFilterFontColor requested. <br>
     * <b>expected</b>: Line edit font color changed. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_1, _));
+   EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_0, _));
    m_test_subject->setTraceFilterFontColor(test_button_id, 0xDEAD);
 }
 
@@ -652,8 +652,8 @@ TEST_F(IGUIControllerFixture, setting_port_label_text)
     * <b>expected</b>: Port label changed. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_port_label_1, QString("SOME DESC")));
-   m_test_subject->setPortLabelText(1, "SOME DESC");
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_port_label_0, QString("SOME DESC")));
+   m_test_subject->setPortLabelText(0, "SOME DESC");
 }
 
 TEST_F(IGUIControllerFixture, setting_port_label_stylesheet)
@@ -663,8 +663,8 @@ TEST_F(IGUIControllerFixture, setting_port_label_stylesheet)
     * <b>expected</b>: Port label stylesheet. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_port_label_1, _));
-   m_test_subject->setPortLabelStylesheet(1, "SOME DESC");
+   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_port_label_0, _));
+   m_test_subject->setPortLabelStylesheet(0, "SOME DESC");
 }
 
 TEST_F(IGUIControllerFixture, theme_translation)

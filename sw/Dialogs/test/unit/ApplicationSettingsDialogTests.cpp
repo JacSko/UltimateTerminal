@@ -67,11 +67,11 @@ struct ApplicationSettingsDialogFixture : public testing::Test
       for (uint8_t i = 0; i < PORT_HANDLERS_COUNT; i++)
       {
          test_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-             new GUI::PortHandler(test_controller, "", *g_timers_mock, nullptr, test_persistence)));
+             new GUI::PortHandler(i, test_controller, "", *g_timers_mock, nullptr, test_persistence)));
       }
       for(uint8_t i = 0; i < TRACE_FILTERS_COUNT; i++)
       {
-         test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(test_controller, "", test_persistence)));
+         test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(i, test_controller, "", test_persistence)));
       }
       test_file_logger = IFileLogger::create();
       m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path));
@@ -155,8 +155,15 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* current settings */
    test_logging_path = "TEST_PATH";
-   Dialogs::PortSettingDialog::Settings port_settings = {};
-   port_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+   std::vector<Dialogs::PortSettingDialog::Settings> port_handler_settings;
+   for (uint8_t i = 0; i < PORT_HANDLERS_COUNT; i++)
+   {
+      Dialogs::PortSettingDialog::Settings port_settings = {};
+      port_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+      port_settings.port_id = i;
+      port_handler_settings.push_back(port_settings);
+   }
+
    Dialogs::TraceFilterSettingDialog::Settings trace_settings = {};
    trace_settings.background = 0x000000;
    trace_settings.font = 0x000001;
@@ -165,6 +172,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    std::string test_new_logging_path = "TEST_NEW_PATH";
    Dialogs::PortSettingDialog::Settings new_port_settings = {};
    new_port_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
+   new_port_settings.port_id = new_port_settings_id;
    Dialogs::TraceFilterSettingDialog::Settings new_trace_settings = {};
    new_trace_settings.background = 0x000002;
    new_trace_settings.font = 0x000003;
@@ -212,7 +220,10 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* expect PORTS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_ports_tab,_,HasSubstr("PORT"))).Times(PORT_HANDLERS_COUNT);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getSettings(_)).WillRepeatedly(ReturnRef(port_settings));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), getSettings(_)).WillRepeatedly(Invoke([&](uint8_t id) -> const Dialogs::PortSettingDialog::Settings&
+         {
+            return port_handler_settings[id];
+         }));
    EXPECT_CALL(*GUI::PortHandlerMock_get(), isOpened(_)).WillRepeatedly(Return(false));
    EXPECT_CALL(*PortSettingDialogMock_get(), createLayout(_,_,_)).WillRepeatedly(Return(nullptr));
 
@@ -262,7 +273,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* expect settings readout for all PORTS, two of them returned the new settings */
    EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(new_port_settings_id,_)).WillOnce(DoAll(SetArgReferee<1>(new_port_settings), Return(true)));
-   EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(Ne(new_port_settings_id),_)).WillRepeatedly(DoAll(SetArgReferee<1>(port_settings), Return(true)));
+   EXPECT_CALL(*PortSettingDialogMock_get(), convertGuiValues(Ne(new_port_settings_id),_)).WillRepeatedly(Return(true));
 
    /* expect settings readout for all TRACE FILTERS */
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), convertGuiValues(new_trace_filter_settings_id, _)).WillOnce(DoAll(SetArgReferee<1>(new_trace_settings), Return(true)));

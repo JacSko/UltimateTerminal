@@ -14,13 +14,11 @@ struct TraceFilterHandlerMock
 };
 
 TraceFilterHandlerMock* g_trace_filter_mock;
-static uint8_t TRACE_HANDLER_ID;
 
 void TraceFilterHandlerMock_init()
 {
    if (!g_trace_filter_mock)
    {
-      TRACE_HANDLER_ID = 0;
       g_trace_filter_mock = new TraceFilterHandlerMock();
    }
 }
@@ -39,12 +37,11 @@ TraceFilterHandlerMock* TraceFilterHandlerMock_get()
 }
 
 
-TraceFilterHandler::TraceFilterHandler(GUIController& controller, const std::string&, Persistence::PersistenceHandler& persistence):
+TraceFilterHandler::TraceFilterHandler(uint8_t id, GUIController& controller, const std::string&, Persistence::PersistenceHandler& persistence):
 m_gui_controller(controller),
 m_persistence(persistence)
 {
-   TRACE_HANDLER_ID++;
-   m_settings.id = TRACE_HANDLER_ID;
+   m_settings.id = id;
 }
 TraceFilterHandler::~TraceFilterHandler(){}
 std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilterHandler::tryMatch(const std::string& text)

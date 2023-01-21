@@ -206,6 +206,8 @@ public:
    std::map<QObject*, QPushButton*> m_shortcuts_map;
 
    void run();
+
+   /* Generic buttons handling */
    uint32_t getButtonID(const std::string& name);
    void subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener*);
    void unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener*);
@@ -215,42 +217,60 @@ public:
    void setButtonChecked(uint32_t button_id, bool checked);
    void setButtonEnabled(uint32_t button_id, bool enabled);
    void setButtonText(uint32_t button_id, const std::string& text);
-   void clearTerminalView();
-   void clearTraceView();
+
+   /* Terminal view */
    void addToTerminalView(const std::string& text, uint32_t background_color, uint32_t font_color);
-   void addToTraceView(const std::string& text, uint32_t background_color, uint32_t font_color);
+   void clearTerminalView();
    uint32_t countTerminalItems();
-   uint32_t countTraceItems();
    void setTerminalScrollingEnabled(bool enabled);
+
+   /* Trace view */
+   void addToTraceView(const std::string& text, uint32_t background_color, uint32_t font_color);
+   void clearTraceView();
+   uint32_t countTraceItems();
    void setTraceScrollingEnabled(bool enabled);
+
+   /* Port handling */
    void subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback);
    void registerPortOpened(const std::string& port_name);
    void registerPortClosed(const std::string& port_name);
+   void setPortLabelText(uint8_t id, const std::string& description);
+   void setPortLabelStylesheet(uint8_t id, const std::string& stylesheet);
+
+   /* Command history */
    void setCommandsHistory(const std::vector<std::string>& history);
    void addCommandToHistory(const std::string& history);
    std::string getCurrentCommand();
+
+   /* Line ending */
    std::string getCurrentLineEnding();
    void addLineEnding(const std::string& ending);
    void setCurrentLineEnding(const std::string& ending);
+
+   /* Trace filters */
    uint32_t getTraceFilterID(const std::string& name);
    void setTraceFilter(uint8_t id, const std::string& filter);
    std::string getTraceFilter(uint8_t id);
    void setTraceFilterEnabled(uint8_t id, bool enabled);
    void setTraceFilterBackgroundColor(uint32_t id, uint32_t color);
    void setTraceFilterFontColor(uint32_t id, uint32_t color);
-   void setPortLabelText(uint8_t id, const std::string& description);
-   void setPortLabelStylesheet(uint8_t id, const std::string& stylesheet);
+
+   /* Theme handling */
    void reloadTheme(Theme theme);
    Theme currentTheme();
    std::string themeToName(Theme theme);
    Theme nameToTheme(const std::string& name);
+   void subscribeForThemeReloadEvent(ThemeListener*);
+   void unsubscribeFromThemeReloadEvent(ThemeListener*);
+
+   /* Application palette */
    uint32_t getBackgroundColor();
    uint32_t getTerminalBackgroundColor();
    uint32_t getTextColor();
    QPalette getApplicationPalette();
-   void subscribeForThemeReloadEvent(ThemeListener*);
-   void unsubscribeFromThemeReloadEvent(ThemeListener*);
    QWidget* getParent();
+
+   /* Others */
    void setStatusBarNotification(const std::string& notification, uint32_t timeout);
    void setInfoLabelText(const std::string& text);
    void setApplicationTitle(const std::string& title);

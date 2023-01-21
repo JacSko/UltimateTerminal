@@ -42,7 +42,7 @@ struct TraceFilterHandlerTests : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, test_palette.color(QPalette::Base).rgb()));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, test_palette.color(QPalette::Text).rgb()));
-      m_test_subject.reset(new TraceFilterHandler(test_controller, TEST_BUTTON_NAME, fake_persistence));
+      m_test_subject.reset(new TraceFilterHandler(0, test_controller, TEST_BUTTON_NAME, fake_persistence));
    }
    void TearDown()
    {
@@ -249,7 +249,7 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, test_palette.color(QPalette::Base).rgb()));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, test_palette.color(QPalette::Text).rgb()));
-   std::unique_ptr<TraceFilterHandler> new_test_subject = std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(test_controller, TEST_BUTTON_NAME, fake_persistence));
+   std::unique_ptr<TraceFilterHandler> new_test_subject = std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(0, test_controller, TEST_BUTTON_NAME, fake_persistence));
 
    /* expectations to be met when restoring from persistence */
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));

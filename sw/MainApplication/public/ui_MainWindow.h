@@ -37,7 +37,6 @@ enum class Theme
 #undef APPLICATION_THEME
 
 constexpr uint32_t NUMBER_OF_PORTS = 5;
-constexpr uint32_t NUMBER_OF_TRACE_FILTERS = 7;
 
 class Ui_MainWindow
 {
@@ -89,35 +88,35 @@ public:
    QPushButton *traceClearButton;
    QPushButton *traceScrollButton;
    QListWidget *traceView;
+   QLineEdit *traceFilter_0;
    QLineEdit *traceFilter_1;
    QLineEdit *traceFilter_2;
    QLineEdit *traceFilter_3;
    QLineEdit *traceFilter_4;
    QLineEdit *traceFilter_5;
    QLineEdit *traceFilter_6;
-   QLineEdit *traceFilter_7;
+   QPushButton *traceFilterButton_0;
    QPushButton *traceFilterButton_1;
    QPushButton *traceFilterButton_2;
    QPushButton *traceFilterButton_3;
    QPushButton *traceFilterButton_4;
    QPushButton *traceFilterButton_5;
    QPushButton *traceFilterButton_6;
-   QPushButton *traceFilterButton_7;
 
    /* port buttons layout */
    QGridLayout *gridLayout;
    QVBoxLayout *verticalLayout_3;
    QGridLayout *portButtonsLayout;
+   QPushButton *portButton_0;
    QPushButton *portButton_1;
    QPushButton *portButton_2;
    QPushButton *portButton_3;
    QPushButton *portButton_4;
-   QPushButton *portButton_5;
+   QLabel *portLabel_0;
    QLabel *portLabel_1;
    QLabel *portLabel_2;
    QLabel *portLabel_3;
    QLabel *portLabel_4;
-   QLabel *portLabel_5;
 
    /* upper and lower bars */
    QMenuBar *menubar;
@@ -127,11 +126,11 @@ public:
    /* key shortcuts */
    QShortcut* loggingButtonShortcut;
    QShortcut* markerButtonShortcut;
+   QShortcut* port0ButtonShortcut;
    QShortcut* port1ButtonShortcut;
    QShortcut* port2ButtonShortcut;
    QShortcut* port3ButtonShortcut;
    QShortcut* port4ButtonShortcut;
-   QShortcut* port5ButtonShortcut;
    QShortcut* clearButtonShortcut;
    QShortcut* traceClearButtonShortcut;
    QShortcut* switchSendPortShortcut;
@@ -283,61 +282,61 @@ public:
       traceFilterSetting->setObjectName(QString::fromUtf8("traceFilterSetting"));
       traceFilterSetting->setContentsMargins(0, 0, 0, 0);
 
+      traceFilter_0 = new QLineEdit(gridLayoutWidget_5);
+      traceFilter_0->setObjectName(QString::fromUtf8("traceFilter_0"));
+      traceFilterSetting->addWidget(traceFilter_0, 0, 0, 1, 1);
+
       traceFilter_1 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_1->setObjectName(QString::fromUtf8("traceFilter_1"));
-      traceFilterSetting->addWidget(traceFilter_1, 0, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_1, 1, 0, 1, 1);
 
       traceFilter_2 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_2->setObjectName(QString::fromUtf8("traceFilter_2"));
-      traceFilterSetting->addWidget(traceFilter_2, 1, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_2, 2, 0, 1, 1);
 
       traceFilter_3 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_3->setObjectName(QString::fromUtf8("traceFilter_3"));
-      traceFilterSetting->addWidget(traceFilter_3, 2, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_3, 3, 0, 1, 1);
 
       traceFilter_4 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_4->setObjectName(QString::fromUtf8("traceFilter_4"));
-      traceFilterSetting->addWidget(traceFilter_4, 3, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_4, 4, 0, 1, 1);
 
       traceFilter_5 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_5->setObjectName(QString::fromUtf8("traceFilter_5"));
-      traceFilterSetting->addWidget(traceFilter_5, 4, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_5, 5, 0, 1, 1);
 
       traceFilter_6 = new QLineEdit(gridLayoutWidget_5);
       traceFilter_6->setObjectName(QString::fromUtf8("traceFilter_6"));
-      traceFilterSetting->addWidget(traceFilter_6, 5, 0, 1, 1);
+      traceFilterSetting->addWidget(traceFilter_6, 6, 0, 1, 1);
 
-      traceFilter_7 = new QLineEdit(gridLayoutWidget_5);
-      traceFilter_7->setObjectName(QString::fromUtf8("traceFilter_7"));
-      traceFilterSetting->addWidget(traceFilter_7, 6, 0, 1, 1);
+      traceFilterButton_0 = new QPushButton(gridLayoutWidget_5);
+      traceFilterButton_0->setObjectName(QString::fromUtf8("traceFilterButton_0"));
+      traceFilterSetting->addWidget(traceFilterButton_0, 0, 1, 1, 1);
 
       traceFilterButton_1 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_1->setObjectName(QString::fromUtf8("traceFilterButton_1"));
-      traceFilterSetting->addWidget(traceFilterButton_1, 0, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_1, 1, 1, 1, 1);
 
       traceFilterButton_2 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_2->setObjectName(QString::fromUtf8("traceFilterButton_2"));
-      traceFilterSetting->addWidget(traceFilterButton_2, 1, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_2, 2, 1, 1, 1);
 
       traceFilterButton_3 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_3->setObjectName(QString::fromUtf8("traceFilterButton_3"));
-      traceFilterSetting->addWidget(traceFilterButton_3, 2, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_3, 3, 1, 1, 1);
 
       traceFilterButton_4 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_4->setObjectName(QString::fromUtf8("traceFilterButton_4"));
-      traceFilterSetting->addWidget(traceFilterButton_4, 3, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_4, 4, 1, 1, 1);
 
       traceFilterButton_5 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_5->setObjectName(QString::fromUtf8("traceFilterButton_5"));
-      traceFilterSetting->addWidget(traceFilterButton_5, 4, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_5, 5, 1, 1, 1);
 
       traceFilterButton_6 = new QPushButton(gridLayoutWidget_5);
       traceFilterButton_6->setObjectName(QString::fromUtf8("traceFilterButton_6"));
-      traceFilterSetting->addWidget(traceFilterButton_6, 5, 1, 1, 1);
-
-      traceFilterButton_7 = new QPushButton(gridLayoutWidget_5);
-      traceFilterButton_7->setObjectName(QString::fromUtf8("traceFilterButton_7"));
-      traceFilterSetting->addWidget(traceFilterButton_7, 6, 1, 1, 1);
+      traceFilterSetting->addWidget(traceFilterButton_6, 6, 1, 1, 1);
 
       splitter->addWidget(gridLayoutWidget_5);
 
@@ -345,59 +344,58 @@ public:
 
       portButtonsLayout = new QGridLayout();
       portButtonsLayout->setObjectName(QString::fromUtf8("portButtonsLayout"));
+      portButton_0 = new QPushButton(layoutWidget);
+      portButton_0->setObjectName(QString::fromUtf8("portButton_0"));
+      portButtonsLayout->addWidget(portButton_0, 0, 0, 1, 1);
+
       portButton_1 = new QPushButton(layoutWidget);
       portButton_1->setObjectName(QString::fromUtf8("portButton_1"));
-      portButtonsLayout->addWidget(portButton_1, 0, 0, 1, 1);
+      portButtonsLayout->addWidget(portButton_1, 0, 1, 1, 1);
 
       portButton_2 = new QPushButton(layoutWidget);
       portButton_2->setObjectName(QString::fromUtf8("portButton_2"));
-      portButtonsLayout->addWidget(portButton_2, 0, 1, 1, 1);
+      portButtonsLayout->addWidget(portButton_2, 0, 2, 1, 1);
 
       portButton_3 = new QPushButton(layoutWidget);
       portButton_3->setObjectName(QString::fromUtf8("portButton_3"));
-      portButtonsLayout->addWidget(portButton_3, 0, 2, 1, 1);
+      portButtonsLayout->addWidget(portButton_3, 0, 3, 1, 1);
 
       portButton_4 = new QPushButton(layoutWidget);
       portButton_4->setObjectName(QString::fromUtf8("portButton_4"));
-      portButtonsLayout->addWidget(portButton_4, 0, 3, 1, 1);
+      portButtonsLayout->addWidget(portButton_4, 0, 4, 1, 1);
 
-      portButton_5 = new QPushButton(layoutWidget);
-      portButton_5->setObjectName(QString::fromUtf8("portButton_5"));
-      portButtonsLayout->addWidget(portButton_5, 0, 4, 1, 1);
-
-      portLabel_1 = new QLabel(layoutWidget);
-      portLabel_1->setObjectName(QString::fromUtf8("portLabel_1"));
+      portLabel_0 = new QLabel(layoutWidget);
+      portLabel_0->setObjectName(QString::fromUtf8("portLabel_0"));
       QSizePolicy sizePolicy5(QSizePolicy::Preferred, QSizePolicy::Maximum);
       sizePolicy5.setHorizontalStretch(0);
       sizePolicy5.setVerticalStretch(0);
+      sizePolicy5.setHeightForWidth(portLabel_0->sizePolicy().hasHeightForWidth());
+      portLabel_0->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portLabel_0, 1, 0, 1, 1);
+
+      portLabel_1 = new QLabel(layoutWidget);
+      portLabel_1->setObjectName(QString::fromUtf8("portLabel_1"));
       sizePolicy5.setHeightForWidth(portLabel_1->sizePolicy().hasHeightForWidth());
       portLabel_1->setSizePolicy(sizePolicy5);
-      portButtonsLayout->addWidget(portLabel_1, 1, 0, 1, 1);
+      portButtonsLayout->addWidget(portLabel_1, 1, 1, 1, 1);
 
       portLabel_2 = new QLabel(layoutWidget);
       portLabel_2->setObjectName(QString::fromUtf8("portLabel_2"));
       sizePolicy5.setHeightForWidth(portLabel_2->sizePolicy().hasHeightForWidth());
       portLabel_2->setSizePolicy(sizePolicy5);
-      portButtonsLayout->addWidget(portLabel_2, 1, 1, 1, 1);
+      portButtonsLayout->addWidget(portLabel_2, 1, 2, 1, 1);
 
       portLabel_3 = new QLabel(layoutWidget);
       portLabel_3->setObjectName(QString::fromUtf8("portLabel_3"));
       sizePolicy5.setHeightForWidth(portLabel_3->sizePolicy().hasHeightForWidth());
       portLabel_3->setSizePolicy(sizePolicy5);
-      portButtonsLayout->addWidget(portLabel_3, 1, 2, 1, 1);
+      portButtonsLayout->addWidget(portLabel_3, 1, 3, 1, 1);
 
       portLabel_4 = new QLabel(layoutWidget);
       portLabel_4->setObjectName(QString::fromUtf8("portLabel_4"));
       sizePolicy5.setHeightForWidth(portLabel_4->sizePolicy().hasHeightForWidth());
       portLabel_4->setSizePolicy(sizePolicy5);
-      portButtonsLayout->addWidget(portLabel_4, 1, 3, 1, 1);
-
-      portLabel_5 = new QLabel(layoutWidget);
-      portLabel_5->setObjectName(QString::fromUtf8("portLabel_5"));
-      sizePolicy5.setHeightForWidth(portLabel_5->sizePolicy().hasHeightForWidth());
-      portLabel_5->setSizePolicy(sizePolicy5);
-      portButtonsLayout->addWidget(portLabel_5, 1, 4, 1, 1);
-
+      portButtonsLayout->addWidget(portLabel_4, 1, 4, 1, 1);
 
       verticalLayout_2->addLayout(portButtonsLayout);
       splitter_2->addWidget(layoutWidget);
@@ -419,11 +417,11 @@ public:
 
       loggingButtonShortcut = new QShortcut(Qt::Key_F2, mainWindow);
       markerButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_M, mainWindow);
-      port1ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_1, mainWindow);
-      port2ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_2, mainWindow);
-      port3ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_3, mainWindow);
-      port4ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_4, mainWindow);
-      port5ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_5, mainWindow);
+      port0ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_1, mainWindow);
+      port1ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_2, mainWindow);
+      port2ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_3, mainWindow);
+      port3ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_4, mainWindow);
+      port4ButtonShortcut = new QShortcut(Qt::CTRL | Qt::Key_5, mainWindow);
       clearButtonShortcut = new QShortcut(Qt::Key_F3, mainWindow);
       traceClearButtonShortcut = new QShortcut(Qt::Key_F4, mainWindow);
       switchSendPortShortcut = new QShortcut(Qt::Key_F1, mainWindow);
@@ -436,41 +434,32 @@ public:
       m_buttons.push_back(clearButton);
       m_buttons.push_back(traceClearButton);
       m_buttons.push_back(traceScrollButton);
+      m_buttons.push_back(traceFilterButton_0);
       m_buttons.push_back(traceFilterButton_1);
       m_buttons.push_back(traceFilterButton_2);
       m_buttons.push_back(traceFilterButton_3);
       m_buttons.push_back(traceFilterButton_4);
       m_buttons.push_back(traceFilterButton_5);
       m_buttons.push_back(traceFilterButton_6);
-      m_buttons.push_back(traceFilterButton_7);
+      m_buttons.push_back(portButton_0);
       m_buttons.push_back(portButton_1);
       m_buttons.push_back(portButton_2);
       m_buttons.push_back(portButton_3);
       m_buttons.push_back(portButton_4);
-      m_buttons.push_back(portButton_5);
 
-      m_labels.push_back(infoLabel);
-      m_labels.push_back(portLabel_1);
-      m_labels.push_back(portLabel_2);
-      m_labels.push_back(portLabel_3);
-      m_labels.push_back(portLabel_4);
-      m_labels.push_back(portLabel_5);
-
-      m_trace_filters.push_back({}); //TODO dummy trace filter
+      m_trace_filters.push_back({traceFilter_0, traceFilterButton_0});
       m_trace_filters.push_back({traceFilter_1, traceFilterButton_1});
       m_trace_filters.push_back({traceFilter_2, traceFilterButton_2});
       m_trace_filters.push_back({traceFilter_3, traceFilterButton_3});
       m_trace_filters.push_back({traceFilter_4, traceFilterButton_4});
       m_trace_filters.push_back({traceFilter_5, traceFilterButton_5});
       m_trace_filters.push_back({traceFilter_6, traceFilterButton_6});
-      m_trace_filters.push_back({traceFilter_7, traceFilterButton_7});
 
-      m_ports.push_back({}); //TODO dummy port
+      m_ports.push_back({portLabel_0, portButton_0});
       m_ports.push_back({portLabel_1, portButton_1});
       m_ports.push_back({portLabel_2, portButton_2});
       m_ports.push_back({portLabel_3, portButton_3});
       m_ports.push_back({portLabel_4, portButton_4});
-      m_ports.push_back({portLabel_5, portButton_5});
    }
 
    void retranslateUi(QMainWindow *MainWindow)
@@ -485,23 +474,23 @@ public:
       clearButton->setText(QCoreApplication::translate("MainWindow", "CLEAR", nullptr));
       traceClearButton->setText(QCoreApplication::translate("MainWindow", "CLEAR", nullptr));
       traceScrollButton->setText(QCoreApplication::translate("MainWindow", "SCROLL", nullptr));
+      traceFilterButton_0->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_1->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_2->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_3->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_4->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_5->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_6->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
-      traceFilterButton_7->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
+      portButton_0->setText(QCoreApplication::translate("MainWindow", "PORT0", nullptr));
       portButton_1->setText(QCoreApplication::translate("MainWindow", "PORT1", nullptr));
       portButton_2->setText(QCoreApplication::translate("MainWindow", "PORT2", nullptr));
       portButton_3->setText(QCoreApplication::translate("MainWindow", "PORT3", nullptr));
       portButton_4->setText(QCoreApplication::translate("MainWindow", "PORT4", nullptr));
-      portButton_5->setText(QCoreApplication::translate("MainWindow", "PORT5", nullptr));
+      portLabel_0->setText(QString());
       portLabel_1->setText(QString());
       portLabel_2->setText(QString());
       portLabel_3->setText(QString());
       portLabel_4->setText(QString());
-      portLabel_5->setText(QString());
    }
 
    void loadTheme(Theme new_theme)
@@ -528,10 +517,6 @@ public:
    {
       return m_ports;
    }
-   const std::vector<QLabel*>& getLabels()
-   {
-      return m_labels;
-   }
    uint32_t countUserButtons()
    {
       return SETTING_GET_U32(GUI_UserButtons_Tabs) * SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
@@ -542,7 +527,7 @@ public:
    }
    uint32_t countTraceFilters()
    {
-      return NUMBER_OF_TRACE_FILTERS;
+      return m_trace_filters.size();
    }
 private:
 
@@ -620,7 +605,6 @@ private:
    }
 
    std::vector<QPushButton*> m_buttons;
-   std::vector<QLabel*> m_labels;
    std::vector<TraceFilterItem> m_trace_filters;
    std::vector<PortItem> m_ports;
 };

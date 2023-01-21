@@ -37,12 +37,24 @@ void GUIController::run()
    this->setWindowTitle("UltimateTerminal");
    ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
 
-   auto buttons = ui->getButtons();
-   for (QPushButton* button : buttons)
+   for (QPushButton* button : ui->getButtons())
    {
       button->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
       connect(button, SIGNAL(clicked()), this, SLOT(onButtonClicked()));
       connect(button, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
+   }
+
+   for (auto& port : ui->getPorts())
+   {
+      port.label->setAutoFillBackground(true);
+      port.label->setAlignment(Qt::AlignCenter);
+   }
+
+   for (auto& filter : ui->getTraceFilters())
+   {
+      connect(filter.line_edit, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
+      connect(filter.line_edit, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
+      m_shortcuts_map[filter.line_edit] = filter.button;
    }
 
    connect(ui->markerButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
@@ -52,37 +64,11 @@ void GUIController::run()
    connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
    connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
    connect(ui->traceClearButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
+   connect(ui->port0ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port1ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port2ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port3ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port4ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
-   connect(ui->port5ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
-   ui->portLabel_1->setAutoFillBackground(true);
-   ui->portLabel_2->setAutoFillBackground(true);
-   ui->portLabel_3->setAutoFillBackground(true);
-   ui->portLabel_4->setAutoFillBackground(true);
-   ui->portLabel_5->setAutoFillBackground(true);
-   ui->portLabel_1->setAlignment(Qt::AlignCenter);
-   ui->portLabel_2->setAlignment(Qt::AlignCenter);
-   ui->portLabel_3->setAlignment(Qt::AlignCenter);
-   ui->portLabel_4->setAlignment(Qt::AlignCenter);
-   ui->portLabel_5->setAlignment(Qt::AlignCenter);
-
-   connect(ui->traceFilter_1, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_2, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_3, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_4, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_5, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_6, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_7, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
-   connect(ui->traceFilter_1, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_2, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_3, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_4, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_5, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_6, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-   connect(ui->traceFilter_7, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
-
    connect(this, SIGNAL(setButtonBackgroundColorSignal(qint32, qint32)), this, SLOT(onButtonBackgroundColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setButtonFontColorSignal(qint32, qint32)), this, SLOT(onButtonFontColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setButtonCheckableSignal(qint32, bool)), this, SLOT(onButtonCheckableSignal(qint32, bool)));
@@ -113,15 +99,6 @@ void GUIController::run()
    connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
-
-   m_shortcuts_map[ui->textEdit->lineEdit()] = ui->sendButton;
-   m_shortcuts_map[ui->traceFilter_1] = ui->traceFilterButton_1;
-   m_shortcuts_map[ui->traceFilter_2] = ui->traceFilterButton_2;
-   m_shortcuts_map[ui->traceFilter_3] = ui->traceFilterButton_3;
-   m_shortcuts_map[ui->traceFilter_4] = ui->traceFilterButton_4;
-   m_shortcuts_map[ui->traceFilter_5] = ui->traceFilterButton_5;
-   m_shortcuts_map[ui->traceFilter_6] = ui->traceFilterButton_6;
-   m_shortcuts_map[ui->traceFilter_7] = ui->traceFilterButton_7;
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -273,7 +250,7 @@ uint32_t GUIController::getTraceFilterID(const std::string& name)
 {
    uint32_t result = UINT32_MAX;
    auto filters = ui->getTraceFilters();
-   for (uint32_t i = 1; i < filters.size(); i++)
+   for (uint32_t i = 0; i < filters.size(); i++)
    {
       UT_Assert(filters[i].button);
       UT_Assert(filters[i].line_edit);
@@ -676,17 +653,17 @@ void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 }
 void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u text %u", __func__, id, description.toStdString().c_str());
-   auto& labels = ui->getLabels();
-   UT_Assert((size_t)id < labels.size());
-   labels[id]->setText(description);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u text %s", __func__, id, description.toStdString().c_str());
+   auto& ports = ui->getPorts();
+   UT_Assert((size_t)id < ports.size());
+   ports[id].label->setText(description);
 }
 void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %u", __func__, id, stylesheet.toStdString().c_str());
-   auto& labels = ui->getLabels();
-   UT_Assert((size_t)id < labels.size());
-   labels[id]->setStyleSheet(stylesheet);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %s", __func__, id, stylesheet.toStdString().c_str());
+   auto& ports = ui->getPorts();
+   UT_Assert((size_t)id < ports.size());
+   ports[id].label->setStyleSheet(stylesheet);
 }
 void GUIController::onReloadThemeSignal(qint8 id)
 {
