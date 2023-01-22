@@ -555,94 +555,59 @@ TEST_F(IGUIControllerFixture, adding_new_line_ending)
    m_test_subject->addLineEnding("\n");
 }
 
-TEST_F(IGUIControllerFixture, getting_trace_filter_ids)
-{
-   /**
-    * <b>scenario</b>: Getting existing trace filter ID by line edit name. <br>
-    * <b>expected</b>: ID different than UINT32_MAX returned. <br>
-    * ************************************************
-    */
-   EXPECT_THAT(m_test_subject->getTraceFilterID("traceFilter_0"), Ne(UINT32_MAX));
-
-   /**
-    * <b>scenario</b>: Getting existing trace filter ID by button name. <br>
-    * <b>expected</b>: ID different than UINT32_MAX returned. <br>
-    * ************************************************
-    */
-   EXPECT_THAT(m_test_subject->getTraceFilterID("traceFilterButton_1"), Ne(UINT32_MAX));
-
-   /**
-    * <b>scenario</b>: Getting non existing trace filter ID by button name. <br>
-    * <b>expected</b>: ID different than UINT32_MAX returned. <br>
-    * ************************************************
-    */
-   EXPECT_EQ(m_test_subject->getTraceFilterID("not_existing"), UINT32_MAX);
-
-}
-
 TEST_F(IGUIControllerFixture, setting_trace_filters)
 {
-   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_0");
-
    /**
     * <b>scenario</b>: setTraceFilter requested. <br>
     * <b>expected</b>: New trace filter set correctly. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_trace_filter_0, "TEST_FILTER"));
-   m_test_subject->setTraceFilter(test_filter_id, "TEST_FILTER");
+   m_test_subject->setTraceFilter(0, "TEST_FILTER");
 }
 
 TEST_F(IGUIControllerFixture, getting_trace_filters)
 {
-   uint32_t test_filter_id = m_test_subject->getTraceFilterID("traceFilter_0");
-
    /**
     * <b>scenario</b>: getTraceFilter requested. <br>
     * <b>expected</b>: Correct trace filter returned. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_trace_filter_0)).WillOnce(Return(QString("TEST_FILTER")));
-   EXPECT_EQ(m_test_subject->getTraceFilter(test_filter_id), "TEST_FILTER");
+   EXPECT_EQ(m_test_subject->getTraceFilter(0), "TEST_FILTER");
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_enabled)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
-
    /**
     * <b>scenario</b>: setTraceFilterEnabled requested. <br>
     * <b>expected</b>: Line edit enabled state changed. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_trace_filter_0, false));
-   m_test_subject->setTraceFilterEnabled(test_button_id, false);
+   m_test_subject->setTraceFilterEnabled(0, false);
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_background_color)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
-
    /**
     * <b>scenario</b>: setTraceFilterBackgroundColor requested. <br>
     * <b>expected</b>: Line edit background color changed. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_0, _));
-   m_test_subject->setTraceFilterBackgroundColor(test_button_id, 0xDEAD);
+   m_test_subject->setTraceFilterBackgroundColor(0, 0xDEAD);
 }
 
 TEST_F(IGUIControllerFixture, setting_trace_filter_font_color)
 {
-   uint32_t test_button_id = m_test_subject->getTraceFilterID("traceFilter_0");
-
    /**
     * <b>scenario</b>: setTraceFilterFontColor requested. <br>
     * <b>expected</b>: Line edit font color changed. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setStyleSheet(&test_trace_filter_0, _));
-   m_test_subject->setTraceFilterFontColor(test_button_id, 0xDEAD);
+   m_test_subject->setTraceFilterFontColor(0, 0xDEAD);
 }
 
 TEST_F(IGUIControllerFixture, setting_port_label_text)

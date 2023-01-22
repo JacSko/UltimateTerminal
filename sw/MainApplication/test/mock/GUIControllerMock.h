@@ -33,7 +33,6 @@ struct GUIControllerMock
    MOCK_METHOD0(getCurrentLineEnding, std::string());
    MOCK_METHOD1(addLineEnding, void(const std::string&));
    MOCK_METHOD1(setCurrentLineEnding, void(const std::string&));
-   MOCK_METHOD1(getTraceFilterID, uint32_t(const std::string&));
    MOCK_METHOD2(setTraceFilter, void(uint8_t id, const std::string&));
    MOCK_METHOD1(getTraceFilter, std::string(uint8_t id));
    MOCK_METHOD2(setTraceFilterEnabled, void(uint8_t, bool));
@@ -197,10 +196,6 @@ void GUIController::addLineEnding(const std::string& ending)
 void GUIController::setCurrentLineEnding(const std::string& ending)
 {
    g_gui_controller_mock->setCurrentLineEnding(ending);
-}
-uint32_t GUIController::getTraceFilterID(const std::string& name)
-{
-   return g_gui_controller_mock->getTraceFilterID(name);
 }
 void GUIController::setTraceFilter(uint8_t id, const std::string& filter)
 {

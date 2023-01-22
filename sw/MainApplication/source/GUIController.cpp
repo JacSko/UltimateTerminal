@@ -24,19 +24,6 @@ void GUIController::run()
 {
    ui->setupUi(this);
 
-   if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
-   {
-      ui->loadTheme(Theme::DARK);
-      m_current_theme = Theme::DARK;
-   }
-   else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
-   {
-      ui->loadTheme(Theme::DEFAULT);
-      m_current_theme = Theme::DEFAULT;
-   }
-   this->setWindowTitle("UltimateTerminal");
-   ui->infoLabel->setText(QString().asprintf("UltimateTerminal v%s", std::string(APPLICATION_VERSION).c_str()));
-
    for (QPushButton* button : ui->getButtons())
    {
       button->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
