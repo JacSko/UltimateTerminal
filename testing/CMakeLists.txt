@@ -1,0 +1,2 @@
+add_subdirectory(TestCases)
+add_subdirectory(TestFramework)
