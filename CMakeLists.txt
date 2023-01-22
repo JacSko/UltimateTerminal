@@ -69,7 +69,7 @@ endif()
                       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
                       COMMENT "Copying setitngs file")
 
-else()
+elseif(UNIT_TESTS)
    #########################################
    #  Unit tests executable
    #########################################
@@ -80,6 +80,10 @@ else()
    if(UT_NO_DEBUG_OUTPUT)
    add_definitions(-DUT_NO_DEBUG_OUTPUT)
    endif()
+   add_subdirectory(ext_libs/googletest)
+elseif (SIMULATION)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
+   enable_testing()
    add_subdirectory(ext_libs/googletest)
 endif()
 
@@ -94,6 +98,7 @@ add_subdirectory(sw/Settings)
 add_subdirectory(sw/Logger)
 add_subdirectory(config)
 add_subdirectory(sw/Dialogs)
+add_subdirectory(sw/RPC)
 add_subdirectory(tools)
 
 #########################################
@@ -117,6 +122,7 @@ printVariable("Version" STRING ${PROJECT_VERSION})
 printVariable("Target OS UNIX" BOOL ${UNIX})
 printVariable("Target OS WIN32" BOOL ${WIN32})
 printVariable("Unit Tests" BOOL ${UNIT_TESTS})
+printVariable("Simulation Testing" BOOL ${SIMULATION})
 printVariable("Logger disabled" BOOL ${UT_NO_DEBUG_OUTPUT})
 printVariable("Config file path" STRING ${CONFIG_FILE})
 printVariable("Persistence path" STRING ${PERSISTENCE_FILE})
