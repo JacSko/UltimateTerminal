@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "Serialize.hpp"
 
-namespace TestFramework
+namespace RPC
 {
 
 enum class Command : uint8_t
@@ -30,12 +30,12 @@ struct GetButtonStateReply
 
 }
 
-static void serialize(std::vector<uint8_t>& buffer, TestFramework::GetButtonStateRequest item)
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest item)
 {
    serialize(buffer, (uint8_t)item.cmd);
    serialize(buffer, item.button_name);
 }
-static void serialize(std::vector<uint8_t>& buffer, TestFramework::GetButtonStateReply item)
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateReply item)
 {
    serialize(buffer, item.button_name);
    serialize(buffer, item.checked);
@@ -45,13 +45,13 @@ static void serialize(std::vector<uint8_t>& buffer, TestFramework::GetButtonStat
    serialize(buffer, item.background_color);
    serialize(buffer, item.font_color);
 }
-static void deserialize(const std::vector<uint8_t>& buffer, TestFramework::GetButtonStateRequest& item)
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
    uint32_t offset = 0;
    deserialize(buffer, offset, (uint8_t&)item.cmd);
    deserialize(buffer, offset, (std::string&)item.button_name);
 }
-static void deserialize(const std::vector<uint8_t>& buffer, TestFramework::GetButtonStateReply& item)
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateReply& item)
 {
    uint32_t offset = 0;
    deserialize(buffer, offset, item.button_name);

@@ -1,11 +1,16 @@
 #include "GUIController.h"
 #include <QtCore/QVector>
+#include "RPCServer.h"
+#include "TestFrameworkAPI.h"
 
 #undef APPLICATION_THEME
 #define APPLICATION_THEME(theme_name) #theme_name,
 std::array<std::string, (uint32_t)Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
 #undef APPLICATION_THEME
 
+std::unique_ptr<RPC::RPCServer> rpc_server;
+
+bool onGetButtonStateRequest(const std::vector<uint8_t>&);
 
 GUIController::GUIController(QWidget *parent):
 QMainWindow(parent),
@@ -15,12 +20,15 @@ m_terminal_view_status{},
 m_trace_view_status{},
 m_current_command(nullptr)
 {
+   rpc_server = std::unique_ptr<RPC::RPCServer>(new RPC::RPCServer());
+   rpc_server->addCommandExecutor(RPC::Command::GetButtonState, std::function<bool(const std::vector<uint8_t>&)>(&onGetButtonStateRequest));
 }
 GUIController::~GUIController()
 {
 }
 void GUIController::run()
 {
+   rpc_server->start(8888);
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -194,3 +202,34 @@ void GUIController::onCurrentPortSelectionChanged(int index)
 void GUIController::onPortSwitchRequest()
 {
 }
+
+//Not needed, just to satisfy linking requirements
+void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color){}
+void GUIController::onButtonFontColorSignal(qint32 id, qint32 color){}
+void GUIController::onButtonCheckableSignal(qint32 id, bool checkable){}
+void GUIController::onButtonCheckedSignal(qint32 id, bool checked){}
+void GUIController::onButtonEnabledSignal(qint32 id, bool enabled){}
+void GUIController::onButtonTextSignal(qint32 id, QString text){}
+void GUIController::onClearTerminalViewSignal(){}
+void GUIController::onClearTraceViewSignal(){}
+void GUIController::onAddToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color){}
+void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color){}
+void GUIController::onSetTerminalScrollingEnabledSignal(bool enabled){}
+void GUIController::onSetTraceScrollingEnabledSignal(bool enabled){}
+void GUIController::onRegisterPortOpenedSignal(QString name){}
+void GUIController::onRegisterPortClosedSignal(QString name){}
+void GUIController::onSetCommandHistorySignal(QVector<QString> history){}
+void GUIController::onAddCommandToHistorySignal(QString command){}
+void GUIController::onGuiRequestSignal(){}
+void GUIController::onAddLineEndingSignal(QString ending){}
+void GUIController::onSetCurrentLineEndingSignal(QString ending){}
+void GUIController::onSetTraceFilterSignal(qint8 id, QString filter){}
+void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled){}
+void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color){}
+void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color){}
+void GUIController::onSetPortLabelTextSignal(qint8 id, QString description){}
+void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet){}
+void GUIController::onReloadThemeSignal(qint8){}
+void GUIController::onSetStatusBarNotificationSignal(QString notification, qint32 timeout){}
+void GUIController::onSetInfoLabelTextSignal(QString text){}
+void GUIController::onSetApplicationTitle(QString title){}

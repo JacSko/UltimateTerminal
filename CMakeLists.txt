@@ -51,25 +51,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS SerialPort REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
 
-if (NOT UNIT_TESTS)
-   #########################################
-   #  Main executable
-   #########################################
-   add_executable(UltimateTerminal
-      sw/main.cpp)
-   target_link_libraries(UltimateTerminal
-      MainApplication)
-if (NOT UNIX)
-   target_link_libraries(UltimateTerminal shlwapi)
-else()
-   target_link_libraries(UltimateTerminal pthread)
-endif()
-   # copying-out system config file to bin
-   add_custom_command(TARGET UltimateTerminal POST_BUILD
-                      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
-                      COMMENT "Copying setitngs file")
-
-elseif(UNIT_TESTS)
+if(UNIT_TESTS)
    #########################################
    #  Unit tests executable
    #########################################
@@ -81,10 +63,31 @@ elseif(UNIT_TESTS)
    add_definitions(-DUT_NO_DEBUG_OUTPUT)
    endif()
    add_subdirectory(ext_libs/googletest)
-elseif (SIMULATION)
+elseif(SIMULATION)
+   #########################################
+   #  Simulation executable
+   #########################################
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
    enable_testing()
    add_subdirectory(ext_libs/googletest)
+   add_subdirectory(testing)
+else()
+   #########################################
+   #  Main executable
+   #########################################
+   add_executable(UltimateTerminal
+                  sw/main.cpp)
+   target_link_libraries(UltimateTerminal
+      MainApplication)
+   if (NOT UNIX)
+      target_link_libraries(UltimateTerminal shlwapi)
+   else()
+      target_link_libraries(UltimateTerminal pthread)
+   endif()
+   # copying-out system config file to bin
+   add_custom_command(TARGET UltimateTerminal POST_BUILD
+                      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
+                      COMMENT "Copying setitngs file")
 endif()
 
 #########################################
