@@ -13,6 +13,7 @@ target_link_libraries(UserButtonDialogTests PUBLIC
         Logger
         Utilities
         QtMocks
+        GUIControllerMock
 )
 add_test(NAME UserButtonDialogTests COMMAND UserButtonDialogTests)
 
@@ -35,6 +36,7 @@ target_link_libraries(PortSettingDialogTests PUBLIC
         Utilities
         QtMocks
         DriversMocks
+        GUIControllerMock
 )
 add_test(NAME PortSettingDialogTests COMMAND PortSettingDialogTests)
 
@@ -57,6 +59,7 @@ target_link_libraries(TraceFilterSettingDialogTests PUBLIC
         Utilities
         QtMocks
         DriversMocks
+        GUIControllerMock
 )
 add_test(NAME TraceFilterSettingDialogTests COMMAND TraceFilterSettingDialogTests)
 
@@ -83,5 +86,6 @@ target_link_libraries(ApplicationSettingsDialogTests PUBLIC
         MainApplicationIf
         MainApplicationMocks
         UtilitiesMocks
+        GUIControllerMock
 )
 add_test(NAME ApplicationSettingsDialogTests COMMAND ApplicationSettingsDialogTests)

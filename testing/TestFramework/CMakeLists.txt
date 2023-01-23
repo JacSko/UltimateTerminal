@@ -1,5 +1,7 @@
-message(STATUS "SIMULATION2")
-add_library(TestFramework INTERFACE)
-target_include_directories(TestFramework INTERFACE 
+add_library(TestFramework STATIC
+			source/TestFramework.cpp
+)
+target_include_directories(TestFramework PUBLIC 
    public/
 )
+target_link_libraries(TestFramework Utilities Logger RPC SettingsHandler)

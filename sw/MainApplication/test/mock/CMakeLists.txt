@@ -18,4 +18,5 @@ target_include_directories(MainApplicationMocks INTERFACE
 target_link_libraries(MainApplicationMocks INTERFACE 
                       Logger
                       gmock
+                      GUIControllerMock
                       )

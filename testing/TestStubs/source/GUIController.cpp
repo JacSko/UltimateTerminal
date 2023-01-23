@@ -1,4 +1,4 @@
-#include "GUIControllerSimulation.h"
+#include "GUIController.h"
 #include <QtCore/QVector>
 #include "RPCServer.h"
 #include "RPCCommon.h"
@@ -30,7 +30,12 @@ void GUIController::run()
 {
    ui->setupUi(this);
    rpc_server->start(8888);
-   m_buttons_color_cache.resize(ui->getButtons().size());
+
+   auto& buttons = ui->getButtons();
+   for (uint32_t i = 0; i < buttons.size(); i++)
+   {
+      m_buttons_cache.push_back({i, buttons[i]->objectName().toStdString(), {}, buttons[i]->isEnabled(), buttons[i]->isChecked(), buttons[i]->isCheckable(), buttons[i]->text().toStdString()});
+   }
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -78,21 +83,39 @@ void GUIController::unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent e
 }
 void GUIController::setButtonBackgroundColor(uint32_t button_id, uint32_t color)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].colors.background_color = color;
 }
 void GUIController::setButtonFontColor(uint32_t button_id, uint32_t color)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].colors.font_color = color;
 }
 void GUIController::setButtonCheckable(uint32_t button_id, bool checkable)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].checkable = checkable;
 }
 void GUIController::setButtonChecked(uint32_t button_id, bool checked)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].checked = checked;
 }
 void GUIController::setButtonEnabled(uint32_t button_id, bool enabled)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].enabled = enabled;
 }
 void GUIController::setButtonText(uint32_t button_id, const std::string& text)
 {
+   UT_Assert(button_id < m_buttons_cache.size());
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_buttons_cache[button_id].text = text;
 }
 void GUIController::clearTerminalView()
 {
@@ -276,24 +299,18 @@ void GUIController::onPortSwitchRequest()
 bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
    RPC::GetButtonStateRequest request = RPC::convert<RPC::GetButtonStateRequest>(data);
-   QPushButton* button = getButtonByName(request.button_name);
+
+   auto it = std::find_if(m_buttons_cache.begin(), m_buttons_cache.end(), [&](const ButtonCache& button){return button.name == request.button_name;});
+   UT_Assert(it != m_buttons_cache.end());
 
    RPC::GetButtonStateReply reply = {};
+   reply.button_name = it->name;
+   reply.background_color = it->colors.background_color;
+   reply.font_color = it->colors.font_color;
+   reply.checkable = it->checkable;
+   reply.checked = it->checked;
+   reply.enabled = it->enabled;
+   reply.text = it->text;
 
    return rpc_server->respond<RPC::GetButtonStateReply>(reply);
 }
-
-QPushButton* GUIController::getButtonByName(const std::string& name)
-{
-   QPushButton* result = nullptr;
-   for (auto& button : ui->getButtons())
-   {
-      if (button->objectName().toStdString() == name)
-      {
-         result = button;
-         break;
-      }
-   }
-   return result;
-}
-

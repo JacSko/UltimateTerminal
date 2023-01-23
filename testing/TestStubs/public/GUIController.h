@@ -3,7 +3,6 @@
 #include <utility>
 #include <mutex>
 #include <condition_variable>
-#include <sstream>
 
 #include <QtCore/QObject>
 #include <QtWidgets/QMainWindow>
@@ -147,6 +146,18 @@ private:
       uint32_t background_color;
       uint32_t font_color;
    };
+
+   struct ButtonCache
+   {
+      uint32_t id;
+      std::string name;
+      ColorCache colors;
+      bool enabled;
+      bool checked;
+      bool checkable;
+      std::string text;
+   };
+
    void onButtonClicked();
    void onButtonContextMenuRequested();
    void onCurrentPortSelectionChanged(int);
@@ -157,5 +168,7 @@ private:
    /* TestFrameworkAPI handler */
    bool onGetButtonStateRequest(const std::vector<uint8_t>&);
 
-   std::vector<std::pair<std::string, ColorCache>> m_buttons_color_cache;
+   std::mutex m_mutex;
+
+   std::vector<ButtonCache> m_buttons_cache;
 };

@@ -36,6 +36,7 @@ target_link_libraries(UserButtonHandlerTests PUBLIC
         UtilitiesMocks
         QtMocks
         DialogsMocks
+        GUIControllerMock
 )
 add_test(NAME UserButtonHandlerTests COMMAND UserButtonHandlerTests)
 
@@ -60,6 +61,7 @@ target_link_libraries(TraceFilterHandlerTests PUBLIC
         UtilitiesMocks
         QtMocks
         DialogsMocks
+        GUIControllerMock
 )
 add_test(NAME TraceFilterHandlerTests COMMAND TraceFilterHandlerTests)
 
@@ -85,6 +87,7 @@ target_link_libraries(PortHandlerTests PUBLIC
         QtMocks
         DriversMocks
         DialogsMocks
+        GUIControllerMock
 )
 add_test(NAME PortHandlerTests COMMAND PortHandlerTests)
 
@@ -110,27 +113,6 @@ target_link_libraries(MainApplicationTests PUBLIC
         SettingsHandler
         ThreadWorker
         DialogsMocks
+        GUIControllerMock
 )
 add_test(NAME MainApplicationTests COMMAND MainApplicationTests)
-
-#####################################################################################
-
-add_executable(GUIControllerTests
-            GUIControllerTests.cpp
-            ../../source/GUIController.cpp
-)
-
-target_include_directories(GUIControllerTests PUBLIC
-        ../../include
-        ../../public
-        ../mock
-)
-target_link_libraries(GUIControllerTests PUBLIC
-        gtest_main
-        gmock_main
-        QtMocks
-        SettingsHandler
-        UtilitiesIf
-        Logger
-)
-add_test(NAME GUIControllerTests COMMAND GUIControllerTests)

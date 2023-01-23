@@ -94,6 +94,7 @@ endif()
 #  Include project directories
 #########################################
 add_subdirectory(ext_libs/json_parser)
+add_subdirectory(sw/GUIController)
 add_subdirectory(sw/MainApplication)
 add_subdirectory(sw/Utilities)
 add_subdirectory(sw/Drivers)
