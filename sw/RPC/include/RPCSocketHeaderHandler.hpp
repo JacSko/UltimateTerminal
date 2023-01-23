@@ -1,11 +1,11 @@
-#ifndef __SOCKET_HEADER_HANDLER_HPP_
-#define __SOCKET_HEADER_HANDLER_HPP_
+#pragma once
+
 #include <vector>
 #include <stdint.h>
 #include "Logger.h"
 #include "Serialize.hpp"
 
-namespace Drivers
+namespace RPC
 {
 
 class HeaderHandler
@@ -51,5 +51,3 @@ public:
 };
 
 }
-
-#endif

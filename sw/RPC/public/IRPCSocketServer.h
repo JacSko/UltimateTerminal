@@ -1,5 +1,5 @@
-#ifndef _ISocketServer_H_
-#define _ISocketServer_H_
+#pragma once
+
 
 /**
  * @file ISocketServer.h
@@ -24,12 +24,18 @@
 #include <vector>
 #include <functional>
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketServer
 {
 
 constexpr uint16_t SOCKET_MAX_PAYLOAD_LENGTH = 4096;
+
+enum class ServerType
+{
+   RAW_DATA,
+   SSL_ENCRYPTION,
+};
 
 enum class ServerEvent
 {
@@ -62,15 +68,17 @@ public:
 class ISocketServer
 {
 public:
-   static std::unique_ptr<ISocketServer> create();
+   static std::unique_ptr<ISocketServer> create(ServerType);
    /**
     * @brief Starts server.
     * @param[in] mode - server mode
     * @param[in] port - connection port (see @details).
     * @param[in] max_clients - defines how many clients can connect to server
+    * @param[in] cert_file - SSL *.pem file
+    * @param[in] key_file - SSL *.pem file
     * @return True if listening started, otherwise false.
     */
-   virtual bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) = 0;
+   virtual bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1, const std::string& cert_file = "", const std::string& key_file = "") = 0;
    /**
     * @brief Stops server.
     * @return void.
@@ -102,5 +110,3 @@ public:
 
 }
 }
-
-#endif

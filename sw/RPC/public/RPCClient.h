@@ -1,58 +1,21 @@
-#ifndef _RPC_CLIENT_H_
-#define _RPC_CLIENT_H_
+#pragma once
+
 
 #include <memory>
 #include <map>
 #include <mutex>
 #include <atomic>
+#include <vector>
 #include <condition_variable>
 
 #include "Logger.h"
-#include "ISocketClient.h"
+#include "IRPCSocketClient.h"
+#include "RPCCommon.h"
 
 namespace RPC
 {
 
-/**
- * Wrapper for API structs to provide bool flag that represents the RPC invoke result.
- * If RPC transaction succeeds, the ready() method returns true and the object 'reply' is valid
- */
-template<typename T>
-class result
-{
-public:
-   T reply;
-
-   result(T& result):
-   is_ready(true),
-   reply(result)
-   {
-
-   }
-   result():
-   is_ready(false),
-   reply{}
-   {
-
-   }
-   result(bool result):
-   is_ready(result),
-   reply{}
-   {
-
-   }
-   bool ready() const
-   {
-      return is_ready;
-   }
-
-private:
-   bool is_ready;
-};
-
-constexpr uint16_t SOCKET_TRANSACTION_TIMEOUT = 100;
-
-class RPCClient : public Drivers::SocketClient::ClientListener
+class RPCClient : public SocketClient::ClientListener
 {
 public:
    RPCClient();
@@ -69,6 +32,16 @@ public:
     */
    void disconnect();
    /**
+    * @brief Registers handler for notifications sent by server
+    * @return None.
+    */
+   void addNotificationHandler(uint8_t notification, std::function<bool(const std::vector<uint8_t>&)> Handler);
+   /**
+    * @brief Unregisters notification handler
+    * @return None.
+    */
+   void removeNotificationHandler(uint8_t notification);
+   /**
     * @brief Performs the RPC transation with remote client.
     *        The template types from RPCMessages.h shall be used.
     *        This method is blocking for maximum of SOCKET_TRANSACTION_TIMEOUT.
@@ -82,7 +55,7 @@ public:
       do
       {
          std::unique_lock<std::mutex> lock(m_mutex);
-         m_buffer.clear();
+         prepareHeader(m_buffer, MessageType::Request, (uint8_t)request.cmd);
          m_event_ready = false;
 
          if(!m_socket_client->isConnected())
@@ -91,7 +64,8 @@ public:
             break;
          }
 
-         serialize(m_buffer, request);
+         m_buffer.insert(m_buffer.end(), (uint8_t*)&request, (uint8_t*)&request + sizeof(request));
+         //serialize(m_buffer, request);
          if(!m_socket_client->write(m_buffer, m_buffer.size()))
          {
             UT_Log(RPC_CLIENT, ERROR, "write error");
@@ -102,13 +76,13 @@ public:
             UT_Log(RPC_CLIENT, ERROR, "client response timeout");
             break;
          }
-         if (m_last_event != Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
+         if (m_last_event != SocketClient::ClientEvent::SERVER_DATA_RECV)
          {
             UT_Log(RPC_CLIENT, ERROR, "incorrect event received while waiting for response (%u)", (uint8_t)m_last_event.load());
             m_event_ready = false;
             break;
          }
-         deserialize(m_buffer, response);
+         response = *((RETURN_TYPE*)m_buffer.data());
          break;
       }
       while(1);
@@ -121,19 +95,21 @@ public:
    }
 
 private:
-   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
-   std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket_client;
+   void onClientEvent(SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
+   void prepareHeader(std::vector<uint8_t>& buffer, MessageType msg_type, uint8_t command);
+   std::unique_ptr<RPC::SocketClient::ISocketClient> m_socket_client;
 
    std::vector<uint8_t> m_buffer;
-   std::atomic<Drivers::SocketClient::ClientEvent> m_last_event;
+   std::atomic<SocketClient::ClientEvent> m_last_event;
    std::atomic<bool> m_event_ready;
    std::atomic<bool> m_transaction_ongoing;
    std::condition_variable m_cond_var;
    std::mutex m_mutex;
 
+   std::map<uint8_t, std::function<bool(const std::vector<uint8_t>&)>> m_ntf_handlers;
+   std::mutex m_handlers_mutex;
+
 };
 
 }
 
-
-#endif

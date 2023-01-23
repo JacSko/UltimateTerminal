@@ -1,7 +1,7 @@
 /* =============================
  *   Includes of project headers
  * =============================*/
-#include "SocketServer.h"
+#include "RPCSocketServer.h"
 #include "Logger.h"
 /* =============================
  *   Includes of common headers
@@ -49,18 +49,13 @@ __attribute__((weak)) int close (int fd)
 
 }
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketServer
 {
 
 constexpr uint32_t SERVER_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERVER_RECEIVE_TIMEOUT = 500;
-
-std::unique_ptr<ISocketServer> ISocketServer::create()
-{
-   return std::unique_ptr<ISocketServer>(new SocketServer());
-}
 
 SocketServer::SocketServer():
 m_listening_thread(std::bind(&SocketServer::listening_thread, this), "SOCK_LISTEN"),
@@ -76,7 +71,7 @@ m_handlers {}
       UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start thread %s", m_working_thread.getThreadName().c_str());
    }
 }
-bool SocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients)
+bool SocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients, const std::string&, const std::string&)
 {
    bool result = false;
    m_mode = mode;
@@ -165,7 +160,7 @@ void SocketServer::listening_thread()
             std::lock_guard<std::mutex> lock(m_handlers_mutex);
             UT_Stdout_Log(SOCK_DRV, LOW, "New client connected, starting thread");
             notifyListeners(new_socket, ServerEvent::CLIENT_CONNECTED, {}, 0);
-            m_handlers.emplace_back(std::unique_ptr<ClientHandler>(new ClientHandler(new_socket, m_mode, this)));
+            m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
             if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
             {
                UT_Stdout_Log(SOCK_DRV, ERROR, "Cannot start thread");
@@ -219,7 +214,7 @@ void SocketServer::closeClient(int client_id)
 {
    std::lock_guard<std::mutex> lock(m_handlers_mutex);
 
-   auto it = std::find_if(m_handlers.begin(), m_handlers.end(), [&](std::unique_ptr<ClientHandler>& client){ return (client->getClientID() == client_id);});
+   auto it = std::find_if(m_handlers.begin(), m_handlers.end(), [&](std::unique_ptr<ISocketClientHandler>& client){ return (client->getClientID() == client_id);});
    if (it != m_handlers.end())
    {
       (*it)->stop();

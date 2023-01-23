@@ -1,6 +1,7 @@
-#include "GUIController.h"
+#include "GUIControllerSimulation.h"
 #include <QtCore/QVector>
 #include "RPCServer.h"
+#include "RPCCommon.h"
 #include "TestFrameworkAPI.h"
 
 #undef APPLICATION_THEME
@@ -8,36 +9,72 @@
 std::array<std::string, (uint32_t)Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
 #undef APPLICATION_THEME
 
+/* global objects declaration */
 std::unique_ptr<RPC::RPCServer> rpc_server;
 
-bool onGetButtonStateRequest(const std::vector<uint8_t>&);
 
 GUIController::GUIController(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
 m_current_theme(Theme::DEFAULT),
 m_terminal_view_status{},
-m_trace_view_status{},
-m_current_command(nullptr)
+m_trace_view_status{}
 {
    rpc_server = std::unique_ptr<RPC::RPCServer>(new RPC::RPCServer());
-   rpc_server->addCommandExecutor(RPC::Command::GetButtonState, std::function<bool(const std::vector<uint8_t>&)>(&onGetButtonStateRequest));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetButtonState, std::bind(&GUIController::onGetButtonStateRequest, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
 }
 void GUIController::run()
 {
+   ui->setupUi(this);
    rpc_server->start(8888);
+   m_buttons_color_cache.resize(ui->getButtons().size());
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
+   uint32_t result = UINT32_MAX;
+   auto elements = ui->getButtons();
+   for (uint32_t i = 0; i < elements.size(); i++)
+   {
+      UT_Assert(elements[i]);
+      if (elements[i]->objectName().toStdString() == name)
+      {
+         result = i;
+         break;
+      }
+   }
+   UT_Log_If(result == UINT32_MAX, MAIN_GUI, ERROR, "Element with name %s not found", name.c_str());
+   return result;
 }
 void GUIController::subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener)
 {
+   std::lock_guard<std::mutex> lock(m_button_listeners_mutex);
+   auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) && (item.event == event);});
+   if (it != m_button_listeners.end())
+   {
+      UT_Log(MAIN_GUI, ERROR, "event %u for buttonID %u already registered, replacing!");
+      *it = ButtonEventItem{button_id, event, listener};
+   }
+   else
+   {
+      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u registered!", (uint32_t)event, button_id);
+      m_button_listeners.push_back(ButtonEventItem{button_id, event, listener});
+   }
 }
 void GUIController::unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener)
 {
+   std::lock_guard<std::mutex> lock(m_button_listeners_mutex);
+   auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) &&
+                                                                                                                        (item.event == event) &&
+                                                                                                                        (item.listener == listener);});
+   UT_Log_If(it == m_button_listeners.end(), MAIN_GUI, ERROR, "event %u for buttonID %u not found!");
+   if (it != m_button_listeners.end())
+   {
+      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u unregistered", (uint32_t)event, button_id);
+      m_button_listeners.erase(it);
+   }
 }
 void GUIController::setButtonBackgroundColor(uint32_t button_id, uint32_t color)
 {
@@ -71,9 +108,11 @@ void GUIController::addToTraceView(const std::string& text, uint32_t background_
 }
 uint32_t GUIController::countTerminalItems()
 {
+   return 0;
 }
 uint32_t GUIController::countTraceItems()
 {
+   return 0;
 }
 void GUIController::setTerminalScrollingEnabled(bool enabled)
 {
@@ -98,9 +137,11 @@ void GUIController::addCommandToHistory(const std::string& history)
 }
 std::string GUIController::getCurrentCommand()
 {
+   return "";
 }
 std::string GUIController::getCurrentLineEnding()
 {
+   return "\n";
 }
 void GUIController::addLineEnding(const std::string& ending)
 {
@@ -113,6 +154,7 @@ void GUIController::setTraceFilter(uint8_t id, const std::string& filter)
 }
 std::string GUIController::getTraceFilter(uint8_t id)
 {
+   return "";
 }
 void GUIController::setTraceFilterEnabled(uint8_t id, bool enabled)
 {
@@ -134,6 +176,7 @@ void GUIController::reloadTheme(Theme theme)
 }
 Theme GUIController::currentTheme()
 {
+   return Theme::DEFAULT;
 }
 std::string GUIController::themeToName(Theme theme)
 {
@@ -152,21 +195,44 @@ Theme GUIController::nameToTheme(const std::string& name)
 }
 uint32_t GUIController::getBackgroundColor()
 {
+   return ui->mainWindow->palette().color(QPalette::Window).rgb();
 }
 uint32_t GUIController::getTerminalBackgroundColor()
 {
+   return ui->mainWindow->palette().color(QPalette::Base).rgb();
 }
 uint32_t GUIController::getTextColor()
 {
+   return ui->mainWindow->palette().color(QPalette::Text).rgb();
 }
 QPalette GUIController::getApplicationPalette()
 {
+   return ui->mainWindow->palette();
 }
 void GUIController::subscribeForThemeReloadEvent(ThemeListener* listener)
 {
+   std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
+   auto it = std::find_if(m_theme_listeners.begin(), m_theme_listeners.end(), [&](ThemeListener* theme_listener){return theme_listener == listener;});
+   if (it == m_theme_listeners.end())
+   {
+      UT_Log(MAIN_GUI, ERROR, "new theme listener registered!");
+      m_theme_listeners.push_back(listener);
+   }
+   else
+   {
+      UT_Log(MAIN_GUI, ERROR, "theme listener already registered!");
+   }
 }
 void GUIController::unsubscribeFromThemeReloadEvent(ThemeListener* listener)
 {
+   std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
+   auto it = std::find_if(m_theme_listeners.begin(), m_theme_listeners.end(), [&](ThemeListener* theme_listener){return (theme_listener == listener);});
+   UT_Log_If(it == m_theme_listeners.end(), MAIN_GUI, ERROR, "Theme listener not found!");
+   if (it != m_theme_listeners.end())
+   {
+      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u unregistered");
+      m_theme_listeners.erase(it);
+   }
 }
 QWidget* GUIController::getParent()
 {
@@ -183,12 +249,15 @@ void GUIController::setApplicationTitle(const std::string& title)
 }
 uint32_t GUIController::countUserButtons()
 {
+   return ui->countUserButtons();
 }
 uint32_t GUIController::countPorts()
 {
+   return ui->countPorts();
 }
 uint32_t GUIController::countTraceFilters()
 {
+   return ui->countTraceFilters();
 }
 void GUIController::onButtonClicked()
 {
@@ -203,33 +272,28 @@ void GUIController::onPortSwitchRequest()
 {
 }
 
-//Not needed, just to satisfy linking requirements
-void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color){}
-void GUIController::onButtonFontColorSignal(qint32 id, qint32 color){}
-void GUIController::onButtonCheckableSignal(qint32 id, bool checkable){}
-void GUIController::onButtonCheckedSignal(qint32 id, bool checked){}
-void GUIController::onButtonEnabledSignal(qint32 id, bool enabled){}
-void GUIController::onButtonTextSignal(qint32 id, QString text){}
-void GUIController::onClearTerminalViewSignal(){}
-void GUIController::onClearTraceViewSignal(){}
-void GUIController::onAddToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color){}
-void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color){}
-void GUIController::onSetTerminalScrollingEnabledSignal(bool enabled){}
-void GUIController::onSetTraceScrollingEnabledSignal(bool enabled){}
-void GUIController::onRegisterPortOpenedSignal(QString name){}
-void GUIController::onRegisterPortClosedSignal(QString name){}
-void GUIController::onSetCommandHistorySignal(QVector<QString> history){}
-void GUIController::onAddCommandToHistorySignal(QString command){}
-void GUIController::onGuiRequestSignal(){}
-void GUIController::onAddLineEndingSignal(QString ending){}
-void GUIController::onSetCurrentLineEndingSignal(QString ending){}
-void GUIController::onSetTraceFilterSignal(qint8 id, QString filter){}
-void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled){}
-void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color){}
-void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color){}
-void GUIController::onSetPortLabelTextSignal(qint8 id, QString description){}
-void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet){}
-void GUIController::onReloadThemeSignal(qint8){}
-void GUIController::onSetStatusBarNotificationSignal(QString notification, qint32 timeout){}
-void GUIController::onSetInfoLabelTextSignal(QString text){}
-void GUIController::onSetApplicationTitle(QString title){}
+/* TestFrameworkAPI handling*/
+bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
+{
+   RPC::GetButtonStateRequest request = RPC::convert<RPC::GetButtonStateRequest>(data);
+   QPushButton* button = getButtonByName(request.button_name);
+
+   RPC::GetButtonStateReply reply = {};
+
+   return rpc_server->respond<RPC::GetButtonStateReply>(reply);
+}
+
+QPushButton* GUIController::getButtonByName(const std::string& name)
+{
+   QPushButton* result = nullptr;
+   for (auto& button : ui->getButtons())
+   {
+      if (button->objectName().toStdString() == name)
+      {
+         result = button;
+         break;
+      }
+   }
+   return result;
+}
+

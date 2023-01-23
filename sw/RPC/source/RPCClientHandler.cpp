@@ -1,8 +1,8 @@
 /* =============================
  *   Includes of project headers
  * =============================*/
-#include "ClientHandler.h"
-#include "SocketHeaderHandler.hpp"
+#include "RPCClientHandler.h"
+#include "RPCSocketHeaderHandler.hpp"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -22,7 +22,7 @@ __attribute__((weak)) ssize_t recv(int socket, void *buffer, size_t length, int 
 }
 }
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketServer
 {

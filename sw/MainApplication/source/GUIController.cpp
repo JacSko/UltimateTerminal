@@ -1,4 +1,8 @@
+#ifdef SIMULATION
+#include "GUIControllerSimulation.h"
+#else
 #include "GUIController.h"
+#endif
 #include <QtCore/QVector>
 
 #undef APPLICATION_THEME

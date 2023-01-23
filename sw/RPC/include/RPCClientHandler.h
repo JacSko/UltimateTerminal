@@ -1,5 +1,5 @@
-#ifndef _CLIENTHANDLER_H_
-#define _CLIENTHANDLER_H_
+#pragma once
+
 
 /**
  * @file ClientHandler.h
@@ -23,41 +23,28 @@
  *   Includes of project headers
  * =============================*/
 #include "ThreadWorker.h"
-#include "ISocketServer.h"
-#include "SocketHeaderHandler.hpp"
+#include "IRPCSocketServer.h"
+#include "RPCSocketHeaderHandler.hpp"
+#include "IRPCSocketClientHandler.h"
 /* =============================
  *           Defines
  * =============================*/
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketServer
 {
 
-enum class ClientEvent
-{
-   CLIENT_DISCONNECTED,
-   DATA_RECEIVED,
-};
-
-class ClientHandlerListener
-{
-public:
-   virtual ~ClientHandlerListener() {};
-   virtual void onClientEvent(int client_id, ClientEvent ev, const std::vector<uint8_t>& data, size_t size) = 0;
-};
-
-class ClientHandler
+class ClientHandler : public ISocketClientHandler
 {
 public:
    ClientHandler(int client_id, DataMode mode, ClientHandlerListener* listener);
    ~ClientHandler();
-   bool start(uint32_t timeout);
-   void stop();
-   bool write(const std::vector<uint8_t>& data, size_t size);
-   int getClientID();
-
 private:
+   bool start(uint32_t timeout) override;
+   void stop() override;
+   bool write(const std::vector<uint8_t>& data, size_t size) override;
+   int getClientID() override;
 
    void execute();
    void startDelimiterMode();
@@ -77,4 +64,3 @@ private:
 
 }
 }
-#endif

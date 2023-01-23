@@ -1,5 +1,5 @@
-#ifndef _ISOCKETCLIENT_H_
-#define _ISOCKETCLIENT_H_
+#pragma once
+
 
 /**
  * @file ISocketClient.h
@@ -22,12 +22,18 @@
 #include <vector>
 #include <functional>
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketClient
 {
 
 constexpr uint16_t SOCKET_MAX_PAYLOAD_LENGTH = 4096;
+
+enum class ClientType
+{
+   RAW_DATA,
+   SSL_ENCRYPTION,
+};
 
 enum class ClientEvent
 {
@@ -59,7 +65,6 @@ public:
 class ISocketClient
 {
 public:
-   static std::unique_ptr<ISocketClient> create();
    /**
     * @brief Connects to server.
     * @param[in] mode - server mode
@@ -99,5 +104,3 @@ public:
 
 }
 }
-
-#endif

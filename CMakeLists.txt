@@ -63,22 +63,14 @@ if(UNIT_TESTS)
    add_definitions(-DUT_NO_DEBUG_OUTPUT)
    endif()
    add_subdirectory(ext_libs/googletest)
-elseif(SIMULATION)
-   #########################################
-   #  Simulation executable
-   #########################################
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
-   enable_testing()
-   add_subdirectory(ext_libs/googletest)
-   add_subdirectory(testing)
 else()
-   #########################################
-   #  Main executable
-   #########################################
+#########################################
+#  Main executable
+#########################################
    add_executable(UltimateTerminal
                   sw/main.cpp)
    target_link_libraries(UltimateTerminal
-      MainApplication)
+                  MainApplication)
    if (NOT UNIX)
       target_link_libraries(UltimateTerminal shlwapi)
    else()
@@ -88,6 +80,14 @@ else()
    add_custom_command(TARGET UltimateTerminal POST_BUILD
                       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
                       COMMENT "Copying setitngs file")
+   if (SIMULATION)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
+      enable_testing()
+      add_subdirectory(ext_libs/googletest)
+      add_subdirectory(testing)
+      add_definitions(-DSIMULATION) 
+   endif()
+
 endif()
 
 #########################################

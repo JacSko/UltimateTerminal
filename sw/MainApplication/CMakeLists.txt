@@ -2,15 +2,15 @@ if (SIMULATION)
 	set(MAIN_APPLICATION_SOURCES 
 	   source/MainApplication.cpp
 	   source/PortHandler.cpp
-       source/UserButtonHandler.cpp
-       source/TraceFilterHandler.cpp
-       source/FileLogger.cpp
-       source/GUIControllerSimulation.cpp
-       include/MainApplication.h
-       include/UserButtonHandler.h
-       public/PortHandler.h
-       public/TraceFilterHandler.h
-       public/GUIController.h)
+      source/UserButtonHandler.cpp
+      source/TraceFilterHandler.cpp
+      source/FileLogger.cpp
+      source/GUIControllerSimulation.cpp
+      include/MainApplication.h
+      include/UserButtonHandler.h
+      public/PortHandler.h
+      public/TraceFilterHandler.h
+      public/GUIControllerSimulation.h)
    set(LIBRARIES_TO_LINK
        RPC
        TestFramework)

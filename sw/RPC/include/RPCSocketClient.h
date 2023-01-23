@@ -1,5 +1,4 @@
-#ifndef _SOCKETCLIENT_H_
-#define _SOCKETCLIENT_H_
+#pragma once
 
 /**
  * @file SocketClient.h
@@ -21,13 +20,13 @@
 /* =============================
  *   Includes of project headers
  * =============================*/
-#include "ISocketClient.h"
+#include "IRPCSocketClient.h"
 #include "ThreadWorker.h"
-#include "SocketHeaderHandler.hpp"
+#include "RPCSocketHeaderHandler.hpp"
 /* =============================
  *           Defines
  * =============================*/
-namespace Drivers
+namespace RPC
 {
 namespace SocketClient
 {
@@ -71,4 +70,3 @@ private:
 
 }
 }
-#endif

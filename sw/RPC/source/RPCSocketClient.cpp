@@ -1,7 +1,7 @@
 /* =============================
  *   Includes of project headers
  * =============================*/
-#include "SocketClient.h"
+#include "RPCSocketClient.h"
 #include "Logger.h"
 /* =============================
  *   Includes of common headers
@@ -50,7 +50,7 @@ __attribute__((weak)) int close (int fd)
 
 }
 
-namespace Drivers
+namespace RPC
 {
 namespace SocketClient
 {
@@ -58,11 +58,6 @@ namespace SocketClient
 constexpr uint32_t CLIENT_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
-
-std::unique_ptr<ISocketClient> ISocketClient::create()
-{
-   return std::unique_ptr<ISocketClient>(new SocketClient());
-}
 
 SocketClient::SocketClient():
 m_worker(std::bind(&SocketClient::receivingThread, this), "CLIENT_WORKER"),

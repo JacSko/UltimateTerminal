@@ -1,5 +1,5 @@
-#ifndef _SocketServer_H_
-#define _SocketServer_H_
+#pragma once
+
 
 /**
  * @file SocketServer.h
@@ -22,13 +22,13 @@
 /* =============================
  *   Includes of project headers
  * =============================*/
-#include "ISocketServer.h"
+#include "IRPCSocketServer.h"
 #include "ThreadWorker.h"
-#include "ClientHandler.h"
+#include "RPCClientHandler.h"
 /* =============================
  *           Defines
  * =============================*/
-namespace Drivers
+namespace RPC
 {
 namespace SocketServer
 {
@@ -50,7 +50,7 @@ private:
 
 
    /* ISocketServer */
-   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) override;
+   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1, const std::string& cert_file = "", const std::string& key_file = "") override;
    void stop() override;
    uint32_t clientsCount() override;
    void addListener(ServerListener* callback) override;
@@ -77,7 +77,7 @@ private:
 
    std::vector<ServerListener*> m_listeners;
    std::mutex m_listeners_mutex;
-   std::vector<std::unique_ptr<ClientHandler>> m_handlers;
+   std::vector<std::unique_ptr<ISocketClientHandler>> m_handlers;
    std::mutex m_handlers_mutex;
    std::mutex m_client_mtx;
 
@@ -88,4 +88,3 @@ private:
 
 }
 }
-#endif

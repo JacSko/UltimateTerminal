@@ -19,6 +19,7 @@ struct GetButtonStateRequest
 
 struct GetButtonStateReply
 {
+   Command cmd = Command::GetButtonState;
    std::string button_name;
    bool checked;
    bool checkable;

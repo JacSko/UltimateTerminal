@@ -1,21 +1,19 @@
-#ifndef _RPC_SERVER_H_
-#define _RPC_SERVER_H_
+#pragma once
+
 #include <memory>
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
 #include <map>
 
-#include "ISocketServer.h"
+#include "IRPCSocketServer.h"
 #include "Logger.h"
-
+#include "RPCCommon.h"
 
 namespace RPC
 {
 
-enum class Command : uint8_t;
-
-class RPCServer : public Drivers::SocketServer::ServerListener
+class RPCServer : public SocketServer::ServerListener
 {
 public:
    RPCServer();
@@ -35,30 +33,50 @@ public:
     * @param[in] data - data buffer to send.
     * @return True is responded successfully.
     */
-   bool respond(const std::vector<uint8_t>&);
+   template<typename RESPONSE_TYPE>
+   bool respond(const RESPONSE_TYPE& response)
+   {
+      std::vector<uint8_t> buffer;
+      buffer.push_back((uint8_t)MessageType::RequestResponse);
+      buffer.push_back((uint8_t)response.cmd);
+      buffer.insert(buffer.end(), (uint8_t*)&response, (uint8_t*)&response + sizeof(RESPONSE_TYPE));
+      return m_server->write(buffer, buffer.size());
+   }
+   /**
+    * @brief Send notification to client.
+    * @param[in] data - data buffer to send.
+    * @return True is sent successfully.
+    */
+   template<typename NOTIFICATION_TYPE>
+   bool notify(const NOTIFICATION_TYPE& notification)
+   {
+      std::vector<uint8_t> buffer;
+      buffer.push_back((uint8_t)MessageType::Notification);
+      buffer.push_back((uint8_t)notification.cmd);
+      buffer.insert(buffer.end(), (uint8_t*)&notification, (uint8_t*)&notification + sizeof(NOTIFICATION_TYPE));
+      return m_server->write(buffer, buffer.size());
+   }
    /**
     * @brief Adds a command executor. Such executor is responsible for calling the respond() method
     * @param[in] cmd - command that executor is handling
     * @param[in] function - the function to be called on 'cmd' request.
     * @return None.
     */
-   void addCommandExecutor(Command cmd, std::function<bool(const std::vector<uint8_t>&)>);
+   void addCommandExecutor(uint8_t cmd, std::function<bool(const std::vector<uint8_t>&)>);
+
    /**
     * @brief Removes the executor for command.
     * @param[in] cmd - id of the command.
     * @return None.
     */
-   void removeCommandExecutor(Command cmd);
+   void removeCommandExecutor(uint8_t cmd);
 
 private:
-   void onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size);
-   std::unique_ptr<Drivers::SocketServer::ISocketServer> m_server;
+   void onServerEvent(int client_id, SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size);
+   std::unique_ptr<RPC::SocketServer::ISocketServer> m_server;
 
-   std::map<Command, std::function<bool(const std::vector<uint8_t>&)>> m_executors;
+   std::map<uint8_t, std::function<bool(const std::vector<uint8_t>&)>> m_executors;
    std::mutex m_executors_mutex;
 };
 
 }
-
-
-#endif
