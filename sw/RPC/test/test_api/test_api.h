@@ -2,7 +2,6 @@
 #define _TEST_RPC_API_H
 
 #include <stdint.h>
-#include "Serialize.hpp"
 
 namespace RPC
 {
@@ -42,6 +41,7 @@ struct TestCommand1Request
 
 struct TestCommand1Reply
 {
+   Command cmd = Command::TestCommand1;
    bool result;
 };
 
@@ -54,59 +54,10 @@ struct TestCommand2Request
 
 struct TestCommand2Reply
 {
+   Command cmd = Command::TestCommand1;
    std::string result;
 };
 
-}
-
-static void serialize(std::vector<uint8_t>& buffer, RPC::TestCommand1Request item)
-{
-   serialize(buffer, (uint8_t)item.cmd);
-   serialize(buffer, item.data1);
-   serialize(buffer, item.data2);
-   serialize(buffer, item.data3);
-}
-static void serialize(std::vector<uint8_t>& buffer, RPC::TestCommand1Reply item)
-{
-   serialize(buffer, (uint8_t)item.result);
-}
-
-static void serialize(std::vector<uint8_t>& buffer, RPC::TestCommand2Request item)
-{
-   serialize(buffer, (uint8_t)item.cmd);
-   serialize(buffer, item.data1);
-   serialize(buffer, item.data2);
-}
-static void serialize(std::vector<uint8_t>& buffer, RPC::TestCommand2Reply item)
-{
-   serialize(buffer, item.result);
-}
-
-static void deserialize(const std::vector<uint8_t>& buffer, RPC::TestCommand1Request& item)
-{
-   uint32_t offset = 0;
-   deserialize(buffer, offset, (uint8_t&)item.cmd);
-   deserialize(buffer, offset, item.data1);
-   deserialize(buffer, offset, item.data2);
-   deserialize(buffer, offset, item.data3);
-}
-static void deserialize(const std::vector<uint8_t>& buffer, RPC::TestCommand1Reply& item)
-{
-   uint32_t offset = 0;
-   deserialize(buffer, offset, (uint8_t&)item.result);
-}
-
-static void deserialize(const std::vector<uint8_t>& buffer, RPC::TestCommand2Request& item)
-{
-   uint32_t offset = 0;
-   deserialize(buffer, offset, (uint8_t&)item.cmd);
-   deserialize(buffer, offset, item.data1);
-   deserialize(buffer, offset, item.data2);
-}
-static void deserialize(const std::vector<uint8_t>& buffer, RPC::TestCommand2Reply& item)
-{
-   uint32_t offset = 0;
-   deserialize(buffer, offset, item.result);
 }
 
 #endif
