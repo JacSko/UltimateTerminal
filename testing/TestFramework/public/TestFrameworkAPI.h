@@ -11,6 +11,7 @@ enum class Command : uint8_t
    GetButtonState,
    ButtonClick,
    ButtonContextMenuClick,
+   GetPortLabel,
 
    //TODO
    SetCommand,
@@ -19,9 +20,7 @@ enum class Command : uint8_t
    GetLineEnding,
    SetTraceFilter,
    GetTraceFilter,
-   GetPortLabel,
    GetOpenedPorts,
-   GetPortState,
 };
 
 struct GetButtonStateRequest
@@ -88,6 +87,19 @@ struct GetCommandReply
    std::string command;
 };
 
+struct GetPortLabelRequest
+{
+   Command cmd = Command::GetPortLabel;
+   uint8_t id;
+};
+struct GetPortLabelReply
+{
+   Command cmd = Command::GetPortLabel;
+   uint8_t id;
+   std::string stylesheet;
+   std::string text;
+};
+
 
 }
 
@@ -146,6 +158,20 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandReply item)
    ::serialize(buffer, (uint8_t)item.cmd);
    ::serialize(buffer, item.command);
 }
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+   ::serialize(buffer, item.stylesheet);
+   ::serialize(buffer, item.text);
+
+}
+
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
@@ -212,7 +238,20 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandReply
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
    ::deserialize(buffer, offset, item.command);
 }
-
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+   ::deserialize(buffer, offset, item.stylesheet);
+   ::deserialize(buffer, offset, item.text);
+}
 
 
 

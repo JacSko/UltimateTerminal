@@ -24,4 +24,10 @@ TEST_F(TestFixture, test)
    EXPECT_TRUE(TF::Common::setCommand("test command"));
    EXPECT_EQ(TF::Common::getCommand(), "test command");
 
+   EXPECT_EQ(TF::Ports::getLabelText(0), "");
+   EXPECT_EQ(TF::Ports::getLabelStylesheet(0), "");
+
+   EXPECT_EQ(TF::Ports::getLabelText(1), "");
+   EXPECT_EQ(TF::Ports::getLabelStylesheet(1), "");
+
 }

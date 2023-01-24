@@ -172,11 +172,19 @@ private:
       std::string text;
       ColorCache colors;
    };
+   struct PortLabels
+   {
+      uint8_t id;
+      std::string stylesheet;
+      std::string text;
+   };
 
    bool onButtonClicked(const std::vector<uint8_t>& data);
    bool onButtonContextMenuRequested(const std::vector<uint8_t>& data);
    bool onSetCommandRequest(const std::vector<uint8_t>& data);
    bool onGetCommandRequest(const std::vector<uint8_t>& data);
+   bool onGetPortLabel(const std::vector<uint8_t>& data);
+
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();
 
@@ -196,6 +204,7 @@ private:
    std::vector<std::string> m_line_endings;
    std::vector<std::string>::iterator m_current_line_ending;
    std::vector<TraceFilter> m_trace_filters;
+   std::vector<PortLabels> m_port_labels;
    bool m_terminal_scrolling_enabled;
    bool m_trace_scrolling_enabled;
    std::string m_current_command;

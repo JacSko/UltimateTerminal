@@ -28,6 +28,7 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::ButtonContextMenuClick, std::bind(&GUIController::onButtonContextMenuRequested, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetCommand, std::bind(&GUIController::onSetCommandRequest, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetCommand, std::bind(&GUIController::onGetCommandRequest, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetPortLabel, std::bind(&GUIController::onGetPortLabel, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -48,6 +49,12 @@ void GUIController::run()
    {
       m_trace_filters.push_back({i, filters[i].button->objectName().toStdString(), true, {}, {}});
    }
+   auto& ports = ui->getPorts();
+   for (uint32_t i = 0; i < filters.size(); i++)
+   {
+      m_port_labels.push_back({i, {},{}});
+   }
+
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -244,9 +251,15 @@ void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 }
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_port_labels[id].text = description;
 }
 void GUIController::setPortLabelStylesheet(uint8_t id, const std::string& stylesheet)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_port_labels[id].stylesheet = stylesheet;
 }
 void GUIController::reloadTheme(Theme theme)
 {
@@ -403,6 +416,20 @@ bool GUIController::onGetCommandRequest(const std::vector<uint8_t>&)
 
    UT_Log(MAIN_GUI, LOW, "%s %s", __func__, m_current_command.c_str());
    return rpc_server->respond<RPC::GetCommandReply>(reply);
+}
+bool GUIController::onGetPortLabel(const std::vector<uint8_t>& data)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetPortLabelRequest request = RPC::convert<RPC::GetPortLabelRequest>(data);
+   RPC::GetPortLabelReply reply = {};
+
+   UT_Assert(request.id < m_port_labels.size());
+   reply.id = request.id;
+   reply.stylesheet = m_port_labels[request.id].stylesheet;
+
+   reply.text = m_port_labels[request.id].text;
+   UT_Log(MAIN_GUI, LOW, "%s id %u %s %s", __func__, reply.id, reply.text.c_str(), reply.stylesheet.c_str());
+   return rpc_server->respond<RPC::GetPortLabelReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {

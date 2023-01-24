@@ -27,5 +27,11 @@ std::string getCommand();
 bool setCommand(const std::string& command);
 }
 
+namespace Ports
+{
+std::string getLabelText(uint8_t id);
+std::string getLabelStylesheet(uint8_t id);
+}
+
 
 }
