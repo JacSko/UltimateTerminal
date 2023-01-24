@@ -19,4 +19,9 @@ TEST_F(TestFixture, test)
    EXPECT_EQ(TF::Buttons::getBackgroundColor("scrollButton"), 0x00FF00);
    EXPECT_TRUE(TF::Buttons::simulateButtonClick("scrollButton"));
    EXPECT_EQ(TF::Buttons::getBackgroundColor("scrollButton"), 0xffefefef);
+
+   EXPECT_EQ(TF::Common::getCommand(), "");
+   EXPECT_TRUE(TF::Common::setCommand("test command"));
+   EXPECT_EQ(TF::Common::getCommand(), "test command");
+
 }

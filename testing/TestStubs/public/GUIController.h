@@ -158,8 +158,25 @@ private:
       std::string text;
    };
 
+   struct TraceItem
+   {
+      std::string text;
+      ColorCache colors;
+   };
+
+   struct TraceFilter
+   {
+      uint32_t id;
+      std::string name;
+      bool enabled;
+      std::string text;
+      ColorCache colors;
+   };
+
    bool onButtonClicked(const std::vector<uint8_t>& data);
    bool onButtonContextMenuRequested(const std::vector<uint8_t>& data);
+   bool onSetCommandRequest(const std::vector<uint8_t>& data);
+   bool onGetCommandRequest(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();
 
@@ -167,9 +184,19 @@ private:
    bool onGetButtonStateRequest(const std::vector<uint8_t>&);
 
    uint32_t getButtonIDByName(const std::string& name);
+   uint32_t getTraceFilterIDByName(const std::string& name);
 
    std::mutex m_mutex;
 
    std::vector<ButtonCache> m_buttons_cache;
    std::vector<std::string> m_active_ports;
+   std::vector<TraceItem> m_terminal_items;
+   std::vector<TraceItem> m_trace_items;
+   std::vector<std::string> m_commands_history;
+   std::vector<std::string> m_line_endings;
+   std::vector<std::string>::iterator m_current_line_ending;
+   std::vector<TraceFilter> m_trace_filters;
+   bool m_terminal_scrolling_enabled;
+   bool m_trace_scrolling_enabled;
+   std::string m_current_command;
 };

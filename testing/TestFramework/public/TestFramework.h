@@ -21,5 +21,11 @@ bool simulateContextMenuClick(const std::string& name);
 
 }
 
+namespace Common
+{
+std::string getCommand();
+bool setCommand(const std::string& command);
+}
+
 
 }

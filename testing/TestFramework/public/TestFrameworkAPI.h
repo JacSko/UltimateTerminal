@@ -10,7 +10,18 @@ enum class Command : uint8_t
 {
    GetButtonState,
    ButtonClick,
-   ButtonContextMenuClick
+   ButtonContextMenuClick,
+
+   //TODO
+   SetCommand,
+   GetCommand,
+   SetLineEnding,
+   GetLineEnding,
+   SetTraceFilter,
+   GetTraceFilter,
+   GetPortLabel,
+   GetOpenedPorts,
+   GetPortState,
 };
 
 struct GetButtonStateRequest
@@ -55,6 +66,29 @@ struct ButtonContextMenuClickReply
    bool clicked;
 };
 
+struct SetCommandRequest
+{
+   Command cmd = Command::SetCommand;
+   std::string command;
+};
+struct SetCommandReply
+{
+   Command cmd = Command::SetCommand;
+   bool reply;
+};
+
+struct GetCommandRequest
+{
+   Command cmd = Command::GetCommand;
+};
+
+struct GetCommandReply
+{
+   Command cmd = Command::GetCommand;
+   std::string command;
+};
+
+
 }
 
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest item)
@@ -92,6 +126,25 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::ButtonContextMenuClickR
 {
    ::serialize(buffer, (uint8_t)item.cmd);
    ::serialize(buffer, item.clicked);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetCommandRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.command);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetCommandReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.reply);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.command);
 }
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
@@ -135,6 +188,29 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::ButtonContextMe
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
    ::deserialize(buffer, offset, item.clicked);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetCommandRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.command);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetCommandReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.reply);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.command);
 }
 
 

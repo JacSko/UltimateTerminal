@@ -1,6 +1,7 @@
 #include <memory>
 
 #include "TestFramework.h"
+#include "TestFrameworkCommon.h"
 #include "TestFrameworkAPI.h"
 #include "RPCClient.h"
 #include "Logger.h"
@@ -22,7 +23,7 @@ bool Connect()
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
    UT_Assert(g_rpc_client);
 
-   return g_rpc_client->connect("127.0.0.1", 8888);
+   return g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT);
 }
 void Disconnect()
 {
@@ -99,4 +100,38 @@ bool simulateContextMenuClick(const std::string& name)
 
 
 }
+
+namespace Common
+{
+std::string getCommand()
+{
+   std::string result = "";
+   RPC::GetCommandRequest request {};
+
+   RPC::result<RPC::GetCommandReply> reply = g_rpc_client->invoke<RPC::GetCommandReply, RPC::GetCommandRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.command;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), result.c_str());
+   return result;
+}
+bool setCommand(const std::string& command)
+{
+   bool result = false;
+   RPC::SetCommandRequest request {};
+   request.command = command;
+
+   RPC::result<RPC::SetCommandReply> reply = g_rpc_client->invoke<RPC::SetCommandReply, RPC::SetCommandRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.reply;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+
+}
+
+}
+
 }

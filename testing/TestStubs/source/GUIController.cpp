@@ -1,6 +1,7 @@
 #include "GUIController.h"
 #include <QtCore/QVector>
 #include "TestFrameworkAPI.h"
+#include "TestFrameworkCommon.h"
 #include "RPCServer.h"
 #include "RPCCommon.h"
 
@@ -25,19 +26,27 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetButtonState, std::bind(&GUIController::onGetButtonStateRequest, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::ButtonClick, std::bind(&GUIController::onButtonClicked, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::ButtonContextMenuClick, std::bind(&GUIController::onButtonContextMenuRequested, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetCommand, std::bind(&GUIController::onSetCommandRequest, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetCommand, std::bind(&GUIController::onGetCommandRequest, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
+   rpc_server->stop();
 }
 void GUIController::run()
 {
    ui->setupUi(this);
-   rpc_server->start(8888);
+   rpc_server->start(SERVER_PORT);
 
    auto& buttons = ui->getButtons();
    for (uint32_t i = 0; i < buttons.size(); i++)
    {
       m_buttons_cache.push_back({i, buttons[i]->objectName().toStdString(), {}, buttons[i]->isEnabled(), buttons[i]->isChecked(), buttons[i]->isCheckable(), buttons[i]->text().toStdString()});
+   }
+   auto& filters = ui->getTraceFilters();
+   for (uint32_t i = 0; i < filters.size(); i++)
+   {
+      m_trace_filters.push_back({i, filters[i].button->objectName().toStdString(), true, {}, {}});
    }
 }
 uint32_t GUIController::getButtonID(const std::string& name)
@@ -122,29 +131,39 @@ void GUIController::setButtonText(uint32_t button_id, const std::string& text)
 }
 void GUIController::clearTerminalView()
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_terminal_items.clear();
 }
 void GUIController::clearTraceView()
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_trace_items.clear();
 }
 void GUIController::addToTerminalView(const std::string& text, uint32_t background_color, uint32_t font_color)
 {
+   m_terminal_items.push_back({text, {background_color, font_color}});
 }
 void GUIController::addToTraceView(const std::string& text, uint32_t background_color, uint32_t font_color)
 {
+   m_trace_items.push_back({text, {background_color, font_color}});
 }
 uint32_t GUIController::countTerminalItems()
 {
-   return 0;
+   return (uint32_t)m_terminal_items.size();
 }
 uint32_t GUIController::countTraceItems()
 {
-   return 0;
+   return (uint32_t)m_trace_items.size();
 }
 void GUIController::setTerminalScrollingEnabled(bool enabled)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_terminal_scrolling_enabled = enabled;
 }
 void GUIController::setTraceScrollingEnabled(bool enabled)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_trace_scrolling_enabled = enabled;
 }
 void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback)
 {
@@ -165,39 +184,63 @@ void GUIController::registerPortClosed(const std::string& port_name)
 }
 void GUIController::setCommandsHistory(const std::vector<std::string>& history)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_commands_history = history;
 }
 void GUIController::addCommandToHistory(const std::string& history)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_commands_history.push_back(history);
 }
 std::string GUIController::getCurrentCommand()
 {
-   return "";
+   return m_current_command;
 }
 std::string GUIController::getCurrentLineEnding()
 {
-   return "\n";
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert((m_line_endings.size()) && (m_current_line_ending != m_line_endings.end()));
+   return *m_current_line_ending;
 }
 void GUIController::addLineEnding(const std::string& ending)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_line_endings.push_back(ending);
 }
 void GUIController::setCurrentLineEnding(const std::string& ending)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_current_line_ending = std::find(m_line_endings.begin(), m_line_endings.end(), ending);
 }
 void GUIController::setTraceFilter(uint8_t id, const std::string& filter)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_trace_filters[id].text = filter;
 }
 std::string GUIController::getTraceFilter(uint8_t id)
 {
-   return "";
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   return m_trace_filters[id].text;
 }
 void GUIController::setTraceFilterEnabled(uint8_t id, bool enabled)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_trace_filters[id].enabled = enabled;
 }
 void GUIController::setTraceFilterBackgroundColor(uint32_t id, uint32_t color)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_trace_filters[id].colors.background_color = color;
 }
 void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(id < m_trace_filters.size());
+   m_trace_filters[id].colors.font_color = color;
 }
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
@@ -339,6 +382,28 @@ bool GUIController::onButtonContextMenuRequested(const std::vector<uint8_t>& dat
    UT_Log(MAIN_GUI, LOW, "%s clicked %u", __func__, reply.clicked);
    return rpc_server->respond<RPC::ButtonContextMenuClickReply>(reply);
 }
+bool GUIController::onSetCommandRequest(const std::vector<uint8_t>& data)
+{
+   RPC::SetCommandRequest request = RPC::convert<RPC::SetCommandRequest>(data);
+   RPC::SetCommandReply reply = {};
+   reply.reply = true;
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, request.command.c_str());
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_current_command = request.command;
+
+   return rpc_server->respond<RPC::SetCommandReply>(reply);
+}
+bool GUIController::onGetCommandRequest(const std::vector<uint8_t>&)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+
+   RPC::GetCommandReply reply = {};
+   reply.command = m_current_command;
+
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, m_current_command.c_str());
+   return rpc_server->respond<RPC::GetCommandReply>(reply);
+}
 void GUIController::onCurrentPortSelectionChanged(int index)
 {
 }
@@ -359,6 +424,20 @@ uint32_t GUIController::getButtonIDByName(const std::string& name)
    }
    return result;
 }
+uint32_t GUIController::getTraceFilterIDByName(const std::string& name)
+{
+   uint32_t result = UINT32_MAX;
+   for (uint32_t i = 0; i < m_trace_filters.size(); i++)
+   {
+      if (m_trace_filters[i].name == name)
+      {
+         result = i;
+         break;
+      }
+   }
+   return result;
+}
+
 /* TestFrameworkAPI handling*/
 bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
