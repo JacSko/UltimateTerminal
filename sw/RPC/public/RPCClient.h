@@ -64,8 +64,8 @@ public:
             break;
          }
 
-         m_buffer.insert(m_buffer.end(), (uint8_t*)&request, (uint8_t*)&request + sizeof(request));
-         //serialize(m_buffer, request);
+//         m_buffer.insert(m_buffer.end(), (uint8_t*)&request, (uint8_t*)&request + sizeof(request));
+         serialize(m_buffer, request);
          if(!m_socket_client->write(m_buffer, m_buffer.size()))
          {
             UT_Log(RPC_CLIENT, ERROR, "write error");
@@ -82,7 +82,7 @@ public:
             m_event_ready = false;
             break;
          }
-         response = *((RETURN_TYPE*)m_buffer.data());
+         deserialize(m_buffer, response);
          break;
       }
       while(1);

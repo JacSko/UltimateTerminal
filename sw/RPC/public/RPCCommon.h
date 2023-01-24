@@ -20,9 +20,11 @@ constexpr uint16_t SOCKET_TRANSACTION_TIMEOUT = 100;
 
 
 template<typename T>
-T convert(const std::vector<uint8_t>& data)
+inline T convert(const std::vector<uint8_t>& data)
 {
-   return *((T*)data.data());
+   T result = {};
+   deserialize(data, result);
+   return result;
 }
 
 /**

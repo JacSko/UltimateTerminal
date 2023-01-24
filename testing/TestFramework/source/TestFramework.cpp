@@ -18,6 +18,7 @@ bool Connect()
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
 
+   UT_Log(TEST_FRAMEWORK, LOW, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
    UT_Assert(g_rpc_client);
 
@@ -44,6 +45,7 @@ uint32_t getBackgroundColor(const std::string& name)
    {
       result = reply.reply.background_color;
    }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %.6x", __func__, name.c_str(), result);
    return result;
 }
 bool checkFontColor(const std::string& name, uint32_t color)

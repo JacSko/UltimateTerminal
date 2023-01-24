@@ -39,7 +39,7 @@ public:
       std::vector<uint8_t> buffer;
       buffer.push_back((uint8_t)MessageType::RequestResponse);
       buffer.push_back((uint8_t)response.cmd);
-      buffer.insert(buffer.end(), (uint8_t*)&response, (uint8_t*)&response + sizeof(RESPONSE_TYPE));
+      serialize(buffer, response);
       return m_server->write(buffer, buffer.size());
    }
    /**
@@ -53,7 +53,7 @@ public:
       std::vector<uint8_t> buffer;
       buffer.push_back((uint8_t)MessageType::Notification);
       buffer.push_back((uint8_t)notification.cmd);
-      buffer.insert(buffer.end(), (uint8_t*)&notification, (uint8_t*)&notification + sizeof(NOTIFICATION_TYPE));
+      serialize(buffer, notification);
       return m_server->write(buffer, buffer.size());
    }
    /**

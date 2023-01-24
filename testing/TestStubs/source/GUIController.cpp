@@ -1,8 +1,9 @@
 #include "GUIController.h"
 #include <QtCore/QVector>
+#include "TestFrameworkAPI.h"
 #include "RPCServer.h"
 #include "RPCCommon.h"
-#include "TestFrameworkAPI.h"
+
 
 #undef APPLICATION_THEME
 #define APPLICATION_THEME(theme_name) #theme_name,
