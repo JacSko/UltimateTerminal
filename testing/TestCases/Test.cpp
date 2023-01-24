@@ -16,5 +16,7 @@ struct TestFixture : public testing::Test
 
 TEST_F(TestFixture, test)
 {
-   EXPECT_EQ(TF::Buttons::getBackgroundColor("scrollButton"), 0x112233);
+   EXPECT_EQ(TF::Buttons::getBackgroundColor("scrollButton"), 0x00FF00);
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("scrollButton"));
+   EXPECT_EQ(TF::Buttons::getBackgroundColor("scrollButton"), 0xffefefef);
 }

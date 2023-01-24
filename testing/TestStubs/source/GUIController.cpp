@@ -23,6 +23,8 @@ m_trace_view_status{}
 {
    rpc_server = std::unique_ptr<RPC::RPCServer>(new RPC::RPCServer());
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetButtonState, std::bind(&GUIController::onGetButtonStateRequest, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::ButtonClick, std::bind(&GUIController::onButtonClicked, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::ButtonContextMenuClick, std::bind(&GUIController::onButtonContextMenuRequested, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -149,9 +151,17 @@ void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const 
 }
 void GUIController::registerPortOpened(const std::string& port_name)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_active_ports.push_back(port_name);
 }
 void GUIController::registerPortClosed(const std::string& port_name)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
+   auto it = std::find(m_active_ports.begin(), m_active_ports.end(), port_name);
+   if (it != m_active_ports.end())
+   {
+      m_active_ports.erase(it);
+   }
 }
 void GUIController::setCommandsHistory(const std::vector<std::string>& history)
 {
@@ -283,11 +293,51 @@ uint32_t GUIController::countTraceFilters()
 {
    return ui->countTraceFilters();
 }
-void GUIController::onButtonClicked()
+bool GUIController::onButtonClicked(const std::vector<uint8_t>& data)
 {
+   RPC::ButtonClickRequest request = RPC::convert<RPC::ButtonClickRequest>(data);
+   RPC::ButtonClickReply reply = {};
+   reply.clicked = false;
+
+   uint32_t id = getButtonIDByName(request.button_name);
+   if (id != UINT32_MAX)
+   {
+      std::lock_guard<std::mutex> lock(m_button_listeners_mutex);
+      for (auto& listener : m_button_listeners)
+      {
+         if (listener.id == id && listener.event == ButtonEvent::CLICKED && listener.listener)
+         {
+            listener.listener->onButtonEvent(id, ButtonEvent::CLICKED);
+            reply.clicked = true;
+         }
+      }
+   }
+
+   UT_Log(MAIN_GUI, LOW, "%s clicked %u", __func__, reply.clicked);
+   return rpc_server->respond<RPC::ButtonClickReply>(reply);
 }
-void GUIController::onButtonContextMenuRequested()
+bool GUIController::onButtonContextMenuRequested(const std::vector<uint8_t>& data)
 {
+   RPC::ButtonContextMenuClickRequest request = RPC::convert<RPC::ButtonContextMenuClickRequest>(data);
+   RPC::ButtonContextMenuClickReply reply = {};
+   reply.clicked = false;
+
+   uint32_t id = getButtonIDByName(request.button_name);
+   if (id != UINT32_MAX)
+   {
+      std::lock_guard<std::mutex> lock(m_button_listeners_mutex);
+      for (auto& listener : m_button_listeners)
+      {
+         if (listener.id == id && listener.event == ButtonEvent::CONTEXT_MENU_REQUESTED && listener.listener)
+         {
+            listener.listener->onButtonEvent(id, ButtonEvent::CONTEXT_MENU_REQUESTED);
+            reply.clicked = true;
+         }
+      }
+   }
+
+   UT_Log(MAIN_GUI, LOW, "%s clicked %u", __func__, reply.clicked);
+   return rpc_server->respond<RPC::ButtonContextMenuClickReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {
@@ -296,6 +346,19 @@ void GUIController::onPortSwitchRequest()
 {
 }
 
+uint32_t GUIController::getButtonIDByName(const std::string& name)
+{
+   uint32_t result = UINT32_MAX;
+   for (uint32_t i = 0; i < m_buttons_cache.size(); i++)
+   {
+      if (m_buttons_cache[i].name == name)
+      {
+         result = i;
+         break;
+      }
+   }
+   return result;
+}
 /* TestFrameworkAPI handling*/
 bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
@@ -313,5 +376,7 @@ bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
    reply.enabled = it->enabled;
    reply.text = it->text;
 
+   UT_Log(MAIN_GUI, LOW, "%s name %s", __func__, reply.button_name.c_str());
    return rpc_server->respond<RPC::GetButtonStateReply>(reply);
 }
+

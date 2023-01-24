@@ -68,6 +68,35 @@ bool checkText(const std::string& name, const std::string& text)
 {
 
 }
+bool simulateButtonClick(const std::string& name)
+{
+   bool result = 0;
+   RPC::ButtonClickRequest request {};
+   request.button_name = name;
+
+   RPC::result<RPC::ButtonClickReply> reply = g_rpc_client->invoke<RPC::ButtonClickReply, RPC::ButtonClickRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.clicked;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
+}
+bool simulateContextMenuClick(const std::string& name)
+{
+   bool result = 0;
+   RPC::ButtonContextMenuClickRequest request {};
+   request.button_name = name;
+
+   RPC::result<RPC::ButtonContextMenuClickReply> reply = g_rpc_client->invoke<RPC::ButtonContextMenuClickReply, RPC::ButtonContextMenuClickRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.clicked;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
+}
+
 
 }
 }

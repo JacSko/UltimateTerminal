@@ -15,6 +15,10 @@ bool isEnabled(const std::string& name);
 bool isChecked(const std::string& name);
 bool isCheckable(const std::string& name);
 std::string getText(const std::string& name);
+
+bool simulateButtonClick(const std::string& name);
+bool simulateContextMenuClick(const std::string& name);
+
 }
 
 

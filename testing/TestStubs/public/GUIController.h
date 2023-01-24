@@ -158,17 +158,18 @@ private:
       std::string text;
    };
 
-   void onButtonClicked();
-   void onButtonContextMenuRequested();
+   bool onButtonClicked(const std::vector<uint8_t>& data);
+   bool onButtonContextMenuRequested(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();
-
-   QPushButton* getButtonByName(const std::string& name);
 
    /* TestFrameworkAPI handler */
    bool onGetButtonStateRequest(const std::vector<uint8_t>&);
 
+   uint32_t getButtonIDByName(const std::string& name);
+
    std::mutex m_mutex;
 
    std::vector<ButtonCache> m_buttons_cache;
+   std::vector<std::string> m_active_ports;
 };
