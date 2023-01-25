@@ -187,7 +187,9 @@ private:
    bool onGetLineEnding(const std::vector<uint8_t>& data);
    bool onGetAllLineEndings(const std::vector<uint8_t>& data);
    bool onSetLineEnding(const std::vector<uint8_t>& data);
-
+   bool onGetTargetPort(const std::vector<uint8_t>& data);
+   bool onGetAllTargetPorts(const std::vector<uint8_t>& data);
+   bool onSetTargetPort(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();
 
@@ -200,6 +202,7 @@ private:
    std::mutex m_mutex;
 
    std::vector<ButtonCache> m_buttons_cache;
+   std::vector<std::string>::iterator m_current_active_port;
    std::vector<std::string> m_active_ports;
    std::vector<TraceItem> m_terminal_items;
    std::vector<TraceItem> m_trace_items;

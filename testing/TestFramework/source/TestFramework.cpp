@@ -170,6 +170,59 @@ std::string getLineEnding()
    UT_Log(TEST_FRAMEWORK, LOW, "%s %u [%s]", __func__, reply.ready(), result.c_str());
    return result;
 }
+bool isTargetPortVisible(const std::string port_name)
+{
+   bool result = false;
+   RPC::GetAllTargetPortsRequest request {};
+
+   RPC::result<RPC::GetAllTargetPortsReply> reply = g_rpc_client->invoke<RPC::GetAllTargetPortsReply, RPC::GetAllTargetPortsRequest>(request);
+   if (reply.ready())
+   {
+      result = std::find(reply.reply.port_names.begin(), reply.reply.port_names.end(), port_name) != reply.reply.port_names.end();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s [%s] %u %u", __func__, port_name.c_str(), reply.ready(), result);
+   return result;
+}
+bool setTargetPort(const std::string port_name)
+{
+   bool result = false;
+   RPC::SetTargetPortRequest request {};
+   request.port_name = port_name;
+
+   RPC::result<RPC::SetTargetPortReply> reply = g_rpc_client->invoke<RPC::SetTargetPortReply, RPC::SetTargetPortRequest>(request);
+   if (reply.ready() && reply.reply.result)
+   {
+      result = true;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+}
+std::string getTargetPort()
+{
+   std::string result = "";
+   RPC::GetTargetPortRequest request {};
+
+   RPC::result<RPC::GetTargetPortReply> reply = g_rpc_client->invoke<RPC::GetTargetPortReply, RPC::GetTargetPortRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.port_name;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u [%s]", __func__, reply.ready(), result.c_str());
+   return result;
+}
+uint32_t countTargetPorts()
+{
+   uint32_t result = 0;
+   RPC::GetAllTargetPortsRequest request {};
+
+   RPC::result<RPC::GetAllTargetPortsReply> reply = g_rpc_client->invoke<RPC::GetAllTargetPortsReply, RPC::GetAllTargetPortsRequest>(request);
+   if (reply.ready())
+   {
+      result = (uint32_t)reply.reply.port_names.size();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+}
 
 }
 

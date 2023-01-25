@@ -25,9 +25,15 @@ namespace Common
 {
 std::string getCommand();
 bool setCommand(const std::string& command);
+
 bool isLineEndingVisible(const std::string ending);
 bool setLineEnding(const std::string ending);
 std::string getLineEnding();
+
+bool isTargetPortVisible(const std::string ending);
+bool setTargetPort(const std::string ending);
+std::string getTargetPort();
+uint32_t countTargetPorts();
 
 }
 

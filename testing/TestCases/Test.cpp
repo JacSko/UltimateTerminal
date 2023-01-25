@@ -39,4 +39,7 @@ TEST_F(TestFixture, test)
    EXPECT_TRUE(TF::Common::isLineEndingVisible("EMPTY"));
    EXPECT_FALSE(TF::Common::isLineEndingVisible("not existing"));
 
+   EXPECT_EQ(TF::Common::getTargetPort(), "");
+   EXPECT_FALSE(TF::Common::setTargetPort("not exist"));
+   EXPECT_EQ(TF::Common::countTargetPorts(), 0);
 }

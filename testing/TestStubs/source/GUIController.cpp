@@ -32,6 +32,9 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetLineEnding, std::bind(&GUIController::onGetLineEnding, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetLineEnding, std::bind(&GUIController::onSetLineEnding, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetAllLineEndings, std::bind(&GUIController::onGetAllLineEndings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTargetPort, std::bind(&GUIController::onGetTargetPort, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTargetPort, std::bind(&GUIController::onSetTargetPort, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetAllTargetPorts, std::bind(&GUIController::onGetAllTargetPorts, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -182,6 +185,7 @@ void GUIController::registerPortOpened(const std::string& port_name)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    m_active_ports.push_back(port_name);
+   m_current_active_port = m_active_ports.begin();
 }
 void GUIController::registerPortClosed(const std::string& port_name)
 {
@@ -191,6 +195,7 @@ void GUIController::registerPortClosed(const std::string& port_name)
    {
       m_active_ports.erase(it);
    }
+   m_current_active_port = m_active_ports.begin();
 }
 void GUIController::setCommandsHistory(const std::vector<std::string>& history)
 {
@@ -464,6 +469,36 @@ bool GUIController::onSetLineEnding(const std::vector<uint8_t>& data)
 
    UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.lineending.c_str(), reply.result);
    return rpc_server->respond<RPC::SetLineEndingReply>(reply);
+}
+bool GUIController::onGetTargetPort(const std::vector<uint8_t>& data)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetTargetPortReply reply = {};
+   reply.port_name = m_active_ports.size()? *m_current_active_port : "";
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, reply.port_name.c_str());
+   return rpc_server->respond<RPC::GetTargetPortReply>(reply);
+}
+
+bool GUIController::onGetAllTargetPorts(const std::vector<uint8_t>& data)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetAllTargetPortsReply reply = {};
+   reply.port_names = m_active_ports;
+
+   UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, (uint32_t)reply.port_names.size());
+   return rpc_server->respond<RPC::GetAllTargetPortsReply>(reply);
+}
+bool GUIController::onSetTargetPort(const std::vector<uint8_t>& data)
+{
+   RPC::SetTargetPortRequest request = RPC::convert<RPC::SetTargetPortRequest>(data);
+   RPC::SetTargetPortReply reply = {};
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_current_active_port = std::find(m_active_ports.begin(), m_active_ports.end(), request.port_name);
+   reply.result = m_current_active_port != m_active_ports.end();
+
+   UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.port_name.c_str(), reply.result);
+   return rpc_server->respond<RPC::SetTargetPortReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
+#include <vector>
+
 #include "Serialize.hpp"
 
 namespace RPC
@@ -17,6 +20,9 @@ enum class Command : uint8_t
    SetLineEnding,
    GetLineEnding,
    GetAllLineEndings,
+   SetTargetPort,
+   GetTargetPort,
+   GetAllTargetPorts,
 
    //TODO
    SetTraceFilter,
@@ -129,6 +135,34 @@ struct GetAllLineEndingsReply
    Command cmd = Command::GetAllLineEndings;
    std::vector<std::string> lineendings;
 };
+struct SetTargetPortRequest
+{
+   Command cmd = Command::SetTargetPort;
+   std::string port_name;
+};
+struct SetTargetPortReply
+{
+   Command cmd = Command::SetTargetPort;
+   bool result;
+};
+struct GetTargetPortRequest
+{
+   Command cmd = Command::GetTargetPort;
+};
+struct GetTargetPortReply
+{
+   Command cmd = Command::GetTargetPort;
+   std::string port_name;
+};
+struct GetAllTargetPortsRequest
+{
+   Command cmd = Command::GetAllTargetPorts;
+};
+struct GetAllTargetPortsReply
+{
+   Command cmd = Command::GetAllTargetPorts;
+   std::vector<std::string> port_names;
+};
 
 }
 
@@ -230,6 +264,38 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsReply 
    for (auto& ending : item.lineendings)
    {
       ::serialize(buffer, ending);
+   }
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTargetPortRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.port_name);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTargetPortReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTargetPortRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTargetPortReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.port_name);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (uint32_t)item.port_names.size());
+   for (auto& port_name : item.port_names)
+   {
+      ::serialize(buffer, port_name);
    }
 }
 
@@ -352,6 +418,48 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllLineEndin
       std::string line_ending = "";
       ::deserialize(buffer, offset, line_ending);
       item.lineendings.push_back(line_ending);
+   }
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTargetPortRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTargetPortReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.port_name);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTargetPortRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.port_name);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTargetPortReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsReply& item)
+{
+   uint32_t offset = 0;
+   uint32_t ports_count = 0;
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)ports_count);
+   for (uint32_t i = 0; i < ports_count; i++)
+   {
+      std::string name = "";
+      ::deserialize(buffer, offset, name);
+      item.port_names.push_back(name);
    }
 }
 
