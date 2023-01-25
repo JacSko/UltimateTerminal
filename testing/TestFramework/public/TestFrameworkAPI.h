@@ -23,11 +23,10 @@ enum class Command : uint8_t
    SetTargetPort,
    GetTargetPort,
    GetAllTargetPorts,
+   SetTraceFilter,
+   GetTraceFilterState,
 
    //TODO
-   SetTraceFilter,
-   GetTraceFilter,
-   GetOpenedPorts,
    GetCommandHistory
 };
 
@@ -163,6 +162,31 @@ struct GetAllTargetPortsReply
    Command cmd = Command::GetAllTargetPorts;
    std::vector<std::string> port_names;
 };
+struct GetTraceFilterStateRequest
+{
+   Command cmd = Command::GetTraceFilterState;
+   std::string filter_name;
+};
+struct GetTraceFilterStateReply
+{
+   Command cmd = Command::GetTraceFilterState;
+   std::string filter_name;
+   std::string text;
+   uint32_t background_color;
+   uint32_t font_color;
+   bool enabled;
+};
+struct SetTraceFilterRequest
+{
+   Command cmd = Command::SetTraceFilter;
+   std::string filter_name;
+   std::string text;
+};
+struct SetTraceFilterReply
+{
+   Command cmd = Command::SetTraceFilter;
+   bool result;
+};
 
 }
 
@@ -297,6 +321,31 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsReply 
    {
       ::serialize(buffer, port_name);
    }
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.filter_name);
+   ::serialize(buffer, item.text);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.filter_name);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.filter_name);
+   ::serialize(buffer, item.text);
+   ::serialize(buffer, item.background_color);
+   ::serialize(buffer, item.font_color);
+   ::serialize(buffer, item.enabled);
 }
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
@@ -462,5 +511,32 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllTargetPor
       item.port_names.push_back(name);
    }
 }
-
-
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.filter_name);
+   ::deserialize(buffer, offset, item.text);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.filter_name);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.filter_name);
+   ::deserialize(buffer, offset, item.text);
+   ::deserialize(buffer, offset, item.background_color);
+   ::deserialize(buffer, offset, item.font_color);
+   ::deserialize(buffer, offset, item.enabled);
+}

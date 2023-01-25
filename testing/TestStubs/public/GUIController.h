@@ -190,6 +190,8 @@ private:
    bool onGetTargetPort(const std::vector<uint8_t>& data);
    bool onGetAllTargetPorts(const std::vector<uint8_t>& data);
    bool onSetTargetPort(const std::vector<uint8_t>& data);
+   bool onGetTraceFilterState(const std::vector<uint8_t>& data);
+   bool onSetTraceFilter(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();
 

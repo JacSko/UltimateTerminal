@@ -43,5 +43,13 @@ std::string getLabelText(uint8_t id);
 std::string getLabelStylesheet(uint8_t id);
 }
 
+namespace TraceFilters
+{
+std::string getText(const std::string& filter_name);
+uint32_t getBackgroundColor(const std::string& filter_name);
+uint32_t getFontColor(const std::string& filter_name);
+bool isEditable(const std::string& filter_name);
+bool setText(const std::string& filter_name, const std::string& filter);
+}
 
 }

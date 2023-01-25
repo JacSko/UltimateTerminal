@@ -99,7 +99,7 @@ bool simulateContextMenuClick(const std::string& name)
 }
 
 
-}
+} // Buttons
 
 namespace Common
 {
@@ -224,7 +224,7 @@ uint32_t countTargetPorts()
    return result;
 }
 
-}
+} // Common
 
 namespace Ports
 {
@@ -257,6 +257,83 @@ std::string getLabelStylesheet(uint8_t id)
    return result;
 }
 
+} // Ports
+
+namespace TraceFilters
+{
+
+std::string getText(const std::string& filter_name)
+{
+   std::string result = "";
+   RPC::GetTraceFilterStateRequest request {};
+   request.filter_name = filter_name;
+
+   RPC::result<RPC::GetTraceFilterStateReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterStateReply, RPC::GetTraceFilterStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.text;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s text %s", __func__, reply.reply.filter_name.c_str(), result.c_str());
+   return result;
+}
+uint32_t getBackgroundColor(const std::string& filter_name)
+{
+   uint32_t result = 0;
+   RPC::GetTraceFilterStateRequest request {};
+   request.filter_name = filter_name;
+
+   RPC::result<RPC::GetTraceFilterStateReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterStateReply, RPC::GetTraceFilterStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.background_color;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
+   return result;
+}
+uint32_t getFontColor(const std::string& filter_name)
+{
+   uint32_t result = 0;
+   RPC::GetTraceFilterStateRequest request {};
+   request.filter_name = filter_name;
+
+   RPC::result<RPC::GetTraceFilterStateReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterStateReply, RPC::GetTraceFilterStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.background_color;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
+   return result;
+}
+bool isEditable(const std::string& filter_name)
+{
+   bool result = false;
+   RPC::GetTraceFilterStateRequest request {};
+   request.filter_name = filter_name;
+
+   RPC::result<RPC::GetTraceFilterStateReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterStateReply, RPC::GetTraceFilterStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.enabled;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s editable %u", __func__, reply.reply.filter_name.c_str(), result);
+   return result;
+}
+bool setText(const std::string& filter_name, const std::string& filter)
+{
+   bool result = false;
+   RPC::SetTraceFilterRequest request {};
+   request.filter_name = filter_name;
+   request.text = filter;
+
+   RPC::result<RPC::SetTraceFilterReply> reply = g_rpc_client->invoke<RPC::SetTraceFilterReply, RPC::SetTraceFilterRequest>(request);
+   if (reply.ready() && reply.reply.result)
+   {
+      result = true;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s text %s result %u", __func__, filter_name.c_str(), filter.c_str(), result);
+   return result;
 }
 
-}
+} // TraceFilters
+
+} // TestFramework

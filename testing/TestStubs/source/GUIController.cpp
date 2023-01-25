@@ -35,6 +35,8 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTargetPort, std::bind(&GUIController::onGetTargetPort, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTargetPort, std::bind(&GUIController::onSetTargetPort, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetAllTargetPorts, std::bind(&GUIController::onGetAllTargetPorts, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceFilterState, std::bind(&GUIController::onGetTraceFilterState, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTraceFilter, std::bind(&GUIController::onSetTraceFilter, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -499,6 +501,41 @@ bool GUIController::onSetTargetPort(const std::vector<uint8_t>& data)
 
    UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.port_name.c_str(), reply.result);
    return rpc_server->respond<RPC::SetTargetPortReply>(reply);
+}
+bool GUIController::onGetTraceFilterState(const std::vector<uint8_t>& data)
+{
+   RPC::GetTraceFilterStateRequest request = RPC::convert<RPC::GetTraceFilterStateRequest>(data);
+   uint32_t id = getTraceFilterIDByName(request.filter_name);
+   UT_Assert(id < m_trace_filters.size());
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetTraceFilterStateReply reply = {};
+   reply.filter_name = request.filter_name;
+   reply.enabled = m_trace_filters[id].enabled;
+   reply.background_color = m_trace_filters[id].colors.background_color;
+   reply.font_color = m_trace_filters[id].colors.font_color;
+   reply.text = m_trace_filters[id].text;
+
+   UT_Log(MAIN_GUI, LOW, "%s id %u bg %u fb %u text %s enabled %u", __func__, id, reply.background_color, reply.font_color, reply.text.c_str(), reply.enabled);
+   return rpc_server->respond<RPC::GetTraceFilterStateReply>(reply);
+}
+bool GUIController::onSetTraceFilter(const std::vector<uint8_t>& data)
+{
+   RPC::SetTraceFilterRequest request = RPC::convert<RPC::SetTraceFilterRequest>(data);
+   uint32_t id = getTraceFilterIDByName(request.filter_name);
+   UT_Assert(id < m_trace_filters.size());
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::SetTraceFilterReply reply = {};
+
+   reply.result = m_trace_filters[id].enabled;
+   if (reply.result)
+   {
+      m_trace_filters[id].text = request.text;
+   }
+
+   UT_Log(MAIN_GUI, LOW, "%s id %u text %s result %u", __func__, id, request.text.c_str(), reply.result);
+   return rpc_server->respond<RPC::SetTraceFilterReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {

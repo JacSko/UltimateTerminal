@@ -42,4 +42,18 @@ TEST_F(TestFixture, test)
    EXPECT_EQ(TF::Common::getTargetPort(), "");
    EXPECT_FALSE(TF::Common::setTargetPort("not exist"));
    EXPECT_EQ(TF::Common::countTargetPorts(), 0);
+
+
+   EXPECT_TRUE(TF::TraceFilters::isEditable("traceFilterButton_1"));
+   EXPECT_EQ(TF::TraceFilters::getText("traceFilterButton_3"), "");
+   EXPECT_TRUE(TF::TraceFilters::setText("traceFilterButton_3", "test_filter"));
+   EXPECT_EQ(TF::TraceFilters::getText("traceFilterButton_3"), "test_filter");
+   EXPECT_TRUE(TF::TraceFilters::isEditable("traceFilterButton_3"));
+
+
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("traceFilterButton_3"));
+   EXPECT_FALSE(TF::TraceFilters::isEditable("traceFilterButton_3"));
+   EXPECT_FALSE(TF::TraceFilters::setText("traceFilterButton_3", "new_filter"));
+   EXPECT_EQ(TF::TraceFilters::getText("traceFilterButton_3"), "test_filter");
+
 }
