@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-namespace TestFramework
+namespace TF
 {
 
 class ApplicationExecutor

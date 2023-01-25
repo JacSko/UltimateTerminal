@@ -37,7 +37,8 @@ endif()
 add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" 
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
                 -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" 
-                -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}")
+                -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}"
+                -DRUNTIME_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 #########################################
 #  QT related settings

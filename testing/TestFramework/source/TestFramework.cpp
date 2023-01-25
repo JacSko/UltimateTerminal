@@ -1,4 +1,5 @@
 #include <memory>
+#include <thread>
 
 #include "TestFramework.h"
 #include "TestFrameworkCommon.h"
@@ -6,9 +7,10 @@
 #include "RPCClient.h"
 #include "Logger.h"
 #include "Settings.h"
+#include "ApplicationExecutor.hpp"
 
 static std::unique_ptr<RPC::RPCClient> g_rpc_client;
-
+static TF::ApplicationExecutor g_test_application;
 namespace TF
 {
 
@@ -18,6 +20,10 @@ bool Connect()
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
+
+   UT_Log(TEST_FRAMEWORK, LOW, "starting application %s", APPLICATION_PATH.c_str());
+   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
+   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
    UT_Log(TEST_FRAMEWORK, LOW, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
@@ -30,6 +36,8 @@ void Disconnect()
    UT_Assert(g_rpc_client);
    g_rpc_client->disconnect();
    g_rpc_client.reset(nullptr);
+
+   UT_Assert(g_test_application.stopApplication());
 }
 
 namespace Buttons
