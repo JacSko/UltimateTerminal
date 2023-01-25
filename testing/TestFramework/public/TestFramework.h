@@ -35,6 +35,9 @@ bool setTargetPort(const std::string ending);
 std::string getTargetPort();
 uint32_t countTargetPorts();
 
+uint32_t countCommandHistory();
+bool isCommandInHistory(const std::string& command, uint32_t index = UINT32_MAX);
+
 }
 
 namespace Ports
@@ -50,6 +53,22 @@ uint32_t getBackgroundColor(const std::string& filter_name);
 uint32_t getFontColor(const std::string& filter_name);
 bool isEditable(const std::string& filter_name);
 bool setText(const std::string& filter_name, const std::string& filter);
+}
+
+namespace TerminalView
+{
+uint32_t countItems();
+uint32_t countItemsWithBackgroundColor(uint32_t color);
+uint32_t countItemsWithFontColor(uint32_t color);
+uint32_t countItemsWithText(const std::string& text);
+}
+
+namespace TraceView
+{
+uint32_t countItems();
+uint32_t countItemsWithBackgroundColor(uint32_t color);
+uint32_t countItemsWithFontColor(uint32_t color);
+uint32_t countItemsWithText(const std::string& text);
 }
 
 }

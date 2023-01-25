@@ -37,6 +37,9 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetAllTargetPorts, std::bind(&GUIController::onGetAllTargetPorts, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceFilterState, std::bind(&GUIController::onGetTraceFilterState, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTraceFilter, std::bind(&GUIController::onSetTraceFilter, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetCommandHistory, std::bind(&GUIController::onGetCommandHistory, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTerminalViewContent, std::bind(&GUIController::onGetTerminalViewContent, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceViewContent, std::bind(&GUIController::onGetTraceViewContent, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -536,6 +539,42 @@ bool GUIController::onSetTraceFilter(const std::vector<uint8_t>& data)
 
    UT_Log(MAIN_GUI, LOW, "%s id %u text %s result %u", __func__, id, request.text.c_str(), reply.result);
    return rpc_server->respond<RPC::SetTraceFilterReply>(reply);
+}
+bool GUIController::onGetCommandHistory(const std::vector<uint8_t>&)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetCommandHistoryReply reply = {};
+   reply.history = m_commands_history;
+
+   UT_Log(MAIN_GUI, LOW, "%s history size %u", __func__, reply.history.size());
+   return rpc_server->respond<RPC::GetCommandHistoryReply>(reply);
+}
+bool GUIController::onGetTerminalViewContent(const std::vector<uint8_t>& data)
+{
+   RPC::GetTerminalViewContentReply reply = {};
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   for (auto& item : m_terminal_items)
+   {
+      reply.content.push_back({item.text, item.colors.background_color, item.colors.font_color});
+   }
+
+   UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, reply.content.size());
+   return rpc_server->respond<RPC::GetTerminalViewContentReply>(reply);
+}
+bool GUIController::onGetTraceViewContent(const std::vector<uint8_t>& data)
+{
+   RPC::GetTraceViewContentReply reply = {};
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   for (auto& item : m_trace_items)
+   {
+      printf("Adding item with text %s bg %.8x font %.8x\n", item.text.c_str(), item.colors.background_color, item.colors.font_color);
+      reply.content.push_back({item.text, item.colors.background_color, item.colors.font_color});
+   }
+
+   UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, reply.content.size());
+   return rpc_server->respond<RPC::GetTraceViewContentReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {

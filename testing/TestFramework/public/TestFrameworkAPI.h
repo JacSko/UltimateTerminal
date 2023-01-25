@@ -25,9 +25,9 @@ enum class Command : uint8_t
    GetAllTargetPorts,
    SetTraceFilter,
    GetTraceFilterState,
-
-   //TODO
-   GetCommandHistory
+   GetCommandHistory,
+   GetTerminalViewContent,
+   GetTraceViewContent,
 };
 
 struct GetButtonStateRequest
@@ -186,6 +186,40 @@ struct SetTraceFilterReply
 {
    Command cmd = Command::SetTraceFilter;
    bool result;
+};
+struct GetCommandHistoryRequest
+{
+   Command cmd = Command::GetCommandHistory;
+};
+struct GetCommandHistoryReply
+{
+   Command cmd = Command::GetCommandHistory;
+   std::vector<std::string> history;
+};
+struct GetTerminalViewContentRequest
+{
+   Command cmd = Command::GetTerminalViewContent;
+};
+struct GetTraceViewContentRequest
+{
+   Command cmd = Command::GetTraceViewContent;
+};
+
+struct ViewItem
+{
+   std::string text;
+   uint32_t background_color;
+   uint32_t font_color;
+};
+struct GetTerminalViewContentReply
+{
+   Command cmd = Command::GetTerminalViewContent;
+   std::vector<ViewItem> content;
+};
+struct GetTraceViewContentReply
+{
+   Command cmd = Command::GetTraceViewContent;
+   std::vector<ViewItem> content;
 };
 
 }
@@ -347,6 +381,50 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateRepl
    ::serialize(buffer, item.font_color);
    ::serialize(buffer, item.enabled);
 }
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandHistoryRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandHistoryReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (uint32_t)item.history.size());
+   for (auto& history_item : item.history)
+   {
+      ::serialize(buffer, history_item);
+   }
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (uint32_t)item.content.size());
+   for (auto& content_item : item.content)
+   {
+      ::serialize(buffer, content_item.text);
+      ::serialize(buffer, content_item.background_color);
+      ::serialize(buffer, content_item.font_color);
+   }
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (uint32_t)item.content.size());
+   for (auto& content_item : item.content)
+   {
+      ::serialize(buffer, content_item.text);
+      ::serialize(buffer, content_item.background_color);
+      ::serialize(buffer, content_item.font_color);
+   }
+}
+
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
@@ -540,3 +618,67 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterS
    ::deserialize(buffer, offset, item.font_color);
    ::deserialize(buffer, offset, item.enabled);
 }
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandHistoryRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandHistoryReply& item)
+{
+   uint32_t offset = 0;
+   uint32_t commands_count = 0;
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)commands_count);
+   for (uint32_t i = 0; i < commands_count; i++)
+   {
+      std::string command = "";
+      ::deserialize(buffer, offset, command);
+      item.history.push_back(command);
+   }
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply& item)
+{
+   uint32_t offset = 0;
+   uint32_t terminal_count = 0;
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)terminal_count);
+   for (uint32_t i = 0; i < terminal_count; i++)
+   {
+      RPC::ViewItem terminal_item = {};
+      ::deserialize(buffer, offset, terminal_item.text);
+      ::deserialize(buffer, offset, terminal_item.background_color);
+      ::deserialize(buffer, offset, terminal_item.font_color);
+      item.content.push_back(terminal_item);
+   }
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewContentReply& item)
+{
+   uint32_t offset = 0;
+   uint32_t terminal_count = 0;
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)terminal_count);
+   for (uint32_t i = 0; i < terminal_count; i++)
+   {
+      RPC::ViewItem terminal_item = {};
+      ::deserialize(buffer, offset, terminal_item.text);
+      ::deserialize(buffer, offset, terminal_item.background_color);
+      ::deserialize(buffer, offset, terminal_item.font_color);
+      item.content.push_back(terminal_item);
+   }
+}
+
+
+

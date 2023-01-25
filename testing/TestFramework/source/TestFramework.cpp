@@ -49,25 +49,75 @@ uint32_t getBackgroundColor(const std::string& name)
    UT_Log(TEST_FRAMEWORK, LOW, "%s %s %.6x", __func__, name.c_str(), result);
    return result;
 }
-bool checkFontColor(const std::string& name, uint32_t color)
+uint32_t getFontColor(const std::string& name)
 {
+   uint32_t result = 0;
+   RPC::GetButtonStateRequest request {};
+   request.button_name = name;
 
+   RPC::result<RPC::GetButtonStateReply> reply = g_rpc_client->invoke<RPC::GetButtonStateReply, RPC::GetButtonStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.font_color;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %.6x", __func__, name.c_str(), result);
+   return result;
 }
-bool checkEnabled(const std::string& name, bool enabled)
+bool isEnabled(const std::string& name)
 {
+   bool result = 0;
+   RPC::GetButtonStateRequest request {};
+   request.button_name = name;
 
+   RPC::result<RPC::GetButtonStateReply> reply = g_rpc_client->invoke<RPC::GetButtonStateReply, RPC::GetButtonStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.enabled;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
 }
-bool checkChecked(const std::string& name, bool checked)
+bool isChecked(const std::string& name)
 {
+   bool result = 0;
+   RPC::GetButtonStateRequest request {};
+   request.button_name = name;
 
+   RPC::result<RPC::GetButtonStateReply> reply = g_rpc_client->invoke<RPC::GetButtonStateReply, RPC::GetButtonStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.checked;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
 }
-bool checkCheckable(const std::string& name, bool checkable)
+bool isCheckable(const std::string& name)
 {
+   bool result = 0;
+   RPC::GetButtonStateRequest request {};
+   request.button_name = name;
 
+   RPC::result<RPC::GetButtonStateReply> reply = g_rpc_client->invoke<RPC::GetButtonStateReply, RPC::GetButtonStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.checkable;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
 }
-bool checkText(const std::string& name, const std::string& text)
+std::string getText(const std::string& name)
 {
+   std::string result = "";
+   RPC::GetButtonStateRequest request {};
+   request.button_name = name;
 
+   RPC::result<RPC::GetButtonStateReply> reply = g_rpc_client->invoke<RPC::GetButtonStateReply, RPC::GetButtonStateRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.text;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   return result;
 }
 bool simulateButtonClick(const std::string& name)
 {
@@ -223,6 +273,37 @@ uint32_t countTargetPorts()
    UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
+uint32_t countCommandHistory()
+{
+   uint32_t result = 0;
+   RPC::GetCommandHistoryRequest request {};
+
+   RPC::result<RPC::GetCommandHistoryReply> reply = g_rpc_client->invoke<RPC::GetCommandHistoryReply, RPC::GetCommandHistoryRequest>(request);
+   if (reply.ready())
+   {
+      result = (uint32_t)reply.reply.history.size();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+}
+bool isCommandInHistory(const std::string& command, uint32_t index)
+{
+   bool result = false;
+   RPC::GetCommandHistoryRequest request {};
+
+   RPC::result<RPC::GetCommandHistoryReply> reply = g_rpc_client->invoke<RPC::GetCommandHistoryReply, RPC::GetCommandHistoryRequest>(request);
+   if (reply.ready())
+   {
+      auto it = std::find(reply.reply.history.begin(), reply.reply.history.end(), command);
+      result = it != reply.reply.history.end();
+      if (result && index != UINT32_MAX)
+      {
+         result = (std::distance(reply.reply.history.begin(), it) == index);
+      }
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+}
 
 } // Common
 
@@ -335,5 +416,120 @@ bool setText(const std::string& filter_name, const std::string& filter)
 }
 
 } // TraceFilters
+
+namespace TerminalView
+{
+uint32_t countItems()
+{
+   uint32_t result = 0;
+   RPC::GetTerminalViewContentRequest request {};
+
+   RPC::result<RPC::GetTerminalViewContentReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewContentReply, RPC::GetTerminalViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = (uint32_t)reply.reply.content.size();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s size %u", __func__, result);
+   return result;
+}
+uint32_t countItemsWithBackgroundColor(uint32_t color)
+{
+   uint32_t result = 0;
+   RPC::GetTerminalViewContentRequest request {};
+
+   RPC::result<RPC::GetTerminalViewContentReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewContentReply, RPC::GetTerminalViewContentRequest>(request);
+
+
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.background_color == color;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   return result;
+}
+uint32_t countItemsWithFontColor(uint32_t color)
+{
+   uint32_t result = 0;
+   RPC::GetTerminalViewContentRequest request {};
+
+   RPC::result<RPC::GetTerminalViewContentReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewContentReply, RPC::GetTerminalViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.font_color == color;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   return result;
+}
+uint32_t countItemsWithText(const std::string& text)
+{
+   uint32_t result = 0;
+   RPC::GetTerminalViewContentRequest request {};
+
+   RPC::result<RPC::GetTerminalViewContentReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewContentReply, RPC::GetTerminalViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.text == text;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
+   return result;
+}
+} // TerminalView
+
+namespace TraceView
+{
+uint32_t countItems()
+{
+   uint32_t result = 0;
+   RPC::GetTraceViewContentRequest request {};
+
+   RPC::result<RPC::GetTraceViewContentReply> reply = g_rpc_client->invoke<RPC::GetTraceViewContentReply, RPC::GetTraceViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = (uint32_t)reply.reply.content.size();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s size %u", __func__, result);
+   return result;
+}
+uint32_t countItemsWithBackgroundColor(uint32_t color)
+{
+   uint32_t result = 0;
+   RPC::GetTraceViewContentRequest request {};
+
+   RPC::result<RPC::GetTraceViewContentReply> reply = g_rpc_client->invoke<RPC::GetTraceViewContentReply, RPC::GetTraceViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.background_color == color;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   return result;
+}
+uint32_t countItemsWithFontColor(uint32_t color)
+{
+   uint32_t result = 0;
+   RPC::GetTraceViewContentRequest request {};
+
+   RPC::result<RPC::GetTraceViewContentReply> reply = g_rpc_client->invoke<RPC::GetTraceViewContentReply, RPC::GetTraceViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.font_color == color;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   return result;
+}
+uint32_t countItemsWithText(const std::string& text)
+{
+   uint32_t result = 0;
+   RPC::GetTraceViewContentRequest request {};
+
+   RPC::result<RPC::GetTraceViewContentReply> reply = g_rpc_client->invoke<RPC::GetTraceViewContentReply, RPC::GetTraceViewContentRequest>(request);
+   if (reply.ready())
+   {
+      result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.text == text;});
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
+   return result;
+}
+} // TraceView
+
 
 } // TestFramework
