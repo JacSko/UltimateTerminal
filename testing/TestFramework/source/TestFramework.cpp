@@ -129,7 +129,46 @@ bool setCommand(const std::string& command)
    }
    UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
    return result;
+}
+bool isLineEndingVisible(const std::string ending)
+{
+   bool result = false;
+   RPC::GetAllLineEndingsRequest request {};
 
+   RPC::result<RPC::GetAllLineEndingsReply> reply = g_rpc_client->invoke<RPC::GetAllLineEndingsReply, RPC::GetAllLineEndingsRequest>(request);
+   if (reply.ready())
+   {
+      result = std::find(reply.reply.lineendings.begin(), reply.reply.lineendings.end(), ending) != reply.reply.lineendings.end();
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s [%s] %u %u", __func__, ending.c_str(), reply.ready(), result);
+   return result;
+}
+bool setLineEnding(const std::string ending)
+{
+   bool result = false;
+   RPC::SetLineEndingRequest request {};
+   request.lineending = ending;
+
+   RPC::result<RPC::SetLineEndingReply> reply = g_rpc_client->invoke<RPC::SetLineEndingReply, RPC::SetLineEndingRequest>(request);
+   if (reply.ready() && reply.reply.result)
+   {
+      result = true;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   return result;
+}
+std::string getLineEnding()
+{
+   std::string result = "";
+   RPC::GetLineEndingRequest request {};
+
+   RPC::result<RPC::GetLineEndingReply> reply = g_rpc_client->invoke<RPC::GetLineEndingReply, RPC::GetLineEndingRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.lineending;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u [%s]", __func__, reply.ready(), result.c_str());
+   return result;
 }
 
 }

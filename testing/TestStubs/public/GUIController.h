@@ -184,6 +184,9 @@ private:
    bool onSetCommandRequest(const std::vector<uint8_t>& data);
    bool onGetCommandRequest(const std::vector<uint8_t>& data);
    bool onGetPortLabel(const std::vector<uint8_t>& data);
+   bool onGetLineEnding(const std::vector<uint8_t>& data);
+   bool onGetAllLineEndings(const std::vector<uint8_t>& data);
+   bool onSetLineEnding(const std::vector<uint8_t>& data);
 
    void onCurrentPortSelectionChanged(int);
    void onPortSwitchRequest();

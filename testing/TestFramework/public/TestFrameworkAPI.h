@@ -11,16 +11,18 @@ enum class Command : uint8_t
    GetButtonState,
    ButtonClick,
    ButtonContextMenuClick,
-   GetPortLabel,
-
-   //TODO
    SetCommand,
    GetCommand,
+   GetPortLabel,
    SetLineEnding,
    GetLineEnding,
+   GetAllLineEndings,
+
+   //TODO
    SetTraceFilter,
    GetTraceFilter,
    GetOpenedPorts,
+   GetCommandHistory
 };
 
 struct GetButtonStateRequest
@@ -99,7 +101,34 @@ struct GetPortLabelReply
    std::string stylesheet;
    std::string text;
 };
-
+struct SetLineEndingRequest
+{
+   Command cmd = Command::SetLineEnding;
+   std::string lineending;
+};
+struct SetLineEndingReply
+{
+   Command cmd = Command::SetLineEnding;
+   bool result;
+};
+struct GetLineEndingRequest
+{
+   Command cmd = Command::GetLineEnding;
+};
+struct GetLineEndingReply
+{
+   Command cmd = Command::GetLineEnding;
+   std::string lineending;
+};
+struct GetAllLineEndingsRequest
+{
+   Command cmd = Command::GetAllLineEndings;
+};
+struct GetAllLineEndingsReply
+{
+   Command cmd = Command::GetAllLineEndings;
+   std::vector<std::string> lineendings;
+};
 
 }
 
@@ -171,7 +200,38 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelReply item)
    ::serialize(buffer, item.text);
 
 }
-
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetLineEndingRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.lineending);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetLineEndingReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetLineEndingRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetLineEndingReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.lineending);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (uint32_t)item.lineendings.size());
+   for (auto& ending : item.lineendings)
+   {
+      ::serialize(buffer, ending);
+   }
+}
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
@@ -252,6 +312,47 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelRep
    ::deserialize(buffer, offset, item.stylesheet);
    ::deserialize(buffer, offset, item.text);
 }
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLineEndingRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLineEndingReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.lineending);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLineEndingRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.lineending);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLineEndingReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsReply& item)
+{
+   uint32_t offset = 0;
+   uint32_t lineendings_count = 0;
 
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)lineendings_count);
+   for (uint32_t i = 0; i < lineendings_count; i++)
+   {
+      std::string line_ending = "";
+      ::deserialize(buffer, offset, line_ending);
+      item.lineendings.push_back(line_ending);
+   }
+}
 
 

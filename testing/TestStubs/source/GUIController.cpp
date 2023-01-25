@@ -29,6 +29,9 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetCommand, std::bind(&GUIController::onSetCommandRequest, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetCommand, std::bind(&GUIController::onGetCommandRequest, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetPortLabel, std::bind(&GUIController::onGetPortLabel, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetLineEnding, std::bind(&GUIController::onGetLineEnding, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetLineEnding, std::bind(&GUIController::onSetLineEnding, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetAllLineEndings, std::bind(&GUIController::onGetAllLineEndings, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -213,6 +216,7 @@ void GUIController::addLineEnding(const std::string& ending)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    m_line_endings.push_back(ending);
+   m_current_line_ending = m_line_endings.begin();
 }
 void GUIController::setCurrentLineEnding(const std::string& ending)
 {
@@ -430,6 +434,36 @@ bool GUIController::onGetPortLabel(const std::vector<uint8_t>& data)
    reply.text = m_port_labels[request.id].text;
    UT_Log(MAIN_GUI, LOW, "%s id %u %s %s", __func__, reply.id, reply.text.c_str(), reply.stylesheet.c_str());
    return rpc_server->respond<RPC::GetPortLabelReply>(reply);
+}
+bool GUIController::onGetLineEnding(const std::vector<uint8_t>&)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   UT_Assert(m_current_line_ending != m_line_endings.end());
+   RPC::GetLineEndingReply reply = {};
+   reply.lineending = *m_current_line_ending;
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, reply.lineending.c_str());
+   return rpc_server->respond<RPC::GetLineEndingReply>(reply);
+}
+bool GUIController::onGetAllLineEndings(const std::vector<uint8_t>& data)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   RPC::GetAllLineEndingsReply reply = {};
+   reply.lineendings = m_line_endings;
+
+   UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, (uint32_t)reply.lineendings.size());
+   return rpc_server->respond<RPC::GetAllLineEndingsReply>(reply);
+}
+bool GUIController::onSetLineEnding(const std::vector<uint8_t>& data)
+{
+   RPC::SetLineEndingRequest request = RPC::convert<RPC::SetLineEndingRequest>(data);
+   RPC::SetLineEndingReply reply = {};
+
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_current_line_ending = std::find(m_line_endings.begin(), m_line_endings.end(), request.lineending);
+   reply.result = m_current_line_ending != m_line_endings.end();
+
+   UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.lineending.c_str(), reply.result);
+   return rpc_server->respond<RPC::SetLineEndingReply>(reply);
 }
 void GUIController::onCurrentPortSelectionChanged(int index)
 {
