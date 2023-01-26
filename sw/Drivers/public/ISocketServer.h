@@ -75,8 +75,6 @@ public:
     * @param[in] mode - server mode
     * @param[in] port - connection port (see @details).
     * @param[in] max_clients - defines how many clients can connect to server
-    * @param[in] cert_file - SSL *.pem file
-    * @param[in] key_file - SSL *.pem file
     * @return True if listening started, otherwise false.
     */
    virtual bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) = 0;

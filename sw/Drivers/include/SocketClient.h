@@ -23,6 +23,7 @@
  * =============================*/
 #include "ISocketClient.h"
 #include "ThreadWorker.h"
+#include "SocketHeaderHandler.hpp"
 /* =============================
  *           Defines
  * =============================*/
@@ -48,6 +49,7 @@ private:
 
    void receivingThread();
    void startDelimiterMode();
+   void startHeaderMode();
 
    void notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
 
@@ -63,6 +65,7 @@ private:
 
    std::vector<ClientListener*> m_listeners;
    std::mutex m_listeners_mutex;
+   HeaderHandler m_header_handler;
 
 };
 

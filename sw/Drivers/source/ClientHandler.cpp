@@ -2,6 +2,7 @@
  *   Includes of project headers
  * =============================*/
 #include "ClientHandler.h"
+#include "SocketHeaderHandler.hpp"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -55,6 +56,10 @@ bool ClientHandler::write(const std::vector<uint8_t>& data, size_t size)
    bool result = false;
 
    m_write_buffer.clear();
+   if (m_mode == DataMode::PAYLOAD_HEADER)
+   {
+      m_header_handler.preapreHeader(m_write_buffer, (uint32_t) size);
+   }
    m_write_buffer.insert(m_write_buffer.end(), data.begin(), data.begin() + size);
 
    ssize_t bytes_to_write = m_write_buffer.size();
@@ -65,7 +70,7 @@ bool ClientHandler::write(const std::vector<uint8_t>& data, size_t size)
       result = true;
       while (bytes_to_write > 0)
       {
-         current_write = sendData(m_client_id, m_write_buffer.data() + bytes_written, bytes_to_write, 0);
+         current_write = system_call::send(m_client_id, m_write_buffer.data() + bytes_written, bytes_to_write, 0);
          if (current_write > 0)
          {
             bytes_written += current_write;
@@ -93,6 +98,9 @@ void ClientHandler::execute()
    case DataMode::NEW_LINE_DELIMITER:
       startDelimiterMode();
       break;
+   case DataMode::PAYLOAD_HEADER:
+      startHeaderMode();
+      break;
    default:
       break;
    }
@@ -102,7 +110,7 @@ void ClientHandler::startDelimiterMode()
 {
    while(m_worker.isRunning())
    {
-      int recv_bytes = readData(m_client_id, m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH, 0);
+      int recv_bytes = system_call::recv(m_client_id, m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH, 0);
       if (recv_bytes > 0)
       {
          m_recv_buffer_idx += recv_bytes;
@@ -133,19 +141,40 @@ void ClientHandler::startDelimiterMode()
    }
 }
 
+void ClientHandler::startHeaderMode()
+{
+   std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
+   while(m_worker.isRunning())
+   {
+      int recv_bytes = system_call::recv(m_client_id, header.data(), HeaderHandler::HEADER_SIZE, 0);
+
+      if (recv_bytes == HeaderHandler::HEADER_SIZE)
+      {
+         uint32_t payload_size = m_header_handler.decodeMessageLength(header);
+         recv_bytes = system_call::recv(m_client_id, m_recv_buffer.data(), payload_size, 0);
+         if (recv_bytes == payload_size)
+         {
+            if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::DATA_RECEIVED, m_recv_buffer, payload_size);
+         }
+         else if (recv_bytes == 0)
+         {
+            /* client disconnected, break from main loop and wait for object destroy or restart */
+            if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
+            break;
+         }
+      }
+      else if (recv_bytes == 0)
+      {
+         /* client disconnected, break from main loop and wait for object destroy or restart */
+         if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
+         break;
+      }
+   }
+}
+
 const std::string ClientHandler::getThreadName(int client_id)
 {
    return std::string("CLIENT") + std::to_string(client_id);
-}
-
-ssize_t ClientHandler::sendData(int socket, const void *message, size_t length, int flags)
-{
-   return system_call::send(socket, message, length, flags);
-}
-
-ssize_t ClientHandler::readData(int socket, void *buffer, size_t length, int flags)
-{
-   return system_call::recv(socket, buffer, length, flags);
 }
 
 ClientHandler::~ClientHandler()

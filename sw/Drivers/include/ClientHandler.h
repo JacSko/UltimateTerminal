@@ -24,6 +24,7 @@
  * =============================*/
 #include "ThreadWorker.h"
 #include "ISocketServer.h"
+#include "SocketHeaderHandler.hpp"
 #include "ISocketClientHandler.h"
 /* =============================
  *           Defines
@@ -38,7 +39,7 @@ class ClientHandler : public ISocketClientHandler
 {
 public:
    ClientHandler(int client_id, DataMode mode, ClientHandlerListener* listener);
-   virtual ~ClientHandler();
+   ~ClientHandler();
 private:
    bool start(uint32_t timeout) override;
    void stop() override;
@@ -47,10 +48,8 @@ private:
 
    void execute();
    void startDelimiterMode();
+   void startHeaderMode();
    const std::string getThreadName(int client_id);
-
-   virtual ssize_t sendData(int socket, const void *message, size_t length, int flags);
-   virtual ssize_t readData(int socket, void *buffer, size_t length, int flags);
 
    Utilities::ThreadWorker m_worker;
    int m_client_id;
@@ -59,6 +58,8 @@ private:
    std::vector<uint8_t> m_write_buffer;
    uint32_t m_recv_buffer_idx;
    DataMode m_mode;
+   HeaderHandler m_header_handler;
+
 };
 
 }

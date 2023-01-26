@@ -57,17 +57,12 @@ namespace SocketServer
 constexpr uint32_t SERVER_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERVER_RECEIVE_TIMEOUT = 500;
 
-std::unique_ptr<ISocketServer> ISocketServer::create()
-{
-   return std::unique_ptr<ISocketServer>(new SocketServer());
-}
-
 SocketServer::SocketServer():
 m_listening_thread(std::bind(&SocketServer::listening_thread, this), "SOCK_LISTEN"),
 m_working_thread(std::bind(&SocketServer::worker_thread, this), "SOCK_WORKER"),
 m_server_fd(-1),
-m_port(0),
 m_max_clients(0),
+m_port(0),
 m_listeners {},
 m_handlers {}
 {
@@ -111,19 +106,7 @@ bool SocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients)
                UT_Stdout_Log(SOCK_DRV, MEDIUM, "bind OK, starting thread");
                result = m_listening_thread.start(SERVER_THREAD_START_TIMEOUT);
             }
-            else
-            {
-               UT_Stdout_Log(SOCK_DRV, ERROR, "cannot bind");
-            }
          }
-         else
-         {
-            UT_Stdout_Log(SOCK_DRV, ERROR, "cannot set sockopt");
-         }
-      }
-      else
-      {
-         UT_Stdout_Log(SOCK_DRV, ERROR, "cannot set sockopt");
       }
    }
 
@@ -171,19 +154,18 @@ void SocketServer::listening_thread()
    {
       if (system_call::listen(m_server_fd, (int)m_max_clients) != -1)
       {
-         int new_socket = acceptClient((struct sockaddr *)&address, (socklen_t*)&addrlen);
+         int new_socket = system_call::accept(m_server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
          if (new_socket != -1)
          {
             std::lock_guard<std::mutex> lock(m_handlers_mutex);
             UT_Stdout_Log(SOCK_DRV, LOW, "New client connected, starting thread");
             notifyListeners(new_socket, ServerEvent::CLIENT_CONNECTED, {}, 0);
-            m_handlers.emplace_back(createClientHandler(new_socket));
+            m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
             if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
             {
                UT_Stdout_Log(SOCK_DRV, ERROR, "Cannot start thread");
                m_handlers.pop_back();
                system_call::close(new_socket);
-               onThreadStartFail();
             }
          }
       }
@@ -192,21 +174,6 @@ void SocketServer::listening_thread()
          UT_Stdout_Log(SOCK_DRV, ERROR, "Cannot listen - %s(%d)", strerror(errno), errno);
       }
    }
-}
-
-std::unique_ptr<ISocketClientHandler> SocketServer::createClientHandler(int socket)
-{
-   return std::unique_ptr<ISocketClientHandler>(new ClientHandler(socket, m_mode, this));
-}
-
-int SocketServer::acceptClient(struct sockaddr * address, socklen_t * address_len)
-{
-   return system_call::accept(m_server_fd, address, address_len);
-}
-
-void SocketServer::onThreadStartFail()
-{
-
 }
 
 void SocketServer::worker_thread()

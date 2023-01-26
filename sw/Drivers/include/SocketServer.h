@@ -19,14 +19,12 @@
 #include <thread>
 #include <atomic>
 #include <queue>
-#include <unistd.h>
 /* =============================
  *   Includes of project headers
  * =============================*/
 #include "ISocketServer.h"
 #include "ThreadWorker.h"
 #include "ClientHandler.h"
-
 /* =============================
  *           Defines
  * =============================*/
@@ -41,11 +39,8 @@ class SocketServer : public ISocketServer,
 public:
    SocketServer();
    ~SocketServer();
-protected:
-   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) override;
-   void stop() override;
-
 private:
+
    struct ClientEventData
    {
       int client_id;
@@ -55,15 +50,14 @@ private:
 
 
    /* ISocketServer */
+   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) override;
+   void stop() override;
    uint32_t clientsCount() override;
    void addListener(ServerListener* callback) override;
    void removeListener(ServerListener* callback) override;
    bool write(const std::vector<uint8_t>& data, size_t size = 0) override;
 
    void listening_thread();
-   virtual std::unique_ptr<ISocketClientHandler> createClientHandler(int socket);
-   virtual int acceptClient(struct sockaddr * address, socklen_t * address_len);
-   virtual void onThreadStartFail();
    void worker_thread();
    void storeEvent(int client_id, ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
 

@@ -59,12 +59,6 @@ constexpr uint32_t CLIENT_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
 
-std::unique_ptr<ISocketClient> ISocketClient::create()
-{
-   return std::unique_ptr<ISocketClient>(new SocketClient());
-}
-
-
 SocketClient::SocketClient():
 m_worker(std::bind(&SocketClient::receivingThread, this), "CLIENT_WORKER"),
 m_sock_fd(-1),
@@ -138,7 +132,10 @@ bool SocketClient::connect(DataMode mode, std::string ip_address, uint16_t port)
 }
 void SocketClient::disconnect()
 {
-   m_worker.stop();
+   if (m_worker.isRunning())
+   {
+      m_worker.stop();
+   }
    system_call::close(m_sock_fd);
    m_sock_fd = -1;
 }
@@ -165,6 +162,10 @@ bool SocketClient::write(const std::vector<uint8_t>& data, size_t size)
    bool result = false;
 
    m_write_buffer.clear();
+   if (m_mode == DataMode::PAYLOAD_HEADER)
+   {
+      m_header_handler.preapreHeader(m_write_buffer, (uint32_t) size);
+   }
    m_write_buffer.insert(m_write_buffer.end(), data.begin(), data.begin() + size);
 
    ssize_t bytes_to_write = m_write_buffer.size();
@@ -197,6 +198,9 @@ void SocketClient::receivingThread()
    {
    case DataMode::NEW_LINE_DELIMITER:
       startDelimiterMode();
+      break;
+   case DataMode::PAYLOAD_HEADER:
+      startHeaderMode();
       break;
    default:
       break;
@@ -237,6 +241,37 @@ void SocketClient::startDelimiterMode()
    }
 }
 
+void SocketClient::startHeaderMode()
+{
+   std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
+   while(m_worker.isRunning())
+   {
+      int recv_bytes = system_call::recv(m_sock_fd, header.data(), HeaderHandler::HEADER_SIZE, 0);
+      if (recv_bytes == HeaderHandler::HEADER_SIZE)
+      {
+         uint32_t payload_size = m_header_handler.decodeMessageLength(header);
+         m_recv_buffer.clear();
+         m_recv_buffer.resize(payload_size);
+         recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data(), payload_size, 0);
+         if (recv_bytes == payload_size)
+         {
+            notifyListeners(ClientEvent::SERVER_DATA_RECV, m_recv_buffer, payload_size);
+         }
+         else if (recv_bytes == 0)
+         {
+            /* server disconnected, break from main loop and wait for object destroy or restart */
+            notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+            break;
+         }
+      }
+      else if (recv_bytes == 0)
+      {
+         /* client disconnected, break from main loop and wait for object destroy or restart */
+         notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+         break;
+      }
+   }
+}
 void SocketClient::notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_listeners_mutex);
