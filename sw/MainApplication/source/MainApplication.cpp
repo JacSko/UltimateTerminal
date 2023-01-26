@@ -1,4 +1,3 @@
-#include <QtWidgets/QMessageBox>
 #include <libgen.h>
 #include <unistd.h>
 #include <string.h>
@@ -10,6 +9,7 @@
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 #include "ApplicationSettingsDialog.h"
+#include "MessageBox.h"
 #if defined _WIN32
 #include <Shlwapi.h>
 #include <locale>
@@ -291,13 +291,9 @@ void MainApplication::onLoggingButtonClicked()
       }
       else
       {
-         QString error_message = QString().asprintf("Cannot create logfile @ %s\n%s (%u)", m_file_logging_path.c_str(), strerror(errno), errno);
-         QMessageBox messageBox;
-         messageBox.setText(error_message);
-         messageBox.setWindowTitle("Error");
-         messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(m_gui_controller.getApplicationPalette());
-         messageBox.exec();
+         std::string message = "Cannot create logfile @ " + m_file_logging_path + "\n" +
+                               strerror(errno) + " (" + std::to_string(errno) + ")";
+         Dialogs::MessageBox::show(Dialogs::MessageBox::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
       }
    }
    else

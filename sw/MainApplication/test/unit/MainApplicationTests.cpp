@@ -11,6 +11,7 @@
 #include "PortSettingDialogMock.h"
 #include "TraceFilterSettingDialogMock.h"
 #include "ApplicationSettingsDialogMock.h"
+#include "MessageBoxMock.h"
 #include "IFileLoggerMock.h"
 #include "GUIControllerMock.h"
 #include "Settings.h"
@@ -65,6 +66,8 @@ struct MainApplicationFixture : public testing::Test
       Persistence::PersistenceHandlerMock_init();
       ApplicationSettingsDialogMock_init();
       GUIControllerMock_init();
+      MessageBoxMock_init();
+
       g_timers_mock = new Utilities::ITimersMock;
       g_logger_mock = new IFileLoggerMock;
 
@@ -144,6 +147,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*g_timers_mock, stop());
 
       m_test_subject.reset(nullptr);
+      MessageBoxMock_deinit();
       GUIControllerMock_deinit();
       ApplicationSettingsDialogMock_deinit();
       Persistence::PersistenceHandlerMock_deinit();

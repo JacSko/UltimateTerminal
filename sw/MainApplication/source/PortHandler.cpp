@@ -1,4 +1,3 @@
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <optional>
 #include <string.h>
@@ -6,6 +5,7 @@
 
 #include "Logger.h"
 #include "PortHandler.h"
+#include "MessageBox.h"
 #include "Serialize.hpp"
 
 namespace GUI
@@ -248,13 +248,9 @@ void PortHandler::handleButtonClickSerial()
       else
       {
          UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
-         QMessageBox messageBox;
-         QString error_message = QString().asprintf("Cannot open %s [%s]\n%s (%u)", m_settings.serialSettings.device.c_str(), m_settings.port_name.c_str(), strerror(errno), errno);
-         messageBox.setText(error_message);
-         messageBox.setWindowTitle("Error");
-         messageBox.setIcon(QMessageBox::Critical);
-         messageBox.setPalette(m_gui_controller.getApplicationPalette());
-         messageBox.exec();
+         std::string message = "Cannot open " + m_settings.serialSettings.device + " [" + m_settings.port_name + "]\n" +
+                               std::string(strerror(errno)) + " (" + std::to_string(errno) + ")";
+         Dialogs::MessageBox::show(Dialogs::MessageBox::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
       }
    }
 }
