@@ -9,13 +9,13 @@
 #include <condition_variable>
 
 #include "Logger.h"
-#include "IRPCSocketClient.h"
+#include "ISocketDriverFactory.h"
 #include "RPCCommon.h"
 
 namespace RPC
 {
 
-class RPCClient : public SocketClient::ClientListener
+class RPCClient : public Drivers::SocketClient::ClientListener
 {
 public:
    RPCClient();
@@ -64,7 +64,6 @@ public:
             break;
          }
 
-//         m_buffer.insert(m_buffer.end(), (uint8_t*)&request, (uint8_t*)&request + sizeof(request));
          serialize(m_buffer, request);
          if(!m_socket_client->write(m_buffer, m_buffer.size()))
          {
@@ -76,7 +75,7 @@ public:
             UT_Log(RPC_CLIENT, ERROR, "client response timeout");
             break;
          }
-         if (m_last_event != SocketClient::ClientEvent::SERVER_DATA_RECV)
+         if (m_last_event != Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
          {
             UT_Log(RPC_CLIENT, ERROR, "incorrect event received while waiting for response (%u)", (uint8_t)m_last_event.load());
             m_event_ready = false;
@@ -95,12 +94,12 @@ public:
    }
 
 private:
-   void onClientEvent(SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
+   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void prepareHeader(std::vector<uint8_t>& buffer, MessageType msg_type, uint8_t command);
-   std::unique_ptr<RPC::SocketClient::ISocketClient> m_socket_client;
+   std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket_client;
 
    std::vector<uint8_t> m_buffer;
-   std::atomic<SocketClient::ClientEvent> m_last_event;
+   std::atomic<Drivers::SocketClient::ClientEvent> m_last_event;
    std::atomic<bool> m_event_ready;
    std::atomic<bool> m_transaction_ongoing;
    std::condition_variable m_cond_var;

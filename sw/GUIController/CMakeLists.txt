@@ -12,7 +12,7 @@ target_link_libraries(GUIController
    SettingsHandler
    Logger
    Utilities
-   Drivers
+   DriversIf
    Dialogs
    MainApplicationIf
 )

@@ -569,7 +569,6 @@ bool GUIController::onGetTraceViewContent(const std::vector<uint8_t>& data)
    std::lock_guard<std::mutex> lock(m_mutex);
    for (auto& item : m_trace_items)
    {
-      printf("Adding item with text %s bg %.8x font %.8x\n", item.text.c_str(), item.colors.background_color, item.colors.font_color);
       reply.content.push_back({item.text, item.colors.background_color, item.colors.font_color});
    }
 

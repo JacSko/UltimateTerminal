@@ -14,7 +14,7 @@ target_link_libraries(SocketDriverIntegrationTests PUBLIC
         gmock_main
         Logger
         Utilities
-        Drivers
+        NativeDrivers
 )
 add_test(NAME SocketDriverIntegrationTests COMMAND SocketDriverIntegrationTests)
 
@@ -34,7 +34,7 @@ target_link_libraries(QtSocketDriverIntegrationTests PUBLIC
         gmock_main
         Logger
         Utilities
-        Drivers
+        QtDrivers
         Qt5::Network
 )
 add_test(NAME QtSocketDriverIntegrationTests COMMAND QtSocketDriverIntegrationTests)

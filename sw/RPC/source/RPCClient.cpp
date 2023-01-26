@@ -1,12 +1,11 @@
 #include "RPCClient.h"
 #include "Logger.h"
-#include "IRPCSocketDriverFactory.h"
 namespace RPC
 {
 
 RPCClient::RPCClient():
-m_socket_client(RPC::SocketFactory::createClient(SocketClient::ClientType::RAW_DATA)),
-m_last_event(SocketClient::ClientEvent::SERVER_DISCONNECTED),
+m_socket_client(Drivers::SocketFactory::createClient()),
+m_last_event(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED),
 m_event_ready(false),
 m_transaction_ongoing(false)
 {
@@ -15,7 +14,7 @@ m_transaction_ongoing(false)
 
 bool RPCClient::connect(const std::string& ip_address, uint16_t port)
 {
-   return m_socket_client->connect(SocketClient::DataMode::PAYLOAD_HEADER, ip_address, port);
+   return m_socket_client->connect(Drivers::SocketClient::DataMode::PAYLOAD_HEADER, ip_address, port);
 }
 
 void RPCClient::disconnect()
@@ -32,14 +31,14 @@ void RPCClient::removeNotificationHandler(uint8_t notification)
    std::lock_guard<std::mutex> lock (m_handlers_mutex);
    m_ntf_handlers.erase(notification);
 }
-void RPCClient::onClientEvent(SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
+void RPCClient::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    switch(ev)
    {
-   case SocketClient::ClientEvent::SERVER_DISCONNECTED:
+   case Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED:
       break;
-   case SocketClient::ClientEvent::SERVER_DATA_RECV:
+   case Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV:
       if (m_transaction_ongoing
           && !m_event_ready
           && (data[RPC_MESSAGE_TYPE_BYTE_OFFSET] == (uint8_t)MessageType::RequestResponse))

@@ -11,7 +11,7 @@ target_link_libraries(RPCIntegrationTests PUBLIC
         gmock_main
         Logger
         Utilities
-        Drivers
+        NativeDrivers
         RPC
         RPC_UT_API
 )

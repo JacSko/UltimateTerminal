@@ -1,11 +1,10 @@
 #include "RPCServer.h"
-#include "IRPCSocketDriverFactory.h"
 
 namespace RPC
 {
 
 RPCServer::RPCServer():
-m_server(RPC::SocketFactory::createServer(SocketServer::ServerType::RAW_DATA))
+m_server(Drivers::SocketFactory::createServer())
 
 {
    m_server->addListener(this);
@@ -13,7 +12,7 @@ m_server(RPC::SocketFactory::createServer(SocketServer::ServerType::RAW_DATA))
 
 bool RPCServer::start(uint16_t port)
 {
-   return m_server->start(SocketServer::DataMode::PAYLOAD_HEADER, port, 1);
+   return m_server->start(Drivers::SocketServer::DataMode::PAYLOAD_HEADER, port, 1);
 }
 
 void RPCServer::stop()
@@ -32,11 +31,11 @@ void RPCServer::removeCommandExecutor(uint8_t cmd)
    m_executors.erase(cmd);
 }
 
-void RPCServer::onServerEvent(int client_id, SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size)
+void RPCServer::onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    switch(ev)
    {
-   case SocketServer::ServerEvent::CLIENT_DATA_RECV:
+   case Drivers::SocketServer::ServerEvent::CLIENT_DATA_RECV:
       if (data.size() > 0)
       {
          std::lock_guard<std::mutex> lock(m_executors_mutex);
@@ -52,7 +51,7 @@ void RPCServer::onServerEvent(int client_id, SocketServer::ServerEvent ev, const
          }
       }
       break;
-   case SocketServer::ServerEvent::CLIENT_DISCONNECTED:
+   case Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED:
       UT_Log(RPC_SERVER, INFO, "Client disconnected");
       break;
    }

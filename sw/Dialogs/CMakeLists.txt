@@ -27,7 +27,7 @@ target_link_libraries(Dialogs
    SettingsHandler
    Logger
    Utilities
-   Drivers
+   DriversIf
    MainApplicationIf
    ${GUI_CONTROLLER_LIB}
 )

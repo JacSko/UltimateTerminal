@@ -6,9 +6,6 @@ else()
 set (LOGGER_SOURCES ${LOGGER_SOURCES} test/stubs/LoggerEngineStub.cpp)
 endif()
    
-      
 add_library(Logger ${LOGGER_SOURCES})
-
 target_include_directories(Logger PUBLIC public/ include/)
-
-target_link_libraries(Logger PRIVATE UtilitiesIf SettingsHandler PUBLIC Drivers)
+target_link_libraries(Logger PRIVATE UtilitiesIf SettingsHandler PUBLIC ${DRIVER_VARIANT})

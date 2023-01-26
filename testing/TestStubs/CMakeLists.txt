@@ -12,7 +12,6 @@ target_link_libraries(GUIControllerSimulation
    SettingsHandler
    Logger
    Utilities
-   Drivers
    Dialogs
    MainApplicationIf
    RPC

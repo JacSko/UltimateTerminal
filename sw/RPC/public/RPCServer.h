@@ -6,14 +6,14 @@
 #include <atomic>
 #include <map>
 
-#include "IRPCSocketServer.h"
+#include "ISocketDriverFactory.h"
 #include "Logger.h"
 #include "RPCCommon.h"
 
 namespace RPC
 {
 
-class RPCServer : public SocketServer::ServerListener
+class RPCServer : public Drivers::SocketServer::ServerListener
 {
 public:
    RPCServer();
@@ -72,8 +72,8 @@ public:
    void removeCommandExecutor(uint8_t cmd);
 
 private:
-   void onServerEvent(int client_id, SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size);
-   std::unique_ptr<RPC::SocketServer::ISocketServer> m_server;
+   void onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size);
+   std::unique_ptr<Drivers::SocketServer::ISocketServer> m_server;
 
    std::map<uint8_t, std::function<bool(const std::vector<uint8_t>&)>> m_executors;
    std::mutex m_executors_mutex;

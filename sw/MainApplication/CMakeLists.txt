@@ -26,9 +26,9 @@ target_link_libraries(MainApplication
    SettingsHandler
    Logger
    Utilities
-   Drivers
    Dialogs
    ${GUI_CONTROLLER_LIB}
+   ${DRIVER_VARIANT}
 )
 
 add_library(MainApplicationIf INTERFACE)

@@ -1,34 +1,24 @@
-if(DRIVER_VARIANT EQUAL DRIVER_VARIANT_QT)
+add_library(NativeDrivers source/SocketClient.cpp
+                          source/SocketServer.cpp
+                          source/ClientHandler.cpp
+                          source/SerialDriver.cpp
+                          source/ISocketDriverFactory.cpp)
+target_include_directories(NativeDrivers PUBLIC public/ PRIVATE include/)
+target_link_libraries(NativeDrivers PRIVATE 
+                      Logger 
+                      Utilities)
 
-set(DRIVER_SOURCES
-   source/QtSerialDriver.cpp
-   source/QtSocketClient.cpp
-   source/QtSocketServer.cpp
-   source/QtClientHandler.cpp
-   source/ISocketDriverFactory.cpp
-)
-set(DRIVER_DEPENDENCIES Qt5::SerialPort Qt5::Network)
-
-elseif(DRIVER_VARIANT EQUAL DRIVER_VARIANT_NATIVE)
-
-set(DRIVER_SOURCES 
-   source/SocketClient.cpp
-   source/SocketServer.cpp
-   source/ClientHandler.cpp
-   source/SerialDriver.cpp
-   source/ISocketDriverFactory.cpp
-)
-set(DRIVER_DEPENDENCIES )
-
-else()
-
-message(ERROR "Please provide drivers variant!")
-
-endif()
-
-add_library(Drivers ${DRIVER_SOURCES})
-target_include_directories(Drivers PUBLIC public/ PRIVATE include/)
-target_link_libraries(Drivers PRIVATE Logger Utilities ${DRIVER_DEPENDENCIES})
+add_library(QtDrivers source/QtSerialDriver.cpp
+                      source/QtSocketClient.cpp
+                      source/QtSocketServer.cpp
+                      source/QtClientHandler.cpp
+                      source/ISocketDriverFactory.cpp)
+target_include_directories(QtDrivers PUBLIC public/ PRIVATE include/)
+target_link_libraries(QtDrivers PRIVATE 
+                      Logger 
+                      Utilities 
+                      Qt5::SerialPort 
+                      Qt5::Network)
 
 add_library(DriversIf INTERFACE)
 target_include_directories(DriversIf INTERFACE public/)
