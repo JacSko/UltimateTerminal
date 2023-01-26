@@ -58,11 +58,11 @@ void printHelp()
    std::cout << std::endl;
    std::cout << "Example usage as server:" << std::endl;
    std::cout << std::endl;
-   std::cout << "./SocketDataGenerator --mode server --max_server_clients 1 --port 1111 --payload_rate 100 --payload \"THIS IS EXAMPLE PAYLOAD\\n\"" << std::endl;
+   std::cout << "./SocketDataGenerator --mode=server --max_server_clients=1 --port=1111 --payload_rate=100 --payload=\"THIS IS EXAMPLE PAYLOAD\"" << std::endl;
    std::cout << std::endl;
    std::cout << "Example usage as client:" << std::endl;
    std::cout << std::endl;
-   std::cout << "./SocketDataGenerator --mode client --address 127.0.0.1 --port 1111 --payload_rate 100 --payload \"THIS IS EXAMPLE PAYLOAD\\n\"" << std::endl;
+   std::cout << "./SocketDataGenerator --mode=client --address=127.0.0.1 --port=1111 --payload_rate=100 --payload=\"THIS IS EXAMPLE PAYLOAD\"" << std::endl;
    std::cout << std::endl;
 }
 bool isCommand (const std::string& text)

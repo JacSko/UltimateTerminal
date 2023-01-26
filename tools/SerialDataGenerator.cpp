@@ -78,7 +78,7 @@ void printHelp()
    std::cout << std::endl;
    std::cout << "Example usage:" << std::endl;
    std::cout << std::endl;
-   std::cout << "./SerialDataGenerator --device=/dev/ttyUSB0 --baud=BR_115200 --data=SIX --payload_rate 100 --payload \"THIS IS EXAMPLE PAYLOAD\"" << std::endl;
+   std::cout << "./SerialDataGenerator --device=/dev/ttyUSB0 --baud=BR_115200 --data=SIX --payload_rate=100 --payload=\"THIS IS EXAMPLE PAYLOAD\"" << std::endl;
    std::cout << std::endl;
 }
 bool isCommand (const std::string& text)
