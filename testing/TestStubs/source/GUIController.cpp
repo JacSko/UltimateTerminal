@@ -609,6 +609,28 @@ uint32_t GUIController::getTraceFilterIDByName(const std::string& name)
    return result;
 }
 
+std::string onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit)
+{
+   //TODO
+}
+void onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
+{
+   //TODO
+}
+std::optional<bool> onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit)
+{
+   //TODO
+}
+std::optional<bool> onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit)
+{
+   //TODO
+}
+std::optional<bool> onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit)
+{
+   //TODO
+}
+
+
 /* TestFrameworkAPI handling*/
 bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
