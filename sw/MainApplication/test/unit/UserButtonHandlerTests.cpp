@@ -43,7 +43,7 @@ struct UserButtonHandlerFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
-      m_test_subject.reset(new UserButtonHandler(test_controller, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
+      m_test_subject.reset(new UserButtonHandler(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
       m_test_subject->startThread();
 
    }
@@ -223,7 +223,7 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
 
    /* expect that button name will be set to value read from persistence */
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
-   std::unique_ptr<UserButtonHandler> new_test_subject = std::unique_ptr<UserButtonHandler>(new UserButtonHandler(test_controller, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
+   std::unique_ptr<UserButtonHandler> new_test_subject = std::unique_ptr<UserButtonHandler>(new UserButtonHandler(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
 
    /* simulate persistence read notification */
    reinterpret_cast<Persistence::PersistenceListener*>(new_test_subject.get())->onPersistenceRead(data_buffer);

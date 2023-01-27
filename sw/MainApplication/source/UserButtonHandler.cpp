@@ -9,19 +9,18 @@
 namespace GUI
 {
 
-static uint8_t USER_BUTTON_ID = 0;
 const uint32_t THREAD_START_TIMEOUT = 1000;
 
-UserButtonHandler::UserButtonHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
+UserButtonHandler::UserButtonHandler(GUIController& controller, uint8_t id, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer):
 m_gui_controller(controller),
 m_persistence(persistence),
 m_executor(writer, std::bind(&UserButtonHandler::onCommandExecutionEvent, this, std::placeholders::_1))
 {
-   USER_BUTTON_ID++;
-   UT_Log(USER_BTN_HANDLER, INFO, "Creating user button handler for button %u", USER_BUTTON_ID);
+   UT_Log(USER_BTN_HANDLER, INFO, "Creating user button handler for button %u", id);
 
-   Persistence::PersistenceListener::setName(std::string("BUTTON") + std::to_string(USER_BUTTON_ID));
+   Persistence::PersistenceListener::setName(std::string("BUTTON") + std::to_string(id));
    m_persistence.addListener(*this);
+   m_settings.id = id;
    m_button_id = m_gui_controller.getButtonID(button_name);
    UT_Assert(m_button_id != UINT32_MAX);
    m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);

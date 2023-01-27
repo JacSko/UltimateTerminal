@@ -26,10 +26,8 @@
 namespace Dialogs
 {
 
-class ApplicationSettingsDialog : public QObject
+class ApplicationSettingsDialog
 {
-   Q_OBJECT
-
 public:
    ApplicationSettingsDialog(GUIController& gui_controller,
                              std::vector<std::unique_ptr<GUI::PortHandler>>& ports,

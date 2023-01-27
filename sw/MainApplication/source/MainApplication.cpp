@@ -129,7 +129,7 @@ m_trace_scrolling_active(false)
    {
       std::string name = "BUTTON" + std::to_string(i);
       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
-          new GUI::UserButtonHandler(m_gui_controller, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+          new GUI::UserButtonHandler(m_gui_controller, i, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
    UT_Log(MAIN, ALWAYS, "%u UserButtonHandlers created", user_buttons_count);
 

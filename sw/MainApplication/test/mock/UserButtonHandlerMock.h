@@ -6,7 +6,7 @@
 namespace GUI
 {
 
-UserButtonHandler::UserButtonHandler(GUIController& controller, const std::string&, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
+UserButtonHandler::UserButtonHandler(GUIController& controller, uint8_t id, const std::string&, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer)
 : m_gui_controller(controller),
  m_persistence(persistence),
  m_executor(writer, {})

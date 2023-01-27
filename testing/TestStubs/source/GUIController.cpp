@@ -13,7 +13,11 @@ std::array<std::string, (uint32_t)Theme::APPLICATION_THEMES_MAX> m_themes_names 
 
 /* global objects declaration */
 std::unique_ptr<RPC::RPCServer> rpc_server;
-
+std::vector<Dialogs::PortSettingDialog::Settings> g_port_settings;
+std::vector<Dialogs::TraceFilterSettingDialog::Settings> g_trace_filter_settings;
+std::vector<Dialogs::UserButtonDialog::Settings> g_user_button_settings;
+GUIController::MessageBoxDetails g_messagebox_details;
+std::string g_logging_path;
 
 GUIController::GUIController(QWidget *parent):
 QMainWindow(parent),
@@ -40,6 +44,16 @@ m_trace_view_status{}
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetCommandHistory, std::bind(&GUIController::onGetCommandHistory, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTerminalViewContent, std::bind(&GUIController::onGetTerminalViewContent, this, std::placeholders::_1));
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceViewContent, std::bind(&GUIController::onGetTraceViewContent, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetPortSettings, std::bind(&GUIController::onSetPortSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetPortSettings, std::bind(&GUIController::onGetPortSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTraceFilterSettings, std::bind(&GUIController::onSetTraceFilterSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceFilterSettings, std::bind(&GUIController::onGetTraceFilterSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetUserButtonSettings, std::bind(&GUIController::onSetUserButtonSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetUserButtonSettings, std::bind(&GUIController::onGetUserButtonSettings, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetMessageBox, std::bind(&GUIController::onGetMessageBox, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::ResetMessageBox, std::bind(&GUIController::onResetMessageBox, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetLoggingPath, std::bind(&GUIController::onSetLoggingPath, this, std::placeholders::_1));
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetLoggingPath, std::bind(&GUIController::onGetLoggingPath, this, std::placeholders::_1));
 }
 GUIController::~GUIController()
 {
@@ -47,6 +61,7 @@ GUIController::~GUIController()
 }
 void GUIController::run()
 {
+   UT_Log(MAIN_GUI, INFO, "Starting simulated GUI Controller");
    ui->setupUi(this);
    rpc_server->start(SERVER_PORT);
 
@@ -59,13 +74,15 @@ void GUIController::run()
    for (uint32_t i = 0; i < filters.size(); i++)
    {
       m_trace_filters.push_back({i, filters[i].button->objectName().toStdString(), true, {}, {}});
+      g_trace_filter_settings.push_back({});
    }
    auto& ports = ui->getPorts();
    for (uint32_t i = 0; i < filters.size(); i++)
    {
       m_port_labels.push_back({i, {},{}});
+      g_port_settings.push_back({});
    }
-
+   g_user_button_settings.resize(ui->countUserButtons());
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -185,6 +202,7 @@ void GUIController::setTraceScrollingEnabled(bool enabled)
 }
 void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback)
 {
+   m_active_port_listener = callback;
 }
 void GUIController::registerPortOpened(const std::string& port_name)
 {
@@ -344,12 +362,18 @@ QWidget* GUIController::getParent()
 }
 void GUIController::setStatusBarNotification(const std::string& notification, uint32_t timeout)
 {
+   m_status_bar_notification = notification;
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, notification.c_str());
 }
 void GUIController::setInfoLabelText(const std::string& text)
 {
+   m_info_label = text;
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, text.c_str());
 }
 void GUIController::setApplicationTitle(const std::string& title)
 {
+   m_application_title = title;
+   UT_Log(MAIN_GUI, LOW, "%s %s", __func__, title.c_str());
 }
 uint32_t GUIController::countUserButtons()
 {
@@ -498,9 +522,18 @@ bool GUIController::onSetTargetPort(const std::vector<uint8_t>& data)
    RPC::SetTargetPortRequest request = RPC::convert<RPC::SetTargetPortRequest>(data);
    RPC::SetTargetPortReply reply = {};
 
-   std::lock_guard<std::mutex> lock(m_mutex);
-   m_current_active_port = std::find(m_active_ports.begin(), m_active_ports.end(), request.port_name);
-   reply.result = m_current_active_port != m_active_ports.end();
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_current_active_port = std::find(m_active_ports.begin(), m_active_ports.end(), request.port_name);
+      reply.result = m_current_active_port != m_active_ports.end();
+   }
+
+   //Notify listeners
+   if (m_active_port_listener && reply.result)
+   {
+      UT_Log(MAIN_GUI, LOW, "%s [%s] notifying listeners", __func__, request.port_name.c_str());
+      m_active_port_listener(request.port_name);
+   }
 
    UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.port_name.c_str(), reply.result);
    return rpc_server->respond<RPC::SetTargetPortReply>(reply);
@@ -575,13 +608,123 @@ bool GUIController::onGetTraceViewContent(const std::vector<uint8_t>& data)
    UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, reply.content.size());
    return rpc_server->respond<RPC::GetTraceViewContentReply>(reply);
 }
+bool GUIController::onSetPortSettings(const std::vector<uint8_t>& data)
+{
+   RPC::SetPortSettingsRequest request = RPC::convert<RPC::SetPortSettingsRequest>(data);
+   uint32_t id = request.port_id;
+   UT_Assert(id < g_port_settings.size());
+
+   RPC::SetPortSettingsReply reply = {};
+   reply.result = true;
+   g_port_settings[id] = request.settings;
+
+   UT_Log(MAIN_GUI, LOW, "%s result %u id %u settings %s", __func__, reply.result, id, request.settings.shortSettingsString().c_str());
+   return rpc_server->respond<RPC::SetPortSettingsReply>(reply);
+}
+bool GUIController::onGetPortSettings(const std::vector<uint8_t>& data)
+{
+   RPC::GetPortSettingsRequest request = RPC::convert<RPC::GetPortSettingsRequest>(data);
+   uint32_t id = request.port_id;
+   UT_Assert(id < g_port_settings.size());
+
+   RPC::GetPortSettingsReply reply = {};
+   reply.port_id = request.port_id;
+   reply.settings = g_port_settings[id];
+
+   UT_Log(MAIN_GUI, LOW, "%s id %u settings %s", __func__, id, reply.settings.shortSettingsString().c_str());
+   return rpc_server->respond<RPC::GetPortSettingsReply>(reply);
+}
+bool GUIController::onSetTraceFilterSettings(const std::vector<uint8_t>& data)
+{
+   RPC::SetTraceFilterSettingsRequest request = RPC::convert<RPC::SetTraceFilterSettingsRequest>(data);
+   uint32_t id = request.id;
+   UT_Assert(id < g_trace_filter_settings.size());
+
+   RPC::SetTraceFilterSettingsReply reply = {};
+   reply.result = true;
+   g_trace_filter_settings[id] = request.settings;
+
+   UT_Log(MAIN_GUI, LOW, "%s result %u id %u regex %s bg %.6x fg %.6x", __func__, reply.result, id, request.settings.regex.c_str(), request.settings.background, request.settings.font);
+   return rpc_server->respond<RPC::SetTraceFilterSettingsReply>(reply);
+}
+bool GUIController::onGetTraceFilterSettings(const std::vector<uint8_t>& data)
+{
+   RPC::GetTraceFilterSettingsRequest request = RPC::convert<RPC::GetTraceFilterSettingsRequest>(data);
+   uint32_t id = request.id;
+   UT_Assert(id < g_trace_filter_settings.size());
+
+   RPC::GetTraceFilterSettingsReply reply = {};
+   reply.id = request.id;
+   reply.settings = g_trace_filter_settings[id];
+
+   UT_Log(MAIN_GUI, LOW, "%s id %u regex %s bg %.6x fg %.6x", __func__, reply.id, reply.settings.regex.c_str(), reply.settings.background, reply.settings.font);
+   return rpc_server->respond<RPC::GetTraceFilterSettingsReply>(reply);
+}
+bool GUIController::onSetUserButtonSettings(const std::vector<uint8_t>& data)
+{
+   RPC::SetUserButtonSettingsRequest request = RPC::convert<RPC::SetUserButtonSettingsRequest>(data);
+   uint32_t id = request.id;
+   UT_Assert(id < g_user_button_settings.size());
+
+   RPC::SetUserButtonSettingsReply reply = {};
+   reply.result = true;
+   g_user_button_settings[id] = request.settings;
+
+   UT_Log(MAIN_GUI, LOW, "%s result %u id %u name %s", __func__, reply.result, id, request.settings.button_name.c_str());
+   return rpc_server->respond<RPC::SetUserButtonSettingsReply>(reply);
+}
+bool GUIController::onGetUserButtonSettings(const std::vector<uint8_t>& data)
+{
+   RPC::GetUserButtonSettingsRequest request = RPC::convert<RPC::GetUserButtonSettingsRequest>(data);
+   uint32_t id = request.id;
+   UT_Assert(id < g_user_button_settings.size());
+
+   RPC::GetUserButtonSettingsReply reply = {};
+   reply.id = request.id;
+   reply.settings = g_user_button_settings[id];
+
+   UT_Log(MAIN_GUI, LOW, "%s id %u name %s", __func__, id, reply.settings.button_name.c_str());
+   return rpc_server->respond<RPC::GetUserButtonSettingsReply>(reply);
+}
+bool GUIController::onGetMessageBox(const std::vector<uint8_t>& data)
+{
+   RPC::GetMessageBoxReply reply = {};
+   reply.text = g_messagebox_details.text;
+   reply.icon = g_messagebox_details.icon;
+   reply.title = g_messagebox_details.title;
+
+   UT_Log(MAIN_GUI, LOW, "%s", __func__);
+   return rpc_server->respond<RPC::GetMessageBoxReply>(reply);
+}
+bool GUIController::onResetMessageBox(const std::vector<uint8_t>&)
+{
+   RPC::ResetMessageBoxReply reply = {};
+   reply.result = g_messagebox_details.reported;
+   g_messagebox_details = {};
+
+   UT_Log(MAIN_GUI, LOW, "%s", __func__);
+   return rpc_server->respond<RPC::ResetMessageBoxReply>(reply);
+}
+bool GUIController::onSetLoggingPath(const std::vector<uint8_t>& data)
+{
+   RPC::SetLoggingPathRequest request = RPC::convert<RPC::SetLoggingPathRequest>(data);
+   g_logging_path = request.path;
+   RPC::SetLoggingPathReply reply = {};
+   reply.result = true;
+
+   UT_Log(MAIN_GUI, LOW, "%s path %s", __func__, g_logging_path.c_str());
+   return rpc_server->respond<RPC::SetLoggingPathReply>(reply);
+}
+bool GUIController::onGetLoggingPath(const std::vector<uint8_t>& data)
+{
+   RPC::GetLoggingPathReply reply = {};
+   reply.path = g_logging_path;
+   UT_Log(MAIN_GUI, LOW, "%s path %s", __func__, g_logging_path.c_str());
+   return rpc_server->respond<RPC::GetLoggingPathReply>(reply);
+}
 void GUIController::onCurrentPortSelectionChanged(int index)
 {
 }
-void GUIController::onPortSwitchRequest()
-{
-}
-
 uint32_t GUIController::getButtonIDByName(const std::string& name)
 {
    uint32_t result = UINT32_MAX;
@@ -608,33 +751,39 @@ uint32_t GUIController::getTraceFilterIDByName(const std::string& name)
    }
    return result;
 }
-
 std::string GUIController::onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit)
 {
-   //TODO
-   //save current setting
-   //wait for accept
-   //save and return new settings
+   std::string result = g_logging_path;
+   g_logging_path = current_path;
+   UT_Log(MAIN_GUI, LOW, "%s current %s new %s", __func__, current_path.c_str(), result.c_str());
+   return result;
 }
-void GUIController::onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
+void GUIController::onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette)
 {
-   //TODO
+   g_messagebox_details = {true, window_title, icon, text};
 }
 std::optional<bool> GUIController::onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit)
 {
-   //TODO
+   UT_Assert(current_settings.port_id < g_port_settings.size());
+   out_settings = g_port_settings[current_settings.port_id];
+   UT_Log(MAIN_GUI, LOW, "%s %u[%s]", __func__, current_settings.port_id, current_settings.port_name.c_str());
+   return true;
 }
 std::optional<bool> GUIController::onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit)
 {
-   //TODO
+   UT_Assert(current_settings.id < g_trace_filter_settings.size());
+   out_settings = g_trace_filter_settings[current_settings.id];
+   UT_Log(MAIN_GUI, LOW, "%s id %u", __func__, current_settings.id);
+   return true;
 }
 std::optional<bool> GUIController::onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit)
 {
-   //TODO
+   UT_Assert(current_settings.id < g_user_button_settings.size());
+   out_settings = g_user_button_settings[current_settings.id];
+   UT_Log(MAIN_GUI, LOW, "%s id %u", __func__, current_settings.id);
+   return true;
 }
 
-
-/* TestFrameworkAPI handling*/
 bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
    RPC::GetButtonStateRequest request = RPC::convert<RPC::GetButtonStateRequest>(data);

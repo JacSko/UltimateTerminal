@@ -29,10 +29,8 @@
 namespace Dialogs
 {
 
-class TraceFilterSettingDialog : public QObject
+class TraceFilterSettingDialog
 {
-   Q_OBJECT
-
 public:
    TraceFilterSettingDialog();
    virtual ~TraceFilterSettingDialog();

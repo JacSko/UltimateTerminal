@@ -27,10 +27,8 @@
 namespace Dialogs
 {
 
-class LoggingSettingDialog : public QObject
+class LoggingSettingDialog
 {
-   Q_OBJECT
-
 public:
    LoggingSettingDialog();
    ~LoggingSettingDialog();

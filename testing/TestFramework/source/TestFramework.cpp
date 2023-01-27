@@ -22,8 +22,8 @@ bool Connect()
    LoggerEngine::get()->startFrontends();
 
    UT_Log(TEST_FRAMEWORK, LOW, "starting application %s", APPLICATION_PATH.c_str());
-   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
-   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+//   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
+//   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
    UT_Log(TEST_FRAMEWORK, LOW, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
@@ -37,7 +37,7 @@ void Disconnect()
    g_rpc_client->disconnect();
    g_rpc_client.reset(nullptr);
 
-   UT_Assert(g_test_application.stopApplication());
+//   UT_Assert(g_test_application.stopApplication());
 }
 
 namespace Buttons
@@ -155,7 +155,6 @@ bool simulateContextMenuClick(const std::string& name)
    UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
-
 
 } // Buttons
 
@@ -313,6 +312,86 @@ bool isCommandInHistory(const std::string& command, uint32_t index)
    return result;
 }
 
+std::string getMessageBoxText()
+{
+   std::string result = "";
+   RPC::GetMessageBoxRequest request {};
+
+   RPC::result<RPC::GetMessageBoxReply> reply = g_rpc_client->invoke<RPC::GetMessageBoxReply, RPC::GetMessageBoxRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.text;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
+   return result;
+}
+std::string getMessageBoxTitle()
+{
+   std::string result = "";
+   RPC::GetMessageBoxRequest request {};
+
+   RPC::result<RPC::GetMessageBoxReply> reply = g_rpc_client->invoke<RPC::GetMessageBoxReply, RPC::GetMessageBoxRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.title;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
+   return result;
+}
+Dialogs::MessageBox::Icon getMessageBoxIcon()
+{
+   Dialogs::MessageBox::Icon result = Dialogs::MessageBox::Icon::Warning;
+   RPC::GetMessageBoxRequest request {};
+
+   RPC::result<RPC::GetMessageBoxReply> reply = g_rpc_client->invoke<RPC::GetMessageBoxReply, RPC::GetMessageBoxRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.icon;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u icon %u", __func__, reply.ready(), (uint8_t)reply.reply.icon);
+   return result;
+}
+bool resetMessageBox()
+{
+   bool result = false;
+   RPC::ResetMessageBoxRequest request {};
+
+   RPC::result<RPC::ResetMessageBoxReply> reply = g_rpc_client->invoke<RPC::ResetMessageBoxReply, RPC::ResetMessageBoxRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.result;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u reply %u", __func__, reply.ready(), reply.reply.result);
+   return result;
+}
+bool setLoggingPath(const std::string& path)
+{
+   bool result = "";
+   RPC::SetLoggingPathRequest request {};
+   request.path = path;
+
+   RPC::result<RPC::SetLoggingPathReply> reply = g_rpc_client->invoke<RPC::SetLoggingPathReply, RPC::SetLoggingPathRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.result;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), path.c_str());
+   return result;
+}
+std::string getLoggingPath()
+{
+   std::string result = "";
+   RPC::GetLoggingPathRequest request {};
+
+   RPC::result<RPC::GetLoggingPathReply> reply = g_rpc_client->invoke<RPC::GetLoggingPathReply, RPC::GetLoggingPathRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.path;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), result.c_str());
+   return result;
+}
+
 } // Common
 
 namespace Ports
@@ -343,6 +422,35 @@ std::string getLabelStylesheet(uint8_t id)
       result = reply.reply.stylesheet;
    }
    UT_Log(TEST_FRAMEWORK, LOW, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
+   return result;
+}
+Dialogs::PortSettingDialog::Settings getPortSettings(uint8_t port_id)
+{
+   Dialogs::PortSettingDialog::Settings result = {};
+   RPC::GetPortSettingsRequest request {};
+   request.port_id = port_id;
+
+   RPC::result<RPC::GetPortSettingsReply> reply = g_rpc_client->invoke<RPC::GetPortSettingsReply, RPC::GetPortSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.settings;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u settings %s", __func__, reply.ready(), port_id, reply.reply.settings.shortSettingsString().c_str());
+   return result;
+}
+bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings& settings)
+{
+   bool result = false;
+   RPC::SetPortSettingsRequest request {};
+   request.port_id = port_id;
+   request.settings = settings;
+
+   RPC::result<RPC::SetPortSettingsReply> reply = g_rpc_client->invoke<RPC::SetPortSettingsReply, RPC::SetPortSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.result;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u result %u settings %s", __func__, reply.ready(), port_id, reply.reply.result, settings.shortSettingsString().c_str());
    return result;
 }
 
@@ -422,6 +530,40 @@ bool setText(const std::string& filter_name, const std::string& filter)
    UT_Log(TEST_FRAMEWORK, LOW, "%s name %s text %s result %u", __func__, filter_name.c_str(), filter.c_str(), result);
    return result;
 }
+bool setSettings(uint8_t id, const Dialogs::TraceFilterSettingDialog::Settings& settings)
+{
+   bool result = false;
+   RPC::SetTraceFilterSettingsRequest request {};
+   request.id = id;
+   request.settings = settings;
+
+   RPC::result<RPC::SetTraceFilterSettingsReply> reply = g_rpc_client->invoke<RPC::SetTraceFilterSettingsReply, RPC::SetTraceFilterSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.result;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, request.settings.regex.c_str(),
+         request.settings.background,
+         request.settings.font);
+   return result;
+}
+Dialogs::TraceFilterSettingDialog::Settings getSettings(uint8_t id)
+{
+   Dialogs::TraceFilterSettingDialog::Settings result = {};
+   RPC::GetTraceFilterSettingsRequest request {};
+   request.id = id;
+
+   RPC::result<RPC::GetTraceFilterSettingsReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterSettingsReply, RPC::GetTraceFilterSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.settings;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, reply.reply.settings.regex.c_str(),
+         reply.reply.settings.background,
+         reply.reply.settings.font);
+   return result;
+}
+
 
 } // TraceFilters
 
@@ -538,6 +680,40 @@ uint32_t countItemsWithText(const std::string& text)
    return result;
 }
 } // TraceView
+
+namespace UserButtons
+{
+bool setSettings(uint8_t id, const Dialogs::UserButtonDialog::Settings& settings)
+{
+   bool result = false;
+   RPC::SetUserButtonSettingsRequest request {};
+   request.id = id;
+   request.settings = settings;
+
+   RPC::result<RPC::SetUserButtonSettingsReply> reply = g_rpc_client->invoke<RPC::SetUserButtonSettingsReply, RPC::SetUserButtonSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.result;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u name %s", __func__, reply.ready(), id, request.settings.button_name.c_str());
+   return result;
+
+}
+Dialogs::UserButtonDialog::Settings getSettings(uint8_t id)
+{
+   Dialogs::UserButtonDialog::Settings result = {};
+   RPC::GetUserButtonSettingsRequest request {};
+   request.id = id;
+
+   RPC::result<RPC::GetUserButtonSettingsReply> reply = g_rpc_client->invoke<RPC::GetUserButtonSettingsReply, RPC::GetUserButtonSettingsRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.settings;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u name %s", __func__, reply.ready(), id, result.button_name.c_str());
+   return result;
+}
+} // UserButtons
 
 
 } // TestFramework

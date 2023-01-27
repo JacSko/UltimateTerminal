@@ -17,7 +17,7 @@ class UserButtonHandler : public QObject,
 {
    Q_OBJECT
 public:
-   UserButtonHandler(GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
+   UserButtonHandler(GUIController& controller, uint8_t id, const std::string& button_name, Persistence::PersistenceHandler& persistence, std::function<bool(const std::string&)> writer);
    ~UserButtonHandler();
    bool startThread();
 private:

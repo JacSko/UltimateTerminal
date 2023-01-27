@@ -1,10 +1,10 @@
 if(SIMULATION)
 # This library is created in sw/testing/TestStubs
 	set(GUI_CONTROLLER_LIB GUIControllerSimulation)
-	set(DIALOGS_LIB Dialogs)
+	set(DIALOGS_LIB DialogsSimulation)
 else()
 	set(GUI_CONTROLLER_LIB GUIController)
-	set(DIALOGS_LIB DialogsSimulation)
+	set(DIALOGS_LIB Dialogs)
 endif()
 
 add_library(MainApplication STATIC 	   

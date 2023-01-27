@@ -46,10 +46,8 @@
 namespace Dialogs
 {
 
-class UserButtonDialog : public QObject
+class UserButtonDialog
 {
-   Q_OBJECT
-
 public:
    UserButtonDialog();
    virtual ~UserButtonDialog();
@@ -57,6 +55,7 @@ public:
    /** @brief Stores data from dialog fields */
    struct Settings
    {
+      uint8_t id;                /**< ID of the button */
       std::string button_name;   /**< Name of the button. */
       std::string raw_commands;  /**< Commands in raw format, e.g. "CMD1\nCMD2"*/
    };

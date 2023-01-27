@@ -6,6 +6,9 @@
 
 #include "Serialize.hpp"
 #include "PortSettingDialog.h"
+#include "TraceFilterSettingDialog.h"
+#include "UserButtonDialog.h"
+#include "MessageBox.h"
 
 namespace RPC
 {
@@ -31,6 +34,14 @@ enum class Command : uint8_t
    GetTraceViewContent,
    GetPortSettings,
    SetPortSettings,
+   SetTraceFilterSettings,
+   GetTraceFilterSettings,
+   SetUserButtonSettings,
+   GetUserButtonSettings,
+   GetMessageBox,
+   ResetMessageBox,
+   GetLoggingPath,
+   SetLoggingPath,
 };
 
 struct GetButtonStateRequest
@@ -246,7 +257,89 @@ struct SetPortSettingsReply
    Command cmd = Command::SetPortSettings;
    bool result;
 };
-
+struct GetTraceFilterSettingsRequest
+{
+   Command cmd = Command::GetTraceFilterSettings;
+   uint8_t id;
+};
+struct GetTraceFilterSettingsReply
+{
+   Command cmd = Command::GetTraceFilterSettings;
+   uint8_t id;
+   Dialogs::TraceFilterSettingDialog::Settings settings;
+};
+struct SetTraceFilterSettingsRequest
+{
+   Command cmd = Command::SetTraceFilterSettings;
+   uint8_t id;
+   Dialogs::TraceFilterSettingDialog::Settings settings;
+};
+struct SetTraceFilterSettingsReply
+{
+   Command cmd = Command::GetTraceFilterSettings;
+   bool result;
+};
+struct GetUserButtonSettingsRequest
+{
+   Command cmd = Command::GetUserButtonSettings;
+   uint8_t id;
+};
+struct GetUserButtonSettingsReply
+{
+   Command cmd = Command::GetUserButtonSettings;
+   uint8_t id;
+   Dialogs::UserButtonDialog::Settings settings;
+};
+struct SetUserButtonSettingsRequest
+{
+   Command cmd = Command::SetUserButtonSettings;
+   uint8_t id;
+   Dialogs::UserButtonDialog::Settings settings;
+};
+struct SetUserButtonSettingsReply
+{
+   Command cmd = Command::SetUserButtonSettings;
+   bool result;
+};
+struct GetMessageBoxRequest
+{
+   Command cmd = Command::GetMessageBox;
+};
+struct GetMessageBoxReply
+{
+   Command cmd = Command::GetMessageBox;
+   std::string title;
+   Dialogs::MessageBox::Icon icon;
+   std::string text;
+};
+struct ResetMessageBoxRequest
+{
+   Command cmd = Command::ResetMessageBox;
+};
+struct ResetMessageBoxReply
+{
+   Command cmd = Command::ResetMessageBox;
+   bool result;
+};
+struct GetLoggingPathRequest
+{
+   Command cmd = Command::GetLoggingPath;
+};
+struct GetLoggingPathReply
+{
+   Command cmd = Command::GetLoggingPath;
+   std::string path;
+};
+struct SetLoggingPathRequest
+{
+   Command cmd = Command::SetLoggingPath;
+   std::string path;
+};
+struct SetLoggingPathReply
+{
+   Command cmd = Command::SetLoggingPath;
+   bool result;
+};
 }
 
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest item)
@@ -495,7 +588,99 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply it
    ::serialize(buffer, (uint8_t)item.cmd);
    ::serialize(buffer, item.result);
 }
-
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+   ::serialize(buffer, item.settings.background);
+   ::serialize(buffer, item.settings.font);
+   ::serialize(buffer, item.settings.id);
+   ::serialize(buffer, item.settings.regex);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+   ::serialize(buffer, item.settings.background);
+   ::serialize(buffer, item.settings.font);
+   ::serialize(buffer, item.settings.id);
+   ::serialize(buffer, item.settings.regex);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+   ::serialize(buffer, item.settings.button_name);
+   ::serialize(buffer, item.settings.id);
+   ::serialize(buffer, item.settings.raw_commands);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.id);
+   ::serialize(buffer, item.settings.button_name);
+   ::serialize(buffer, item.settings.id);
+   ::serialize(buffer, item.settings.raw_commands);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetMessageBoxRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetMessageBoxReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.title);
+   ::serialize(buffer, (uint8_t)item.icon);
+   ::serialize(buffer, item.text);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::ResetMessageBoxRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::ResetMessageBoxReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetLoggingPathRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetLoggingPathReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.path);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.path);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
    uint32_t offset = 0;
@@ -753,7 +938,7 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettings
 {
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+   ::deserialize(buffer, offset, item.port_id);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettingsReply& item)
 {
@@ -763,10 +948,10 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettings
    std::string databits_name = "";
    std::string paritybits_name = "";
    std::string stopbits_name = "";
-   std::string port_name = "";
+   std::string type_name = "";
 
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+   ::deserialize(buffer, offset, item.port_id);
    ::deserialize(buffer, offset, item.settings.font_color);
    ::deserialize(buffer, offset, item.settings.ip_address);
    ::deserialize(buffer, offset, item.settings.port);
@@ -779,13 +964,13 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettings
    ::deserialize(buffer, offset, paritybits_name);
    ::deserialize(buffer, offset, stopbits_name);
    ::deserialize(buffer, offset, item.settings.trace_color);
-   ::deserialize(buffer, offset, port_name);
+   ::deserialize(buffer, offset, type_name);
 
    item.settings.serialSettings.baudRate.fromName(baudrate_name);
    item.settings.serialSettings.dataBits.fromName(databits_name);
    item.settings.serialSettings.parityBits.fromName(paritybits_name);
    item.settings.serialSettings.stopBits.fromName(stopbits_name);
-   item.settings.type.fromName(port_name);
+   item.settings.type.fromName(type_name);
 }
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettingsRequest& item)
@@ -795,10 +980,10 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettings
    std::string databits_name = "";
    std::string paritybits_name = "";
    std::string stopbits_name = "";
-   std::string port_name = "";
+   std::string type_name = "";
 
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+   ::deserialize(buffer, offset, item.port_id);
    ::deserialize(buffer, offset, item.settings.font_color);
    ::deserialize(buffer, offset, item.settings.ip_address);
    ::deserialize(buffer, offset, item.settings.port);
@@ -811,20 +996,129 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettings
    ::deserialize(buffer, offset, paritybits_name);
    ::deserialize(buffer, offset, stopbits_name);
    ::deserialize(buffer, offset, item.settings.trace_color);
-   ::deserialize(buffer, offset, port_name);
+   ::deserialize(buffer, offset, type_name);
 
    item.settings.serialSettings.baudRate.fromName(baudrate_name);
    item.settings.serialSettings.dataBits.fromName(databits_name);
    item.settings.serialSettings.parityBits.fromName(paritybits_name);
    item.settings.serialSettings.stopBits.fromName(stopbits_name);
-   item.settings.type.fromName(port_name);
+   item.settings.type.fromName(type_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply& item)
 {
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
    ::deserialize(buffer, offset, item.result);
-
 }
-
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+   ::deserialize(buffer, offset, item.settings.background);
+   ::deserialize(buffer, offset, item.settings.font);
+   ::deserialize(buffer, offset, item.settings.id);
+   ::deserialize(buffer, offset, item.settings.regex);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+   ::deserialize(buffer, offset, item.settings.background);
+   ::deserialize(buffer, offset, item.settings.font);
+   ::deserialize(buffer, offset, item.settings.id);
+   ::deserialize(buffer, offset, item.settings.regex);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+   ::deserialize(buffer, offset, item.settings.button_name);
+   ::deserialize(buffer, offset, item.settings.id);
+   ::deserialize(buffer, offset, item.settings.raw_commands);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.id);
+   ::deserialize(buffer, offset, item.settings.button_name);
+   ::deserialize(buffer, offset, item.settings.id);
+   ::deserialize(buffer, offset, item.settings.raw_commands);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetMessageBoxRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetMessageBoxReply& item)
+{
+   uint32_t offset = 0;
+   uint8_t icon = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.title);
+   ::deserialize(buffer, offset, icon);
+   ::deserialize(buffer, offset, item.text);
+   item.icon = static_cast<Dialogs::MessageBox::Icon>(icon);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::ResetMessageBoxRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::ResetMessageBoxReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLoggingPathRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLoggingPathReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.path);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.path);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
 

@@ -56,6 +56,15 @@ public:
       bool scrolling_enabled;
    };
 
+   struct MessageBoxDetails
+   {
+      bool reported;
+      std::string title;
+      Dialogs::MessageBox::Icon icon;
+      std::string text;
+   };
+
+
    Ui::MainWindow *ui;
    Theme m_current_theme;
    LogViewStatus m_terminal_view_status;
@@ -204,8 +213,17 @@ private:
    bool onGetCommandHistory(const std::vector<uint8_t>& data);
    bool onGetTerminalViewContent(const std::vector<uint8_t>& data);
    bool onGetTraceViewContent(const std::vector<uint8_t>& data);
+   bool onSetPortSettings(const std::vector<uint8_t>& data);
+   bool onGetPortSettings(const std::vector<uint8_t>& data);
+   bool onSetTraceFilterSettings(const std::vector<uint8_t>& data);
+   bool onGetTraceFilterSettings(const std::vector<uint8_t>& data);
+   bool onSetUserButtonSettings(const std::vector<uint8_t>& data);
+   bool onGetUserButtonSettings(const std::vector<uint8_t>& data);
+   bool onGetMessageBox(const std::vector<uint8_t>& data);
+   bool onResetMessageBox(const std::vector<uint8_t>& data);
+   bool onSetLoggingPath(const std::vector<uint8_t>& data);
+   bool onGetLoggingPath(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
-   void onPortSwitchRequest();
 
    /* TestFrameworkAPI handler */
    bool onGetButtonStateRequest(const std::vector<uint8_t>&);
@@ -228,4 +246,7 @@ private:
    bool m_terminal_scrolling_enabled;
    bool m_trace_scrolling_enabled;
    std::string m_current_command;
+   std::string m_application_title;
+   std::string m_info_label;
+   std::string m_status_bar_notification;
 };
