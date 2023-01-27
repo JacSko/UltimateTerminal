@@ -30,10 +30,8 @@ namespace Dialogs
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \
 
-class PortSettingDialog : public QObject
+class PortSettingDialog
 {
-   Q_OBJECT
-
 public:
    PortSettingDialog();
    ~PortSettingDialog();

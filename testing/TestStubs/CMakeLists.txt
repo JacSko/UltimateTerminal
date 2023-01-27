@@ -3,7 +3,6 @@ add_library(GUIControllerSimulation STATIC
        public/GUIController.h)
 
 target_include_directories(GUIControllerSimulation PUBLIC 
-   include/
    public/
 )
 
@@ -12,12 +11,24 @@ target_link_libraries(GUIControllerSimulation
    SettingsHandler
    Logger
    Utilities
-   Dialogs
+   DialogsSimulation
    MainApplicationIf
    RPC
    TestFramework
 )
 
-if (UNIT_TESTS)
-   add_subdirectory(test)
-endif()
+add_library(DialogsSimulation STATIC      
+       source/ApplicationSettingsDialog.cpp
+       source/LoggingSettingDialog.cpp
+       source/MessageBox.cpp
+       source/PortSettingDialog.cpp
+       source/TraceFilterSettingDialog.cpp
+       source/UserButtonDialog.cpp)
+
+target_link_libraries(DialogsSimulation
+   Logger
+   GUIControllerSimulation
+)
+target_include_directories(DialogsSimulation PUBLIC 
+   public/
+)

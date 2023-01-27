@@ -5,6 +5,7 @@
 #include <optional>
 
 #include <QtCore/QObject>
+#include <QtWidgets/QDialog>
 
 /**
  * @file LoggingSettingDialog.cpp

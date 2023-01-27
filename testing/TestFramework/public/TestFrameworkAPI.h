@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Serialize.hpp"
+#include "PortSettingDialog.h"
 
 namespace RPC
 {
@@ -28,6 +29,8 @@ enum class Command : uint8_t
    GetCommandHistory,
    GetTerminalViewContent,
    GetTraceViewContent,
+   GetPortSettings,
+   SetPortSettings,
 };
 
 struct GetButtonStateRequest
@@ -220,6 +223,28 @@ struct GetTraceViewContentReply
 {
    Command cmd = Command::GetTraceViewContent;
    std::vector<ViewItem> content;
+};
+struct GetPortSettingsRequest
+{
+   Command cmd = Command::GetPortSettings;
+   uint8_t port_id;
+};
+struct GetPortSettingsReply
+{
+   Command cmd = Command::GetPortSettings;
+   uint8_t port_id;
+   Dialogs::PortSettingDialog::Settings settings;
+};
+struct SetPortSettingsRequest
+{
+   Command cmd = Command::SetPortSettings;
+   uint8_t port_id;
+   Dialogs::PortSettingDialog::Settings settings;
+};
+struct SetPortSettingsReply
+{
+   Command cmd = Command::SetPortSettings;
+   bool result;
 };
 
 }
@@ -424,7 +449,52 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRepl
       ::serialize(buffer, content_item.font_color);
    }
 }
-
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.port_id);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.port_id);
+   ::serialize(buffer, item.settings.font_color);
+   ::serialize(buffer, item.settings.ip_address);
+   ::serialize(buffer, item.settings.port);
+   ::serialize(buffer, item.settings.port_id);
+   ::serialize(buffer, item.settings.port_name);
+   ::serialize(buffer, item.settings.serialSettings.baudRate.toName());
+   ::serialize(buffer, item.settings.serialSettings.dataBits.toName());
+   ::serialize(buffer, item.settings.serialSettings.device);
+   ::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
+   ::serialize(buffer, item.settings.serialSettings.parityBits.toName());
+   ::serialize(buffer, item.settings.serialSettings.stopBits.toName());
+   ::serialize(buffer, item.settings.trace_color);
+   ::serialize(buffer, item.settings.type.toName());
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetPortSettingsRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.port_id);
+   ::serialize(buffer, item.settings.font_color);
+   ::serialize(buffer, item.settings.ip_address);
+   ::serialize(buffer, item.settings.port);
+   ::serialize(buffer, item.settings.port_id);
+   ::serialize(buffer, item.settings.port_name);
+   ::serialize(buffer, item.settings.serialSettings.baudRate.toName());
+   ::serialize(buffer, item.settings.serialSettings.dataBits.toName());
+   ::serialize(buffer, item.settings.serialSettings.device);
+   ::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
+   ::serialize(buffer, item.settings.serialSettings.parityBits.toName());
+   ::serialize(buffer, item.settings.serialSettings.stopBits.toName());
+   ::serialize(buffer, item.settings.trace_color);
+   ::serialize(buffer, item.settings.type.toName());
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
 
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
@@ -679,6 +749,82 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCon
       item.content.push_back(terminal_item);
    }
 }
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettingsReply& item)
+{
+   uint32_t offset = 0;
 
+   std::string baudrate_name = "";
+   std::string databits_name = "";
+   std::string paritybits_name = "";
+   std::string stopbits_name = "";
+   std::string port_name = "";
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+   ::deserialize(buffer, offset, item.settings.font_color);
+   ::deserialize(buffer, offset, item.settings.ip_address);
+   ::deserialize(buffer, offset, item.settings.port);
+   ::deserialize(buffer, offset, item.settings.port_id);
+   ::deserialize(buffer, offset, item.settings.port_name);
+   ::deserialize(buffer, offset, baudrate_name);
+   ::deserialize(buffer, offset, databits_name);
+   ::deserialize(buffer, offset, item.settings.serialSettings.device);
+   ::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
+   ::deserialize(buffer, offset, paritybits_name);
+   ::deserialize(buffer, offset, stopbits_name);
+   ::deserialize(buffer, offset, item.settings.trace_color);
+   ::deserialize(buffer, offset, port_name);
+
+   item.settings.serialSettings.baudRate.fromName(baudrate_name);
+   item.settings.serialSettings.dataBits.fromName(databits_name);
+   item.settings.serialSettings.parityBits.fromName(paritybits_name);
+   item.settings.serialSettings.stopBits.fromName(stopbits_name);
+   item.settings.type.fromName(port_name);
+}
+
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettingsRequest& item)
+{
+   uint32_t offset = 0;
+   std::string baudrate_name = "";
+   std::string databits_name = "";
+   std::string paritybits_name = "";
+   std::string stopbits_name = "";
+   std::string port_name = "";
+
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (uint32_t&)item.port_id);
+   ::deserialize(buffer, offset, item.settings.font_color);
+   ::deserialize(buffer, offset, item.settings.ip_address);
+   ::deserialize(buffer, offset, item.settings.port);
+   ::deserialize(buffer, offset, item.settings.port_id);
+   ::deserialize(buffer, offset, item.settings.port_name);
+   ::deserialize(buffer, offset, baudrate_name);
+   ::deserialize(buffer, offset, databits_name);
+   ::deserialize(buffer, offset, item.settings.serialSettings.device);
+   ::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
+   ::deserialize(buffer, offset, paritybits_name);
+   ::deserialize(buffer, offset, stopbits_name);
+   ::deserialize(buffer, offset, item.settings.trace_color);
+   ::deserialize(buffer, offset, port_name);
+
+   item.settings.serialSettings.baudRate.fromName(baudrate_name);
+   item.settings.serialSettings.dataBits.fromName(databits_name);
+   item.settings.serialSettings.parityBits.fromName(paritybits_name);
+   item.settings.serialSettings.stopBits.fromName(stopbits_name);
+   item.settings.type.fromName(port_name);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+
+}
 
 

@@ -1,10 +1,3 @@
-if(SIMULATION)
-# This library is created in sw/testing/TestStubs
-	set(GUI_CONTROLLER_LIB GUIControllerSimulation)
-else()
-	set(GUI_CONTROLLER_LIB GUIController)
-endif()
-
 add_library(Dialogs STATIC 
    source/PortSettingDialog.cpp
    source/UserButtonDialog.cpp
@@ -30,7 +23,7 @@ target_link_libraries(Dialogs
    Utilities
    DriversIf
    MainApplicationIf
-   ${GUI_CONTROLLER_LIB}
+   GUIController
 )
 
 if (UNIT_TESTS)

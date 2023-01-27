@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <QtCore/QObject>
+#include <QtWidgets/QDialog>
 
 /**
  * @file UserButtonDialog.h

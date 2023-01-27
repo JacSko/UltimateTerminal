@@ -609,23 +609,26 @@ uint32_t GUIController::getTraceFilterIDByName(const std::string& name)
    return result;
 }
 
-std::string onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit)
+std::string GUIController::onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit)
+{
+   //TODO
+   //save current setting
+   //wait for accept
+   //save and return new settings
+}
+void GUIController::onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
 {
    //TODO
 }
-void onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
+std::optional<bool> GUIController::onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit)
 {
    //TODO
 }
-std::optional<bool> onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit)
+std::optional<bool> GUIController::onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit)
 {
    //TODO
 }
-std::optional<bool> onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit)
-{
-   //TODO
-}
-std::optional<bool> onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit)
+std::optional<bool> GUIController::onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit)
 {
    //TODO
 }
