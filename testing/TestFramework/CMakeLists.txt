@@ -4,4 +4,4 @@ add_library(TestFramework STATIC
 target_include_directories(TestFramework PUBLIC 
    public/
 )
-target_link_libraries(TestFramework Utilities Logger RPC SettingsHandler DialogsSimulation)
+target_link_libraries(TestFramework Utilities NativeDrivers Logger RPC SettingsHandler DialogsSimulation)

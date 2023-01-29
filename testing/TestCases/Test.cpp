@@ -7,11 +7,11 @@ struct TestFixture : public testing::Test
 {
    static void SetUpTestSuite()
    {
-      ASSERT_TRUE(TF::Connect());
+//      ASSERT_TRUE(TF::Connect());
    }
    static void TearDownTestSuite()
    {
-      TF::Disconnect();
+//      TF::Disconnect();
    }
 };
 
@@ -118,14 +118,18 @@ TEST_F(TestFixture, test)
 //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 
+   TF::Serial::startForwarding("d1", "d2");
+   std::this_thread::sleep_for(std::chrono::seconds(10));
 
-   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick("loggingButton"));
-   EXPECT_EQ(TF::Common::getLoggingPath(), "");
-   EXPECT_TRUE(TF::Common::setLoggingPath("example path"));
+   Drivers::Serial::Settings settings;
+   settings.device = "/home/jskowronek/projects/UltimateTerminal/build_sim/d1";
 
-   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick("loggingButton"));
-   EXPECT_EQ(TF::Common::getLoggingPath(), "example path");
+   EXPECT_TRUE(TF::Serial::openSerialPort(settings));
+   EXPECT_TRUE(TF::Serial::sendMessage(settings.device, "Testmessage\n"));
+   EXPECT_TRUE(TF::Serial::closeSerialPort(settings.device));
 
+   std::this_thread::sleep_for(std::chrono::seconds(5));
+   TF::Serial::stopForwarding("d1", "d2");
 
 
 }

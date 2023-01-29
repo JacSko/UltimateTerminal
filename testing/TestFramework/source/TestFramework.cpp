@@ -9,8 +9,34 @@
 #include "Settings.h"
 #include "ApplicationExecutor.hpp"
 
+struct SerialPortLoopback
+{
+   std::string device1;
+   std::string device2;
+   TF::ApplicationExecutor executor;
+};
+
 static std::unique_ptr<RPC::RPCClient> g_rpc_client;
 static TF::ApplicationExecutor g_test_application;
+static std::vector<SerialPortLoopback> g_serial_loopbacks;
+static std::map<std::string, std::unique_ptr<Drivers::Serial::ISerialDriver>> g_serial_drivers;
+
+bool isLoopbackActive(const std::string& device)
+{
+   bool result = false;
+   for (const auto& serial : g_serial_loopbacks)
+   {
+      if (serial.device1 == device ||
+          serial.device2 == device)
+      {
+         result = true;
+         break;
+      }
+   }
+   return result;
+}
+
+
 namespace TF
 {
 
@@ -39,6 +65,80 @@ void Disconnect()
 
 //   UT_Assert(g_test_application.stopApplication());
 }
+
+namespace Serial
+{
+
+bool startForwarding(const std::string& device1, const std::string& device2)
+{
+   bool result = false;
+   if (!isLoopbackActive(device1) && !isLoopbackActive(device2))
+   {
+      SerialPortLoopback loopback;
+      loopback.device1 = device1;
+      loopback.device2 = device2;
+      std::string argument = "pty,raw,link=" + device1 + " pty,raw,link=" + device2;
+      result = loopback.executor.startApplication("socat", argument.c_str());
+      if (result)
+      {
+         g_serial_loopbacks.emplace_back(loopback);
+      }
+   }
+   return result;
+}
+bool stopForwarding(const std::string& device1, const std::string& device2)
+{
+   bool result = false;
+   auto it = std::find_if(g_serial_loopbacks.begin(), g_serial_loopbacks.end(), [&](SerialPortLoopback& loopback){return (loopback.device1 == device1) || (loopback.device2 == device2);});
+   if (it != g_serial_loopbacks.end())
+   {
+      (void)it->executor.stopApplication();
+      g_serial_loopbacks.erase(it);
+      result = true;
+   }
+   return result;
+}
+bool openSerialPort(const Drivers::Serial::Settings& settings)
+{
+   bool result = false;
+   if (g_serial_drivers.find(settings.device) == g_serial_drivers.end())
+   {
+      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s not found, creating driver", __func__, settings.device);
+      auto driver = Drivers::Serial::ISerialDriver::create();
+      if (driver->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, settings))
+      {
+         UT_Log(TEST_FRAMEWORK, LOW, "%s device %s started", __func__, settings.device);
+         g_serial_drivers[settings.device] = std::move(driver);
+         result = true;
+      }
+   }
+   return result;
+}
+bool closeSerialPort(const std::string& device)
+{
+   bool result = false;
+   if (g_serial_drivers.find(device) != g_serial_drivers.end())
+   {
+      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s found, closing", __func__, device);
+      g_serial_drivers[device]->close();
+      g_serial_drivers[device].reset(nullptr);
+      result = true;
+   }
+   return result;
+}
+bool sendMessage(const std::string& device, const std::string& message)
+{
+   bool result = false;
+   if (g_serial_drivers.find(device) != g_serial_drivers.end())
+   {
+      result = g_serial_drivers[device]->write({message.begin(), message.end()}, message.size());
+   }
+   UT_Log_If(!result, TEST_FRAMEWORK, LOW, "%s device %s not found or not opened!", __func__, device);
+   return result;
+}
+
+}
+
 
 namespace Buttons
 {

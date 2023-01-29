@@ -4,12 +4,22 @@
 #include "TraceFilterSettingDialog.h"
 #include "UserButtonDialog.h"
 #include "MessageBox.h"
+#include "ISerialDriver.h"
 
 namespace TF
 {
 
 bool Connect();
 void Disconnect();
+
+namespace Serial
+{
+bool startForwarding(const std::string& device1, const std::string& device2);
+bool stopForwarding(const std::string& device1, const std::string& device2);
+bool openSerialPort(const Drivers::Serial::Settings& settings);
+bool closeSerialPort(const std::string& device);
+bool sendMessage(const std::string& device, const std::string& message);
+}
 
 namespace Buttons
 {
