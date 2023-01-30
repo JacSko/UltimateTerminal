@@ -11,6 +11,8 @@ namespace TF
 
 bool Connect();
 void Disconnect();
+void BeginTest();
+void FinishTest();
 
 namespace Serial
 {

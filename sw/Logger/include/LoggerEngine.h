@@ -130,6 +130,13 @@ public:
     */
    LoggerLevelID levelFromString(const std::string& name);
 
+   /**
+    * @brief Creates the new file where logs will be stored
+    * @param[in] path - path to the file
+    * @return true if new file was created successfully
+    */
+   bool setLogFileName(const std::string& path);
+
 private:
    void refreshGroupLevelSettings();
    LoggerLevelID getLevelFromString(const std::string& level);
@@ -141,6 +148,7 @@ private:
    std::recursive_mutex m_mutex;
 
    std::vector<std::unique_ptr<ILoggerWriter>> m_frontends;
+   std::string m_file_name;
 
 
 };

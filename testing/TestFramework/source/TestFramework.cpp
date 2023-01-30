@@ -1,6 +1,6 @@
 #include <memory>
 #include <thread>
-
+#include "gtest/gtest.h"
 #include "TestFramework.h"
 #include "TestFrameworkCommon.h"
 #include "TestFrameworkAPI.h"
@@ -36,6 +36,15 @@ bool isLoopbackActive(const std::string& device)
    return result;
 }
 
+std::string createTimestamp()
+{
+   auto currentTime = std::chrono::system_clock::now();
+   std::time_t tt = std::chrono::system_clock::to_time_t ( currentTime );
+   auto ts = localtime (&tt);
+   return std::string(std::to_string(ts->tm_mday) + std::to_string(ts->tm_mon) + std::to_string(ts->tm_year) + "_" +
+                      std::to_string(ts->tm_hour) + std::to_string(ts->tm_min) + std::to_string(ts->tm_sec));
+}
+
 
 namespace TF
 {
@@ -46,10 +55,13 @@ bool Connect()
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
+   LoggerEngine::get()->setLogFileName(std::string(RUNTIME_OUTPUT_DIR) + "/" +
+                                       ::testing::UnitTest::GetInstance()->current_test_suite()->name() + "_" +
+                                       createTimestamp());
 
    UT_Log(TEST_FRAMEWORK, LOW, "starting application %s", APPLICATION_PATH.c_str());
-//   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
-//   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
+   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
    UT_Log(TEST_FRAMEWORK, LOW, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
@@ -63,7 +75,15 @@ void Disconnect()
    g_rpc_client->disconnect();
    g_rpc_client.reset(nullptr);
 
-//   UT_Assert(g_test_application.stopApplication());
+   UT_Assert(g_test_application.stopApplication());
+}
+void BeginTest()
+{
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
+}
+void FinishTest()
+{
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
 }
 
 namespace Serial

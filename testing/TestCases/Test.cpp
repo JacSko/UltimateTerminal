@@ -7,11 +7,19 @@ struct TestFixture : public testing::Test
 {
    static void SetUpTestSuite()
    {
-//      ASSERT_TRUE(TF::Connect());
+      ASSERT_TRUE(TF::Connect());
    }
    static void TearDownTestSuite()
    {
-//      TF::Disconnect();
+      TF::Disconnect();
+   }
+   virtual void SetUp()
+   {
+      TF::BeginTest();
+   }
+   virtual void TearDown()
+   {
+      TF::FinishTest();
    }
 };
 

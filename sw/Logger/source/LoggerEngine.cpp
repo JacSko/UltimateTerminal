@@ -241,4 +241,32 @@ LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
    }
    return result;
 }
+bool LoggerEngine::setLogFileName(const std::string& path)
+{
+   bool result = false;
+
+   std::lock_guard<std::recursive_mutex> lock(m_mutex);
+   auto it = std::find_if(m_frontends.begin(), m_frontends.end(), [](std::unique_ptr<ILoggerWriter>& writer){return writer->getType() == FILE_WRITER;});
+   if (it != m_frontends.end())
+   {
+      std::unique_ptr<ILoggerWriter> writer = std::unique_ptr<ILoggerWriter>(new LoggerFileWriter(path));
+      result = writer->init();
+      if (result)
+      {
+         (*it)->deinit();
+         m_frontends.erase(it);
+         m_frontends.emplace_back(std::move(writer));
+      }
+   }
+   return result;
+}
+
+
+
+
+
+
+
+
+
 
