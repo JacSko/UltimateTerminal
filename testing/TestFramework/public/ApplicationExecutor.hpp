@@ -21,6 +21,16 @@ public:
       m_pid = fork();
       if (m_pid == 0)
       {
+
+         /* In order to execute defined application with command line parameters, we need to preapre them correctly.
+          * To execute command "<appname> <arg1> <arg2>" below array have to instantiate:
+          * - [0] - application name
+          * - [1] - first argument with NULL terminated C-style string
+          * - [2] - second argument with NULL terminated C-style string
+          * - [3] - Empty C-style string
+          */
+
+         /* split argument string by space */
          std::vector<std::string> splitted_arguments;
          std::stringstream ss (arguments);
          std::string arg;
@@ -28,6 +38,8 @@ public:
          {
             splitted_arguments.push_back(arg);
          }
+
+         /* instantiate argument array */
          char* cmd_args [1 + splitted_arguments.size() + 1];
          cmd_args[0] = new char [application_path.size() + 1];
          std::strncpy(cmd_args[0], application_path.c_str(), application_path.size() + 1);
@@ -38,6 +50,7 @@ public:
          }
          cmd_args[splitted_arguments.size() + 1] = 0x00;
 
+         /* execute the application */
          int res = execvp(application_path.c_str(), cmd_args);
 
          if (res < 0)
