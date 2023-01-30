@@ -303,7 +303,6 @@ void PortHandler::setButtonState(ButtonState state)
    const uint32_t DEFAULT_BACKGROUND = m_gui_controller.getBackgroundColor();
    const uint32_t DEFAULT_FONT = m_gui_controller.getTextColor();
 
-
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] setting button state %.6x", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)state);
    m_button_state = state;
    switch(m_button_state)

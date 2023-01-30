@@ -29,7 +29,7 @@ struct TraceForwarder : public Drivers::SocketClient::ClientListener
       }
       default:
       {
-         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
+//         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
          break;
       }
       }

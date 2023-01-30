@@ -19,6 +19,9 @@ std::vector<Dialogs::UserButtonDialog::Settings> g_user_button_settings;
 GUIController::MessageBoxDetails g_messagebox_details;
 std::string g_logging_path;
 
+/* this is to remove the alpha factor from color hash */
+static constexpr uint32_t COLOR_MASK = 0xFFFFFF;
+
 GUIController::GUIController(QWidget *parent):
 QMainWindow(parent),
 ui(new Ui::MainWindow),
@@ -132,13 +135,13 @@ void GUIController::setButtonBackgroundColor(uint32_t button_id, uint32_t color)
 {
    UT_Assert(button_id < m_buttons_cache.size());
    std::lock_guard<std::mutex> lock(m_mutex);
-   m_buttons_cache[button_id].colors.background_color = color;
+   m_buttons_cache[button_id].colors.background_color = color & COLOR_MASK;
 }
 void GUIController::setButtonFontColor(uint32_t button_id, uint32_t color)
 {
    UT_Assert(button_id < m_buttons_cache.size());
    std::lock_guard<std::mutex> lock(m_mutex);
-   m_buttons_cache[button_id].colors.font_color = color;
+   m_buttons_cache[button_id].colors.font_color = color & COLOR_MASK;
 }
 void GUIController::setButtonCheckable(uint32_t button_id, bool checkable)
 {
@@ -176,11 +179,11 @@ void GUIController::clearTraceView()
 }
 void GUIController::addToTerminalView(const std::string& text, uint32_t background_color, uint32_t font_color)
 {
-   m_terminal_items.push_back({text, {background_color, font_color}});
+   m_terminal_items.push_back({text, {background_color & COLOR_MASK, font_color & COLOR_MASK}});
 }
 void GUIController::addToTraceView(const std::string& text, uint32_t background_color, uint32_t font_color)
 {
-   m_trace_items.push_back({text, {background_color, font_color}});
+   m_trace_items.push_back({text, {background_color & COLOR_MASK, font_color & COLOR_MASK}});
 }
 uint32_t GUIController::countTerminalItems()
 {
@@ -273,13 +276,13 @@ void GUIController::setTraceFilterBackgroundColor(uint32_t id, uint32_t color)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    UT_Assert(id < m_trace_filters.size());
-   m_trace_filters[id].colors.background_color = color;
+   m_trace_filters[id].colors.background_color = color & COLOR_MASK;
 }
 void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    UT_Assert(id < m_trace_filters.size());
-   m_trace_filters[id].colors.font_color = color;
+   m_trace_filters[id].colors.font_color = color & COLOR_MASK;
 }
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
@@ -295,10 +298,18 @@ void GUIController::setPortLabelStylesheet(uint8_t id, const std::string& styles
 }
 void GUIController::reloadTheme(Theme theme)
 {
+   UT_Assert(theme < Theme::APPLICATION_THEMES_MAX);
+   UT_Log(MAIN_GUI, HIGH, "%s id %u name %s", __func__, (uint8_t)theme, themeToName(theme).c_str());
+   std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
+   ui->loadTheme(theme);
+   for (auto& listener : m_theme_listeners)
+   {
+      if (listener) listener->onThemeChange(theme);
+   }
 }
 Theme GUIController::currentTheme()
 {
-   return Theme::DEFAULT;
+   return ui->theme;
 }
 std::string GUIController::themeToName(Theme theme)
 {
@@ -788,6 +799,7 @@ bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
    RPC::GetButtonStateRequest request = RPC::convert<RPC::GetButtonStateRequest>(data);
 
+   std::lock_guard<std::mutex> lock(m_mutex);
    auto it = std::find_if(m_buttons_cache.begin(), m_buttons_cache.end(), [&](const ButtonCache& button){return button.name == request.button_name;});
    UT_Assert(it != m_buttons_cache.end());
 
@@ -800,7 +812,7 @@ bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
    reply.enabled = it->enabled;
    reply.text = it->text;
 
-   UT_Log(MAIN_GUI, LOW, "%s name %s", __func__, reply.button_name.c_str());
+   UT_Log(MAIN_GUI, LOW, "%s name %s bg %.8x font %.8x", __func__, reply.button_name.c_str(), reply.background_color, reply.font_color);
    return rpc_server->respond<RPC::GetButtonStateReply>(reply);
 }
 
