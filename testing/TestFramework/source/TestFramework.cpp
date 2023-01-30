@@ -8,6 +8,7 @@
 #include "Logger.h"
 #include "Settings.h"
 #include "ApplicationExecutor.hpp"
+#include "ISocketClient.h"
 
 struct SerialPortLoopback
 {
@@ -15,11 +16,32 @@ struct SerialPortLoopback
    std::string device2;
    TF::ApplicationExecutor executor;
 };
+struct TraceForwarder : public Drivers::SocketClient::ClientListener
+{
+   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
+   {
+      switch (ev)
+      {
+      case Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED:
+      {
+         UT_Log(TEST_FRAMEWORK, ERROR, "application trace server disconnected!");
+         break;
+      }
+      default:
+      {
+         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
+         break;
+      }
+      }
+   }
+};
 
 static std::unique_ptr<RPC::RPCClient> g_rpc_client;
 static TF::ApplicationExecutor g_test_application;
 static std::vector<SerialPortLoopback> g_serial_loopbacks;
 static std::map<std::string, std::unique_ptr<Drivers::Serial::ISerialDriver>> g_serial_drivers;
+static std::unique_ptr<Drivers::SocketClient::ISocketClient> g_trace_client;
+static TraceForwarder g_trace_forwarder;
 
 bool isLoopbackActive(const std::string& device)
 {
@@ -41,10 +63,11 @@ std::string createTimestamp()
    auto currentTime = std::chrono::system_clock::now();
    std::time_t tt = std::chrono::system_clock::to_time_t ( currentTime );
    auto ts = localtime (&tt);
-   return std::string(std::to_string(ts->tm_mday) + std::to_string(ts->tm_mon) + std::to_string(ts->tm_year) + "_" +
-                      std::to_string(ts->tm_hour) + std::to_string(ts->tm_min) + std::to_string(ts->tm_sec));
-}
 
+   char buffer [50];
+   std::snprintf(buffer, 50, "%.2u%.2u%.2u_%.2u%.2u%.2u", ts->tm_mday, ts->tm_mon, ts->tm_year, ts->tm_hour, ts->tm_min, ts->tm_sec);
+   return buffer;
+}
 
 namespace TF
 {
@@ -52,6 +75,8 @@ namespace TF
 
 bool Connect()
 {
+   bool result = false;
+
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
    LoggerEngine::get()->startFrontends();
@@ -67,14 +92,25 @@ bool Connect()
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
    UT_Assert(g_rpc_client);
 
-   return g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT);
+   if (g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT))
+   {
+      UT_Log(TEST_FRAMEWORK, LOW, "TestFramework connected, trying to connect to application trace server");
+      g_trace_client = Drivers::SocketFactory::createClient();
+      UT_Assert(g_trace_client);
+      result = g_trace_client->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", SETTING_GET_U32(Logger_socketPort));
+      g_trace_client->addListener(&g_trace_forwarder);
+      UT_Log_If(!result, TEST_FRAMEWORK, LOW, "Cannot connect to trace server at 127.0.0.1:%u", SETTING_GET_U32(Logger_socketPort));
+   }
+   return result;
 }
 void Disconnect()
 {
    UT_Assert(g_rpc_client);
    g_rpc_client->disconnect();
+   g_trace_client->disconnect();
+   g_trace_client->removeListener(&g_trace_forwarder);
    g_rpc_client.reset(nullptr);
-
+   g_trace_client.reset(nullptr);
    UT_Assert(g_test_application.stopApplication());
 }
 void BeginTest()
