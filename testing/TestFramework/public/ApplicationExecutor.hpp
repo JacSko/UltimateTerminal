@@ -4,6 +4,10 @@
 #include <signal.h>
 #include <sstream>
 
+#include <sys/prctl.h> // prctl(), PR_SET_PDEATHSIG
+#include <signal.h> // signals
+#include <unistd.h> // fork()
+
 namespace TF
 {
 
@@ -17,10 +21,18 @@ public:
    }
    bool startApplication(const std::string& application_path, const std::string& arguments)
    {
-
+      pid_t ppid_before_fork = getpid();
       m_pid = fork();
       if (m_pid == 0)
       {
+          int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
+          if (r == -1) { perror(0); exit(1); }
+          // test in case the original parent exited just
+          // before the prctl() call
+          if (getppid() != ppid_before_fork)
+          {
+             exit(1);
+          }
 
          /* In order to execute defined application with command line parameters, we need to preapre them correctly.
           * To execute command "<appname> <arg1> <arg2>" below array have to instantiate:
