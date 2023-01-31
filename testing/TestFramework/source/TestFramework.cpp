@@ -79,6 +79,10 @@ bool Connect()
 
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
+
+   SETTING_SET_BOOL(Logger_supportSocketLogging, false);
+   SETTING_SET_BOOL(Logger_supportFileLogging, false);
+
    LoggerEngine::get()->startFrontends();
    LoggerEngine::get()->setLogFileName(std::string(RUNTIME_OUTPUT_DIR) + "/" +
                                        ::testing::UnitTest::GetInstance()->current_test_suite()->name() + "_" +
@@ -121,7 +125,10 @@ void FinishTest()
 {
    UT_Log(TEST_FRAMEWORK, LOW, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
 }
-
+void wait(uint32_t ms)
+{
+   std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
 namespace Serial
 {
 
@@ -159,11 +166,11 @@ bool openSerialPort(const Drivers::Serial::Settings& settings)
    bool result = false;
    if (g_serial_drivers.find(settings.device) == g_serial_drivers.end())
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s not found, creating driver", __func__, settings.device);
+      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s not found, creating driver", __func__, settings.device.c_str());
       auto driver = Drivers::Serial::ISerialDriver::create();
       if (driver->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, settings))
       {
-         UT_Log(TEST_FRAMEWORK, LOW, "%s device %s started", __func__, settings.device);
+         UT_Log(TEST_FRAMEWORK, LOW, "%s device %s started", __func__, settings.device.c_str());
          g_serial_drivers[settings.device] = std::move(driver);
          result = true;
       }
@@ -173,11 +180,13 @@ bool openSerialPort(const Drivers::Serial::Settings& settings)
 bool closeSerialPort(const std::string& device)
 {
    bool result = false;
-   if (g_serial_drivers.find(device) != g_serial_drivers.end())
+   auto it = g_serial_drivers.find(device);
+   if (it != g_serial_drivers.end())
    {
       UT_Log(TEST_FRAMEWORK, LOW, "%s device %s found, closing", __func__, device);
       g_serial_drivers[device]->close();
       g_serial_drivers[device].reset(nullptr);
+      g_serial_drivers.erase(it);
       result = true;
    }
    return result;

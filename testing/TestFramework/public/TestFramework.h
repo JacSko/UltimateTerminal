@@ -13,6 +13,7 @@ bool Connect();
 void Disconnect();
 void BeginTest();
 void FinishTest();
+void wait(uint32_t ms);
 
 namespace Serial
 {

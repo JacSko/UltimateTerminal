@@ -2,25 +2,37 @@
 #include "TestFramework.h"
 #include "Settings.h"
 
-static const char* FIRST_SERIAL_PORT_LINK = "link1";
-static const char* SECOND_SERIAL_PORT_LINK = "link2";
-static constexpr uint32_t RED_COLOR = 0xFF0000;
+const std::string FIRST_SERIAL_PORT_LINK = std::string(RUNTIME_OUTPUT_DIR) + "/link1";
+const std::string SECOND_SERIAL_PORT_LINK = std::string(RUNTIME_OUTPUT_DIR) + "/link2";
 static constexpr uint32_t GREEN_COLOR = 0x00FF00;
 static constexpr uint32_t BLACK_COLOR = 0x000000;
-static constexpr uint32_t BACKGROUND_COLOR = 0x111111;
-static constexpr uint32_t FONT_COLOR = 0x222222;
+static constexpr uint32_t TEST_TRACES_COUNT = 10;
 
+struct TestParam
+{
+   uint8_t port_id;
+   uint32_t background_color;
+   uint32_t font_color;
+   Drivers::Serial::Settings serial_settings;
+   friend std::ostream& operator<<(std::ostream& ost, const TestParam& param)
+   {
+      ost << "Test with settings: " << std::endl;
+      return ost;
+   }
 
-struct SerialPortReadWrite : public testing::Test
+};
+
+struct SerialPortReadWrite : public testing::TestWithParam<TestParam>
 {
    static void SetUpTestSuite()
    {
       ASSERT_TRUE(TF::Connect());
       EXPECT_TRUE(TF::Serial::startForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
+      TF::wait(1000);
    }
    static void TearDownTestSuite()
    {
-      EXPECT_TRUE(TF::Serial::startForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
+      EXPECT_TRUE(TF::Serial::stopForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
       TF::Disconnect();
    }
    virtual void SetUp()
@@ -47,7 +59,7 @@ using namespace Dialogs;
  *
  */
 
-TEST_F(SerialPortReadWrite, read_write_serial_port)
+TEST_P(SerialPortReadWrite, read_write_serial_port)
 {
    /**
     * @test
@@ -67,33 +79,104 @@ TEST_F(SerialPortReadWrite, read_write_serial_port)
     * ************************************************
     */
 
-   const std::string PORT_BUTTON_NAME = "portButton_0";
-   const uint8_t PORT_ID = 0;
-   const std::string PORT_BUTTON_TEXT = "PORT0";
+   const uint8_t PORT_ID = GetParam().port_id;
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
    const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+   const uint32_t BACKGROUND_COLOR = GetParam().background_color;
+   const uint32_t FONT_COLOR = GetParam().font_color;
 
    PortSettingDialog::Settings port_settings;
    port_settings.port_name = NEW_PORT_NAME;
    port_settings.type = PortSettingDialog::PortType::SERIAL;
-   port_settings.serialSettings.device = FIRST_SERIAL_PORT_LINK;
-   port_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_115200;
-   port_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
-   port_settings.serialSettings.mode = Drivers::Serial::DataMode::NEW_LINE_DELIMITER;
-   port_settings.serialSettings.parityBits = Drivers::Serial::ParityType::NONE;
-   port_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::ONE;
-   port_settings.port_id = 0;
+   port_settings.serialSettings = GetParam().serial_settings;
+   port_settings.port_id = PORT_ID;
    port_settings.trace_color = BACKGROUND_COLOR;
    port_settings.font_color = FONT_COLOR;
 
+   /* check port button and label before test */
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
-   //TODO check stylesheet colors before and after settings change
 
+   /* set new port settings */
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), NEW_PORT_NAME + port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* open port by clicking on button */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+   EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
+
+   /* check button state after open */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* open serial driver for data generation */
+   Drivers::Serial::Settings driver_settings = GetParam().serial_settings;
+   driver_settings.device = SECOND_SERIAL_PORT_LINK;
+   EXPECT_TRUE(TF::Serial::openSerialPort(driver_settings));
+
+   /* start generating data on serial port */
+   for (uint8_t i = 0; i < TEST_TRACES_COUNT; i++)
+   {
+      EXPECT_TRUE(TF::Serial::sendMessage(SECOND_SERIAL_PORT_LINK, "TEST MESSAGE " + std::to_string(i) + '\n'));
+      TF::wait(20);
+   }
+
+   TF::wait(1000);
+   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(BACKGROUND_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FONT_COLOR), TEST_TRACES_COUNT);
+
+   /* close serial port */
+   EXPECT_TRUE(TF::Serial::closeSerialPort(driver_settings.device));
+
+   /* close serial port in application */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+
+   /* check button and label state */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
 }
+
+TestParam params [] = {
+
+{0, 0x000001, 0x000002, {FIRST_SERIAL_PORT_LINK, Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
+     Drivers::Serial::BaudRate::BR_115200, Drivers::Serial::ParityType::NONE, Drivers::Serial::StopBitType::ONE, Drivers::Serial::DataBitType::EIGHT}},
+{1, 0x000003, 0x000004, {FIRST_SERIAL_PORT_LINK, Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
+     Drivers::Serial::BaudRate::BR_115200, Drivers::Serial::ParityType::NONE, Drivers::Serial::StopBitType::ONE, Drivers::Serial::DataBitType::EIGHT}},
+{2, 0x000005, 0x000006, {FIRST_SERIAL_PORT_LINK, Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
+     Drivers::Serial::BaudRate::BR_115200, Drivers::Serial::ParityType::NONE, Drivers::Serial::StopBitType::ONE, Drivers::Serial::DataBitType::EIGHT}},
+{3, 0x000007, 0x000008, {FIRST_SERIAL_PORT_LINK, Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
+     Drivers::Serial::BaudRate::BR_115200, Drivers::Serial::ParityType::NONE, Drivers::Serial::StopBitType::ONE, Drivers::Serial::DataBitType::EIGHT}},
+{4, 0x000009, 0x00000A, {FIRST_SERIAL_PORT_LINK, Drivers::Serial::DataMode::NEW_LINE_DELIMITER,
+     Drivers::Serial::BaudRate::BR_115200, Drivers::Serial::ParityType::NONE, Drivers::Serial::StopBitType::ONE, Drivers::Serial::DataBitType::EIGHT}}
+
+};
+
+INSTANTIATE_TEST_CASE_P(SerialPortReadWrite, SerialPortReadWrite, testing::ValuesIn(params));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

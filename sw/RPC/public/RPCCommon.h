@@ -16,7 +16,7 @@ enum class MessageType
 constexpr uint8_t RPC_MESSAGE_HEADER_SIZE = 2;
 constexpr uint8_t RPC_MESSAGE_TYPE_BYTE_OFFSET = 0;
 constexpr uint8_t RPC_COMMAND_BYTE_OFFSET = 1;
-constexpr uint16_t SOCKET_TRANSACTION_TIMEOUT = 100;
+constexpr uint16_t SOCKET_TRANSACTION_TIMEOUT = 500;
 
 
 template<typename T>
