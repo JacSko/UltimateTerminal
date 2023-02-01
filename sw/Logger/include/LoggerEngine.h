@@ -88,6 +88,12 @@ public:
    void startFrontends();
 
    /**
+    * @brief Stops all aux writers, like socket or file.
+    * @return void
+    */
+   void stopFrontends();
+
+   /**
     * @brief Sets the logging level for defined group
     * @param[in] id - id of the logger group
     * @param[in] level - desired level

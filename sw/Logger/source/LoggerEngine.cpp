@@ -94,6 +94,15 @@ void LoggerEngine::startFrontends()
    }
 }
 
+void LoggerEngine::stopFrontends()
+{
+   for (auto& frontend : m_frontends)
+   {
+      frontend->deinit();
+   }
+   m_frontends.clear();
+}
+
 void LoggerEngine::refreshGroupLevelSettings()
 {
    for (uint32_t i = 0; i < LOGGER_GROUP_MAX; i++)

@@ -116,6 +116,8 @@ void Disconnect()
    g_rpc_client.reset(nullptr);
    g_trace_client.reset(nullptr);
    UT_Assert(g_test_application.stopApplication());
+   LoggerEngine::get()->stopFrontends();
+   Settings::SettingsHandler::destroy();
 }
 void BeginTest()
 {
