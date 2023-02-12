@@ -72,7 +72,7 @@ public:
          }
          if(!m_cond_var.wait_for(lock, std::chrono::milliseconds(SOCKET_TRANSACTION_TIMEOUT), [&](){return m_event_ready.load();}))
          {
-            UT_Log(RPC_CLIENT, ERROR, "client response timeout");
+            UT_Log(RPC_CLIENT, ERROR, "server response timeout");
             break;
          }
          if (m_last_event != Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)

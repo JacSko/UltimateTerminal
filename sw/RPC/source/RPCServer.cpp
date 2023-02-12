@@ -54,6 +54,9 @@ void RPCServer::onServerEvent(int client_id, Drivers::SocketServer::ServerEvent 
    case Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED:
       UT_Log(RPC_SERVER, INFO, "Client disconnected");
       break;
+   case Drivers::SocketServer::ServerEvent::CLIENT_CONNECTED:
+      UT_Log(RPC_SERVER, INFO, "Client connected, id %d", client_id);
+      break;
    }
 }
 

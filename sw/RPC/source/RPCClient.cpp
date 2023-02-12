@@ -39,6 +39,7 @@ void RPCClient::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::
    case Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED:
       break;
    case Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV:
+      printf("Received %u bytes\n", size);
       if (m_transaction_ongoing
           && !m_event_ready
           && (data[RPC_MESSAGE_TYPE_BYTE_OFFSET] == (uint8_t)MessageType::RequestResponse))
