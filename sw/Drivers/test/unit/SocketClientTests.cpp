@@ -102,7 +102,7 @@ struct SocketClientFixture : public testing::Test
    {
       sys_call_mock = new SystemCallMock;
       listener_mock = new ClientListenerMock;
-      m_test_subject.reset(new SocketClient());
+      m_test_subject.reset(new SocketClient(DataMode::NEW_LINE_DELIMITER));
    }
    void TearDown()
    {
@@ -133,10 +133,10 @@ TEST_F(SocketClientFixture, client_connect_when_already_connected)
          });
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
    EXPECT_TRUE(m_test_subject->isConnected());
-   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
    m_test_subject->disconnect();
    EXPECT_FALSE(m_test_subject->isConnected());
 }
@@ -149,7 +149,7 @@ TEST_F(SocketClientFixture, cannot_create_socket)
     * ************************************************
     */
    EXPECT_CALL(*sys_call_mock, socket(AF_INET, SOCK_STREAM, _)).WillOnce(Return(TEST_RETURN_NOK));
-   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 
 }
 
@@ -165,7 +165,7 @@ TEST_F(SocketClientFixture, client_cannot_set_sockopts)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_convert_ip_address_from_text_to_binary)
@@ -182,7 +182,7 @@ TEST_F(SocketClientFixture, client_convert_ip_address_from_text_to_binary)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_cannot_connect)
@@ -200,7 +200,7 @@ TEST_F(SocketClientFixture, client_cannot_connect)
 
    EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
 
-   EXPECT_FALSE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_FALSE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 }
 
 TEST_F(SocketClientFixture, client_write_to_server_delimiter_mode)
@@ -232,7 +232,7 @@ TEST_F(SocketClientFixture, client_write_to_server_delimiter_mode)
             return length;
          }));
 
-   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -283,7 +283,7 @@ TEST_F(SocketClientFixture, client_read_from_server_delimiter_mode)
 
    ClientListenerMockImpl listener;
    m_test_subject->addListener(&listener);
-   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -333,7 +333,7 @@ TEST_F(SocketClientFixture, client_read_empty_message_from_server)
 
    ClientListenerMockImpl listener;
    m_test_subject->addListener(&listener);
-   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -360,7 +360,7 @@ TEST_F(SocketClientFixture, server_disconnected)
 
    ClientListenerMockImpl listener;
    m_test_subject->addListener(&listener);
-   EXPECT_TRUE(m_test_subject->connect(DataMode::NEW_LINE_DELIMITER, TEST_IP_ADDRESS, TEST_PORT));
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
 
    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

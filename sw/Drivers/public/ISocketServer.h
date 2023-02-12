@@ -72,12 +72,11 @@ public:
    static std::unique_ptr<ISocketServer> create();
    /**
     * @brief Starts server.
-    * @param[in] mode - server mode
     * @param[in] port - connection port (see @details).
     * @param[in] max_clients - defines how many clients can connect to server
     * @return True if listening started, otherwise false.
     */
-   virtual bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) = 0;
+   virtual bool start(uint16_t port, uint8_t max_clients = 1) = 0;
    /**
     * @brief Stops server.
     * @return void.

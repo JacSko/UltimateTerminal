@@ -249,10 +249,10 @@ bool processCommands(int argc, char** argv)
 }
 void runClientMode()
 {
-   std::unique_ptr<Drivers::SocketClient::ISocketClient> socket_client = Drivers::SocketFactory::createClient();
+   std::unique_ptr<Drivers::SocketClient::ISocketClient> socket_client = Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
    if (socket_client)
    {
-      if (socket_client->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, g_ipAddress, g_ipPort))
+      if (socket_client->connect(g_ipAddress, g_ipPort))
       {
          while(1)
          {
@@ -273,7 +273,7 @@ void runClientMode()
 
 void runServerMode()
 {
-   std::unique_ptr<Drivers::SocketServer::ISocketServer> socket_server = Drivers::SocketFactory::createServer();
+   std::unique_ptr<Drivers::SocketServer::ISocketServer> socket_server = Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER);
    std::condition_variable cond_var;
    std::mutex mutex;
    std::atomic<uint8_t> clients_count = 0;
@@ -312,7 +312,7 @@ void runServerMode()
 
       ServerCallback callback (mutex, cond_var, clients_count);
       socket_server->addListener(&callback);
-      if (socket_server->start(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER, g_ipPort, g_maxServerClients))
+      if (socket_server->start(g_ipPort, g_maxServerClients))
       {
          do
          {

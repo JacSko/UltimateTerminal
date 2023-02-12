@@ -57,24 +57,25 @@ namespace SocketServer
 constexpr uint32_t SERVER_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERVER_RECEIVE_TIMEOUT = 500;
 
-SocketServer::SocketServer():
+SocketServer::SocketServer(DataMode mode):
 m_listening_thread(std::bind(&SocketServer::listening_thread, this), "SOCK_LISTEN"),
 m_working_thread(std::bind(&SocketServer::worker_thread, this), "SOCK_WORKER"),
 m_server_fd(-1),
 m_port(0),
 m_max_clients(0),
+m_mode(mode),
 m_listeners {},
 m_handlers {}
 {
+   UT_Stdout_Log(SOCK_DRV, ERROR, "starting server, mode %s", mode == DataMode::NEW_LINE_DELIMITER? "NEW_LINE_DELIMITER" : "PAYLOAD_HEADER");
    if (!m_working_thread.start(SERVER_THREAD_START_TIMEOUT))
    {
       UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start thread %s", m_working_thread.getThreadName().c_str());
    }
 }
-bool SocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients)
+bool SocketServer::start(uint16_t port, uint8_t max_clients)
 {
    bool result = false;
-   m_mode = mode;
    m_port = port;
    m_max_clients = max_clients;
    UT_Stdout_Log(SOCK_DRV, LOW, "[%u] %s", port, __func__);

@@ -55,8 +55,8 @@ struct QtSocketDriveFixture : public ::testing::Test
    {
       server_listener_mock = new ServerListenerMock;
       client_listener_mock = new ClientListenerMock;
-      m_server = Drivers::SocketFactory::createServer();
-      m_client = Drivers::SocketFactory::createClient();
+      m_server = Drivers::SocketFactory::createServer(SocketServer::DataMode::NEW_LINE_DELIMITER);
+      m_client = Drivers::SocketFactory::createClient(SocketClient::DataMode::NEW_LINE_DELIMITER);
    }
    void TearDown()
    {
@@ -89,9 +89,9 @@ TEST_F(QtSocketDriveFixture, server_to_client_data_exchange_in_delimiter_mode)
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from server to client */
@@ -131,9 +131,9 @@ TEST_F(QtSocketDriveFixture, server_to_client_multiple_data_exchange_in_delimite
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from server to client */
@@ -177,9 +177,9 @@ TEST_F(QtSocketDriveFixture, client_to_server_multiple_data_exchange_in_delimite
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from client to server */
@@ -226,9 +226,9 @@ TEST_F(QtSocketDriveFixture, client_to_server_big_data_exchange_in_delimiter_mod
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from client to server */
@@ -271,9 +271,9 @@ TEST_F(QtSocketDriveFixture, server_unexpectedly_closed)
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* server unexpectedly closed */
@@ -312,9 +312,9 @@ TEST_F(QtSocketDriveFixture, client_reconnection)
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
 
-   ASSERT_TRUE(m_server->start(SocketServer::DataMode::NEW_LINE_DELIMITER, TEST_PORT, 1));
+   ASSERT_TRUE(m_server->start(TEST_PORT, 1));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from client to server */
@@ -331,7 +331,7 @@ TEST_F(QtSocketDriveFixture, client_reconnection)
    /* reconnect client */
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_CONNECTED, _, _));
    EXPECT_CALL(*server_listener_mock, onServerEvent(_, SocketServer::ServerEvent::CLIENT_DISCONNECTED, _, _));
-   EXPECT_TRUE(m_client->connect(SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", TEST_PORT));
+   EXPECT_TRUE(m_client->connect("127.0.0.1", TEST_PORT));
    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
    /* send data from client to server */

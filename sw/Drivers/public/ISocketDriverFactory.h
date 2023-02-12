@@ -9,8 +9,8 @@ namespace Drivers
 {
 struct SocketFactory
 {
-   static std::unique_ptr<SocketClient::ISocketClient> createClient();
-   static std::unique_ptr<SocketServer::ISocketServer> createServer();
+   static std::unique_ptr<SocketClient::ISocketClient> createClient(SocketClient::DataMode mode);
+   static std::unique_ptr<SocketServer::ISocketServer> createServer(SocketServer::DataMode mode);
 };
 
 }

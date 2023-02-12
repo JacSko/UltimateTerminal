@@ -59,8 +59,9 @@ constexpr uint32_t CLIENT_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
 
-SocketClient::SocketClient():
+SocketClient::SocketClient(DataMode mode):
 m_worker(std::bind(&SocketClient::receivingThread, this), "CLIENT_WORKER"),
+m_mode(mode),
 m_sock_fd(-1),
 m_recv_buffer(SOCKET_MAX_PAYLOAD_LENGTH, 0x00),
 m_recv_buffer_idx(0),
@@ -68,14 +69,13 @@ m_listeners {}
 {
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
 }
-bool SocketClient::connect(DataMode mode, std::string ip_address, uint16_t port)
+bool SocketClient::connect(std::string ip_address, uint16_t port)
 {
    bool result = false;
    struct sockaddr_in serv_addr;
 
    if (!isConnected())
    {
-      m_mode = mode;
       m_ip_address = ip_address;
       m_port = port;
 

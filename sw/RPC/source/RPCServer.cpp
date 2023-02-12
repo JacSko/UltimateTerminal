@@ -4,7 +4,7 @@ namespace RPC
 {
 
 RPCServer::RPCServer():
-m_server(Drivers::SocketFactory::createServer())
+m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::PAYLOAD_HEADER))
 
 {
    m_server->addListener(this);
@@ -12,7 +12,7 @@ m_server(Drivers::SocketFactory::createServer())
 
 bool RPCServer::start(uint16_t port)
 {
-   return m_server->start(Drivers::SocketServer::DataMode::PAYLOAD_HEADER, port, 1);
+   return m_server->start(port, 1);
 }
 
 void RPCServer::stop()

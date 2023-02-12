@@ -4,7 +4,7 @@ namespace RPC
 {
 
 RPCClient::RPCClient():
-m_socket_client(Drivers::SocketFactory::createClient()),
+m_socket_client(Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::PAYLOAD_HEADER)),
 m_last_event(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED),
 m_event_ready(false),
 m_transaction_ongoing(false)
@@ -14,7 +14,7 @@ m_transaction_ongoing(false)
 
 bool RPCClient::connect(const std::string& ip_address, uint16_t port)
 {
-   return m_socket_client->connect(Drivers::SocketClient::DataMode::PAYLOAD_HEADER, ip_address, port);
+   return m_socket_client->connect(ip_address, port);
 }
 
 void RPCClient::disconnect()

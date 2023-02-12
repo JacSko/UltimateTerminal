@@ -36,7 +36,7 @@ class LoggerSocketWriter : public ILoggerWriter
 {
 public:
    LoggerSocketWriter(uint16_t port):
-   m_server(Drivers::SocketFactory::createServer()),
+   m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER)),
    m_port(port)
    {
    }
@@ -46,7 +46,7 @@ public:
     * @param[in[ port - path for log file
     * @return True if everything is OK, in case of problems with file open false is returned
     */
-   bool init () override {return m_server->start(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER, m_port, 1);}
+   bool init () override {return m_server->start(m_port, 1);}
    /**
     * @brief Deinitialize the File writer.
     * @return void

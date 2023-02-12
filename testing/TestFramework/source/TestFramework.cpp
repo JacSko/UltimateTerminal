@@ -99,9 +99,9 @@ bool Connect()
    if (g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT))
    {
       UT_Log(TEST_FRAMEWORK, LOW, "TestFramework connected, trying to connect to application trace server");
-      g_trace_client = Drivers::SocketFactory::createClient();
+      g_trace_client = Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
       UT_Assert(g_trace_client);
-      result = g_trace_client->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, "127.0.0.1", SETTING_GET_U32(Logger_socketPort));
+      result = g_trace_client->connect("127.0.0.1", SETTING_GET_U32(Logger_socketPort));
       g_trace_client->addListener(&g_trace_forwarder);
       UT_Log_If(!result, TEST_FRAMEWORK, LOW, "Cannot connect to trace server at 127.0.0.1:%u", SETTING_GET_U32(Logger_socketPort));
    }

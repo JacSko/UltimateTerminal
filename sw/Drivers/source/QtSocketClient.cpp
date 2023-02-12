@@ -38,7 +38,7 @@ m_listeners {}
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
    m_worker.start(CLIENT_THREAD_START_TIMEOUT);
 }
-bool QtSocketClient::connect(DataMode mode, std::string ip_address, uint16_t port)
+bool QtSocketClient::connect(std::string ip_address, uint16_t port)
 {
    bool result = false;
    UT_Log(SOCK_DRV, INFO, "Connecting to %s:%u", m_ip_address.c_str(), m_port);
@@ -46,7 +46,6 @@ bool QtSocketClient::connect(DataMode mode, std::string ip_address, uint16_t por
    if (!isConnected())
    {
       std::unique_lock<std::mutex> lock(m_mutex);
-      m_mode = mode;
       m_ip_address = ip_address;
       m_port = port;
       m_state = State::CONNECTION_REQUESTED;

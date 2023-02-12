@@ -69,12 +69,11 @@ public:
    static std::unique_ptr<ISocketClient> create();
    /**
     * @brief Connects to server.
-    * @param[in] mode - server mode
     * @param[in] ip_address - address of remote server in form "XXX.XXX.XXX.XXX"
     * @param[in] port - port number
     * @return true if connected successfully, otherwise false.
     */
-   virtual bool connect(DataMode mode, std::string ip_address, uint16_t port) = 0;
+   virtual bool connect(std::string ip_address, uint16_t port) = 0;
    /**
     * @brief Disconnects client from server.
     * @return void.

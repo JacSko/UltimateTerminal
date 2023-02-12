@@ -30,6 +30,7 @@ m_working_thread(std::bind(&QtSocketServer::worker_thread, this), "SOCK_WORKER")
 m_server_fd(-1),
 m_port(0),
 m_max_clients(0),
+m_mode(DataMode::NEW_LINE_DELIMITER),
 m_server(nullptr),
 m_listeners {},
 m_handlers {},
@@ -40,9 +41,8 @@ m_state(State::IDLE)
       UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start working thread %s", m_working_thread.getThreadName().c_str());
    }
 }
-bool QtSocketServer::start(DataMode mode, uint16_t port, uint8_t max_clients)
+bool QtSocketServer::start(uint16_t port, uint8_t max_clients)
 {
-   m_mode = mode;
    m_port = port;
    m_max_clients = max_clients;
    UT_Stdout_Log(SOCK_DRV, LOW, "%s", __func__);

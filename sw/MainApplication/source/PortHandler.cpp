@@ -23,7 +23,7 @@ m_gui_controller(gui_controller),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
 m_timers(timers),
-m_socket(Drivers::SocketFactory::createClient()),
+m_socket(Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER)),
 m_serial(Drivers::Serial::ISerialDriver::create()),
 m_timer_id(TIMERS_INVALID_ID),
 m_button_state(ButtonState::DISCONNECTED),
@@ -279,7 +279,7 @@ void PortHandler::handleButtonClickEthernet()
 }
 void PortHandler::tryConnectToSocket()
 {
-   if(m_socket->connect(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER, m_settings.ip_address, m_settings.port))
+   if(m_socket->connect(m_settings.ip_address, m_settings.port))
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Successfully connected to %s:%u", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port);
       m_timers.stopTimer(m_timer_id);

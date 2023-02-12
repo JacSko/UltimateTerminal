@@ -20,7 +20,7 @@ std::unique_ptr<Drivers::Serial::ISerialDriver> Drivers::Serial::ISerialDriver::
    return std::unique_ptr<Drivers::Serial::ISerialDriver>(g_serial_mock);
 }
 
-std::unique_ptr<Drivers::SocketClient::ISocketClient> Drivers::SocketFactory::createClient()
+std::unique_ptr<Drivers::SocketClient::ISocketClient> Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode)
 {
    return std::unique_ptr<Drivers::SocketClient::ISocketClient>(g_socket_mock);
 }
@@ -192,7 +192,7 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    else
    {
       EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
-      EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+      EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
       EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    }
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
@@ -310,7 +310,7 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    else
    {
       EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
-      EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+      EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
       EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    }
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
@@ -422,7 +422,7 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
    /* port opening */
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
    EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
-   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
@@ -493,13 +493,13 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
    EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false))
                                              .WillOnce(Return(false));
-   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
-                                                                                      .WillOnce(Invoke([&](Drivers::SocketClient::DataMode, std::string, uint16_t)
+                                                                                      .WillOnce(Invoke([&](std::string, uint16_t)
                                                                                             {
                                                                                                 simulate_abort = true;
                                                                                                 return false;
@@ -566,7 +566,7 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
 
    EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
-   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
@@ -581,7 +581,7 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
    EXPECT_CALL(*g_socket_mock, disconnect());
-   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(AtLeast(1));
    ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED, {}, 0);
@@ -594,7 +594,7 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*g_socket_mock, connect(_,user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
    ((Utilities::ITimerClient*)m_test_subject.get())->onTimeout(TEST_TIMER_ID);
 
    /* expect notification via listener */

@@ -37,7 +37,7 @@ class SocketServer : public ISocketServer,
                      public ClientHandlerListener
 {
 public:
-   SocketServer();
+   SocketServer(DataMode mode = DataMode::NEW_LINE_DELIMITER);
    ~SocketServer();
 private:
 
@@ -50,7 +50,7 @@ private:
 
 
    /* ISocketServer */
-   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) override;
+   bool start(uint16_t port, uint8_t max_clients = 1) override;
    void stop() override;
    uint32_t clientsCount() override;
    void addListener(ServerListener* callback) override;

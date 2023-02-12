@@ -139,7 +139,7 @@ TEST_F(RPCFixture, no_response_from_client)
    test_request.data2 = "TEST_REQUEST";
 
 
-   auto FirstCommandExecutor = [&](const std::vector<uint8_t>& data) -> bool
+   auto FirstCommandExecutor = [&](const std::vector<uint8_t>&) -> bool
          {
             /* no response for received request */
             return false;
@@ -178,7 +178,7 @@ TEST_F(RPCFixture, invoking_when_client_not_connected)
    RPC::TestCommand2Reply test_reply = {};
    test_reply.result = "TEST_RESPONSE";
 
-   auto FirstCommandExecutor = [&](const std::vector<uint8_t>& data) -> bool
+   auto FirstCommandExecutor = [&](const std::vector<uint8_t>&) -> bool
          {
             /* no response for received request */
             return false;
@@ -216,7 +216,7 @@ TEST_F(RPCFixture, invoking_when_client_suddenly_disconnecs)
    RPC::TestCommand2Reply test_reply = {};
    test_reply.result = "TEST_RESPONSE";
 
-   auto FirstCommandExecutor = [&](const std::vector<uint8_t>& data) -> bool
+   auto FirstCommandExecutor = [&](const std::vector<uint8_t>&) -> bool
          {
             /* no response for received request */
             return false;
@@ -257,10 +257,6 @@ TEST_F(RPCFixture, no_executor_registered_on_client_side)
    test_request.data1 = 0x11223344;
    test_request.data2 = 0x55;
    test_request.data3 = 0x6677;
-
-   RPC::TestCommand1Reply test_reply = {};
-   test_reply.result = true;
-
 
    m_server->start(TEST_PORT);
    std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -346,7 +342,7 @@ TEST_F(RPCFixture, server_notifications_and_invokes)
    RPC::TestCommand1Reply test_reply = {};
    test_reply.result = true;
 
-   auto FirstCommandExecutor = [&](const std::vector<uint8_t>& data) -> bool
+   auto FirstCommandExecutor = [&](const std::vector<uint8_t>&) -> bool
          {
             return m_server->respond<RPC::TestCommand1Reply>(test_reply);
          };

@@ -35,12 +35,12 @@ namespace SocketClient
 class SocketClient : public ISocketClient
 {
 public:
-   SocketClient();
+   SocketClient(DataMode mode = DataMode::NEW_LINE_DELIMITER);
    ~SocketClient();
 private:
 
    /* ISocketClient */
-   bool connect(DataMode mode, std::string ip_address, uint16_t port) override;
+   bool connect(std::string ip_address, uint16_t port) override;
    void disconnect() override;
    bool isConnected() override;
    void addListener(ClientListener* callback) override;

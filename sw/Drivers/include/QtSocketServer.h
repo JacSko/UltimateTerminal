@@ -42,7 +42,7 @@ public:
    QtSocketServer();
    ~QtSocketServer();
 protected:
-   bool start(DataMode mode, uint16_t port, uint8_t max_clients = 1) override;
+   bool start(uint16_t port, uint8_t max_clients = 1) override;
    void stop() override;
 
 private:

@@ -47,7 +47,7 @@ private:
       DESTROYING,
    };
    /* ISocketClient */
-   bool connect(DataMode mode, std::string ip_address, uint16_t port) override;
+   bool connect(std::string ip_address, uint16_t port) override;
    void disconnect() override;
    bool isConnected() override;
    void addListener(ClientListener* callback) override;
