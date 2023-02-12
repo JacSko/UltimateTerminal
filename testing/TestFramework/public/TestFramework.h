@@ -24,6 +24,15 @@ bool closeSerialPort(const std::string& device);
 bool sendMessage(const std::string& device, const std::string& message);
 }
 
+namespace Socket
+{
+bool startServer(uint32_t port);
+bool stopServer(uint32_t port);
+bool sendMessage(uint32_t port, const std::string& message);
+bool checkMessageReceived(uint32_t port, const std::string& message);
+void clearMessageBuffer(uint32_t port);
+}
+
 namespace Buttons
 {
 uint32_t getBackgroundColor(const std::string& name);

@@ -9,6 +9,7 @@
 #include "Settings.h"
 #include "ApplicationExecutor.hpp"
 #include "ISocketClient.h"
+#include "ISocketDriverFactory.h"
 
 struct SerialPortLoopback
 {
@@ -16,6 +17,69 @@ struct SerialPortLoopback
    std::string device2;
    TF::ApplicationExecutor executor;
 };
+
+class SocketServerHandler : public Drivers::SocketServer::ServerListener
+{
+public:
+   SocketServerHandler(uint32_t port):
+   m_port(port),
+   m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER))
+   {
+      UT_Log(TEST_FRAMEWORK, LOW, "starting server on port %u", port);
+      m_server->addListener(this);
+      m_server->start(port, 1);
+   }
+   ~SocketServerHandler()
+   {
+      UT_Log(TEST_FRAMEWORK, LOW, "stopping server on port %u", m_port);
+      m_server->stop();
+   }
+   void clearBuffer()
+   {
+      m_buffer.clear();
+   }
+   bool write(const std::string& message)
+   {
+      return m_server->write({message.begin(), message.end()}, message.size());
+   }
+   bool wasMessageReceived(const std::string& message)
+   {
+      bool result = false;
+      if (std::find(m_buffer.begin(), m_buffer.end(), message) != m_buffer.end())
+      {
+         result = true;
+      }
+      return result;
+   }
+   uint32_t getPort() const
+   {
+      return m_port;
+   }
+private:
+
+   void onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size) override
+   {
+      switch(ev)
+      {
+      case Drivers::SocketServer::ServerEvent::CLIENT_CONNECTED:
+         UT_Log(TEST_FRAMEWORK, LOW, "client connected on port %u", m_port);
+         break;
+      case Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED:
+         UT_Log(TEST_FRAMEWORK, LOW, "client disconnected on port %u", m_port);
+         break;
+      case Drivers::SocketServer::ServerEvent::CLIENT_DATA_RECV:
+         m_buffer.push_back(std::string(data.begin(), data.end()));
+         break;
+      default:
+         UT_Assert(false && "Incorrect event");
+         break;
+      }
+   }
+   uint32_t m_port;
+   std::unique_ptr<Drivers::SocketServer::ISocketServer> m_server;
+   std::vector<std::string> m_buffer;
+};
+
 struct TraceForwarder : public Drivers::SocketClient::ClientListener
 {
    void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>&, size_t)
@@ -40,6 +104,7 @@ static std::unique_ptr<RPC::RPCClient> g_rpc_client;
 static TF::ApplicationExecutor g_test_application;
 static std::vector<SerialPortLoopback> g_serial_loopbacks;
 static std::map<std::string, std::unique_ptr<Drivers::Serial::ISerialDriver>> g_serial_drivers;
+static std::vector<std::unique_ptr<SocketServerHandler>> g_socket_servers;
 static std::unique_ptr<Drivers::SocketClient::ISocketClient> g_trace_client;
 static TraceForwarder g_trace_forwarder;
 
@@ -206,6 +271,60 @@ bool sendMessage(const std::string& device, const std::string& message)
 
 }
 
+namespace Socket
+{
+bool startServer(uint32_t port)
+{
+   bool result = false;
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it == g_socket_servers.end())
+   {
+      g_socket_servers.emplace_back(new SocketServerHandler(port));
+      result = true;
+   }
+   return result;
+}
+bool stopServer(uint32_t port)
+{
+   bool result = false;
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it != g_socket_servers.end())
+   {
+      g_socket_servers.erase(it);
+      result = true;
+   }
+   return result;
+}
+bool sendMessage(uint32_t port, const std::string& message)
+{
+   bool result = false;
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it != g_socket_servers.end())
+   {
+      result = (*it)->write(message);
+   }
+   return result;
+}
+bool checkMessageReceived(uint32_t port, const std::string& message)
+{
+   bool result = false;
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it != g_socket_servers.end())
+   {
+      result = (*it)->wasMessageReceived(message);
+   }
+   return result;
+}
+void clearMessageBuffer(uint32_t port)
+{
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it != g_socket_servers.end())
+   {
+      (*it)->clearBuffer();
+   }
+}
+
+}  // Socket
 
 namespace Buttons
 {
