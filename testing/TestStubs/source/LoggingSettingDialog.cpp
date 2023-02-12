@@ -19,7 +19,7 @@ std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, con
 {
    return GUIController::onLoggingPathDialogShow(parent, current_path, allow_edit);
 }
-QLayout* LoggingSettingDialog::createLayout(const std::string& current_path, bool allow_edit)
+QLayout* LoggingSettingDialog::createLayout(const std::string&, bool)
 {
    UT_Assert(false);
    return nullptr;

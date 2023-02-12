@@ -38,20 +38,20 @@ public:
    T reply;
 
    result(T& result):
-   is_ready(true),
-   reply(result)
+   reply(result),
+   is_ready(true)
    {
 
    }
    result():
-   is_ready(false),
-   reply{}
+   reply{},
+   is_ready(false)
    {
 
    }
    result(bool result):
-   is_ready(result),
-   reply{}
+   reply{},
+   is_ready(result)
    {
 
    }

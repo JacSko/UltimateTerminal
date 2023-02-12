@@ -61,8 +61,8 @@ SocketServer::SocketServer():
 m_listening_thread(std::bind(&SocketServer::listening_thread, this), "SOCK_LISTEN"),
 m_working_thread(std::bind(&SocketServer::worker_thread, this), "SOCK_WORKER"),
 m_server_fd(-1),
-m_max_clients(0),
 m_port(0),
+m_max_clients(0),
 m_listeners {},
 m_handlers {}
 {

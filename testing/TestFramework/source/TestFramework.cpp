@@ -18,7 +18,7 @@ struct SerialPortLoopback
 };
 struct TraceForwarder : public Drivers::SocketClient::ClientListener
 {
-   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
+   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>&, size_t)
    {
       switch (ev)
       {

@@ -253,7 +253,7 @@ void SocketClient::startHeaderMode()
          m_recv_buffer.clear();
          m_recv_buffer.resize(payload_size);
          recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data(), payload_size, 0);
-         if (recv_bytes == payload_size)
+         if (static_cast<uint32_t>(recv_bytes) == payload_size)
          {
             notifyListeners(ClientEvent::SERVER_DATA_RECV, m_recv_buffer, payload_size);
          }

@@ -152,7 +152,7 @@ void ClientHandler::startHeaderMode()
       {
          uint32_t payload_size = m_header_handler.decodeMessageLength(header);
          recv_bytes = system_call::recv(m_client_id, m_recv_buffer.data(), payload_size, 0);
-         if (recv_bytes == payload_size)
+         if (static_cast<uint32_t>(recv_bytes) == payload_size)
          {
             if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::DATA_RECEIVED, m_recv_buffer, payload_size);
          }

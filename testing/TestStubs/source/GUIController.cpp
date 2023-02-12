@@ -80,7 +80,7 @@ void GUIController::run()
       g_trace_filter_settings.push_back({});
    }
    auto& ports = ui->getPorts();
-   for (uint32_t i = 0; i < filters.size(); i++)
+   for (uint8_t i = 0; i < ports.size(); i++)
    {
       m_port_labels.push_back({i, {},{}});
       g_port_settings.push_back({});
@@ -371,7 +371,7 @@ QWidget* GUIController::getParent()
 {
    return this;
 }
-void GUIController::setStatusBarNotification(const std::string& notification, uint32_t timeout)
+void GUIController::setStatusBarNotification(const std::string& notification, uint32_t)
 {
    m_status_bar_notification = notification;
    UT_Log(MAIN_GUI, LOW, "%s %s", __func__, notification.c_str());
@@ -489,7 +489,7 @@ bool GUIController::onGetLineEnding(const std::vector<uint8_t>&)
    UT_Log(MAIN_GUI, LOW, "%s %s", __func__, reply.lineending.c_str());
    return rpc_server->respond<RPC::GetLineEndingReply>(reply);
 }
-bool GUIController::onGetAllLineEndings(const std::vector<uint8_t>& data)
+bool GUIController::onGetAllLineEndings(const std::vector<uint8_t>&)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    RPC::GetAllLineEndingsReply reply = {};
@@ -510,7 +510,7 @@ bool GUIController::onSetLineEnding(const std::vector<uint8_t>& data)
    UT_Log(MAIN_GUI, LOW, "%s [%s] found %u ", __func__, request.lineending.c_str(), reply.result);
    return rpc_server->respond<RPC::SetLineEndingReply>(reply);
 }
-bool GUIController::onGetTargetPort(const std::vector<uint8_t>& data)
+bool GUIController::onGetTargetPort(const std::vector<uint8_t>&)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    RPC::GetTargetPortReply reply = {};
@@ -519,7 +519,7 @@ bool GUIController::onGetTargetPort(const std::vector<uint8_t>& data)
    return rpc_server->respond<RPC::GetTargetPortReply>(reply);
 }
 
-bool GUIController::onGetAllTargetPorts(const std::vector<uint8_t>& data)
+bool GUIController::onGetAllTargetPorts(const std::vector<uint8_t>&)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    RPC::GetAllTargetPortsReply reply = {};
@@ -593,7 +593,7 @@ bool GUIController::onGetCommandHistory(const std::vector<uint8_t>&)
    UT_Log(MAIN_GUI, LOW, "%s history size %u", __func__, reply.history.size());
    return rpc_server->respond<RPC::GetCommandHistoryReply>(reply);
 }
-bool GUIController::onGetTerminalViewContent(const std::vector<uint8_t>& data)
+bool GUIController::onGetTerminalViewContent(const std::vector<uint8_t>&)
 {
    RPC::GetTerminalViewContentReply reply = {};
 
@@ -606,7 +606,7 @@ bool GUIController::onGetTerminalViewContent(const std::vector<uint8_t>& data)
    UT_Log(MAIN_GUI, LOW, "%s size %u", __func__, reply.content.size());
    return rpc_server->respond<RPC::GetTerminalViewContentReply>(reply);
 }
-bool GUIController::onGetTraceViewContent(const std::vector<uint8_t>& data)
+bool GUIController::onGetTraceViewContent(const std::vector<uint8_t>&)
 {
    RPC::GetTraceViewContentReply reply = {};
 
@@ -697,7 +697,7 @@ bool GUIController::onGetUserButtonSettings(const std::vector<uint8_t>& data)
    UT_Log(MAIN_GUI, LOW, "%s id %u name %s", __func__, id, reply.settings.button_name.c_str());
    return rpc_server->respond<RPC::GetUserButtonSettingsReply>(reply);
 }
-bool GUIController::onGetMessageBox(const std::vector<uint8_t>& data)
+bool GUIController::onGetMessageBox(const std::vector<uint8_t>&)
 {
    RPC::GetMessageBoxReply reply = {};
    reply.text = g_messagebox_details.text;
@@ -726,14 +726,14 @@ bool GUIController::onSetLoggingPath(const std::vector<uint8_t>& data)
    UT_Log(MAIN_GUI, LOW, "%s path %s", __func__, g_logging_path.c_str());
    return rpc_server->respond<RPC::SetLoggingPathReply>(reply);
 }
-bool GUIController::onGetLoggingPath(const std::vector<uint8_t>& data)
+bool GUIController::onGetLoggingPath(const std::vector<uint8_t>&)
 {
    RPC::GetLoggingPathReply reply = {};
    reply.path = g_logging_path;
    UT_Log(MAIN_GUI, LOW, "%s path %s", __func__, g_logging_path.c_str());
    return rpc_server->respond<RPC::GetLoggingPathReply>(reply);
 }
-void GUIController::onCurrentPortSelectionChanged(int index)
+void GUIController::onCurrentPortSelectionChanged(int)
 {
 }
 uint32_t GUIController::getButtonIDByName(const std::string& name)
@@ -762,7 +762,7 @@ uint32_t GUIController::getTraceFilterIDByName(const std::string& name)
    }
    return result;
 }
-std::string GUIController::onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit)
+std::string GUIController::onLoggingPathDialogShow(QWidget*, const std::string& current_path, bool)
 {
    std::string result = g_logging_path;
    g_logging_path = current_path;
@@ -773,21 +773,21 @@ void GUIController::onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::
 {
    g_messagebox_details = {true, window_title, icon, text};
 }
-std::optional<bool> GUIController::onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit)
+std::optional<bool> GUIController::onPortSettingsDialogShow(QWidget*, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool)
 {
    UT_Assert(current_settings.port_id < g_port_settings.size());
    out_settings = g_port_settings[current_settings.port_id];
    UT_Log(MAIN_GUI, LOW, "%s %u[%s]", __func__, current_settings.port_id, current_settings.port_name.c_str());
    return true;
 }
-std::optional<bool> GUIController::onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit)
+std::optional<bool> GUIController::onTraceFilterSettingDialogShow(QWidget*, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool)
 {
    UT_Assert(current_settings.id < g_trace_filter_settings.size());
    out_settings = g_trace_filter_settings[current_settings.id];
    UT_Log(MAIN_GUI, LOW, "%s id %u", __func__, current_settings.id);
    return true;
 }
-std::optional<bool> GUIController::onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit)
+std::optional<bool> GUIController::onUserButtonSettingsDialogShow(QWidget*, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool)
 {
    UT_Assert(current_settings.id < g_user_button_settings.size());
    out_settings = g_user_button_settings[current_settings.id];

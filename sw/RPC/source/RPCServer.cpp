@@ -31,7 +31,7 @@ void RPCServer::removeCommandExecutor(uint8_t cmd)
    m_executors.erase(cmd);
 }
 
-void RPCServer::onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size)
+void RPCServer::onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    switch(ev)
    {

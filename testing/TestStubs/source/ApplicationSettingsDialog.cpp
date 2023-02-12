@@ -8,18 +8,18 @@
 namespace Dialogs
 {
 
-ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controller,
-                                                     std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
-                                                     std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
-                                                     std::unique_ptr<IFileLogger>& logger,
-                                                     std::string& logging_path)
+ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController&,
+                                                     std::vector<std::unique_ptr<GUI::PortHandler>>&,
+                                                     std::vector<std::unique_ptr<TraceFilterHandler>>&,
+                                                     std::unique_ptr<IFileLogger>&,
+                                                     std::string&)
 {
 }
 ApplicationSettingsDialog::~ApplicationSettingsDialog()
 {
 
 }
-std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
+std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget*)
 {
    return {};
 }
