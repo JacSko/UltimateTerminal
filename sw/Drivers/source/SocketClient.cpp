@@ -148,10 +148,12 @@ void SocketClient::disconnect()
 {
    if (isConnected())
    {
+      UT_Log(SOCK_DRV, LOW, "%s", __func__);
       std::unique_lock<std::mutex> lock(m_mutex);
       m_state = State::DISCONNECTING;
       system_call::close(m_sock_fd);
       m_sock_fd = -1;
+      m_cond_var.notify_all();
       m_cond_var.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state == State::IDLE;});
    }
 }
