@@ -6,6 +6,7 @@ const uint32_t TEST_SOCKET_PORT = 2222;
 const std::string TEST_IP_ADDRESS = "127.0.0.1";
 static constexpr uint32_t GREEN_COLOR = 0x00FF00;
 static constexpr uint32_t BLACK_COLOR = 0x000000;
+static constexpr uint32_t BLUE_COLOR = 0x0000FF;
 static constexpr uint32_t TEST_TRACES_COUNT = 5;
 static constexpr uint32_t TEST_BACKGROUND_COLOR = 0x000001;
 static constexpr uint32_t TEST_FONT_COLOR = 0x000002;
@@ -74,7 +75,7 @@ TEST_F(SocketRead, read_data_from_socket)
    const uint32_t BACKGROUND_COLOR = TEST_BACKGROUND_COLOR;
    const uint32_t FONT_COLOR = TEST_FONT_COLOR;
 
-   /* start socket server on FIRST_SOCKET_PORT */
+   /* start socket server on TEST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
 
    PortSettingDialog::Settings port_settings;
@@ -162,7 +163,7 @@ TEST_F(SocketRead, write_socket)
    const uint32_t BACKGROUND_COLOR = TEST_BACKGROUND_COLOR;
    const uint32_t FONT_COLOR = TEST_FONT_COLOR;
 
-   /* start socket server on FIRST_SOCKET_PORT */
+   /* start socket server on TEST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
    TF::Socket::clearMessageBuffer(TEST_SOCKET_PORT);
 
@@ -225,6 +226,99 @@ TEST_F(SocketRead, write_socket)
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* close socket server on FIRST_SOCKET_PORT */
+   EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
+
+}
+
+TEST_F(SocketRead, server_reconnection)
+{
+   /**
+    * @test
+    * <b>scenario</b>: <br>
+    *       Open one PORT in socket mode, than close the server. Renable the server. <br>
+    * <b>expected</b>: <br>
+    *       Default button colors shall be default background with default font. <br>
+    *       New settings shall be accepted after dialog shown. <br>
+    *       Port label shall be updated and present correct settings. <br>
+    *       Both ports shall be opened correctly.<br>
+    *       Last-opened port name shall be presented in ports combobox. <br>
+    *       Green button color shall be set with black font for all ports. <br>
+    *       On server disconnection, the port button shall be BLUE and the reconnection attempts shall be started. <br>
+    *       When server is back again, the connection shall be made automatically. <br>
+    *       Ports shall be closed correctly. <br>
+    *       Port names shall be removed from port combobox. <br>
+    *       Red button color shall be set with black font. <br>
+    * ************************************************
+    */
+
+   const uint8_t PORT_ID = 1;
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
+   const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+   const uint32_t BACKGROUND_COLOR = TEST_BACKGROUND_COLOR;
+   const uint32_t FONT_COLOR = TEST_FONT_COLOR;
+
+   /* clear terminal window before test */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
+
+   /* start socket server on TEST_SOCKET_PORT */
+   EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
+   TF::Socket::clearMessageBuffer(TEST_SOCKET_PORT);
+
+   PortSettingDialog::Settings port_settings;
+   port_settings.port_name = NEW_PORT_NAME;
+   port_settings.type = PortSettingDialog::PortType::ETHERNET;
+   port_settings.ip_address = TEST_IP_ADDRESS;
+   port_settings.port = TEST_SOCKET_PORT;
+   port_settings.port_id = PORT_ID;
+   port_settings.trace_color = BACKGROUND_COLOR;
+   port_settings.font_color = FONT_COLOR;
+
+   /* set new port settings */
+   EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* open port by clicking on button */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+   EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
+
+   /* close the server */
+   EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
+   TF::wait(1000);
+
+   /* check button color on server disconnection */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), BLUE_COLOR);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+
+   /* start server once again */
+   EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
+
+   /* wait 2 seconds for reconnection */
+   TF::wait(2000);
+
+   /* check button color after server reconnection */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+
+   /* send some data from server to client */
+   for (uint8_t i = 0; i < TEST_TRACES_COUNT; i++)
+   {
+      EXPECT_TRUE(TF::Socket::sendMessage(TEST_SOCKET_PORT, "TEST MESSAGE " + std::to_string(i) + '\n'));
+      TF::wait(20);
+   }
+
+   TF::wait(1000);
+   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(BACKGROUND_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FONT_COLOR), TEST_TRACES_COUNT);
+
+   /* close socket in application */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
 
    /* close socket server on FIRST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
