@@ -39,6 +39,15 @@ public:
    ~SocketClient();
 private:
 
+   enum class State
+   {
+      IDLE,
+      CONNECTING,
+      CONNECTED,
+      DISCONNECTING,
+      CLOSING,
+   };
+
    /* ISocketClient */
    bool connect(std::string ip_address, uint16_t port) override;
    void disconnect() override;
@@ -66,7 +75,9 @@ private:
    std::vector<ClientListener*> m_listeners;
    std::mutex m_listeners_mutex;
    HeaderHandler m_header_handler;
-
+   std::atomic<State> m_state;
+   std::mutex m_mutex;
+   std::condition_variable m_cond_var;
 };
 
 }

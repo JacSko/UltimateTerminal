@@ -58,6 +58,7 @@ namespace SocketClient
 constexpr uint32_t CLIENT_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
+const std::chrono::milliseconds COND_VAR_WAIT_MS = std::chrono::milliseconds(500);
 
 SocketClient::SocketClient(DataMode mode):
 m_worker(std::bind(&SocketClient::receivingThread, this), "CLIENT_WORKER"),
@@ -65,9 +66,12 @@ m_mode(mode),
 m_sock_fd(-1),
 m_recv_buffer(SOCKET_MAX_PAYLOAD_LENGTH, 0x00),
 m_recv_buffer_idx(0),
-m_listeners {}
+m_listeners {},
+m_state(State::IDLE)
 {
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
+   UT_Log(SOCK_DRV, HIGH, "Starting socket client thread, mode %s", mode == DataMode::NEW_LINE_DELIMITER? "NEW_LINE_DELIMITER" : "PAYLOAD_HEADER");
+   m_worker.start(CLIENT_THREAD_START_TIMEOUT);
 }
 bool SocketClient::connect(std::string ip_address, uint16_t port)
 {
@@ -93,9 +97,19 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
             {
                if (system_call::connect(m_sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == 0)
                {
-                  result = true;
-                  UT_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
-                  m_worker.start(CLIENT_THREAD_START_TIMEOUT);
+                  UT_Log(SOCK_DRV, HIGH, "Connected, waiting for thread start", m_ip_address.c_str(), m_port);
+                  std::unique_lock<std::mutex> lock(m_mutex);
+                  m_state = State::CONNECTING;
+                  m_cond_var.notify_all();
+                  if (m_cond_var.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state != State::CONNECTING;}))
+                  {
+                     UT_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
+                     result = true;
+                  }
+                  else
+                  {
+                     UT_Log(SOCK_DRV, ERROR, "Timeout waiting for thread unlock");
+                  }
                }
                else
                {
@@ -132,16 +146,18 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
 }
 void SocketClient::disconnect()
 {
-   if (m_worker.isRunning())
+   if (isConnected())
    {
-      m_worker.stop();
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::DISCONNECTING;
+      system_call::close(m_sock_fd);
+      m_sock_fd = -1;
+      m_cond_var.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state == State::IDLE;});
    }
-   system_call::close(m_sock_fd);
-   m_sock_fd = -1;
 }
 bool SocketClient::isConnected()
 {
-   return m_worker.isRunning();
+   return m_state == State::CONNECTING || m_state == State::CONNECTED;
 }
 void SocketClient::addListener(ClientListener* callback)
 {
@@ -208,35 +224,74 @@ void SocketClient::receivingThread()
 }
 void SocketClient::startDelimiterMode()
 {
+   bool is_started = false;
+
    while(m_worker.isRunning())
    {
-      int recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH, 0);
-      if (recv_bytes > 0)
+
       {
-         m_recv_buffer_idx += recv_bytes;
-         bool is_next_new_line = true;
-         do
+         std::unique_lock<std::mutex> lock(m_mutex);
+         is_started = false;
+         UT_Log(SOCK_DRV, HIGH, "Waiting for connection request");
+         m_cond_var.wait(lock);
+         if (m_state == State::CONNECTING)
          {
-            auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)CLIENT_DELIMITER);
-            if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
-            {
-               it++; //include the found newline too
-               notifyListeners(ClientEvent::SERVER_DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
-               std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
-               m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
-            }
-            else
-            {
-               is_next_new_line = false;
-            }
+            UT_Log(SOCK_DRV, HIGH, "Connect requested, notifying thread started");
+            m_state = State::CONNECTED;
+            m_cond_var.notify_all();
+            is_started = true;
          }
-         while(is_next_new_line);
+         else if (m_state == State::CLOSING)
+         {
+            UT_Log(SOCK_DRV, HIGH, "Close request received");
+            is_started = false;
+            break;
+         }
       }
-      else if (recv_bytes == 0)
+
+      if(is_started)
       {
-         /* client disconnected, break from main loop and wait for object destroy or restart */
-         notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
-         break;
+            while(m_worker.isRunning())
+            {
+               int recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH, 0);
+               if (recv_bytes > 0)
+               {
+                  m_recv_buffer_idx += recv_bytes;
+                  bool is_next_new_line = true;
+                  do
+                  {
+                     auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)CLIENT_DELIMITER);
+                     if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+                     {
+                        it++; //include the found newline too
+                        notifyListeners(ClientEvent::SERVER_DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
+                        std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
+                        m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+                     }
+                     else
+                     {
+                        is_next_new_line = false;
+                     }
+                  }
+                  while(is_next_new_line);
+               }
+               else if (recv_bytes == 0)
+               {
+                  /* client disconnected */
+                  m_state = State::IDLE;
+                  system_call::close(m_sock_fd);
+                  m_sock_fd = -1;
+                  notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+                  UT_Log(SOCK_DRV, LOW, "Remote server closed unexpectedly!");
+                  break;
+               }
+               else if (m_state == State::DISCONNECTING)
+               {
+                  m_state = State::IDLE;
+                  UT_Log(SOCK_DRV, HIGH, "Close requested, exiting read loop");
+                  break;
+               }
+         }
       }
    }
 }
@@ -244,31 +299,69 @@ void SocketClient::startDelimiterMode()
 void SocketClient::startHeaderMode()
 {
    std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
+   bool is_started = false;
+
+
    while(m_worker.isRunning())
    {
-      int recv_bytes = system_call::recv(m_sock_fd, header.data(), HeaderHandler::HEADER_SIZE, 0);
-      if (recv_bytes == HeaderHandler::HEADER_SIZE)
+
       {
-         uint32_t payload_size = m_header_handler.decodeMessageLength(header);
-         m_recv_buffer.clear();
-         m_recv_buffer.resize(payload_size);
-         recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data(), payload_size, 0);
-         if (static_cast<uint32_t>(recv_bytes) == payload_size)
+         std::unique_lock<std::mutex> lock(m_mutex);
+         is_started = false;
+         UT_Log(SOCK_DRV, HIGH, "Waiting for connection request");
+         m_cond_var.wait(lock);
+         if (m_state == State::CONNECTING)
          {
-            notifyListeners(ClientEvent::SERVER_DATA_RECV, m_recv_buffer, payload_size);
+            UT_Log(SOCK_DRV, HIGH, "Connect requested, notifying thread started");
+            m_state = State::CONNECTED;
+            m_cond_var.notify_all();
+            is_started = true;
          }
-         else if (recv_bytes == 0)
+         else if (m_state == State::CLOSING)
          {
-            /* server disconnected, break from main loop and wait for object destroy or restart */
-            notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+            UT_Log(SOCK_DRV, HIGH, "Close request received");
+            is_started = false;
             break;
          }
       }
-      else if (recv_bytes == 0)
+
+      if(is_started)
       {
-         /* client disconnected, break from main loop and wait for object destroy or restart */
-         notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
-         break;
+         while(m_worker.isRunning())
+         {
+            int recv_bytes = system_call::recv(m_sock_fd, header.data(), HeaderHandler::HEADER_SIZE, 0);
+            if (recv_bytes == HeaderHandler::HEADER_SIZE)
+            {
+               uint32_t payload_size = m_header_handler.decodeMessageLength(header);
+               m_recv_buffer.clear();
+               m_recv_buffer.resize(payload_size);
+               recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data(), payload_size, 0);
+               if (static_cast<uint32_t>(recv_bytes) == payload_size)
+               {
+                  notifyListeners(ClientEvent::SERVER_DATA_RECV, m_recv_buffer, payload_size);
+               }
+               else if (recv_bytes == 0)
+               {
+                  /* server disconnected, break from main loop and wait for object destroy or restart */
+                  notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+                  break;
+               }
+            }
+            else if (recv_bytes == 0)
+            {
+               /* client disconnected */
+               m_state = State::IDLE;
+               notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
+               UT_Log(SOCK_DRV, LOW, "Remote server closed unexpectedly!");
+               break;
+            }
+            else if (m_state == State::DISCONNECTING)
+            {
+               m_state = State::IDLE;
+               UT_Log(SOCK_DRV, HIGH, "Close requested, exiting read loop");
+               break;
+            }
+         }
       }
    }
 }
@@ -288,6 +381,15 @@ SocketClient::~SocketClient()
    if (isConnected())
    {
       disconnect();
+   }
+   {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::CLOSING;
+      m_cond_var.notify_all();
+   }
+   if (m_worker.isRunning())
+   {
+      m_worker.stop();
    }
 }
 
