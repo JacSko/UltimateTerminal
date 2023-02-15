@@ -223,8 +223,15 @@ void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
    }
    else if (event.event == GUI::Event::DISCONNECTED)
    {
-      m_gui_controller.registerPortClosed(event.name);      m_port_id_name_map[event.port_id] = "";
+      m_gui_controller.registerPortClosed(event.name);
+      m_port_id_name_map[event.port_id] = "";
       UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
+   }
+   else if (event.event == GUI::Event::CONNECTING)
+   {
+      m_gui_controller.registerPortClosed(event.name);
+      m_port_id_name_map[event.port_id] = "";
+      UT_Log(MAIN, INFO, "Port connecting: %u [%s]", event.port_id, event.name.c_str());
    }
 }
 void MainApplication::addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color)
