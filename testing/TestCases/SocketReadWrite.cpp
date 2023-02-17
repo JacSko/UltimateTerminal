@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "TestFramework.h"
 #include "Settings.h"
+#include "ApplicationExecutor.hpp"
 
 const uint32_t TEST_SOCKET_PORT = 2222;
 const std::string TEST_IP_ADDRESS = "127.0.0.1";
@@ -10,8 +11,6 @@ static constexpr uint32_t BLUE_COLOR = 0x0000FF;
 static constexpr uint32_t TEST_TRACES_COUNT = 5;
 static constexpr uint32_t TEST_BACKGROUND_COLOR = 0x000001;
 static constexpr uint32_t TEST_FONT_COLOR = 0x000002;
-
-
 
 struct SocketRead : public testing::Test
 {
@@ -323,4 +322,69 @@ TEST_F(SocketRead, server_reconnection)
    /* close socket server on FIRST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
 
+}
+
+TEST_F(SocketRead, open_close_socket_multiple_times_during_high_traffic)
+{
+   /**
+    * @test
+    * <b>scenario</b>: <br>
+    *       Open and close PORT0 multiple times, generate high traffic on socket port. <br>
+    * <b>expected</b>: <br>
+    *       Application behaves stable during muliple reconnecting events. <br>
+    * ************************************************
+    */
+
+   const uint8_t PORT_ID = 0;
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string CLEAR_BUTTON_NAME = "clearButton";
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
+   const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+   const uint32_t BACKGROUND_COLOR = 0x000011;
+   const uint32_t FONT_COLOR = 0x000022;
+   const uint8_t RECONNECT_ATTEMPTS = 3;
+
+   PortSettingDialog::Settings port_settings;
+   port_settings.port_name = NEW_PORT_NAME;
+   port_settings.type = PortSettingDialog::PortType::ETHERNET;
+   port_settings.ip_address = TEST_IP_ADDRESS;
+   port_settings.port = TEST_SOCKET_PORT;
+   port_settings.port_id = PORT_ID;
+   port_settings.trace_color = BACKGROUND_COLOR;
+   port_settings.font_color = FONT_COLOR;
+
+   /* set new port settings */
+   EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* start SocketDataGenerator - generate a string data every 2ms */
+   TF::ApplicationExecutor serial_data_generator;
+   EXPECT_TRUE(serial_data_generator.startApplication(std::string(RUNTIME_OUTPUT_DIR) + "/SocketDataGenerator",
+                                                      "--mode=server --port=" + std::to_string(TEST_SOCKET_PORT) +
+                                                      " --payload_rate=2 --payload=\"THIS_IS_EXAMPLE_PAYLOAD\" --exit_on_last_client=0"));
+   TF::wait(2000);
+
+   for (uint8_t i = 0; i < RECONNECT_ATTEMPTS; i++)
+   {
+      /* clear terminal */
+      EXPECT_TRUE(TF::Buttons::simulateButtonClick(CLEAR_BUTTON_NAME));
+      EXPECT_EQ(TF::TerminalView::countItems(), 0);
+
+      /* open port */
+      EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+      TF::wait(500);
+      EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+      EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
+      /* wait for data */
+      TF::wait(2000);
+      /* close port */
+      EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+      TF::wait(1000);
+      EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+      /* check terminal content - payload generated every 2ms, gathering time 2s, so more around ~1000 traces shall be available */
+      EXPECT_GT(TF::TerminalView::countItems(), 900);
+   }
+   EXPECT_TRUE(serial_data_generator.stopApplication());
 }
