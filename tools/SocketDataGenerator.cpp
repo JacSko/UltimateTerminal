@@ -226,7 +226,7 @@ bool processCommands(int argc, char** argv)
 
    for (uint8_t i = 1; i < argc; i++)
    {
-      if (isCommand(argv[1]))
+      if (isCommand(argv[i]))
       {
          std::stringstream ss (argv[i]);
          std::string command = "";
@@ -241,7 +241,7 @@ bool processCommands(int argc, char** argv)
       }
       else
       {
-         std::cout << "[" << argv[1] << "] is not a valid option!" << std::endl;
+         std::cout << "[" << argv[i] << "] is not a valid option!" << std::endl;
          break;
       }
    }

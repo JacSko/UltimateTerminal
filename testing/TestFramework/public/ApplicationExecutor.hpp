@@ -57,7 +57,7 @@ public:
          std::strncpy(cmd_args[0], application_path.c_str(), application_path.size() + 1);
          for (uint8_t i = 1; i < splitted_arguments.size() + 1; i++)
          {
-            cmd_args[i] = new char [splitted_arguments[i].size() + 1];
+            cmd_args[i] = new char [splitted_arguments[i-1].size() + 1];
             std::strncpy(cmd_args[i], splitted_arguments[i-1].c_str(), splitted_arguments[i-1].size() + 1);
          }
          cmd_args[splitted_arguments.size() + 1] = 0x00;
