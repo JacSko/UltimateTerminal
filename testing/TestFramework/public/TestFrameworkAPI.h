@@ -31,7 +31,9 @@ enum class Command : uint8_t
    GetTraceFilterState,
    GetCommandHistory,
    GetTerminalViewContent,
+   GetTerminalViewCount,
    GetTraceViewContent,
+   GetTraceViewCount,
    GetPortSettings,
    SetPortSettings,
    SetTraceFilterSettings,
@@ -214,9 +216,17 @@ struct GetTerminalViewContentRequest
 {
    Command cmd = Command::GetTerminalViewContent;
 };
+struct GetTerminalViewCountRequest
+{
+   Command cmd = Command::GetTerminalViewCount;
+};
 struct GetTraceViewContentRequest
 {
    Command cmd = Command::GetTraceViewContent;
+};
+struct GetTraceViewCountRequest
+{
+   Command cmd = Command::GetTraceViewCount;
 };
 
 struct ViewItem
@@ -230,10 +240,20 @@ struct GetTerminalViewContentReply
    Command cmd = Command::GetTerminalViewContent;
    std::vector<ViewItem> content;
 };
+struct GetTerminalViewCountReply
+{
+   Command cmd = Command::GetTerminalViewCount;
+   uint32_t count;
+};
 struct GetTraceViewContentReply
 {
    Command cmd = Command::GetTraceViewContent;
    std::vector<ViewItem> content;
+};
+struct GetTraceViewCountReply
+{
+   Command cmd = Command::GetTraceViewCount;
+   uint32_t count;
 };
 struct GetPortSettingsRequest
 {
@@ -516,9 +536,27 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentR
 {
    ::serialize(buffer, (uint8_t)item.cmd);
 }
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.count);
+}
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest item)
 {
    ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewCountRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewCountReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.count);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply item)
 {
@@ -897,10 +935,32 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalView
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.count);
+}
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest& item)
 {
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCountRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCountReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.count);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply& item)
 {

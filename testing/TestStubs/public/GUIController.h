@@ -212,7 +212,9 @@ private:
    bool onSetTraceFilter(const std::vector<uint8_t>& data);
    bool onGetCommandHistory(const std::vector<uint8_t>& data);
    bool onGetTerminalViewContent(const std::vector<uint8_t>& data);
+   bool onGetTerminalViewCount(const std::vector<uint8_t>& data);
    bool onGetTraceViewContent(const std::vector<uint8_t>& data);
+   bool onGetTraceViewCount(const std::vector<uint8_t>& data);
    bool onSetPortSettings(const std::vector<uint8_t>& data);
    bool onGetPortSettings(const std::vector<uint8_t>& data);
    bool onSetTraceFilterSettings(const std::vector<uint8_t>& data);

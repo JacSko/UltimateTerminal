@@ -858,14 +858,14 @@ namespace TerminalView
 uint32_t countItems()
 {
    uint32_t result = 0;
-   RPC::GetTerminalViewContentRequest request {};
+   RPC::GetTerminalViewCountRequest request {};
 
-   RPC::result<RPC::GetTerminalViewContentReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewContentReply, RPC::GetTerminalViewContentRequest>(request);
+   RPC::result<RPC::GetTerminalViewCountReply> reply = g_rpc_client->invoke<RPC::GetTerminalViewCountReply, RPC::GetTerminalViewCountRequest>(request);
    if (reply.ready())
    {
-      result = (uint32_t)reply.reply.content.size();
+      result = reply.reply.count;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s size %u", __func__, result);
+   UT_Log(TEST_FRAMEWORK, LOW, "%s count %u", __func__, result);
    return result;
 }
 uint32_t countItemsWithBackgroundColor(uint32_t color)
@@ -916,14 +916,14 @@ namespace TraceView
 uint32_t countItems()
 {
    uint32_t result = 0;
-   RPC::GetTraceViewContentRequest request {};
+   RPC::GetTraceViewCountRequest request {};
 
-   RPC::result<RPC::GetTraceViewContentReply> reply = g_rpc_client->invoke<RPC::GetTraceViewContentReply, RPC::GetTraceViewContentRequest>(request);
+   RPC::result<RPC::GetTraceViewCountReply> reply = g_rpc_client->invoke<RPC::GetTraceViewCountReply, RPC::GetTraceViewCountRequest>(request);
    if (reply.ready())
    {
-      result = (uint32_t)reply.reply.content.size();
+      result = reply.reply.count;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s size %u", __func__, result);
+   UT_Log(TEST_FRAMEWORK, LOW, "%s count %u", __func__, result);
    return result;
 }
 uint32_t countItemsWithBackgroundColor(uint32_t color)
