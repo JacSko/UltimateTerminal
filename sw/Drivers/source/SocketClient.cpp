@@ -235,7 +235,7 @@ void SocketClient::startDelimiterMode()
          std::unique_lock<std::mutex> lock(m_mutex);
          is_started = false;
          UT_Log(SOCK_DRV, HIGH, "Waiting for connection request");
-         m_cond_var.wait(lock);
+         m_cond_var.wait(lock, [&](){return m_state != State::IDLE;});
          if (m_state == State::CONNECTING)
          {
             UT_Log(SOCK_DRV, HIGH, "Connect requested, notifying thread started");
