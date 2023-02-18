@@ -85,6 +85,7 @@ struct IGUIControllerFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_tab_widget, _,_));
 
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setContextMenuPolicy(_, Qt::ContextMenuPolicy::CustomContextMenu)).Times(AtLeast(1));
+      EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setContextMenuPolicy(_, Qt::ContextMenuPolicy::CustomContextMenu)).Times(AtLeast(1));
       EXPECT_CALL(*QtCoreMock_get(), QObject_connect(_, _, _, _)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAutoFillBackground(_, true)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAlignment(_, Qt::AlignCenter)).Times(AtLeast(1));
@@ -293,6 +294,33 @@ TEST_F(IGUIControllerFixture, button_events_receiving)
    m_test_subject->subscribeForButtonEvent(test_button_id, ButtonEvent::CLICKED, nullptr);
    EXPECT_CALL(*QtWidgetsMock_get(), QSender()).WillOnce(Return(&test_marker_button));
    dynamic_cast<GUIController*>(m_test_subject.get())->onButtonClicked();
+
+}
+
+TEST_F(IGUIControllerFixture, trace_filters_mapping_tests)
+{
+   ButtonEventListenerMock listener;
+   uint32_t test_button_id = m_test_subject->getButtonID("traceFilterButton_2");
+   m_test_subject->subscribeForButtonEvent(test_button_id, ButtonEvent::CLICKED, &listener);
+   m_test_subject->subscribeForButtonEvent(test_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, &listener);
+
+   /**
+    * <b>scenario</b>: Line edit click requested for TraceFilter line edit object. <br>
+    * <b>expected</b>: Corresponding button event shall be notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QSender()).WillOnce(Return(&test_trace_filter_2));
+   EXPECT_CALL(listener, onButtonEvent(test_button_id, ButtonEvent::CLICKED));
+   dynamic_cast<GUIController*>(m_test_subject.get())->onButtonClicked();
+
+   /**
+    * <b>scenario</b>: Line edit context menu requested for TraceFilter line edit object. <br>
+    * <b>expected</b>: Corresponding button event shall be notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QSender()).WillOnce(Return(&test_trace_filter_2));
+   EXPECT_CALL(listener, onButtonEvent(test_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED));
+   dynamic_cast<GUIController*>(m_test_subject.get())->onButtonContextMenuRequested();
 
 }
 

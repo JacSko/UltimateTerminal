@@ -39,6 +39,8 @@ void GUIController::run()
 
    for (auto& filter : ui->getTraceFilters())
    {
+      filter.line_edit->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+      filter.button->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
       connect(filter.line_edit, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onButtonContextMenuRequested()));
       connect(filter.line_edit, SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
       m_shortcuts_map[filter.line_edit] = filter.button;
@@ -393,11 +395,16 @@ bool GUIController::executeGUIRequest(CommandExecutor* request)
 void GUIController::onButtonClicked()
 {
    QObject* object = sender();
+
+   UT_Log(MAIN_GUI, HIGH, "object %s clicked", object->objectName().toStdString().c_str());
+
    QPushButton* button = nullptr;
    if (m_shortcuts_map.find(object) != m_shortcuts_map.end())
    {
       // check if sender has respective button alternative
       button = m_shortcuts_map[object];
+      UT_Log(MAIN_GUI, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
+                                                              button->objectName().toStdString().c_str());
    }
    else
    {
@@ -422,9 +429,24 @@ void GUIController::onButtonClicked()
 }
 void GUIController::onButtonContextMenuRequested()
 {
-   QPushButton* object = reinterpret_cast<QPushButton*>(sender());
+   QObject* object = sender();
+
+   UT_Log(MAIN_GUI, HIGH, "object %s context requested", object->objectName().toStdString().c_str());
+
+   QPushButton* button = nullptr;
+   if (m_shortcuts_map.find(object) != m_shortcuts_map.end())
+   {
+      // check if sender has respective button alternative
+      button = m_shortcuts_map[object];
+      UT_Log(MAIN_GUI, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
+                                                              button->objectName().toStdString().c_str());
+   }
+   else
+   {
+      button = reinterpret_cast<QPushButton*>(object);
+   }
    auto& buttons = ui->getButtons();
-   auto it = std::find(buttons.begin(), buttons.end(), object);
+   auto it = std::find(buttons.begin(), buttons.end(), button);
    if (it != buttons.end())
    {
       uint32_t id = std::distance(buttons.begin(), it);
