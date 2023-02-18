@@ -8,7 +8,7 @@
 #include <QtWidgets/QShortcut>
 
 #include "GenericListener.hpp"
-#include "ISocketDriverFactory.h"
+#include "ISocketClient.h"
 #include "ISerialDriver.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"

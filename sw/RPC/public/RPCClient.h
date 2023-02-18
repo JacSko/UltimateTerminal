@@ -9,7 +9,7 @@
 #include <condition_variable>
 
 #include "Logger.h"
-#include "ISocketDriverFactory.h"
+#include "ISocketClient.h"
 #include "RPCCommon.h"
 
 namespace RPC

@@ -61,13 +61,13 @@ struct SocketDriveFixture : public ::testing::Test
    {
       if (is_delimiter_mode)
       {
-         m_server = Drivers::SocketFactory::createServer(SocketServer::DataMode::NEW_LINE_DELIMITER);
-         m_client = Drivers::SocketFactory::createClient(SocketClient::DataMode::NEW_LINE_DELIMITER);
+         m_server = Drivers::SocketServer::ISocketServer::create(SocketServer::DataMode::NEW_LINE_DELIMITER);
+         m_client = Drivers::SocketClient::ISocketClient::create(SocketClient::DataMode::NEW_LINE_DELIMITER);
       }
       else
       {
-         m_server = Drivers::SocketFactory::createServer(SocketServer::DataMode::PAYLOAD_HEADER);
-         m_client = Drivers::SocketFactory::createClient(SocketClient::DataMode::PAYLOAD_HEADER);
+         m_server = Drivers::SocketServer::ISocketServer::create(SocketServer::DataMode::PAYLOAD_HEADER);
+         m_client = Drivers::SocketClient::ISocketClient::create(SocketClient::DataMode::PAYLOAD_HEADER);
       }
    }
    void TearDown()

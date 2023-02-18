@@ -66,7 +66,7 @@ class ISocketClient
 {
 public:
 
-   static std::unique_ptr<ISocketClient> create();
+   static std::unique_ptr<ISocketClient> create(DataMode mode);
    /**
     * @brief Connects to server.
     * @param[in] ip_address - address of remote server in form "XXX.XXX.XXX.XXX"

@@ -19,7 +19,7 @@ namespace SocketServer
 constexpr uint32_t SERVER_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERVER_RECEIVE_TIMEOUT = 500;
 
-std::unique_ptr<ISocketServer> ISocketServer::create()
+std::unique_ptr<ISocketServer> ISocketServer::create(DataMode)
 {
    return std::unique_ptr<ISocketServer>(new QtSocketServer());
 }

@@ -20,7 +20,7 @@ std::unique_ptr<Drivers::Serial::ISerialDriver> Drivers::Serial::ISerialDriver::
    return std::unique_ptr<Drivers::Serial::ISerialDriver>(g_serial_mock);
 }
 
-std::unique_ptr<Drivers::SocketClient::ISocketClient> Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode)
+std::unique_ptr<Drivers::SocketClient::ISocketClient> Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::DataMode)
 {
    return std::unique_ptr<Drivers::SocketClient::ISocketClient>(g_socket_mock);
 }

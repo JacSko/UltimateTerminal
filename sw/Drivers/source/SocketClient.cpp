@@ -60,6 +60,12 @@ constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
 const std::chrono::milliseconds COND_VAR_WAIT_MS = std::chrono::milliseconds(500);
 
+std::unique_ptr<ISocketClient> ISocketClient::create(DataMode mode)
+{
+   return std::unique_ptr<ISocketClient>(new SocketClient(mode));
+}
+
+
 SocketClient::SocketClient(DataMode mode):
 m_worker(std::bind(&SocketClient::receivingThread, this), "CLIENT_WORKER"),
 m_mode(mode),

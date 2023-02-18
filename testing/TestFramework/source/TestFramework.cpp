@@ -9,7 +9,7 @@
 #include "Settings.h"
 #include "ApplicationExecutor.hpp"
 #include "ISocketClient.h"
-#include "ISocketDriverFactory.h"
+#include "ISocketServer.h"
 
 struct SerialPortLoopback
 {
@@ -23,7 +23,7 @@ class SocketServerHandler : public Drivers::SocketServer::ServerListener
 public:
    SocketServerHandler(uint32_t port):
    m_port(port),
-   m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER))
+   m_server(Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER))
    {
       UT_Log(TEST_FRAMEWORK, LOW, "starting server on port %u", port);
       m_server->addListener(this);
@@ -164,7 +164,7 @@ bool Connect()
    if (g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT))
    {
       UT_Log(TEST_FRAMEWORK, LOW, "TestFramework connected, trying to connect to application trace server");
-      g_trace_client = Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
+      g_trace_client = Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
       UT_Assert(g_trace_client);
       result = g_trace_client->connect("127.0.0.1", SETTING_GET_U32(Logger_socketPort));
       g_trace_client->addListener(&g_trace_forwarder);

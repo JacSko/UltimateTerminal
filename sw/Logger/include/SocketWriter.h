@@ -24,7 +24,7 @@
  *  Includes of project headers
  * =============================*/
 #include "ILoggerWriter.h"
-#include "ISocketDriverFactory.h"
+#include "ISocketServer.h"
 /* =============================
  *      Global variables
  * =============================*/
@@ -36,7 +36,7 @@ class LoggerSocketWriter : public ILoggerWriter
 {
 public:
    LoggerSocketWriter(uint16_t port):
-   m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER)),
+   m_server(Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER)),
    m_port(port)
    {
    }

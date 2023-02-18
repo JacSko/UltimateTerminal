@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <memory>
 
 namespace Drivers
 {
@@ -69,7 +70,7 @@ class ISocketServer
 {
 public:
 
-   static std::unique_ptr<ISocketServer> create();
+   static std::unique_ptr<ISocketServer> create(DataMode mode);
    /**
     * @brief Starts server.
     * @param[in] port - connection port (see @details).

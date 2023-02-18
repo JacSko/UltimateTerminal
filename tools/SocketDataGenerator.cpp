@@ -1,4 +1,5 @@
-#include "ISocketDriverFactory.h"
+#include "ISocketServer.h"
+#include "ISocketClient.h"
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -249,7 +250,7 @@ bool processCommands(int argc, char** argv)
 }
 void runClientMode()
 {
-   std::unique_ptr<Drivers::SocketClient::ISocketClient> socket_client = Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
+   std::unique_ptr<Drivers::SocketClient::ISocketClient> socket_client = Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
    if (socket_client)
    {
       if (socket_client->connect(g_ipAddress, g_ipPort))
@@ -273,7 +274,7 @@ void runClientMode()
 
 void runServerMode()
 {
-   std::unique_ptr<Drivers::SocketServer::ISocketServer> socket_server = Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER);
+   std::unique_ptr<Drivers::SocketServer::ISocketServer> socket_server = Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER);
    std::condition_variable cond_var;
    std::mutex mutex;
    std::atomic<uint8_t> clients_count = 0;

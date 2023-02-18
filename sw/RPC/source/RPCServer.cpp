@@ -4,7 +4,7 @@ namespace RPC
 {
 
 RPCServer::RPCServer():
-m_server(Drivers::SocketFactory::createServer(Drivers::SocketServer::DataMode::PAYLOAD_HEADER))
+m_server(Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::PAYLOAD_HEADER))
 
 {
    m_server->addListener(this);

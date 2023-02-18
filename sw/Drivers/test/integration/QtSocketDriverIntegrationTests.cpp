@@ -2,8 +2,9 @@
 #include "gmock/gmock.h"
 #include <thread>
 
-#include "ISocketDriverFactory.h"
 #include "Logger.h"
+#include "ISocketServer.h"
+#include "ISocketClient.h"
 /* ============================= */
 /**
  * @file SocketDriverIntegrationTests.cpp
@@ -55,8 +56,8 @@ struct QtSocketDriveFixture : public ::testing::Test
    {
       server_listener_mock = new ServerListenerMock;
       client_listener_mock = new ClientListenerMock;
-      m_server = Drivers::SocketFactory::createServer(SocketServer::DataMode::NEW_LINE_DELIMITER);
-      m_client = Drivers::SocketFactory::createClient(SocketClient::DataMode::NEW_LINE_DELIMITER);
+      m_server = Drivers::SocketServer::ISocketServer::create(SocketServer::DataMode::NEW_LINE_DELIMITER);
+      m_client = Drivers::SocketClient::ISocketClient::create(SocketClient::DataMode::NEW_LINE_DELIMITER);
    }
    void TearDown()
    {

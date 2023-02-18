@@ -20,8 +20,9 @@ constexpr uint32_t CLIENT_CONNECTION_TIMEOUT = 500;
 constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
 constexpr char CLIENT_DELIMITER = '\n';
 
-std::unique_ptr<ISocketClient> ISocketClient::create()
+std::unique_ptr<ISocketClient> ISocketClient::create(DataMode)
 {
+#warning "Add DataMode support to QtDriver"
    return std::unique_ptr<ISocketClient>(new QtSocketClient());
 }
 

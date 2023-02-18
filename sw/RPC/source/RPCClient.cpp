@@ -4,7 +4,7 @@ namespace RPC
 {
 
 RPCClient::RPCClient():
-m_socket_client(Drivers::SocketFactory::createClient(Drivers::SocketClient::DataMode::PAYLOAD_HEADER)),
+m_socket_client(Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::DataMode::PAYLOAD_HEADER)),
 m_last_event(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED),
 m_event_ready(false),
 m_transaction_ongoing(false)
