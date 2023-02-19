@@ -25,6 +25,8 @@
 #include "ThreadWorker.h"
 #include "ISocketServer.h"
 #include "ISocketClientHandler.h"
+#include "Logger.h"
+#include "SocketHeaderHandler.hpp"
 /* =============================
  *           Defines
  * =============================*/
@@ -55,7 +57,8 @@ private:
 
    void execute();
    const std::string getThreadName(int client_id);
-
+   void startDelimiterMode();
+   void startHeaderMode();
    void writePendingData();
 
    QTcpSocket* m_socket;
@@ -68,6 +71,7 @@ private:
    std::vector<uint8_t> m_write_buffer;
    uint32_t m_recv_buffer_idx;
    DataMode m_mode;
+   HeaderHandler m_header_handler;
 
    State m_state;
    std::mutex m_starting_mutex;

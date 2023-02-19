@@ -39,7 +39,7 @@ class QtSocketServer : public ISocketServer,
                      public ClientHandlerListener
 {
 public:
-   QtSocketServer();
+   QtSocketServer(DataMode mode);
    ~QtSocketServer();
 protected:
    bool start(uint16_t port, uint8_t max_clients = 1) override;

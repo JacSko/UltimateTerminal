@@ -19,18 +19,18 @@ namespace SocketServer
 constexpr uint32_t SERVER_THREAD_START_TIMEOUT = 1000;
 constexpr uint32_t SERVER_RECEIVE_TIMEOUT = 500;
 
-std::unique_ptr<ISocketServer> ISocketServer::create(DataMode)
+std::unique_ptr<ISocketServer> ISocketServer::create(DataMode mode)
 {
-   return std::unique_ptr<ISocketServer>(new QtSocketServer());
+   return std::unique_ptr<ISocketServer>(new QtSocketServer(mode));
 }
 
-QtSocketServer::QtSocketServer():
+QtSocketServer::QtSocketServer(DataMode mode):
 m_listening_thread(std::bind(&QtSocketServer::listening_thread, this), "SOCK_LISTEN"),
 m_working_thread(std::bind(&QtSocketServer::worker_thread, this), "SOCK_WORKER"),
 m_server_fd(-1),
 m_port(0),
 m_max_clients(0),
-m_mode(DataMode::NEW_LINE_DELIMITER),
+m_mode(mode),
 m_server(nullptr),
 m_listeners {},
 m_handlers {},

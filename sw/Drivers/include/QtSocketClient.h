@@ -24,6 +24,7 @@
  * =============================*/
 #include "ISocketClient.h"
 #include "ThreadWorker.h"
+#include "SocketHeaderHandler.hpp"
 /* =============================
  *           Defines
  * =============================*/
@@ -35,7 +36,7 @@ namespace SocketClient
 class QtSocketClient : public ISocketClient
 {
 public:
-   QtSocketClient();
+   QtSocketClient(DataMode mode);
    ~QtSocketClient();
 private:
    enum class State
@@ -55,8 +56,12 @@ private:
    bool write(const std::vector<uint8_t>& data, size_t size) override;
 
    void receivingThread();
+   void startDelimiterMode();
+   void startHeaderMode();
    void notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
    void writePendingData();
+
+   HeaderHandler m_header_handler;
    QTcpSocket* m_socket;
    Utilities::ThreadWorker m_worker;
    std::condition_variable m_cond_var;
