@@ -163,15 +163,22 @@ void SocketServer::listening_thread()
          int new_socket = system_call::accept(m_server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
          if (new_socket != -1)
          {
-            std::lock_guard<std::mutex> lock(m_handlers_mutex);
-            UT_Stdout_Log(SOCK_DRV, LOW, "[%u] New client connected, id %d, starting thread", m_port, new_socket);
-            notifyListeners(new_socket, ServerEvent::CLIENT_CONNECTED, {}, 0);
-            m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
-            if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
+            bool handler_ready = true;
             {
-               UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] Cannot start thread", m_port);
-               m_handlers.pop_back();
-               system_call::close(new_socket);
+               std::lock_guard<std::mutex> lock(m_handlers_mutex);
+               UT_Stdout_Log(SOCK_DRV, LOW, "[%u] New client connected, id %d, starting thread", m_port, new_socket);
+               m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
+               if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
+               {
+                  UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] Cannot start thread", m_port);
+                  m_handlers.pop_back();
+                  system_call::close(new_socket);
+                  handler_ready = false;
+               }
+            }
+            if (handler_ready)
+            {
+               notifyListeners(new_socket, ServerEvent::CLIENT_CONNECTED, {}, 0);
             }
          }
       }

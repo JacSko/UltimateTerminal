@@ -280,7 +280,7 @@ TEST_F(RPCFixture, server_sends_notification_to_client)
     *                  - Client receives correct notification <br>
     * ************************************************
     */
-
+   std::mutex buffer_mutex;
    std::vector<uint8_t> received_buffer;
 
    m_server->start(TEST_PORT);
@@ -290,6 +290,7 @@ TEST_F(RPCFixture, server_sends_notification_to_client)
 
    m_client->addNotificationHandler((uint8_t)Command::TestCommand1, [&](const std::vector<uint8_t> data)->bool
          {
+            std::lock_guard<std::mutex> lock(buffer_mutex);
             received_buffer = data;
             return true;
          });
@@ -303,7 +304,10 @@ TEST_F(RPCFixture, server_sends_notification_to_client)
    m_server->notify<RPC::TestCommand1Request>(test_request);
    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-   EXPECT_TRUE(received_buffer.size() > 0);
+   {
+      std::lock_guard<std::mutex> lock(buffer_mutex);
+      EXPECT_TRUE(received_buffer.size() > 0);
+   }
 
    RPC::TestCommand1Request received_request = RPC::convert<RPC::TestCommand1Request>(received_buffer);
 
@@ -326,7 +330,7 @@ TEST_F(RPCFixture, server_notifications_and_invokes)
     *                  - Client receives correct notification <br>
     * ************************************************
     */
-
+   std::mutex buffer_mutex;
    std::vector<uint8_t> recv_ntf_buffer;
    RPC::TestCommand1Request test_request = {};
    RPC::TestCommand2Request test_notification = {};
@@ -349,6 +353,7 @@ TEST_F(RPCFixture, server_notifications_and_invokes)
 
    auto NotificationHandler = [&](const std::vector<uint8_t> data)->bool
          {
+            std::lock_guard<std::mutex> lock(buffer_mutex);
             recv_ntf_buffer = data;
             return true;
          };
@@ -367,7 +372,11 @@ TEST_F(RPCFixture, server_notifications_and_invokes)
    std::this_thread::sleep_for(std::chrono::milliseconds(10));
    RPC::TestCommand2Request received_notification = {};
 
-   ASSERT_TRUE(recv_ntf_buffer.size() > 0);
+   {
+      std::lock_guard<std::mutex> lock(buffer_mutex);
+      ASSERT_TRUE(recv_ntf_buffer.size() > 0);
+   }
+
    received_notification = RPC::convert<RPC::TestCommand2Request>(recv_ntf_buffer);
    EXPECT_EQ(received_notification.cmd, Command::TestCommand2);
    EXPECT_EQ(received_notification.data1, -77);
