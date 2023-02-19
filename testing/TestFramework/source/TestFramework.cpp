@@ -82,7 +82,7 @@ private:
 
 struct TraceForwarder : public Drivers::SocketClient::ClientListener
 {
-   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>&, size_t)
+   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
    {
       switch (ev)
       {
@@ -93,7 +93,7 @@ struct TraceForwarder : public Drivers::SocketClient::ClientListener
       }
       default:
       {
-//         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
+         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
          break;
       }
       }
@@ -146,7 +146,7 @@ bool Connect()
    Settings::SettingsHandler::get()->start(CONFIG_FILE);
 
    SETTING_SET_BOOL(Logger_supportSocketLogging, false);
-   SETTING_SET_BOOL(Logger_supportFileLogging, false);
+   SETTING_SET_BOOL(Logger_supportFileLogging, true);
 
    LoggerEngine::get()->startFrontends();
    LoggerEngine::get()->setLogFileName(std::string(RUNTIME_OUTPUT_DIR) + "/" +

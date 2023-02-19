@@ -37,6 +37,7 @@ private:
    bool write(const std::vector<uint8_t>& data, ssize_t size = 0) override;
 
    void receivingThread();
+   void writePendingData();
    void notifyListeners(DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
    Utilities::ThreadWorker m_worker;
    std::vector<uint8_t> m_recv_buffer;
@@ -44,6 +45,9 @@ private:
    DataMode m_mode;
    std::vector<SerialListener*> m_listeners;
    std::mutex m_listeners_mutex;
+   std::mutex m_write_buffer_mutex;
+   std::condition_variable m_write_buffer_condvar;
+   std::vector<uint8_t> m_write_buffer;
 
    QSerialPort* m_serial_port;
    Settings m_settings;

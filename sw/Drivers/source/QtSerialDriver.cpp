@@ -243,6 +243,7 @@ void QtSerialDriver::receivingThread()
                }
                while(m_worker.isRunning())
                {
+                  writePendingData();
                   if (m_serial_port->waitForReadyRead(500))
                   {
                      int recv_bytes = m_serial_port->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SERIAL_MAX_PAYLOAD_LENGTH);
@@ -281,7 +282,7 @@ void QtSerialDriver::receivingThread()
                      std::lock_guard<std::mutex> lock (m_mutex);
                      if (m_state == State::DISCONNECTING)
                      {
-                        UT_Log(SOCK_DRV, HIGH, "Disconnecting");
+                        UT_Log(SERIAL_DRV, HIGH, "Disconnecting");
                         m_state = State::IDLE;
                         m_serial_port->close();
                         m_cond_var.notify_all();
@@ -308,6 +309,38 @@ void QtSerialDriver::receivingThread()
    UT_Log(SERIAL_DRV, HIGH, "Exiting main loop...");
    m_serial_port->close();
    delete m_serial_port;
+}
+void QtSerialDriver::writePendingData()
+{
+   std::lock_guard<std::mutex> lock(m_write_buffer_mutex);
+   if (!m_write_buffer.empty())
+   {
+      size_t bytes_to_write = m_write_buffer.size();
+      size_t bytes_written = 0;
+      size_t current_write = 0;
+
+      if (m_serial_port && bytes_to_write <= SERIAL_MAX_PAYLOAD_LENGTH)
+      {
+         while (bytes_to_write > 0)
+         {
+            current_write = m_serial_port->write((char*)m_write_buffer.data() + bytes_written, bytes_to_write);
+            if (current_write > 0)
+            {
+               bytes_written += current_write;
+            }
+            else
+            {
+               break;
+            }
+            bytes_to_write -= bytes_written;
+         }
+      }
+      if (m_write_buffer.size() == bytes_written)
+      {
+         m_write_buffer.clear();
+         m_write_buffer_condvar.notify_all();
+      }
+   }
 }
 void QtSerialDriver::addListener(SerialListener* callback)
 {
@@ -337,9 +370,15 @@ void QtSerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>&
 bool QtSerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
    bool result = false;
-   if (m_serial_port)
+
+   UT_Log(SERIAL_DRV, HIGH, "Writing %u bytes to %s", m_settings.device.c_str());
+
+   std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
+   m_write_buffer.clear();
+   m_write_buffer.insert(m_write_buffer.end(), data.begin(), data.begin() + size);
+   if (m_write_buffer_condvar.wait_for(lock, std::chrono::milliseconds(2000), [&](){return m_write_buffer.empty();}))
    {
-      result = m_serial_port->write((const char*)data.data(), data.size()) == size;
+      result = true;
    }
    return result;
 }
