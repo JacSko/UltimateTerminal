@@ -56,7 +56,7 @@ private:
 
    void receivingThread();
    void notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
-
+   void writePendingData();
    QTcpSocket* m_socket;
    Utilities::ThreadWorker m_worker;
    std::condition_variable m_cond_var;
@@ -65,7 +65,8 @@ private:
    DataMode m_mode;
    std::string m_ip_address;
    uint16_t m_port;
-
+   std::mutex m_write_buffer_mutex;
+   std::condition_variable m_write_buffer_condvar;
    std::vector<uint8_t> m_write_buffer;
    std::vector<uint8_t> m_recv_buffer;
    uint32_t m_recv_buffer_idx;

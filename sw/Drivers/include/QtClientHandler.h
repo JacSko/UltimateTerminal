@@ -56,11 +56,15 @@ private:
    void execute();
    const std::string getThreadName(int client_id);
 
+   void writePendingData();
+
    QTcpSocket* m_socket;
    Utilities::ThreadWorker m_worker;
    int m_client_id;
    ClientHandlerListener* m_listener;
    std::vector<uint8_t> m_recv_buffer;
+   std::mutex m_write_buffer_mutex;
+   std::condition_variable m_write_buffer_condvar;
    std::vector<uint8_t> m_write_buffer;
    uint32_t m_recv_buffer_idx;
    DataMode m_mode;

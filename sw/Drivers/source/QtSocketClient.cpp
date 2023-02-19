@@ -50,8 +50,8 @@ bool QtSocketClient::connect(std::string ip_address, uint16_t port)
       m_ip_address = ip_address;
       m_port = port;
       m_state = State::CONNECTION_REQUESTED;
-      m_cond_var.notify_all();
       UT_Log(SOCK_DRV, HIGH, "Connection to %s:%u requested", m_ip_address.c_str(), m_port);
+      m_cond_var.notify_all();
       if (m_cond_var.wait_for(lock, std::chrono::milliseconds(CLIENT_THREAD_START_TIMEOUT), [&]()->bool{return (m_state == State::CONNECTED) || (m_state == State::IDLE);}))
       {
          result = (m_state == State::CONNECTED);
@@ -74,7 +74,7 @@ void QtSocketClient::disconnect()
 bool QtSocketClient::isConnected()
 {
    std::lock_guard<std::mutex> lock(m_mutex);
-   return m_state == State::CONNECTED;
+   return m_state == State::CONNECTED || m_state == State::CONNECTION_REQUESTED;
 }
 void QtSocketClient::addListener(ClientListener* callback)
 {
@@ -96,32 +96,46 @@ bool QtSocketClient::write(const std::vector<uint8_t>& data, size_t size)
 
    UT_Log(SOCK_DRV, HIGH, "Writing %u bytes to %s:%u", data.size(), m_ip_address.c_str(), m_port);
 
+   std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
    m_write_buffer.clear();
    m_write_buffer.insert(m_write_buffer.end(), data.begin(), data.begin() + size);
-
-   ssize_t bytes_to_write = m_write_buffer.size();
-   if (m_socket && (bytes_to_write <= SOCKET_MAX_PAYLOAD_LENGTH))
+   if (m_write_buffer_condvar.wait_for(lock, std::chrono::milliseconds(2000), [&](){return m_write_buffer.empty();}))
    {
-      ssize_t bytes_written = 0;
-      ssize_t current_write = 0;
       result = true;
-      while (bytes_to_write > 0)
-      {
-         current_write = m_socket->write((char*)m_write_buffer.data() + bytes_written, bytes_to_write);
-         if (current_write > 0)
-         {
-            bytes_written += current_write;
-         }
-         else
-         {
-            UT_Log(SOCK_DRV, HIGH, "Error writing to %u bytes to %s:%u", data.size(), m_ip_address.c_str(), m_port);
-            result = false;
-            break;
-         }
-         bytes_to_write -= bytes_written;
-      }
    }
    return result;
+}
+void QtSocketClient::writePendingData()
+{
+   std::lock_guard<std::mutex> lock(m_write_buffer_mutex);
+   if (!m_write_buffer.empty())
+   {
+      size_t bytes_to_write = m_write_buffer.size();
+      size_t bytes_written = 0;
+      size_t current_write = 0;
+
+      if (m_socket && bytes_to_write <= SOCKET_MAX_PAYLOAD_LENGTH)
+      {
+         while (bytes_to_write > 0)
+         {
+            current_write = m_socket->write((char*)m_write_buffer.data() + bytes_written, bytes_to_write);
+            if (current_write > 0)
+            {
+               bytes_written += current_write;
+            }
+            else
+            {
+               break;
+            }
+            bytes_to_write -= bytes_written;
+         }
+      }
+      if (m_write_buffer.size() == bytes_written)
+      {
+         m_write_buffer.clear();
+         m_write_buffer_condvar.notify_all();
+      }
+   }
 }
 void QtSocketClient::receivingThread()
 {
@@ -161,6 +175,7 @@ void QtSocketClient::receivingThread()
 
             while(m_worker.isRunning())
             {
+               writePendingData();
                if (m_socket->waitForReadyRead(CLIENT_RECEIVE_TIMEOUT))
                {
                   bool bytes_available = true;

@@ -12,7 +12,7 @@ namespace SocketServer
 {
 
 constexpr char SERVER_DELIMITER = '\n';
-constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 500;
+constexpr uint32_t CLIENT_RECEIVE_TIMEOUT = 50;
 
 QtClientHandler::QtClientHandler(int client_id, DataMode mode, ClientHandlerListener* listener):
 m_socket(nullptr),
@@ -44,34 +44,47 @@ void QtClientHandler::stop()
 bool QtClientHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
-
+   std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
    m_write_buffer.clear();
    m_write_buffer.insert(m_write_buffer.end(), data.begin(), data.begin() + size);
-
-   ssize_t bytes_to_write = m_write_buffer.size();
-   if (m_socket && bytes_to_write <= SOCKET_MAX_PAYLOAD_LENGTH)
+   if (m_write_buffer_condvar.wait_for(lock, std::chrono::milliseconds(2000), [&](){return m_write_buffer.empty();}))
    {
-      ssize_t bytes_written = 0;
-      ssize_t current_write = 0;
       result = true;
-      while (bytes_to_write > 0)
-      {
-         current_write = m_socket->write((char*)m_write_buffer.data() + bytes_written, bytes_to_write);
-         if (current_write > 0)
-         {
-            bytes_written += current_write;
-         }
-         else
-         {
-            result = false;
-            break;
-         }
-         bytes_to_write -= bytes_written;
-      }
    }
    return result;
 }
+void QtClientHandler::writePendingData()
+{
+   std::lock_guard<std::mutex> lock(m_write_buffer_mutex);
+   if (!m_write_buffer.empty())
+   {
+      size_t bytes_to_write = m_write_buffer.size();
+      size_t bytes_written = 0;
+      size_t current_write = 0;
 
+      if (m_socket && bytes_to_write <= SOCKET_MAX_PAYLOAD_LENGTH)
+      {
+         while (bytes_to_write > 0)
+         {
+            current_write = m_socket->write((char*)m_write_buffer.data() + bytes_written, bytes_to_write);
+            if (current_write > 0)
+            {
+               bytes_written += current_write;
+            }
+            else
+            {
+               break;
+            }
+            bytes_to_write -= bytes_written;
+         }
+      }
+      if (m_write_buffer.size() == bytes_written)
+      {
+         m_write_buffer.clear();
+         m_write_buffer_condvar.notify_all();
+      }
+   }
+}
 int QtClientHandler::getClientID()
 {
    return m_client_id;
@@ -90,6 +103,7 @@ void QtClientHandler::execute()
    {
       while(m_worker.isRunning())
       {
+         writePendingData();
          if (m_socket->waitForReadyRead(CLIENT_RECEIVE_TIMEOUT))
          {
             bool bytes_available = true;
