@@ -650,6 +650,8 @@ void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 colo
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::BACKGROUND_COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
+   filters[id].line_edit->update();
+   UT_Log(MAIN_GUI, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
@@ -659,6 +661,8 @@ void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
+   filters[id].line_edit->update();
+   UT_Log(MAIN_GUI, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {

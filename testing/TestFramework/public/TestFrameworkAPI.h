@@ -8,7 +8,7 @@
 #include "PortSettingDialog.h"
 #include "TraceFilterSettingDialog.h"
 #include "UserButtonDialog.h"
-#include "MessageBox.h"
+#include "MessageDialog.h"
 
 namespace RPC
 {
@@ -329,7 +329,7 @@ struct GetMessageBoxReply
 {
    Command cmd = Command::GetMessageBox;
    std::string title;
-   Dialogs::MessageBox::Icon icon;
+   Dialogs::MessageDialog::Icon icon;
    std::string text;
 };
 struct ResetMessageBoxRequest
@@ -1145,7 +1145,7 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetMessageBoxRe
    ::deserialize(buffer, offset, item.title);
    ::deserialize(buffer, offset, icon);
    ::deserialize(buffer, offset, item.text);
-   item.icon = static_cast<Dialogs::MessageBox::Icon>(icon);
+   item.icon = static_cast<Dialogs::MessageDialog::Icon>(icon);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ResetMessageBoxRequest& item)
 {

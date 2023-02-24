@@ -5,7 +5,7 @@
 
 #include "Logger.h"
 #include "PortHandler.h"
-#include "MessageBox.h"
+#include "MessageDialog.h"
 #include "Serialize.hpp"
 
 namespace GUI
@@ -250,7 +250,7 @@ void PortHandler::handleButtonClickSerial()
          UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
          std::string message = "Cannot open " + m_settings.serialSettings.device + " [" + m_settings.port_name + "]\n" +
                                std::string(strerror(errno)) + " (" + std::to_string(errno) + ")";
-         Dialogs::MessageBox::show(Dialogs::MessageBox::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
+         Dialogs::MessageDialog::show(Dialogs::MessageDialog::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
       }
    }
 }

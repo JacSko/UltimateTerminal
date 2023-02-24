@@ -1,3 +1,4 @@
+if (UNIX)
 add_library(NativeDrivers source/SocketClient.cpp
                           source/SocketServer.cpp
                           source/ClientHandler.cpp
@@ -6,7 +7,9 @@ target_include_directories(NativeDrivers PUBLIC public/ PRIVATE include/)
 target_link_libraries(NativeDrivers PRIVATE 
                       Logger 
                       Utilities)
-	
+
+endif()
+
 add_library(QtDrivers source/QtSerialDriver.cpp
                       source/QtSocketClient.cpp
                       source/QtSocketServer.cpp

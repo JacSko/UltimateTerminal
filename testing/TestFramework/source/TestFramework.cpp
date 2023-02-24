@@ -624,9 +624,9 @@ std::string getMessageBoxTitle()
    UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
    return result;
 }
-Dialogs::MessageBox::Icon getMessageBoxIcon()
+Dialogs::MessageDialog::Icon getMessageBoxIcon()
 {
-   Dialogs::MessageBox::Icon result = Dialogs::MessageBox::Icon::Warning;
+   Dialogs::MessageDialog::Icon result = Dialogs::MessageDialog::Icon::Warning;
    RPC::GetMessageBoxRequest request {};
 
    RPC::result<RPC::GetMessageBoxReply> reply = g_rpc_client->invoke<RPC::GetMessageBoxReply, RPC::GetMessageBoxRequest>(request);

@@ -1,4 +1,4 @@
-#include "MessageBox.h"
+#include "MessageDialog.h"
 
 #include <QtWidgets/QMessageBox>
 
@@ -6,15 +6,15 @@
 namespace Dialogs
 {
 
-QMessageBox::Icon translateIconType(MessageBox::Icon icon)
+QMessageBox::Icon translateIconType(MessageDialog::Icon icon)
 {
    switch(icon)
    {
-      case MessageBox::Icon::Information:
+      case MessageDialog::Icon::Information:
       {
          return QMessageBox::Information;
       }
-      case MessageBox::Icon::Warning:
+      case MessageDialog::Icon::Warning:
       {
          return QMessageBox::Icon::Warning;
       }
@@ -26,7 +26,7 @@ QMessageBox::Icon translateIconType(MessageBox::Icon icon)
 }
 
 
-void MessageBox::show(Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
+void MessageDialog::show(Icon icon, const std::string& window_title, const std::string& text, QPalette palette)
 {
    QMessageBox messageBox;
    messageBox.setText(QString(text.c_str()));

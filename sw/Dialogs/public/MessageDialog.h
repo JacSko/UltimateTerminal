@@ -6,7 +6,7 @@
 namespace Dialogs
 {
 
-class MessageBox
+class MessageDialog
 {
 public:
    enum class Icon

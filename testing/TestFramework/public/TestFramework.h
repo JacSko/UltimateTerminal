@@ -3,7 +3,7 @@
 #include "PortSettingDialog.h"
 #include "TraceFilterSettingDialog.h"
 #include "UserButtonDialog.h"
-#include "MessageBox.h"
+#include "MessageDialog.h"
 #include "ISerialDriver.h"
 
 namespace TF
@@ -65,7 +65,7 @@ bool isCommandInHistory(const std::string& command, uint32_t index = UINT32_MAX)
 
 std::string getMessageBoxText();
 std::string getMessageBoxTitle();
-Dialogs::MessageBox::Icon getMessageBoxIcon();
+Dialogs::MessageDialog::Icon getMessageBoxIcon();
 bool resetMessageBox();
 bool setLoggingPath(const std::string& path);
 std::string getLoggingPath();

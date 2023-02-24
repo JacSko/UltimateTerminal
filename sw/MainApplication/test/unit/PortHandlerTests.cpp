@@ -4,7 +4,7 @@
 #include <thread>
 #include "PortHandler.h"
 #include "PortSettingDialogMock.h"
-#include "MessageBoxMock.h"
+#include "MessageDialogMock.h"
 #include "ITimersMock.h"
 #include "SerialDriverMock.h"
 #include "ISocketClientMock.h"
@@ -65,7 +65,7 @@ struct PortHandlerFixture : public testing::Test
       QtWidgetsMock_init();
       PortSettingDialogMock_init();
       GUIControllerMock_init();
-      MessageBoxMock_init();
+      MessageDialogMock_init();
       g_socket_mock = new Drivers::SocketClient::ISocketClientMock;
       g_serial_mock = new Drivers::Serial::ISerialDriverMock;
 
@@ -104,7 +104,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       m_test_subject.reset(nullptr);
 
-      MessageBoxMock_deinit();
+      MessageDialogMock_deinit();
       PortSettingDialogMock_deinit();
       GUIControllerMock_deinit();
       QtCoreMock_deinit();
@@ -381,7 +381,7 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* expect MessageBox with error */
-   EXPECT_CALL(*MessageBoxMock_get(), show(Dialogs::MessageBox::Icon::Critical,_,_,_));
+   EXPECT_CALL(*MessageDialogMock_get(), show(Dialogs::MessageDialog::Icon::Critical,_,_,_));
 
    /* port opening */
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));

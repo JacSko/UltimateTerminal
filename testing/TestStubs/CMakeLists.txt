@@ -20,7 +20,7 @@ target_link_libraries(GUIControllerSimulation
 add_library(DialogsSimulation STATIC      
        source/ApplicationSettingsDialog.cpp
        source/LoggingSettingDialog.cpp
-       source/MessageBox.cpp
+       source/MessageDialog.cpp
        source/PortSettingDialog.cpp
        source/TraceFilterSettingDialog.cpp
        source/UserButtonDialog.cpp)

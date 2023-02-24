@@ -791,7 +791,7 @@ std::string GUIController::onLoggingPathDialogShow(QWidget*, const std::string& 
    UT_Log(MAIN_GUI, LOW, "%s current %s new %s", __func__, current_path.c_str(), result.c_str());
    return result;
 }
-void GUIController::onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette)
+void GUIController::onMessageBoxShow(Dialogs::MessageDialog::Icon icon, const std::string& window_title, const std::string& text, QPalette)
 {
    g_messagebox_details = {true, window_title, icon, text};
 }

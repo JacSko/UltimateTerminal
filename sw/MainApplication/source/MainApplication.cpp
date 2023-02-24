@@ -9,7 +9,7 @@
 #include "LoggerEngine.h"
 #include "Serialize.hpp"
 #include "ApplicationSettingsDialog.h"
-#include "MessageBox.h"
+#include "MessageDialog.h"
 #if defined _WIN32
 #include <Shlwapi.h>
 #include <locale>
@@ -300,7 +300,7 @@ void MainApplication::onLoggingButtonClicked()
       {
          std::string message = "Cannot create logfile @ " + m_file_logging_path + "\n" +
                                strerror(errno) + " (" + std::to_string(errno) + ")";
-         Dialogs::MessageBox::show(Dialogs::MessageBox::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
+         Dialogs::MessageDialog::show(Dialogs::MessageDialog::Icon::Critical, "Error", message, m_gui_controller.getApplicationPalette());
       }
    }
    else

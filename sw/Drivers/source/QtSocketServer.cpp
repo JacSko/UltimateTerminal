@@ -214,7 +214,6 @@ bool QtSocketServer::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
    std::lock_guard<std::mutex> lock(m_handlers_mutex);
-   UT_Log(SOCK_DRV, HIGH, "Writing %u bytes to clients", (uint32_t)data.size());
    for (auto& handler : m_handlers)
    {
       if (handler)

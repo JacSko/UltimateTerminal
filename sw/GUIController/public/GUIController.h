@@ -105,12 +105,12 @@ public:
 
     uint32_t getColor(Item type)
     {
-       return m_colors_map[type];
+       return m_colors_map[type] & 0xFFFFFF;
     }
 
     void setColor(Item type, uint32_t color)
     {
-       m_colors_map[type] = color;
+       m_colors_map[type] = color & 0xFFFFFF;
        createStylesheet();
     }
 

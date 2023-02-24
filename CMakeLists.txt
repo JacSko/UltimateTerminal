@@ -34,7 +34,9 @@ endif()
 #########################################
 #  Global project definitions
 #########################################
-add_definitions(-DCONFIG_FILE="${CONFIG_FILE}" 
+add_definitions(-D_UNICODE
+			    -DUNICODE
+				-DCONFIG_FILE="${CONFIG_FILE}" 
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
                 -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" 
                 -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}"
@@ -84,6 +86,8 @@ else()
       enable_testing()
       add_subdirectory(ext_libs/googletest)
       add_subdirectory(testing)
+      add_subdirectory(tools)
+      add_subdirectory(sw/RPC)
       add_definitions(-DSIMULATION) 
    endif()
 
@@ -101,8 +105,6 @@ add_subdirectory(sw/Settings)
 add_subdirectory(sw/Logger)
 add_subdirectory(config)
 add_subdirectory(sw/Dialogs)
-add_subdirectory(sw/RPC)
-add_subdirectory(tools)
 
 #########################################
 #  Print project summary

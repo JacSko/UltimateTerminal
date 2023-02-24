@@ -7,7 +7,7 @@
 #include <QtCore/QObject>
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
-#include "MessageBox.h"
+#include "MessageDialog.h"
 #include "PortSettingDialog.h"
 #include "TraceFilterSettingDialog.h"
 #include "UserButtonDialog.h"
@@ -60,7 +60,7 @@ public:
    {
       bool reported;
       std::string title;
-      Dialogs::MessageBox::Icon icon;
+      Dialogs::MessageDialog::Icon icon;
       std::string text;
    };
 
@@ -153,7 +153,7 @@ public:
    uint32_t countTraceFilters();
 
    static std::string onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit);
-   static void onMessageBoxShow(Dialogs::MessageBox::Icon icon, const std::string& window_title, const std::string& text, QPalette palette);
+   static void onMessageBoxShow(Dialogs::MessageDialog::Icon icon, const std::string& window_title, const std::string& text, QPalette palette);
    static std::optional<bool> onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit);
    static std::optional<bool> onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit);
    static std::optional<bool> onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit);

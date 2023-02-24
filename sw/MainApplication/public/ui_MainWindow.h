@@ -455,6 +455,8 @@ public:
       m_trace_filters.push_back({traceFilter_5, traceFilterButton_5});
       m_trace_filters.push_back({traceFilter_6, traceFilterButton_6});
 
+
+
       m_ports.push_back({portLabel_0, portButton_0});
       m_ports.push_back({portLabel_1, portButton_1});
       m_ports.push_back({portLabel_2, portButton_2});
