@@ -14,4 +14,3 @@ then
 fi
 
 gcovr -f ../sw/ -s --root=. -e /.*/test/.* -e /.*/tests/.* --html --html-details --output=html/coverage.html --exclude-unreachable-branches
-#firefox html/coverage.html

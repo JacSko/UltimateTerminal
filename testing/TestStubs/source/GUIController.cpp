@@ -834,7 +834,7 @@ bool GUIController::onGetButtonStateRequest(const std::vector<uint8_t>& data)
    reply.enabled = it->enabled;
    reply.text = it->text;
 
-   UT_Log(MAIN_GUI, LOW, "%s name %s bg %.8x font %.8x", __func__, reply.button_name.c_str(), reply.background_color, reply.font_color);
+   UT_Log(MAIN_GUI, LOW, "%s name %s bg %.8x font %.8x text [%s]", __func__, reply.button_name.c_str(), reply.background_color, reply.font_color, reply.text.c_str());
    return rpc_server->respond<RPC::GetButtonStateReply>(reply);
 }
 

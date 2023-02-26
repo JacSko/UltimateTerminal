@@ -19,12 +19,14 @@
 #include "GUIController.h"
 
 /**
- * @file ApplicationSettingsDialog.cpp
+ * @file ApplicationSettingsDialog.h
  *
  * @brief
  *    Dialog window implementation that allows user to enter the application settings.
  *
- * @details TODO
+ * @details This class allows to show the dialog windows with application settings. Settings are gathered from objects passed via constructor.
+ *          When dialog is rejected by user, no settings change takes place.
+ *          When dialog is accepted, respective modules are notified with new settings only if these settings has changed.
  *
  * @author Jacek Skowronek
  * @date   18/11/2022

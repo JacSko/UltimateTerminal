@@ -1,5 +1,4 @@
-#ifndef LOGGING_SETTING_DIALOG_H_
-#define LOGGING_SETTING_DIALOG_H_
+#pragma once
 
 #include <stdint.h>
 #include <optional>
@@ -88,5 +87,3 @@ public slots:
 };
 
 }
-
-#endif

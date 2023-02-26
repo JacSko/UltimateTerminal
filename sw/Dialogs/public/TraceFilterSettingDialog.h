@@ -1,5 +1,18 @@
 #pragma once
 
+#include <stdint.h>
+#include <optional>
+#include <vector>
+
+#include <QtCore/QObject>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QFormLayout>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
+
 /**
  * @file TraceFilterSettingDialog.h
  *
@@ -15,23 +28,6 @@
  * @date   15/11/2022
  *
  */
-
-/* =============================
- *   Includes of standard headers
- * =============================*/
-#include <stdint.h>
-#include <optional>
-#include <vector>
-
-#include <QtCore/QObject>
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QFormLayout>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QLabel>
-
 namespace Dialogs
 {
 

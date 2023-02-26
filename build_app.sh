@@ -1,19 +1,13 @@
 #!/bin/bash -e
 
-if [ ! ${CUSTOM_EXECUTOR_NUMBER+x} ]
-then
-   CUSTOM_EXECUTOR_NUMBER=8
-fi
-
-if [ ! ${CUSTOM_CMAKE_PARAMETERS+x} ]
-then
-   CUSTOM_CMAKE_PARAMETERS="-DCMAKE_BUILD_TYPE=Debug"
-fi
+CUSTOM_EXECUTOR_NUMBER=8
+CUSTOM_CMAKE_PARAMETERS="-DCMAKE_BUILD_TYPE=Debug"
 
 mkdir -p build
 pushd build
 
 cmake .. ${CUSTOM_CMAKE_PARAMETERS}
+
 if [[ $? -eq 0 ]];
 then
    echo "=============================================="

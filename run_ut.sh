@@ -1,17 +1,8 @@
 #!/bin/bash -xe
 
-if [ ! ${BUILD_FOLDER+x} ]
-then
-   BUILD_FOLDER=build_ut
-fi
-
+BUILD_FOLDER=build_ut
 EXECUTOR_NUMBER=8
-
-if [ ! ${CMAKE_PARAMETERS+x} ]
-then
-   CMAKE_PARAMETERS="-DUNIT_TESTS=On -DCMAKE_BUILD_TYPE=Debug"
-fi
-
+CMAKE_PARAMETERS="-DUNIT_TESTS=On -DCMAKE_BUILD_TYPE=Debug"
 CTEST_PARAMETERS="--output-on-failure --schedule-random --no-compress-output"
 
 mkdir -p ${BUILD_FOLDER}

@@ -410,7 +410,7 @@ std::string getText(const std::string& name)
    {
       result = reply.reply.text;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   UT_Log(TEST_FRAMEWORK, LOW, "%s %s [%s]", __func__, name.c_str(), result.c_str());
    return result;
 }
 bool simulateButtonClick(const std::string& name)

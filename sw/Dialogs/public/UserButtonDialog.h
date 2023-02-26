@@ -1,24 +1,5 @@
 #pragma once
 
-/**
- * @file UserButtonDialog.h
- *
- * @brief
- *    Dialog class to allow user to change button data.
- *
- * @details
- *    Dialog contains two fields - Button Name and Command Edit. First allows to set the name of the button, second allows to enter custom commands.
- *    To show dialog to user, call showDialog() method (this is blocking until user reaction).
- *    It is possible to control fields editability by bool allow_edit.
- *
- * @author Jacek Skowronek
- * @date   26/10/2022
- *
- */
-
-/* =============================
- *   Includes of standard headers
- * =============================*/
 #include <stdint.h>
 #include <optional>
 #include <vector>
@@ -45,8 +26,6 @@
  * @date   26/10/2022
  *
  */
-
-
 namespace Dialogs
 {
 
