@@ -391,7 +391,7 @@ TEST_F(SocketClientFixture, recv_buffer_overflow_in_delimiter_mode)
    THIRD_MESSAGE[THIRD_MESSAGE_SIZE - 1] = '\n';
 
    // prepare expected messages - First callback shall contain the data from first half of SECOND_MESSAGE (including newline)
-   std::vector<uint8_t> FIRST_CALLBACK = {SECOND_MESSAGE.data(), (size_t)(SOCKET_MAX_PAYLOAD_LENGTH / 2)};
+   std::vector<uint8_t> FIRST_CALLBACK = {SECOND_MESSAGE.begin(), SECOND_MESSAGE.begin() + (SOCKET_MAX_PAYLOAD_LENGTH / 2)};
    // prepare expected messages - Second callback shall contain the data from second half of SECOND_MESSAGE + THIRD_MESSAGE
    std::vector<uint8_t> SECOND_CALLBACK = {SECOND_MESSAGE.begin() + (size_t)(SOCKET_MAX_PAYLOAD_LENGTH / 2), SECOND_MESSAGE.end()};
    SECOND_CALLBACK.insert(SECOND_CALLBACK.end(), THIRD_MESSAGE.begin(), THIRD_MESSAGE.end());

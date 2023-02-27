@@ -203,7 +203,11 @@ void QtSocketClient::startDelimiterMode()
          bool bytes_available = true;
          while (bytes_available)
          {
-            int recv_bytes = m_socket->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH);
+            if (m_recv_buffer_idx == m_recv_buffer.size())
+            {
+               m_recv_buffer_idx = 0;
+            }
+            int recv_bytes = m_socket->read((char*)m_recv_buffer.data() + m_recv_buffer_idx, m_recv_buffer.size() - m_recv_buffer_idx);
             if (recv_bytes > 0)
             {
                m_recv_buffer_idx += recv_bytes;
