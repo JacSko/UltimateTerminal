@@ -466,6 +466,5 @@ TEST_F(SocketClientFixture, recv_buffer_overflow_in_delimiter_mode)
 
 }
 
-
 }
 }
