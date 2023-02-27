@@ -257,7 +257,11 @@ void SocketClient::startDelimiterMode()
 {
    while(m_state == State::CONNECTED)
    {
-      int recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data() + m_recv_buffer_idx, SOCKET_MAX_PAYLOAD_LENGTH, 0);
+      if (m_recv_buffer_idx == m_recv_buffer.size())
+      {
+         m_recv_buffer_idx = 0;
+      }
+      int recv_bytes = system_call::recv(m_sock_fd, m_recv_buffer.data() + m_recv_buffer_idx, m_recv_buffer.size() - m_recv_buffer_idx, 0);
       if (recv_bytes > 0)
       {
          m_recv_buffer_idx += recv_bytes;

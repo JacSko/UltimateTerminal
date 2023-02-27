@@ -368,7 +368,103 @@ TEST_F(SocketClientFixture, server_disconnected)
 
 }
 
+TEST_F(SocketClientFixture, recv_buffer_overflow_in_delimiter_mode)
+{
 
+   /**
+    * <b>scenario</b>: Reading SOCKET_MAX_PAYLOAD_LENGTH from server without delimiter, then
+    *                  reading next SOCKET_MAX_PAYLOAD_LENGTH with newline delimiter in the middle of payload. <br>
+    *                  then just few bytes with newline delimiter received. <br>
+    * <b>expected</b>: First buffer shall be abandoned, due to lack of delimiter.<br>
+    *                  Second buffer shall be processed, first part of data shall be notified via listener, second part shall be moved to the beginning of the buffer.<br>
+    *                  Third message shall trigger callback with second part of second buffer concatenated with third message.<br>
+    * ************************************************
+    */
+   constexpr uint32_t THIRD_MESSAGE_SIZE = 1024;
+   std::vector<uint8_t> FIRST_MESSAGE (SOCKET_MAX_PAYLOAD_LENGTH, 0xAA);
+   std::vector<uint8_t> SECOND_MESSAGE (SOCKET_MAX_PAYLOAD_LENGTH, 0xBB);
+   std::vector<uint8_t> THIRD_MESSAGE (THIRD_MESSAGE_SIZE, 0xBB);
+
+   // place newline in the middle of second buffer
+   SECOND_MESSAGE[(SOCKET_MAX_PAYLOAD_LENGTH / 2) - 1] = '\n';
+   // place newline at the end of third buffer
+   THIRD_MESSAGE[THIRD_MESSAGE_SIZE - 1] = '\n';
+
+   // prepare expected messages - First callback shall contain the data from first half of SECOND_MESSAGE (including newline)
+   std::vector<uint8_t> FIRST_CALLBACK = {SECOND_MESSAGE.begin(), SECOND_MESSAGE.begin() + (SOCKET_MAX_PAYLOAD_LENGTH / 2)};
+   // prepare expected messages - Second callback shall contain the data from second half of SECOND_MESSAGE + THIRD_MESSAGE
+   std::vector<uint8_t> SECOND_CALLBACK = {SECOND_MESSAGE.begin() + (size_t)(SOCKET_MAX_PAYLOAD_LENGTH / 2), SECOND_MESSAGE.end()};
+   SECOND_CALLBACK.insert(SECOND_CALLBACK.end(), THIRD_MESSAGE.begin(), THIRD_MESSAGE.end());
+
+   EXPECT_CALL(*sys_call_mock, socket(AF_INET, SOCK_STREAM, _)).WillOnce(Return(TEST_SOCKET_FD));
+   EXPECT_CALL(*sys_call_mock, setsockopt(_,_,_,_,_)).WillOnce(Return(TEST_RETURN_OK));
+   EXPECT_CALL(*sys_call_mock, htons(_)).WillOnce(Return(TEST_PORT));
+   EXPECT_CALL(*sys_call_mock, inet_pton(AF_INET, _, _)).WillOnce(Return(TEST_RETURN_OK));
+   EXPECT_CALL(*sys_call_mock, connect(TEST_SOCKET_FD, _, _)).WillOnce(Return(0));
+   EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _, SOCKET_MAX_PAYLOAD_LENGTH, _))
+   .WillOnce([&](int, void * buffer, size_t, int)->ssize_t
+   {
+      /* simulate first message */
+      if (buffer)
+      {
+         std::memcpy(buffer, FIRST_MESSAGE.data(), FIRST_MESSAGE.size());
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return FIRST_MESSAGE.size();
+   })
+   .WillOnce([&](int, void * buffer, size_t, int)->ssize_t
+   {
+      /* simulate second message */
+      if (buffer)
+      {
+         std::memcpy(buffer, SECOND_MESSAGE.data(), SECOND_MESSAGE.size());
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return SECOND_MESSAGE.size();
+   })
+   .WillRepeatedly([](int, void *, size_t, int)->ssize_t
+   {
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return TEST_RETURN_NOK;
+   });
+
+   /* when reading the third message, the bytes count shall be SOCKET_MAX_PAYLOAD_LENGTH / 2 to avoid buffer overflow */
+   EXPECT_CALL(*sys_call_mock, recv(TEST_SOCKET_FD, _, SOCKET_MAX_PAYLOAD_LENGTH / 2, _))
+   .WillOnce([&](int, void * buffer, size_t, int)->ssize_t
+   {
+      /* simulate first message */
+      if (buffer)
+      {
+         std::memcpy(buffer, THIRD_MESSAGE.data(), THIRD_MESSAGE.size());
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(LESS_CPU_TIMEOUT));
+      return THIRD_MESSAGE.size();
+   });
+
+   EXPECT_CALL(*sys_call_mock, close(TEST_SOCKET_FD)).WillOnce(Return(TEST_RETURN_OK));
+
+   EXPECT_CALL(*listener_mock, onClientEvent(ClientEvent::SERVER_DATA_RECV,_,_))
+         .WillOnce(Invoke([&](Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>& buffer, size_t size)
+         {
+            EXPECT_THAT(buffer, ContainerEq(FIRST_CALLBACK));
+            EXPECT_EQ(size, FIRST_CALLBACK.size());
+         }))
+         .WillOnce(Invoke([&](Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>& buffer, size_t size)
+         {
+      EXPECT_THAT(buffer, ContainerEq(SECOND_CALLBACK));
+      EXPECT_EQ(size, SECOND_CALLBACK.size());
+         }));
+
+   ClientListenerMockImpl listener;
+   m_test_subject->addListener(&listener);
+   EXPECT_TRUE(m_test_subject->connect(TEST_IP_ADDRESS, TEST_PORT));
+
+   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+   m_test_subject->disconnect();
+
+
+}
 
 }
 }
