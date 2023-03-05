@@ -196,6 +196,11 @@ void wait(uint32_t ms)
 {
    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
+double getCPUUsage()
+{
+   UT_Assert(g_test_application.isRunning());
+   return g_test_application.getCPUUsage();
+}
 namespace Serial
 {
 

@@ -14,6 +14,7 @@ void Disconnect();
 void BeginTest();
 void FinishTest();
 void wait(uint32_t ms);
+double getCPUUsage();
 
 namespace Serial
 {
