@@ -17,6 +17,8 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QShortcut>
 #include <QtWidgets/QTabWidget>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QScrollBar>
 
 #include "Settings.h"
 #include "Logger.h"
@@ -69,7 +71,7 @@ public:
    QGridLayout *terminalLayout;
    QSplitter *splitter_2;
    QWidget *gridLayoutWidget_2;
-   QListWidget *terminalView;
+   QTextEdit *terminalView;
    QComboBox *portComboBox;
    QPushButton *sendButton;
    QPushButton *scrollButton;
@@ -194,9 +196,11 @@ public:
       terminalLayout = new QGridLayout(gridLayoutWidget_2);
       terminalLayout->setObjectName(QString::fromUtf8("terminalLayout"));
       terminalLayout->setContentsMargins(0, 0, 0, 0);
-      terminalView = new QListWidget(gridLayoutWidget_2);
+      terminalView = new QTextEdit(gridLayoutWidget_2);
       terminalView->setObjectName(QString::fromUtf8("terminalView"));
-      terminalView->setUniformItemSizes(true);
+      terminalView->setReadOnly(true);
+      terminalView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      terminalView->setWordWrapMode(QTextOption::WrapAnywhere);
       terminalLayout->addWidget(terminalView, 1, 0, 1, 5);
 
       portComboBox = new QComboBox(gridLayoutWidget_2);
@@ -564,6 +568,8 @@ private:
       main_palette.setColor(QPalette::Button, BACKGROUND_COLOR);
       main_palette.setColor(QPalette::ButtonText, TEXT_COLOR);
       mainWindow->setPalette(main_palette);
+      terminalView->setPalette(main_palette);
+
    }
    void renderDefaultTheme()
    {
@@ -576,6 +582,7 @@ private:
       terminalView->setPalette({});
       traceView->setPalette({});
       mainWindow->setPalette({});
+      terminalView->setPalette({});
    }
    void createUserButtonTab(uint8_t index)
    {

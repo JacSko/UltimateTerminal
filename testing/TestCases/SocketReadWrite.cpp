@@ -36,11 +36,11 @@ struct SocketRead : public testing::Test
 using namespace Dialogs;
 
 /**
- * @file SerialPortReading.cpp
+ * @file SocketReadWrite.cpp
  *
  * @brief
- *    This test suite is designed to verify the serial communication functionality.
- *    Covers basic scenarios like open/close serial ports with various settings, writing and reading to multiple opened ports.
+ *    This test suite is designed to verify the socket communication functionality.
+ *    Covers basic scenarios like open/close sockets with various settings, writing and reading to multiple opened ports.
  *
  * @author Jacek Skowronek
  * @date   18-11-2022

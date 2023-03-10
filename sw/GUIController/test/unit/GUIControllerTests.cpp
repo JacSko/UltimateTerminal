@@ -57,8 +57,11 @@ struct IGUIControllerFixture : public testing::Test
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
                                                         .WillOnce(Return(&test_line_ending_box))
                                                         .WillOnce(Return(&test_text_edit));
-      EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_terminal_view))
-                                                          .WillOnce(Return(&test_trace_view));
+      EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_trace_view));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_new()).WillOnce(Return(&test_terminal_view));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setReadOnly(&test_terminal_view, true));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setHorizontalScrollBarPolicy(&test_terminal_view, Qt::ScrollBarAlwaysOff));
+      EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setWordWrapMode(&test_terminal_view, QTextOption::WrapAnywhere));
       EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_trace_filter_0))
                                                         .WillOnce(Return(&test_trace_filter_1))
                                                         .WillOnce(Return(&test_trace_filter_2))
@@ -143,7 +146,7 @@ struct IGUIControllerFixture : public testing::Test
    QComboBox test_port_box;
    QComboBox test_line_ending_box;
    QComboBox test_text_edit;
-   QListWidget test_terminal_view;
+   QTextEdit test_terminal_view;
    QListWidget test_trace_view;
    QLineEdit test_trace_filter_0;
    QLineEdit test_trace_filter_1;
@@ -409,7 +412,7 @@ TEST_F(IGUIControllerFixture, clearing_terminal_view)
     * <b>expected</b>: terminal view cleared. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_clear(&test_terminal_view));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_clear(&test_terminal_view));
    m_test_subject->clearTerminalView();
 }
 
@@ -426,35 +429,26 @@ TEST_F(IGUIControllerFixture, clearing_trace_view)
 
 TEST_F(IGUIControllerFixture, adding_to_terminal_view)
 {
-   QListWidgetItem list_item;
    /**
     * <b>scenario</b>: addToTerminalView requested, when scrolling not enabled <br>
     * <b>expected</b>: Text added to terminal. <br>
     * ************************************************
     */
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&list_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&list_item, QString("TEXT")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&list_item, QColor(0x0001)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&list_item, QColor(0x0002)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &list_item));
-
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_append(&test_terminal_view, _));
    m_test_subject->addToTerminalView("TEXT", 0x0001, 0x0002);
+   EXPECT_EQ(test_terminal_view.verticalScrollBar()->maximum_position, 1);
+   EXPECT_EQ(test_terminal_view.verticalScrollBar()->position, 0);
    /**
     * <b>scenario</b>: addToTerminalView requested, when scrolling enabled <br>
     * <b>expected</b>: Text added to terminal, view scrolled to bottom. <br>
     * ************************************************
     */
-
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&list_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&list_item, QString("TEXT")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&list_item, QColor(0x0001)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&list_item, QColor(0x0002)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_terminal_view, &list_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_terminal_view));
-
+   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_append(&test_terminal_view, _));
    m_test_subject->setTerminalScrollingEnabled(true);
    m_test_subject->addToTerminalView("TEXT", 0x0001, 0x0002);
 
+   EXPECT_EQ(test_terminal_view.verticalScrollBar()->maximum_position, 2);
+   EXPECT_EQ(test_terminal_view.verticalScrollBar()->position, 2);
    EXPECT_EQ(m_test_subject->countTerminalItems(), 2);
    EXPECT_EQ(m_test_subject->countTraceItems(), 0);
 }

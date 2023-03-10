@@ -91,8 +91,18 @@ void QtCoreMock_init();
 void QtCoreMock_deinit();
 QtCoreMock* QtCoreMock_get();
 
+enum QTextOption
+{
+   WrapAnywhere
+};
+
 namespace Qt
 {
+
+enum ScrollBarPolicy
+{
+   ScrollBarAlwaysOff
+};
 
 enum WindowModality {
     NonModal,

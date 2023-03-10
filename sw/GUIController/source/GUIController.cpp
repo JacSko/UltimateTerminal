@@ -88,6 +88,7 @@ void GUIController::run()
    connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
+
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
@@ -545,19 +546,19 @@ void GUIController::onClearTraceViewSignal()
    ui->traceView->clear();
    m_trace_view_status.item_count = 0;
 }
-void GUIController::onAddToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color)
+void GUIController::onAddToTerminalViewSignal(QString text, qint32, qint32)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s bg color %.6x font %.6x", __func__, background_color, font_color);
-   QListWidgetItem* item = new QListWidgetItem();
-   item->setText(text);
-   item->setBackground(QColor(background_color));
-   item->setForeground(QColor(font_color));
-   ui->terminalView->addItem(item);
+   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+
+   ui->terminalView->append(text);
    m_terminal_view_status.item_count++;
-   //TODO do not scroll on each line - it is CPU consuming. Can be replaced with e.g 100ms timer
    if (m_terminal_view_status.scrolling_enabled)
    {
-      ui->terminalView->scrollToBottom();
+      ui->terminalView->verticalScrollBar()->setValue(ui->terminalView->verticalScrollBar()->maximum());
+   }
+   else
+   {
+      ui->terminalView->verticalScrollBar()->setValue(m_terminal_view_status.last_position);
    }
 }
 void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color)
@@ -579,6 +580,7 @@ void GUIController::onSetTerminalScrollingEnabledSignal(bool enabled)
 {
    UT_Log(MAIN_GUI, HIGH, "%s %u", __func__, enabled);
    m_terminal_view_status.scrolling_enabled = enabled;
+   m_terminal_view_status.last_position = ui->terminalView->verticalScrollBar()->sliderPosition();
 }
 void GUIController::onSetTraceScrollingEnabledSignal(bool enabled)
 {
@@ -671,12 +673,12 @@ void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
    UT_Assert((size_t)id < ports.size());
    ports[id].label->setText(description);
 }
-void GUIController::onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet)
+void GUIController::onSetPortLabelStylesheetSignal(qint8, QString)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %s", __func__, id, stylesheet.toStdString().c_str());
-   auto& ports = ui->getPorts();
-   UT_Assert((size_t)id < ports.size());
-   ports[id].label->setStyleSheet(stylesheet);
+//   UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %s", __func__, id, stylesheet.toStdString().c_str());
+//   auto& ports = ui->getPorts();
+//   UT_Assert((size_t)id < ports.size());
+//   ports[id].label->setStyleSheet(stylesheet);
 }
 void GUIController::onReloadThemeSignal(qint8 id)
 {

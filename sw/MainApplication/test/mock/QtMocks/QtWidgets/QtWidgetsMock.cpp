@@ -110,6 +110,27 @@ QString QTextEdit::toPlainText()
 {
    return QString(g_widgets_mock->QTextEdit_toPlainText(this).c_str());
 }
+void QTextEdit::setReadOnly(bool read_only)
+{
+   g_widgets_mock->QTextEdit_setReadOnly(this, read_only);
+}
+void QTextEdit::setWordWrapMode(QTextOption option)
+{
+   g_widgets_mock->QTextEdit_setWordWrapMode(this, option);
+}
+void QTextEdit::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy policy)
+{
+   g_widgets_mock->QTextEdit_setHorizontalScrollBarPolicy(this, policy);
+}
+void QTextEdit::append(const QString& text)
+{
+   vertical_scroll_bar.maximum_position++;
+   g_widgets_mock->QTextEdit_append(this, text);
+}
+void QTextEdit::clear()
+{
+   g_widgets_mock->QTextEdit_clear(this);
+}
 void* QDialogButtonBox::operator new(size_t)
 {
    return g_widgets_mock->QDialogButtonBox_new();

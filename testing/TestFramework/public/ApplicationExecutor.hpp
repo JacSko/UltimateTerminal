@@ -4,9 +4,11 @@
 #include <signal.h>
 #include <sstream>
 
-#include <sys/prctl.h> // prctl(), PR_SET_PDEATHSIG
-#include <signal.h> // signals
-#include <unistd.h> // fork()
+#include <sys/prctl.h>
+#include <signal.h>
+#include <unistd.h>
+
+#include "ProcessorUsage.hpp"
 
 namespace TF
 {
@@ -84,6 +86,10 @@ public:
    bool isRunning()
    {
       return (kill(m_pid, 0) == 0);
+   }
+   double getCPUUsage()
+   {
+      return getProcessorUsage(m_pid);
    }
 private:
    pid_t m_pid;

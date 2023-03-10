@@ -53,6 +53,7 @@ public:
    {
       uint32_t item_count;
       bool scrolling_enabled;
+      int last_position;
    };
 
    Ui::MainWindow *ui;
