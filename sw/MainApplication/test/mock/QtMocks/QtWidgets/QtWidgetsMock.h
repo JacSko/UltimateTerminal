@@ -220,6 +220,21 @@ private:
    QString stylesheet;
 };
 
+class QScrollBar
+{
+public:
+   QScrollBar():
+   position(0),
+   maximum_position(0)
+   {}
+   int sliderPosition(){return position;}
+   int maximum(){return maximum_position;}
+   void setValue(int value){position = value;};
+
+   int position;
+   int maximum_position;
+};
+
 class QTextEdit : public QWidget
 {
 public:
@@ -228,6 +243,14 @@ public:
    void operator delete(void*){};
    void setText(const QString &);
    QString toPlainText();
+   void setReadOnly(bool);
+   void setWordWrapMode(QTextOption);
+   void setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy);
+   void append(const QString&);
+   void clear();
+   QScrollBar* verticalScrollBar(){return &vertical_scroll_bar;}
+private:
+   QScrollBar vertical_scroll_bar;
 };
 
 class QPushButton : public QWidget
@@ -467,6 +490,11 @@ struct QtWidgetsMock
    MOCK_METHOD0(QTextEdit_new, void*());
    MOCK_METHOD2(QTextEdit_setText, void(QTextEdit*, const std::string&));
    MOCK_METHOD1(QTextEdit_toPlainText, QString(QTextEdit*));
+   MOCK_METHOD2(QTextEdit_setHorizontalScrollBarPolicy, void(QTextEdit*, Qt::ScrollBarPolicy));
+   MOCK_METHOD2(QTextEdit_setWordWrapMode, void(QTextEdit*, QTextOption));
+   MOCK_METHOD2(QTextEdit_setReadOnly, void(QTextEdit*, bool));
+   MOCK_METHOD1(QTextEdit_clear, void(QTextEdit*));
+   MOCK_METHOD2(QTextEdit_append, void(QTextEdit*, const QString&));
 
    MOCK_METHOD0(QComboBox_new, void*());
    MOCK_METHOD2(QComboBox_addItem, void(QComboBox*, const QString&));
