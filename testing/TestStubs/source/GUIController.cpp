@@ -211,19 +211,29 @@ void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const 
 }
 void GUIController::registerPortOpened(const std::string& port_name)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
-   m_active_ports.push_back(port_name);
-   m_current_active_port = m_active_ports.begin();
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_active_ports.push_back(port_name);
+      m_current_active_port = m_active_ports.begin();
+   }
+   if (m_active_port_listener) m_active_port_listener(*m_current_active_port);
 }
 void GUIController::registerPortClosed(const std::string& port_name)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
-   auto it = std::find(m_active_ports.begin(), m_active_ports.end(), port_name);
-   if (it != m_active_ports.end())
    {
-      m_active_ports.erase(it);
+      std::lock_guard<std::mutex> lock(m_mutex);
+      auto it = std::find(m_active_ports.begin(), m_active_ports.end(), port_name);
+      if (it != m_active_ports.end())
+      {
+         m_active_ports.erase(it);
+      }
+      m_current_active_port = m_active_ports.begin();
    }
-   m_current_active_port = m_active_ports.begin();
+
+   if (m_current_active_port != m_active_ports.end() && m_active_port_listener)
+   {
+      m_active_port_listener(*m_current_active_port);
+   }
 }
 void GUIController::setCommandsHistory(const std::vector<std::string>& history)
 {

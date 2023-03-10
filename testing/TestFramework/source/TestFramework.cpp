@@ -55,6 +55,10 @@ public:
    {
       return m_port;
    }
+   size_t bufferSize() const
+   {
+      return m_buffer.size();
+   }
 private:
 
    void onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size) override
@@ -317,6 +321,17 @@ bool checkMessageReceived(uint32_t port, const std::string& message)
    if (it != g_socket_servers.end())
    {
       result = (*it)->wasMessageReceived(message);
+   }
+   return result;
+}
+uint32_t bufferSize(uint32_t port)
+{
+   uint32_t result = 0;
+
+   auto it = std::find_if(g_socket_servers.begin(), g_socket_servers.end(), [&](std::unique_ptr<SocketServerHandler>& handler){return handler->getPort() == port;});
+   if (it != g_socket_servers.end())
+   {
+      result = static_cast<uint32_t>((*it)->bufferSize());
    }
    return result;
 }

@@ -31,6 +31,7 @@ bool startServer(uint32_t port);
 bool stopServer(uint32_t port);
 bool sendMessage(uint32_t port, const std::string& message);
 bool checkMessageReceived(uint32_t port, const std::string& message);
+uint32_t bufferSize(uint32_t port);
 void clearMessageBuffer(uint32_t port);
 }
 

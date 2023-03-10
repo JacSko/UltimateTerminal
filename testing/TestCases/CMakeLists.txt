@@ -5,3 +5,7 @@ add_test(NAME SerialPortReadWrite COMMAND SerialPortReadWrite)
 add_executable(SocketReadWrite SocketReadWrite.cpp)
 target_link_libraries(SocketReadWrite PUBLIC gtest_main TestFramework)
 add_test(NAME SocketReadWrite COMMAND SocketReadWrite)
+
+add_executable(UserButtonsSending UserButtonsSending.cpp)
+target_link_libraries(UserButtonsSending PUBLIC gtest_main TestFramework)
+add_test(NAME UserButtonsSending COMMAND UserButtonsSending)
