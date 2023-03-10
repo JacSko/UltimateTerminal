@@ -8,6 +8,10 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 #include "GUIControllerHelpers.hpp"
+#ifdef SIMULATION
+#include "GUITestServer.h"
+#endif
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -71,6 +75,10 @@ public:
    std::vector<ButtonEventItem> m_button_listeners;
    //maps widgets to related buttons (i.e. traceFilter to traceFilterButton)
    std::map<QObject*, QPushButton*> m_shortcuts_map;
+#ifdef SIMULATION
+   std::unique_ptr<GUITestServer> m_gui_test_server;
+#endif
+
 
    void run();
 

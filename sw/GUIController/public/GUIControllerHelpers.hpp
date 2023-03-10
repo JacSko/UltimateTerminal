@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sstream>
+
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 

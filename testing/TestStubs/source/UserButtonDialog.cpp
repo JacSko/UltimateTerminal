@@ -1,6 +1,6 @@
 #include <QtCore/QString>
 #include "UserButtonDialog.h"
-#include "GUIController.h"
+#include "GUITestServer.h"
 #include "Logger.h"
 #include <sstream>
 
@@ -15,6 +15,6 @@ UserButtonDialog::~UserButtonDialog()
 }
 std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
-   return GUIController::onUserButtonSettingsDialogShow(parent, current_settings, out_settings, allow_edit);
+   return GUITestServer::onUserButtonSettingsDialogShow(parent, current_settings, out_settings, allow_edit);
 }
 }

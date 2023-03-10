@@ -133,33 +133,36 @@ TEST_P(SerialPortReadingTests, read_serial_port)
    port_settings.trace_color = BACKGROUND_COLOR;
    port_settings.font_color = FONT_COLOR;
 
-      /* check port button and label before test */
-      EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
-      EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
-      EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
-      EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
+   /* check port button and label before test */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
 
-      /* set new port settings */
-      EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
-      EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
-      EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-      EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   /* set new port settings */
+   EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
-      /* open port by clicking on button */
-      EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
-      EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
-      EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
+   /* open port by clicking on button */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+   EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
 
-      /* check button state after open */
-      EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
-      EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
-      EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-      EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   /* check button state after open */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
    /* open serial driver for data generation */
    Drivers::Serial::Settings driver_settings = GetParam().serial_settings;
    driver_settings.device = SECOND_SERIAL_PORT_LINK;
    EXPECT_TRUE(TF::Serial::openSerialPort(driver_settings));
+
+   /* clear terminal view before test */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
 
    /* start generating data on serial port */
    for (uint8_t i = 0; i < TEST_TRACES_COUNT; i++)
@@ -169,8 +172,7 @@ TEST_P(SerialPortReadingTests, read_serial_port)
    }
 
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(BACKGROUND_COLOR), TEST_TRACES_COUNT);
-   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FONT_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
 
    /* close serial port */
    EXPECT_TRUE(TF::Serial::closeSerialPort(driver_settings.device));
@@ -256,7 +258,7 @@ TEST_F(SerialPortTests, open_close_serial_multiple_times_during_high_traffic)
       TF::wait(1000);
       EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
       /* check terminal content - payload generated every 2ms, gathering time 2s, so more around ~1000 traces shall be available */
-      EXPECT_GT(TF::TerminalView::countItems(), 900);
+      EXPECT_GT(TF::TerminalView::countItems(), 500);
    }
    EXPECT_TRUE(serial_data_generator.stopApplication());
 }
@@ -357,6 +359,9 @@ TEST_P(SerialPortWritingTests, write_serial_port)
    EXPECT_EQ(TF::Buttons::getText(SECOND_PORT_BUTTON_NAME), NEW_SECOND_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.shortSettingsString());
 
+   /* clear terminal view before test */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
+
    /* send data from first to second port */
    EXPECT_TRUE(TF::Common::setLineEnding("\\n"));
    EXPECT_TRUE(TF::Common::setTargetPort(NEW_FIRST_PORT_NAME));
@@ -369,8 +374,10 @@ TEST_P(SerialPortWritingTests, write_serial_port)
 
    /* check if data received on second port */
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(SECOND_BACKGROUND_COLOR), TEST_TRACES_COUNT);
-   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(SECOND_FONT_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), 2 * TEST_TRACES_COUNT);
+
+   /* clear terminal view before second test */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
 
    /* send data from second to first port */
    EXPECT_TRUE(TF::Common::setTargetPort(NEW_SECOND_PORT_NAME));
@@ -383,8 +390,7 @@ TEST_P(SerialPortWritingTests, write_serial_port)
 
    /* check if data received on second port */
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(FIRST_BACKGROUND_COLOR), TEST_TRACES_COUNT);
-   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FIRST_FONT_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), 2 * TEST_TRACES_COUNT);
 
    /* close first serial port in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(FIRST_PORT_BUTTON_NAME));

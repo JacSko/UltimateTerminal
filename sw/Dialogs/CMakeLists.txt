@@ -26,6 +26,12 @@ target_link_libraries(Dialogs
    GUIController
 )
 
+add_library(DialogsIf INTERFACE)
+target_include_directories(DialogsIf INTERFACE 
+   public/
+)
+
+
 if (UNIT_TESTS)
    add_subdirectory(test)
 endif()
