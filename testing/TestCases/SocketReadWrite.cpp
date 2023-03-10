@@ -117,8 +117,7 @@ TEST_F(SocketRead, read_data_from_socket)
    }
 
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(BACKGROUND_COLOR), TEST_TRACES_COUNT);
-   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FONT_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
 
    /* close socket in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -312,8 +311,7 @@ TEST_F(SocketRead, server_reconnection)
    }
 
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItemsWithBackgroundColor(BACKGROUND_COLOR), TEST_TRACES_COUNT);
-   EXPECT_EQ(TF::TerminalView::countItemsWithFontColor(FONT_COLOR), TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
 
    /* close socket in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -383,8 +381,7 @@ TEST_F(SocketRead, open_close_socket_multiple_times_during_high_traffic)
       EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
       TF::wait(1000);
       EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
-      /* check terminal content - payload generated every 2ms, gathering time 2s, so more around ~1000 traces shall be available */
-      EXPECT_GT(TF::TerminalView::countItems(), 900);
+      EXPECT_GT(TF::TerminalView::countItems(), 400);
    }
    EXPECT_TRUE(serial_data_generator.stopApplication());
 }

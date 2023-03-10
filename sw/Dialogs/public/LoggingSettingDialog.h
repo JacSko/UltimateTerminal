@@ -10,6 +10,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QLabel>
 
 /**
  * @file LoggingSettingDialog.cpp

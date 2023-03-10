@@ -1,7 +1,7 @@
 #include "Settings.h"
 
 #include "PortSettingDialog.h"
-#include "GUIController.h"
+#include "GUITestServer.h"
 
 #undef DEF_PORT_TYPE
 #define DEF_PORT_TYPE(a) #a,
@@ -53,7 +53,7 @@ PortSettingDialog::~PortSettingDialog()
 }
 std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
-   return GUIController::onPortSettingsDialogShow(parent, current_settings, out_settings, allow_edit);
+   return GUITestServer::onPortSettingsDialogShow(parent, current_settings, out_settings, allow_edit);
 }
 QLayout* PortSettingDialog::createLayout(QWidget*, const Settings&, bool)
 {
@@ -69,5 +69,9 @@ bool PortSettingDialog::convertGuiValues(Settings&)
    UT_Assert(false);
    return false;
 }
+void PortSettingDialog::onPortTypeChanged(const QString&) {};
+void PortSettingDialog::onBackgroundColorButtonClicked() {};
+void PortSettingDialog::onFontColorButtonClicked() {};
+
 
 }

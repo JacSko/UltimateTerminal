@@ -1,9 +1,7 @@
 if(SIMULATION)
 # This library is created in sw/testing/TestStubs
-	set(GUI_CONTROLLER_LIB GUIControllerSimulation)
 	set(DIALOGS_LIB DialogsSimulation)
 else()
-	set(GUI_CONTROLLER_LIB GUIController)
 	set(DIALOGS_LIB Dialogs)
 endif()
 
@@ -28,8 +26,8 @@ target_link_libraries(MainApplication
    SettingsHandler
    Logger
    Utilities
+   GUIController
    ${DIALOGS_LIB}
-   ${GUI_CONTROLLER_LIB}
    ${DRIVER_VARIANT}
 )
 
@@ -37,6 +35,10 @@ add_library(MainApplicationIf INTERFACE)
 target_include_directories(MainApplicationIf INTERFACE 
    public/
 )
+target_link_libraries(MainApplicationIf INTERFACE 
+   GUIControllerIf
+)
+
 
 if (UNIT_TESTS)
    add_subdirectory(test)

@@ -18,6 +18,7 @@
  *   Includes of common headers
  * =============================*/
 #include "stdint.h"
+#include <memory>
 #include <string>
 #include <vector>
 #include <functional>

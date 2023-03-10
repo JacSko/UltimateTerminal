@@ -66,10 +66,10 @@ This runs the build check, unit tests and all simulation tests
 ```
 
 ## Simulation
-The application has possibility to stub QT GUI interface (GUIController.h) and all related dialog windows with the stubs
-with RPC server for testing purposes.  
-This allows to perform extended tests of almost whole application, checking the GUI state without showing the GUI interface.
-In the **testing** sub-directory there is the all simulation-related stuff defined.  
+The application has possibility to remotely control GUI elements.
+This was achieved using GUITestServer class which implements the RPC server to handle requests from simulation tests (TestFramework).
+Such feature allows to perform extended, automated tests of whole application and checking the GUI state without showing the GUI interface.
+In the **testing** sub-directory there is the all simulation-related stuff defined.
 
 - **TestCases** - contains the test cases written with use of GTest Framework and TestFramework
 - **TestFramework** - Implementations required to perform testing. There are methods that allows to check the GUI element state,

@@ -13,9 +13,15 @@ target_link_libraries(GUIController
    Logger
    Utilities
    DriversIf
-   Dialogs
    MainApplicationIf
+   GUITestServer
 )
+
+add_library(GUIControllerIf INTERFACE)
+target_include_directories(GUIControllerIf INTERFACE 
+   public/
+)
+
 
 if (UNIT_TESTS)
    add_subdirectory(test)

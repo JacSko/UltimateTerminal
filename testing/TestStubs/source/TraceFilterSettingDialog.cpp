@@ -2,7 +2,7 @@
 #include <QtCore/QString>
 #include "TraceFilterSettingDialog.h"
 #include "Logger.h"
-#include "GUIController.h"
+#include "GUITestServer.h"
 
 namespace Dialogs
 {
@@ -15,7 +15,7 @@ TraceFilterSettingDialog::~TraceFilterSettingDialog()
 }
 std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const Settings& current_settings, Settings& out_settings, bool allow_edit)
 {
-   return GUIController::onTraceFilterSettingDialogShow(parent, current_settings, out_settings, allow_edit);
+   return GUITestServer::onTraceFilterSettingDialogShow(parent, current_settings, out_settings, allow_edit);
 }
 QLayout* TraceFilterSettingDialog::createLayout(QWidget*, const Settings&, bool)
 {
@@ -29,5 +29,7 @@ bool TraceFilterSettingDialog::convertGuiValues(Settings&)
 {
    return true;
 }
+void TraceFilterSettingDialog::onBackgroundColorButtonClicked(){}
+void TraceFilterSettingDialog::onFontColorButtonClicked(){}
 
 }

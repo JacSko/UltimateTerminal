@@ -157,9 +157,6 @@ m_trace_scrolling_active(false)
    {
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
-#ifndef SIMULATION
-   m_gui_controller.show();
-#endif
 }
 MainApplication::~MainApplication()
 {

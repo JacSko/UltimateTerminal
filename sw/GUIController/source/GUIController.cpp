@@ -88,7 +88,11 @@ void GUIController::run()
    connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
-
+#ifdef SIMULATION
+   m_gui_test_server = std::unique_ptr<GUITestServer>(new GUITestServer(ui));
+#else
+   show();
+#endif
 }
 uint32_t GUIController::getButtonID(const std::string& name)
 {
