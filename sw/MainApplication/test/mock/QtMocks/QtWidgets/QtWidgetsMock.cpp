@@ -289,6 +289,14 @@ void QListWidget::clear()
 {
    g_widgets_mock->QListWidget_clear(this);
 }
+void QListWidget::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy policy)
+{
+   g_widgets_mock->QListWidget_setHorizontalScrollBarPolicy(policy);
+}
+void QListWidget::setWordWrap(bool wrap)
+{
+   g_widgets_mock->QListWidget_setWordWrap(wrap);
+}
 void* QCheckBox::operator new(size_t)
 {
    return g_widgets_mock->QCheckBox_new();

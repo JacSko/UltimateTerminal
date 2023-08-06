@@ -39,7 +39,6 @@ struct GUIControllerMock
    MOCK_METHOD2(setTraceFilterBackgroundColor, void(uint32_t, uint32_t));
    MOCK_METHOD2(setTraceFilterFontColor, void(uint32_t, uint32_t));
    MOCK_METHOD2(setPortLabelText, void(uint8_t, const std::string&));
-   MOCK_METHOD2(setPortLabelStylesheet, void(uint8_t, const std::string&));
    MOCK_METHOD1(reloadTheme, void(Theme));
    MOCK_METHOD0(currentTheme, Theme());
    MOCK_METHOD1(themeToName, std::string(Theme));
@@ -220,10 +219,6 @@ void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
    g_gui_controller_mock->setPortLabelText(id, description);
-}
-void GUIController::setPortLabelStylesheet(uint8_t id, const std::string& stylesheet)
-{
-   g_gui_controller_mock->setPortLabelStylesheet(id, stylesheet);
 }
 void GUIController::reloadTheme(Theme theme)
 {

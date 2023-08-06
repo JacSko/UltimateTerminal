@@ -272,6 +272,8 @@ public:
       traceView = new QListWidget(gridLayoutWidget_3);
       traceView->setObjectName(QString::fromUtf8("traceView"));
       traceView->setUniformItemSizes(true);
+      traceView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      traceView->setWordWrap(true);
       QSizePolicy sizePolicy4(QSizePolicy::Expanding, QSizePolicy::Expanding);
       sizePolicy4.setHorizontalStretch(0);
       sizePolicy4.setVerticalStretch(0);

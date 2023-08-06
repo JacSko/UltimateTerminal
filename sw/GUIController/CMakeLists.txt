@@ -17,6 +17,12 @@ target_link_libraries(GUIController
    GUITestServer
 )
 
+if (SIMULATION)
+target_link_libraries(GUIController
+   GUITestServer
+)
+endif()
+
 add_library(GUIControllerIf INTERFACE)
 target_include_directories(GUIControllerIf INTERFACE 
    public/

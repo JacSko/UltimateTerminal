@@ -199,7 +199,6 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
    char stylesheet [300];
    std::snprintf(stylesheet, 300, "background-color: #%.6x;color: #%.6x;border-width:2px;border-style:solid;border-radius:10px;border-color:gray;", settings.trace_color, settings.font_color);
 
-   m_gui_controller.setPortLabelStylesheet(m_settings.port_id, stylesheet);
    setButtonName(m_settings.port_name);
    setButtonState(m_button_state);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
