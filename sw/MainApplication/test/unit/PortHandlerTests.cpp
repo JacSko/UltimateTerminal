@@ -177,7 +177,6 @@ TEST_P(PortHandlerParamFixture, settings_change_and_port_connection)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -295,7 +294,6 @@ TEST_P(PortHandlerParamFixture, settings_change_when_port_is_opened)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -374,7 +372,6 @@ TEST_F(PortHandlerFixture, cannot_open_serial_port)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -413,7 +410,6 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -483,7 +479,6 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -556,7 +551,6 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -625,7 +619,6 @@ TEST_F(PortHandlerFixture, refreshing_ui_tests)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*PortSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(user_settings), Return(true)));
@@ -633,7 +626,6 @@ TEST_F(PortHandlerFixture, refreshing_ui_tests)
 
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    m_test_subject->refreshUi();
@@ -653,7 +645,6 @@ TEST_F(PortHandlerFixture, refreshing_ui_tests)
 
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
    m_test_subject->refreshUi();
@@ -701,7 +692,6 @@ TEST_F(PortHandlerFixture, settings_set_and_get_tests)
 
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelStylesheet(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_TRUE(m_test_subject->setSettings(user_settings));

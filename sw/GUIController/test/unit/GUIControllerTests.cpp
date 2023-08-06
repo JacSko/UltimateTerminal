@@ -192,7 +192,6 @@ void GUIController::setTraceFilterEnabledSignal(uint8_t id, bool enabled){onSetT
 void GUIController::setTraceFilterBackgroundColorSignal(uint32_t id, uint32_t color){onSetTraceFilterBackgroundColorSignal(id, color);}
 void GUIController::setTraceFilterFontColorSignal(uint32_t id, uint32_t color){onSetTraceFilterFontColorSignal(id, color);}
 void GUIController::setPortLabelTextSignal(uint8_t id, QString description){onSetPortLabelTextSignal(id, description);}
-void GUIController::setPortLabelStylesheetSignal(uint8_t id, QString stylesheet){onSetPortLabelStylesheetSignal(id, stylesheet);}
 void GUIController::reloadThemeSignal(uint8_t id){onReloadThemeSignal(id);}
 void GUIController::setStatusBarNotificationSignal(QString notification, qint32 timeout){onSetStatusBarNotificationSignal(notification, timeout);}
 void GUIController::setInfoLabelTextSignal(QString text){onSetInfoLabelTextSignal(text);}
@@ -641,17 +640,6 @@ TEST_F(IGUIControllerFixture, setting_port_label_text)
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_port_label_0, QString("SOME DESC")));
    m_test_subject->setPortLabelText(0, "SOME DESC");
-}
-
-TEST_F(IGUIControllerFixture, setting_port_label_stylesheet)
-{
-   /**
-    * <b>scenario</b>: setPortLabelStylesheet requested. <br>
-    * <b>expected</b>: Port label stylesheet. <br>
-    * ************************************************
-    */
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setStyleSheet(&test_port_label_0, _));
-   m_test_subject->setPortLabelStylesheet(0, "SOME DESC");
 }
 
 TEST_F(IGUIControllerFixture, theme_translation)

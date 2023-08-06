@@ -182,7 +182,6 @@ signals:
    void setTraceFilterBackgroundColorSignal(qint32 id, qint32 color);
    void setTraceFilterFontColorSignal(qint32 id, qint32 color);
    void setPortLabelTextSignal(qint8 id, QString description);
-   void setPortLabelStylesheetSignal(qint8 id, QString stylesheet);
    void reloadThemeSignal(qint8);
    void setStatusBarNotificationSignal(QString notification, qint32 timeout);
    void setInfoLabelTextSignal(QString text);
@@ -216,7 +215,6 @@ public slots:
    void onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color);
    void onSetTraceFilterFontColorSignal(qint32 id, qint32 color);
    void onSetPortLabelTextSignal(qint8 id, QString description);
-   void onSetPortLabelStylesheetSignal(qint8 id, QString stylesheet);
    void onReloadThemeSignal(qint8);
    void onSetStatusBarNotificationSignal(QString notification, qint32 timeout);
    void onSetInfoLabelTextSignal(QString text);

@@ -81,7 +81,6 @@ void GUIController::run()
    connect(this, SIGNAL(setTraceFilterBackgroundColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterBackgroundColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setTraceFilterFontColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterFontColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setPortLabelTextSignal(qint8, QString)), this, SLOT(onSetPortLabelTextSignal(qint8, QString)));
-   connect(this, SIGNAL(setPortLabelStylesheetSignal(qint8, QString)), this, SLOT(onSetPortLabelStylesheetSignal(qint8, QString)));
    connect(this, SIGNAL(reloadThemeSignal(qint8)), this, SLOT(onReloadThemeSignal(qint8)));
    connect(this, SIGNAL(setStatusBarNotificationSignal(QString, qint32)), this, SLOT(onSetStatusBarNotificationSignal(QString, qint32)));
    connect(this, SIGNAL(setInfoLabelTextSignal(QString)), this, SLOT(onSetInfoLabelTextSignal(QString)));
@@ -282,10 +281,6 @@ void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
    emit setPortLabelTextSignal(id, QString(description.c_str()));
-}
-void GUIController::setPortLabelStylesheet(uint8_t id, const std::string& stylesheet)
-{
-   emit setPortLabelStylesheetSignal(id, QString(stylesheet.c_str()));
 }
 void GUIController::reloadTheme(Theme theme)
 {
@@ -676,13 +671,6 @@ void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
    auto& ports = ui->getPorts();
    UT_Assert((size_t)id < ports.size());
    ports[id].label->setText(description);
-}
-void GUIController::onSetPortLabelStylesheetSignal(qint8, QString)
-{
-//   UT_Log(MAIN_GUI, HIGH, "%s id %u stylesheet %s", __func__, id, stylesheet.toStdString().c_str());
-//   auto& ports = ui->getPorts();
-//   UT_Assert((size_t)id < ports.size());
-//   ports[id].label->setStyleSheet(stylesheet);
 }
 void GUIController::onReloadThemeSignal(qint8 id)
 {
