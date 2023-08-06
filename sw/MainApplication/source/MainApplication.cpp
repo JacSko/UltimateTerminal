@@ -48,7 +48,6 @@ __attribute__((weak)) std::string getExecutablePath()
 MainApplication::MainApplication():
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
-m_gui_controller(nullptr),
 m_marker_index(0),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
@@ -237,18 +236,11 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
    auto millis = (currentTime.time_since_epoch().count() / 1000000) % 1000;
    std::time_t tt = std::chrono::system_clock::to_time_t ( currentTime );
    auto ts = localtime (&tt);
+
    QString new_line = QString().asprintf("[%s]<%u-%.2u-%u %u:%.2u:%.2u:%.3lu>: %s", port_name.c_str(),
                                    ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec, millis,
                                    data.c_str());
-
-   m_file_logger->putLog(new_line.toStdString());
-
-   // remove trailing newline
-   if (new_line.back() == '\n')
-   {
-      new_line.chop(1);
-   }
 
    if(m_gui_controller.countTerminalItems() >= SETTING_GET_U32(MainApplication_maxTerminalTraces))
    {
@@ -262,14 +254,15 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
       m_gui_controller.clearTraceView();
    }
 
-   m_gui_controller.addToTerminalView(new_line.toStdString(), background_color, font_color);
+   m_gui_controller.addToTerminalView(new_line.trimmed().toStdString(), background_color, font_color);
+   m_file_logger->putLog(new_line.toStdString());
 
    for (auto& filter : m_trace_filter_handlers)
    {
       std::optional<Dialogs::TraceFilterSettingDialog::Settings> color_set = filter->tryMatch(data);
       if (color_set.has_value())
       {
-         m_gui_controller.addToTraceView(new_line.toStdString(), color_set->background, color_set->font);
+         m_gui_controller.addToTraceView(new_line.trimmed().toStdString(), color_set->background, color_set->font);
       }
    }
 }

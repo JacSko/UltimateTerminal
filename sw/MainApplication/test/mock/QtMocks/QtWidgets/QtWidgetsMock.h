@@ -441,6 +441,8 @@ public:
    void addItem(QListWidgetItem *);
    void scrollToBottom();
    void setUniformItemSizes(bool){};
+   void setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy);
+   void setWordWrap(bool);
    int count();
    void clear();
 
@@ -544,6 +546,8 @@ struct QtWidgetsMock
    MOCK_METHOD1(QListWidget_scrollToBottom, void(QListWidget*));
    MOCK_METHOD1(QListWidget_count, int(QListWidget*));
    MOCK_METHOD1(QListWidget_clear, void(QListWidget*));
+   MOCK_METHOD1(QListWidget_setHorizontalScrollBarPolicy, void(Qt::ScrollBarPolicy));
+   MOCK_METHOD1(QListWidget_setWordWrap, void(bool));
 
    MOCK_METHOD0(QStatusBar_new, void*());
    MOCK_METHOD3(QStatusBar_showMessage, void(QStatusBar*, const QString&, uint32_t timeout));

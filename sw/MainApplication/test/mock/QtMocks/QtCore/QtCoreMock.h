@@ -79,6 +79,10 @@ public:
          erase(size() - count, count);
       }
    }
+   QString trimmed()
+   {
+      return *this;
+   }
 
 };
 

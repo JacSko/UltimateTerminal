@@ -46,6 +46,8 @@ void GUIController::run()
       m_shortcuts_map[filter.line_edit] = filter.button;
    }
 
+   connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
+   m_shortcuts_map[ui->textEdit->lineEdit()] = ui->sendButton;
    connect(ui->markerButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->loggingButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->clearButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
