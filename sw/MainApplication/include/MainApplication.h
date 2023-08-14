@@ -74,6 +74,7 @@ private:
    void onPersistenceRead(const std::vector<uint8_t>& data);
    void onPersistenceWrite(std::vector<uint8_t>& data);
    void addToCommandHistory(uint8_t port_id, const std::string& text);
+   void removeCommandHistoryDuplicates(std::vector<std::string>& history, const std::string& text);
    uint8_t portNameToId(const std::string& name);
    std::string createLogFileName();
 

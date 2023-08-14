@@ -9,3 +9,7 @@ add_test(NAME SocketReadWrite COMMAND SocketReadWrite)
 add_executable(UserButtonsSending UserButtonsSending.cpp)
 target_link_libraries(UserButtonsSending PUBLIC gtest_main TestFramework)
 add_test(NAME UserButtonsSending COMMAND UserButtonsSending)
+
+add_executable(CommandsHistory CommandsHistory.cpp)
+target_link_libraries(CommandsHistory PUBLIC gtest_main TestFramework)
+add_test(NAME CommandsHistory COMMAND CommandsHistory)

@@ -53,7 +53,6 @@ void GUIController::run()
    connect(ui->clearButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->portComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentPortSelectionChanged(int)));
    connect(ui->switchSendPortShortcut, SIGNAL(activated()), this, SLOT(onPortSwitchRequest()));
-   connect(ui->textEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onButtonClicked()));
    connect(ui->traceClearButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port0ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port1ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
@@ -75,7 +74,6 @@ void GUIController::run()
    connect(this, SIGNAL(registerPortOpenedSignal(QString)), this, SLOT(onRegisterPortOpenedSignal(QString)));
    connect(this, SIGNAL(registerPortClosedSignal(QString)), this, SLOT(onRegisterPortClosedSignal(QString)));
    connect(this, SIGNAL(setCommandHistorySignal(QVector<QString>)), this, SLOT(onSetCommandHistorySignal(QVector<QString>)));
-   connect(this, SIGNAL(addCommandToHistorySignal(QString)), this, SLOT(onAddCommandToHistorySignal(QString)));
    connect(this, SIGNAL(addLineEndingSignal(QString)), this, SLOT(onAddLineEndingSignal(QString)));
    connect(this, SIGNAL(setCurrentLineEndingSignal(QString)), this, SLOT(onSetCurrentLineEndingSignal(QString)));
    connect(this, SIGNAL(setTraceFilterSignal(qint8, QString)), this, SLOT(onSetTraceFilterSignal(qint8, QString)));
@@ -87,6 +85,7 @@ void GUIController::run()
    connect(this, SIGNAL(setStatusBarNotificationSignal(QString, qint32)), this, SLOT(onSetStatusBarNotificationSignal(QString, qint32)));
    connect(this, SIGNAL(setInfoLabelTextSignal(QString)), this, SLOT(onSetInfoLabelTextSignal(QString)));
    connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
+   connect(this, SIGNAL(clearCurrentCommand()), this, SLOT(onClearCurrentCommand()));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 #ifdef SIMULATION
@@ -217,15 +216,15 @@ void GUIController::setCommandsHistory(const std::vector<std::string>& history)
    }
    emit setCommandHistorySignal(commands);
 }
-void GUIController::addCommandToHistory(const std::string& history)
-{
-   emit addCommandToHistorySignal(QString(history.c_str()));
-}
 std::string GUIController::getCurrentCommand()
 {
    GetCommandRequest request;
    executeGUIRequest(&request);
    return request.command;
+}
+void GUIController::clearCommand()
+{
+   emit clearCurrentCommand();
 }
 std::string GUIController::getCurrentLineEnding()
 {
@@ -609,12 +608,10 @@ void GUIController::onSetCommandHistorySignal(QVector<QString> history)
    ui->textEdit->clear();
    for (const QString& command : history)
    {
+      UT_Log(MAIN_GUI, LOW, "%s inserting %s", __func__, command.toStdString().c_str());
       ui->textEdit->insertItem(0, command);
    }
-}
-void GUIController::onAddCommandToHistorySignal(QString command)
-{
-   ui->textEdit->insertItem(0, command);
+   ui->textEdit->setCurrentIndex(-1);
 }
 void GUIController::onGuiRequestSignal()
 {
@@ -698,4 +695,9 @@ void GUIController::onSetApplicationTitle(QString title)
 {
    UT_Log(MAIN_GUI, HIGH, "%s %s ", __func__, title.toStdString().c_str());
    this->setWindowTitle(title);
+}
+void GUIController::onClearCurrentCommand()
+{
+   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   ui->textEdit->lineEdit()->clear();
 }

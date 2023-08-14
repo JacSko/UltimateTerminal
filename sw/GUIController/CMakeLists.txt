@@ -14,7 +14,6 @@ target_link_libraries(GUIController
    Utilities
    DriversIf
    MainApplicationIf
-   GUITestServer
 )
 
 if (SIMULATION)

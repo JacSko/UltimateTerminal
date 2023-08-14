@@ -30,6 +30,7 @@ struct GUIControllerMock
    MOCK_METHOD1(setCommandsHistory, void(const std::vector<std::string>&));
    MOCK_METHOD1(addCommandToHistory, void(const std::string&));
    MOCK_METHOD0(getCurrentCommand, std::string());
+   MOCK_METHOD0(clearCommand, void());
    MOCK_METHOD0(getCurrentLineEnding, std::string());
    MOCK_METHOD1(addLineEnding, void(const std::string&));
    MOCK_METHOD1(setCurrentLineEnding, void(const std::string&));
@@ -183,6 +184,10 @@ void GUIController::addCommandToHistory(const std::string& history)
 std::string GUIController::getCurrentCommand()
 {
    return g_gui_controller_mock->getCurrentCommand();
+}
+void GUIController::clearCommand()
+{
+   return g_gui_controller_mock->clearCommand();
 }
 std::string GUIController::getCurrentLineEnding()
 {

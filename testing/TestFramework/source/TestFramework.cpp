@@ -609,9 +609,11 @@ bool isCommandInHistory(const std::string& command, uint32_t index)
    {
       auto it = std::find(reply.reply.history.begin(), reply.reply.history.end(), command);
       result = it != reply.reply.history.end();
-      if (result && index != UINT32_MAX)
+      if (result)
       {
-         result = (std::distance(reply.reply.history.begin(), it) == index);
+         uint32_t position = std::distance(reply.reply.history.begin(), it);
+         UT_Log(TEST_FRAMEWORK, HIGH, "text %s found @ pos %u", command.c_str(), position);
+         result = (position == index);
       }
    }
    UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);

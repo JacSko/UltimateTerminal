@@ -48,6 +48,7 @@ __attribute__((weak)) std::string getExecutablePath()
 MainApplication::MainApplication():
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
+m_gui_controller(nullptr),
 m_marker_index(0),
 m_scrolling_active(false),
 m_trace_scrolling_active(false)
@@ -152,10 +153,13 @@ m_trace_scrolling_active(false)
    {
       handler->startThread();
    }
+
+#ifndef SIMULATION
    if (!m_persistence.restore(PERSISTENCE_PATH))
    {
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
+#endif
 }
 MainApplication::~MainApplication()
 {
@@ -350,6 +354,7 @@ void MainApplication::onSettingsButtonClicked()
    Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
    dialog.showDialog(m_gui_controller.getParent());
 }
+
 bool MainApplication::sendToPort(const std::string& string)
 {
    bool result = false;
@@ -388,11 +393,14 @@ bool MainApplication::sendToPort(const std::string& string)
    }
    return result;
 }
+
 void MainApplication::onSendButtonClicked()
 {
    UT_Log(MAIN, LOW, "Send button clicked");
    (void)sendToPort(m_gui_controller.getCurrentCommand());
+   m_gui_controller.clearCommand();
 }
+
 void MainApplication::setButtonState(uint32_t button_id, bool state)
 {
    constexpr uint32_t GREEN = 0x00FF00;
@@ -478,6 +486,7 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
    {
       /* put in history */
       std::vector<std::string>& history = m_commands_history[port_id];
+      removeCommandHistoryDuplicates(history, text);
       history.push_back(text);
       while(history.size() >= MAX_COMMANDS_HISTORY_ITEMS)
       {
@@ -485,6 +494,11 @@ void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& te
       }
       m_gui_controller.setCommandsHistory(history);
    }
+}
+
+void MainApplication::removeCommandHistoryDuplicates(std::vector<std::string>& history, const std::string& text)
+{
+   history.erase(std::remove(history.begin(), history.end(), text), history.end());
 }
 uint8_t MainApplication::portNameToId(const std::string& name)
 {

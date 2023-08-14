@@ -196,8 +196,8 @@ void GUIController::reloadThemeSignal(uint8_t id){onReloadThemeSignal(id);}
 void GUIController::setStatusBarNotificationSignal(QString notification, qint32 timeout){onSetStatusBarNotificationSignal(notification, timeout);}
 void GUIController::setInfoLabelTextSignal(QString text){onSetInfoLabelTextSignal(text);}
 void GUIController::setApplicationTitle(QString title){onSetApplicationTitle(title);}
-void GUIController::addCommandToHistorySignal(QString command){onAddCommandToHistorySignal(command);}
 void GUIController::setCurrentLineEndingSignal(QString ending){onSetCurrentLineEndingSignal(ending);}
+void GUIController::clearCurrentCommand(){onClearCurrentCommand();}
 
 class ButtonEventListenerMock : public ButtonEventListener
 {

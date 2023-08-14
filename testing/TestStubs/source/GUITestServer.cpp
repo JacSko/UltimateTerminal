@@ -321,7 +321,7 @@ bool GUITestServer::onGetCommandHistory(const std::vector<uint8_t>&)
    {
       reply.history.push_back(ui->textEdit->itemText(i).toStdString());
    }
-
+   UT_Log(TEST_SERVER, LOW, "%s size %d", __func__, reply.history.size());
    return rpc_server->respond<RPC::GetCommandHistoryReply>(reply);
 }
 bool GUITestServer::onGetTerminalViewContent(const std::vector<uint8_t>&)

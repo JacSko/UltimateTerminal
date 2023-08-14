@@ -116,6 +116,7 @@ public:
    void setCommandsHistory(const std::vector<std::string>& history);
    void addCommandToHistory(const std::string& history);
    std::string getCurrentCommand();
+   void clearCommand();
 
    /* Line ending */
    std::string getCurrentLineEnding();
@@ -173,7 +174,6 @@ signals:
    void registerPortOpenedSignal(QString name);
    void registerPortClosedSignal(QString name);
    void setCommandHistorySignal(QVector<QString> history);
-   void addCommandToHistorySignal(QString command);
    void guiRequestSignal();
    void addLineEndingSignal(QString ending);
    void setCurrentLineEndingSignal(QString ending);
@@ -186,6 +186,7 @@ signals:
    void setStatusBarNotificationSignal(QString notification, qint32 timeout);
    void setInfoLabelTextSignal(QString text);
    void setApplicationTitle(QString title);
+   void clearCurrentCommand();
 public slots:
    void onButtonClicked();
    void onButtonContextMenuRequested();
@@ -206,7 +207,6 @@ public slots:
    void onRegisterPortOpenedSignal(QString name);
    void onRegisterPortClosedSignal(QString name);
    void onSetCommandHistorySignal(QVector<QString> history);
-   void onAddCommandToHistorySignal(QString command);
    void onGuiRequestSignal();
    void onAddLineEndingSignal(QString ending);
    void onSetCurrentLineEndingSignal(QString ending);
@@ -219,4 +219,5 @@ public slots:
    void onSetStatusBarNotificationSignal(QString notification, qint32 timeout);
    void onSetInfoLabelTextSignal(QString text);
    void onSetApplicationTitle(QString title);
+   void onClearCurrentCommand();
 };
