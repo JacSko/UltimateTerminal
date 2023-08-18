@@ -931,6 +931,29 @@ uint32_t countItemsWithText(const std::string& text)
    UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
    return result;
 }
+int getScrollPosition()
+{
+   int result = -1;
+   RPC::GetTerminalScrollPositionRequest request {};
+
+   RPC::result<RPC::GetTerminalScrollPositionReply> reply = g_rpc_client->invoke<RPC::GetTerminalScrollPositionReply, RPC::GetTerminalScrollPositionRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.position;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d", __func__, result);
+   return result;
+}
+bool setPosition(int position)
+{
+   RPC::SetTerminalScrollPositionRequest request {};
+   request.position = position;
+
+   RPC::result<RPC::SetTerminalScrollPositionReply> reply = g_rpc_client->invoke<RPC::SetTerminalScrollPositionReply, RPC::SetTerminalScrollPositionRequest>(request);
+   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d ready %u", __func__, position, reply.ready());
+   return reply.ready();
+}
+
 } // TerminalView
 
 namespace TraceView
@@ -987,6 +1010,29 @@ uint32_t countItemsWithText(const std::string& text)
    UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
    return result;
 }
+int getScrollPosition()
+{
+   int result = -1;
+   RPC::GetTraceViewScrollPositionRequest request {};
+
+   RPC::result<RPC::GetTraceViewScrollPositionReply> reply = g_rpc_client->invoke<RPC::GetTraceViewScrollPositionReply, RPC::GetTraceViewScrollPositionRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.position;
+   }
+   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d", __func__, result);
+   return result;
+}
+bool setPosition(int position)
+{
+   RPC::SetTraceViewScrollPositionRequest request {};
+   request.position = position;
+
+   RPC::result<RPC::SetTraceViewScrollPositionReply> reply = g_rpc_client->invoke<RPC::SetTraceViewScrollPositionReply, RPC::SetTraceViewScrollPositionRequest>(request);
+   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d ready %u", __func__, position, reply.ready());
+   return reply.ready();
+}
+
 } // TraceView
 
 namespace UserButtons

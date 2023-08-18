@@ -44,6 +44,10 @@ enum class Command : uint8_t
    ResetMessageBox,
    GetLoggingPath,
    SetLoggingPath,
+   GetTerminalScrollPosition,
+   GetTraceViewScrollPosition,
+   SetTerminalScrollPosition,
+   SetTraceViewScrollPosition,
 };
 
 struct GetButtonStateRequest
@@ -358,6 +362,44 @@ struct SetLoggingPathRequest
 struct SetLoggingPathReply
 {
    Command cmd = Command::SetLoggingPath;
+   bool result;
+};
+struct GetTerminalScrollPositionRequest
+{
+   Command cmd = Command::GetTerminalScrollPosition;
+};
+struct GetTerminalScrollPositionReply
+{
+   Command cmd = Command::GetTerminalScrollPosition;
+   int position;
+};
+struct GetTraceViewScrollPositionRequest
+{
+   Command cmd = Command::GetTraceViewScrollPosition;
+};
+struct GetTraceViewScrollPositionReply
+{
+   Command cmd = Command::GetTraceViewScrollPosition;
+   int position;
+};
+struct SetTerminalScrollPositionRequest
+{
+   Command cmd = Command::SetTerminalScrollPosition;
+   int position;
+};
+struct SetTerminalScrollPositionReply
+{
+   Command cmd = Command::SetTerminalScrollPosition;
+   bool result;
+};
+struct SetTraceViewScrollPositionRequest
+{
+   Command cmd = Command::SetTraceViewScrollPosition;
+   int position;
+};
+struct SetTraceViewScrollPositionReply
+{
+   Command cmd = Command::SetTraceViewScrollPosition;
    bool result;
 };
 }
@@ -715,6 +757,44 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathRequest i
    ::serialize(buffer, item.path);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.position);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.position);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (int)item.position);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+   ::serialize(buffer, (int)item.position);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionReply item)
 {
    ::serialize(buffer, (uint8_t)item.cmd);
    ::serialize(buffer, item.result);
@@ -1176,6 +1256,52 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathR
    ::deserialize(buffer, offset, item.path);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (int&)item.position);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (int&)item.position);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (int&)item.position);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   ::deserialize(buffer, offset, (int&)item.position);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionReply& item)
 {
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);

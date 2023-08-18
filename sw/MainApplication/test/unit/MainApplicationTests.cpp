@@ -44,10 +44,10 @@ struct MainApplicationFixture : public testing::Test
    const uint32_t LOGGING_BUTTON_ID = 0x02;
    const uint32_t SETTING_BUTTON_ID = 0x03;
    const uint32_t SEND_BUTTON_ID = 0x04;
-   const uint32_t SCROLL_BUTTON_ID = 0x05;
+   const uint32_t SCROLL_BOTTOM_BUTTON_ID = 0x05;
    const uint32_t CLEAR_BUTTON_ID = 0x06;
    const uint32_t TRACE_CLEAR_BUTTON_ID = 0x07;
-   const uint32_t TRACE_SCROLL_BUTTON_ID = 0x08;
+   const uint32_t TRACE_SCROLL_BOTTOM_BUTTON_ID = 0x08;
    const uint32_t DEFAULT_BACKGROUND_COLOR = 0xFFFFFF;
    const uint32_t DEFAULT_FONT_COLOR = 0xFFFFFF;
    const uint32_t GREEN_COLOR = 0x00FF00;
@@ -78,37 +78,27 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_));
       EXPECT_CALL(*GUIControllerMock_get(), setApplicationTitle(_));
       EXPECT_CALL(*GUIControllerMock_get(), setInfoLabelText(_));
-      EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(true));
-      EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(true));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("markerButton")).WillOnce(Return(MARKER_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("loggingButton")).WillOnce(Return(LOGGING_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("settingsButton")).WillOnce(Return(SETTING_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("sendButton")).WillOnce(Return(SEND_BUTTON_ID));
-      EXPECT_CALL(*GUIControllerMock_get(), getButtonID("scrollButton")).WillOnce(Return(SCROLL_BUTTON_ID));
+      EXPECT_CALL(*GUIControllerMock_get(), getButtonID("bottomButton")).WillOnce(Return(SCROLL_BOTTOM_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("clearButton")).WillOnce(Return(CLEAR_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("traceClearButton")).WillOnce(Return(TRACE_CLEAR_BUTTON_ID));
-      EXPECT_CALL(*GUIControllerMock_get(), getButtonID("traceScrollButton")).WillOnce(Return(TRACE_SCROLL_BUTTON_ID));
+      EXPECT_CALL(*GUIControllerMock_get(), getButtonID("traceBottomButton")).WillOnce(Return(TRACE_SCROLL_BOTTOM_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED, _));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SETTING_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
-                                                                 .WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
-                                                                 .WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-      EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR))
-                                                           .WillOnce(Return(DEFAULT_FONT_COLOR))
-                                                           .WillOnce(Return(DEFAULT_FONT_COLOR));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+      EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, _));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, _));
-      EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, _));
-      EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, _));
-      EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, _));
-      EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, _));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\r\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("EMPTY"));
@@ -139,10 +129,10 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SETTING_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromThemeReloadEvent(_));
       EXPECT_CALL(*g_timers_mock, stop());
 
@@ -408,163 +398,6 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
-TEST_F(MainApplicationFixture, terminal_view_scrolling_deactivation_and_activation)
-{
-   /**
-    * <b>scenario</b>: Scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
-    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
-    *                  scrollToBottom() shall not be called when adding new trace. <br>
-    *                  Button should be green when scrolling enabled. <br>
-    *                  scrollToBottom() shall be called when adding new trace. <br>
-    * ************************************************
-    */
-   constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
-   constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
-   GUI::PortHandlerEvent port_open_event;
-   port_open_event.name = "PORT_NAME";
-   port_open_event.port_id = 2;
-   port_open_event.event = GUI::Event::CONNECTED;
-   QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_data_event;
-   port_data_event.name = "PORT_NAME";
-   port_data_event.port_id = 2;
-   port_data_event.event = GUI::Event::NEW_DATA;
-   port_data_event.background_color = TEST_BACKGROUND_COLOR;
-   port_data_event.font_color = TEST_FONT_COLOR;
-   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   GUI::PortHandlerEvent port_close_event;
-   port_close_event.name = "PORT_NAME";
-   port_close_event.port_id = 2;
-   port_close_event.event = GUI::Event::DISCONNECTED;
-
-   /* scrolling button colors change */
-   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
-                                                              .WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR)) // setting scrolling button to green
-                                                        .WillOnce(Return(DEFAULT_FONT_COLOR));// setting scrolling button to default
-
-   /* user requested to disable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
-   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-
-   /* port opening */
-   EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
-
-   /* writing data */
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-
-   /* user requested to enable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, GREEN_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(true));
-   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-
-   /* writing data */
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-
-   /* closing port */
-   EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
-
-}
-
-TEST_F(MainApplicationFixture, trace_view_scrolling_deactivation_and_activation)
-{
-   /**
-    * <b>scenario</b>: Trace scrolling is enabled by default, then was turned OFF by user, then was turned ON again. <br>
-    * <b>expected</b>: Button is in default color when scrolling disabled. <br>
-    *                  scrollToBottom() shall not be called when adding new trace. <br>
-    *                  Button should be green when scrolling enabled. <br>
-    *                  scrollToBottom() shall be called when adding new trace. <br>
-    * ************************************************
-    */
-   constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
-   constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
-   constexpr uint32_t TEST_FILTER_BG_COLOR = 0x999999;
-   constexpr uint32_t TEST_FILTER_TEXT_COLOR = 0x888888;
-   const std::string TEST_FILTER_REGEX = "SOME REGEX";
-   GUI::PortHandlerEvent port_open_event;
-   port_open_event.name = "PORT_NAME";
-   port_open_event.port_id = 2;
-   port_open_event.event = GUI::Event::CONNECTED;
-   QListWidgetItem terminal_item;
-   QListWidgetItem trace_item;
-   GUI::PortHandlerEvent port_data_event;
-   port_data_event.name = "PORT_NAME";
-   port_data_event.event = GUI::Event::NEW_DATA;
-   port_data_event.port_id = 2;
-   port_data_event.background_color = TEST_BACKGROUND_COLOR;
-   port_data_event.font_color = TEST_FONT_COLOR;
-   port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   Dialogs::TraceFilterSettingDialog::Settings trace_filter_settings;
-   trace_filter_settings.background = TEST_FILTER_BG_COLOR;
-   trace_filter_settings.font = TEST_FILTER_TEXT_COLOR;
-   trace_filter_settings.regex = TEST_FILTER_REGEX;
-   GUI::PortHandlerEvent port_close_event;
-   port_close_event.name = "PORT_NAME";
-   port_close_event.port_id = 2;
-   port_close_event.event = GUI::Event::DISCONNECTED;
-
-   /* scrolling button colors change */
-   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR))
-                                                              .WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR)) // setting scrolling button to green
-                                                        .WillOnce(Return(DEFAULT_FONT_COLOR));// setting scrolling button to default
-
-   /* user requested to disable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
-   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-
-   /* port opening */
-   EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
-
-   /* writing data */
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTraceView(HasSubstr("some text"), trace_filter_settings.background, trace_filter_settings.font));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
-                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-
-   /* user requested to enable scrolling */
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, GREEN_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(true));
-   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-
-   /* writing data */
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTraceView(HasSubstr("some text"), trace_filter_settings.background, trace_filter_settings.font));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillOnce(Return(trace_filter_settings))
-                                                                               .WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
-
-   /* closing port */
-   EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
-}
-
 TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
 {
    /**
@@ -732,14 +565,6 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
-   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
-   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
    ASSERT_EQ(data_buffer.size(), 0);
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
@@ -750,22 +575,8 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(""));
    m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, GREEN_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(true));
-   m_button_listener->onButtonEvent(SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, GREEN_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(true));
-   m_button_listener->onButtonEvent(TRACE_SCROLL_BUTTON_ID, ButtonEvent::CLICKED);
 
    //restore
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTerminalScrollingEnabled(false));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TRACE_SCROLL_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceScrollingEnabled(false));
    EXPECT_CALL(*GUIControllerMock_get(), setCurrentLineEnding(LINE_ENDING));
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
 

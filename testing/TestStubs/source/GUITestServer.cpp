@@ -82,6 +82,14 @@ ui(ui)
          {return executeInGUIThread([bytes, this]()->bool{return onSetLoggingPath(bytes);});});
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetLoggingPath, [&](const std::vector<uint8_t>& bytes)->bool
          {return executeInGUIThread([bytes, this]()->bool{return onGetLoggingPath(bytes);});});
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTerminalScrollPosition, [&](const std::vector<uint8_t>& bytes)->bool
+         {return executeInGUIThread([bytes, this]()->bool{return onGetTerminalScrollPosition(bytes);});});
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::GetTraceViewScrollPosition, [&](const std::vector<uint8_t>& bytes)->bool
+         {return executeInGUIThread([bytes, this]()->bool{return onGetTraceViewScrollPosition(bytes);});});
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTerminalScrollPosition, [&](const std::vector<uint8_t>& bytes)->bool
+         {return executeInGUIThread([bytes, this]()->bool{return onSetTerminalScrollPosition(bytes);});});
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTraceViewScrollPosition, [&](const std::vector<uint8_t>& bytes)->bool
+         {return executeInGUIThread([bytes, this]()->bool{return onSetTraceViewScrollPosition(bytes);});});
 
    rpc_server->start(SERVER_PORT);
 
@@ -142,6 +150,44 @@ bool GUITestServer::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 
    UT_Log(TEST_SERVER, LOW, "%s name %s bg %.8x font %.8x text [%s]", __func__, reply.button_name.c_str(), reply.background_color, reply.font_color, reply.text.c_str());
    return rpc_server->respond<RPC::GetButtonStateReply>(reply);
+}
+bool GUITestServer::onGetTerminalScrollPosition(const std::vector<uint8_t>& data)
+{
+   RPC::GetTerminalScrollPositionReply reply = {};
+   reply.position = ui->terminalView->verticalScrollBar()->value();
+   UT_Log(TEST_SERVER, LOW, "%s pos %d", __func__, reply.position);
+   return rpc_server->respond<RPC::GetTerminalScrollPositionReply>(reply);
+}
+bool GUITestServer::onGetTraceViewScrollPosition(const std::vector<uint8_t>& data)
+{
+   RPC::GetTraceViewScrollPositionReply reply = {};
+   reply.position = ui->traceView->verticalScrollBar()->value();
+   UT_Log(TEST_SERVER, LOW, "%s pos %d", __func__, reply.position);
+   return rpc_server->respond<RPC::GetTraceViewScrollPositionReply>(reply);
+}
+bool GUITestServer::onSetTerminalScrollPosition(const std::vector<uint8_t>& data)
+{
+   RPC::SetTerminalScrollPositionRequest request = RPC::convert<RPC::SetTerminalScrollPositionRequest>(data);
+
+   ui->terminalView->verticalScrollBar()->setValue(request.position);
+
+   RPC::SetTerminalScrollPositionReply reply = {};
+   reply.result = true;
+
+   UT_Log(TEST_SERVER, LOW, "%s pos %d", __func__, request.position);
+   return rpc_server->respond<RPC::SetTerminalScrollPositionReply>(reply);
+}
+bool GUITestServer::onSetTraceViewScrollPosition(const std::vector<uint8_t>& data)
+{
+   RPC::SetTraceViewScrollPositionRequest request = RPC::convert<RPC::SetTraceViewScrollPositionRequest>(data);
+
+   ui->traceView->verticalScrollBar()->setValue(request.position);
+
+   RPC::SetTraceViewScrollPositionReply reply = {};
+   reply.result = true;
+
+   UT_Log(TEST_SERVER, LOW, "%s pos %d", __func__, request.position);
+   return rpc_server->respond<RPC::SetTraceViewScrollPositionReply>(reply);
 }
 bool GUITestServer::onButtonClickRequest(const std::vector<uint8_t>& data)
 {

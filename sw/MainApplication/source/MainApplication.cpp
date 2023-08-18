@@ -49,9 +49,7 @@ MainApplication::MainApplication():
 m_timers(Utilities::ITimersFactory::create()),
 m_file_logger(IFileLogger::create()),
 m_gui_controller(nullptr),
-m_marker_index(0),
-m_scrolling_active(false),
-m_trace_scrolling_active(false)
+m_marker_index(0)
 {
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
@@ -75,19 +73,14 @@ m_trace_scrolling_active(false)
    Settings::SettingsHandler::get()->printSettings();
    m_timers->start();
 
-   m_gui_controller.setTerminalScrollingEnabled(true);
-   m_scrolling_active = true;
-   m_gui_controller.setTraceScrollingEnabled(true);
-   m_trace_scrolling_active = true;
-
    m_marker_button_id  = m_gui_controller.getButtonID("markerButton");
    m_logging_button_id = m_gui_controller.getButtonID("loggingButton");
    m_settings_button_id = m_gui_controller.getButtonID("settingsButton");
    m_send_button_id = m_gui_controller.getButtonID("sendButton");
-   m_scroll_button_id = m_gui_controller.getButtonID("scrollButton");
+   m_scroll_button_id = m_gui_controller.getButtonID("bottomButton");
    m_clear_button_id = m_gui_controller.getButtonID("clearButton");
    m_trace_clear_button = m_gui_controller.getButtonID("traceClearButton");
-   m_trace_scroll_button = m_gui_controller.getButtonID("traceScrollButton");
+   m_trace_scroll_button = m_gui_controller.getButtonID("traceBottomButton");
 
    m_gui_controller.subscribeForButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.subscribeForButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
@@ -104,10 +97,10 @@ m_trace_scrolling_active(false)
    m_button_listeners.push_back({m_logging_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, [&](){onLoggingButtonContextMenuRequested();}});
    m_button_listeners.push_back({m_settings_button_id, ButtonEvent::CLICKED, [&](){onSettingsButtonClicked();}});
    m_button_listeners.push_back({m_send_button_id, ButtonEvent::CLICKED, [&](){onSendButtonClicked();}});
-   m_button_listeners.push_back({m_scroll_button_id, ButtonEvent::CLICKED, [&](){onScrollButtonClicked();}});
+   m_button_listeners.push_back({m_scroll_button_id, ButtonEvent::CLICKED, [&](){onBottomButtonClicked();}});
    m_button_listeners.push_back({m_clear_button_id, ButtonEvent::CLICKED, [&](){onClearButtonClicked();}});
    m_button_listeners.push_back({m_trace_clear_button, ButtonEvent::CLICKED, [&](){onTraceClearButtonClicked();}});
-   m_button_listeners.push_back({m_trace_scroll_button, ButtonEvent::CLICKED, [&](){onTraceScrollButtonClicked();}});
+   m_button_listeners.push_back({m_trace_scroll_button, ButtonEvent::CLICKED, [&](){onTraceBottomButtonClicked();}});
 
    setButtonState(m_logging_button_id, false);
 
@@ -144,8 +137,6 @@ m_trace_scrolling_active(false)
    m_gui_controller.addLineEnding("\\r\\n");
    m_gui_controller.addLineEnding("\\n");
    m_gui_controller.addLineEnding("EMPTY");
-   setButtonState(m_scroll_button_id, m_scrolling_active);
-   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
 
    m_file_logging_path = system_call::getExecutablePath();
 
@@ -305,17 +296,13 @@ void MainApplication::onLoggingButtonClicked()
       setButtonState(m_logging_button_id, false);
    }
 }
-void MainApplication::onScrollButtonClicked()
+void MainApplication::onBottomButtonClicked()
 {
-   m_gui_controller.setTerminalScrollingEnabled(!m_scrolling_active);
-   m_scrolling_active = !m_scrolling_active;
-   setButtonState(m_scroll_button_id, m_scrolling_active);
+   m_gui_controller.scrollTerminalToBottom();
 }
-void MainApplication::onTraceScrollButtonClicked()
+void MainApplication::onTraceBottomButtonClicked()
 {
-   m_gui_controller.setTraceScrollingEnabled(!m_trace_scrolling_active);
-   m_trace_scrolling_active = !m_trace_scrolling_active;
-   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
+   m_gui_controller.scrollTraceViewToBottom();
 }
 void MainApplication::onTraceClearButtonClicked()
 {
@@ -428,8 +415,6 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 
    ::deserialize(data, offset, application_version);
    ::deserialize(data, offset, m_file_logging_path);
-   ::deserialize(data, offset, m_scrolling_active);
-   ::deserialize(data, offset, m_trace_scrolling_active);
    ::deserialize(data, offset, line_ending);
 
    ::deserialize(data, offset, ports_count);
@@ -453,10 +438,6 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       }
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
-   m_gui_controller.setTerminalScrollingEnabled(m_scrolling_active);
-   setButtonState(m_scroll_button_id, m_scrolling_active);
-   m_gui_controller.setTraceScrollingEnabled(m_trace_scrolling_active);
-   setButtonState(m_trace_scroll_button, m_trace_scrolling_active);
    m_gui_controller.setCurrentLineEnding(line_ending);
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
@@ -464,8 +445,6 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
 {
    ::serialize(data, std::string(APPLICATION_VERSION));
    ::serialize(data, m_file_logging_path);
-   ::serialize(data, m_scrolling_active);
-   ::serialize(data, m_trace_scrolling_active);
    ::serialize(data, m_gui_controller.getCurrentLineEnding());
    ::serialize(data, (uint8_t)m_commands_history.size());
    for (const auto& item : m_commands_history)

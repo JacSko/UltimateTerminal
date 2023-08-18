@@ -76,6 +76,10 @@ private:
    bool onGetLoggingPath(const std::vector<uint8_t>& data);
    void onCurrentPortSelectionChanged(int);
    bool onGetButtonStateRequest(const std::vector<uint8_t>&);
+   bool onGetTerminalScrollPosition(const std::vector<uint8_t>&);
+   bool onGetTraceViewScrollPosition(const std::vector<uint8_t>&);
+   bool onSetTerminalScrollPosition(const std::vector<uint8_t>&);
+   bool onSetTraceViewScrollPosition(const std::vector<uint8_t>&);
 
    Ui_MainWindow::TraceFilterItem getTraceFilterByName(const std::string& name);
 };

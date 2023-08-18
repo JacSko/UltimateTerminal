@@ -45,8 +45,6 @@ private:
    std::string m_file_logging_path;
    std::string m_log_file_name;
    Persistence::PersistenceHandler m_persistence;
-   bool m_scrolling_active;
-   bool m_trace_scrolling_active;
    uint32_t m_scroll_default_color;
    std::map<uint8_t,std::string> m_port_id_name_map;
    std::map<uint8_t, std::vector<std::string>> m_commands_history;
@@ -80,9 +78,9 @@ private:
 
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();
-   void onScrollButtonClicked();
+   void onBottomButtonClicked();
    void onClearButtonClicked();
-   void onTraceScrollButtonClicked();
+   void onTraceBottomButtonClicked();
    void onTraceClearButtonClicked();
    void onSendButtonClicked();
    void onLoggingButtonContextMenuRequested();

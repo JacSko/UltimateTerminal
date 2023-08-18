@@ -13,3 +13,7 @@ add_test(NAME UserButtonsSending COMMAND UserButtonsSending)
 add_executable(CommandsHistory CommandsHistory.cpp)
 target_link_libraries(CommandsHistory PUBLIC gtest_main TestFramework)
 add_test(NAME CommandsHistory COMMAND CommandsHistory)
+
+add_executable(WindowScrolling WindowScrolling.cpp)
+target_link_libraries(WindowScrolling PUBLIC gtest_main TestFramework)
+add_test(NAME WindowScrolling COMMAND WindowScrolling)

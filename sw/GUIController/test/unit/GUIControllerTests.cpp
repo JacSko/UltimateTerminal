@@ -180,8 +180,8 @@ void GUIController::clearTerminalViewSignal(){onClearTerminalViewSignal();}
 void GUIController::clearTraceViewSignal(){onClearTraceViewSignal();}
 void GUIController::addToTerminalViewSignal(QString text, uint32_t background_color, uint32_t font_color){onAddToTerminalViewSignal(text, background_color, font_color);}
 void GUIController::addToTraceViewSignal(QString text, uint32_t background_color, uint32_t font_color){onAddToTraceViewSignal(text, background_color, font_color);}
-void GUIController::setTerminalScrollingEnabledSignal(bool enabled){onSetTerminalScrollingEnabledSignal(enabled);}
-void GUIController::setTraceScrollingEnabledSignal(bool enabled){onSetTraceScrollingEnabledSignal(enabled);}
+void GUIController::scrollTerminalToBottomSignal(){onScrollTerminalToBottomSignal();}
+void GUIController::scrollTraceViewToBottomSignal(){onScrollTraceViewToBottomSignal();}
 void GUIController::registerPortOpenedSignal(QString name){onRegisterPortOpenedSignal(name);}
 void GUIController::registerPortClosedSignal(QString name){onRegisterPortClosedSignal(name);}
 void GUIController::setCommandHistorySignal(QVector<QString> history){onSetCommandHistorySignal(history);}
@@ -429,26 +429,13 @@ TEST_F(IGUIControllerFixture, clearing_trace_view)
 TEST_F(IGUIControllerFixture, adding_to_terminal_view)
 {
    /**
-    * <b>scenario</b>: addToTerminalView requested, when scrolling not enabled <br>
+    * <b>scenario</b>: addToTerminalView requested <br>
     * <b>expected</b>: Text added to terminal. <br>
     * ************************************************
     */
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_append(&test_terminal_view, _));
    m_test_subject->addToTerminalView("TEXT", 0x0001, 0x0002);
-   EXPECT_EQ(test_terminal_view.verticalScrollBar()->maximum_position, 1);
-   EXPECT_EQ(test_terminal_view.verticalScrollBar()->position, 0);
-   /**
-    * <b>scenario</b>: addToTerminalView requested, when scrolling enabled <br>
-    * <b>expected</b>: Text added to terminal, view scrolled to bottom. <br>
-    * ************************************************
-    */
-   EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_append(&test_terminal_view, _));
-   m_test_subject->setTerminalScrollingEnabled(true);
-   m_test_subject->addToTerminalView("TEXT", 0x0001, 0x0002);
-
-   EXPECT_EQ(test_terminal_view.verticalScrollBar()->maximum_position, 2);
-   EXPECT_EQ(test_terminal_view.verticalScrollBar()->position, 2);
-   EXPECT_EQ(m_test_subject->countTerminalItems(), 2);
+   EXPECT_EQ(m_test_subject->countTerminalItems(), 1);
    EXPECT_EQ(m_test_subject->countTraceItems(), 0);
 }
 
@@ -457,7 +444,7 @@ TEST_F(IGUIControllerFixture, adding_to_trace_view)
    QListWidgetItem list_item;
 
    /**
-    * <b>scenario</b>: addToTraceView requested, when scrolling not enabled <br>
+    * <b>scenario</b>: addToTraceView requested <br>
     * <b>expected</b>: Text added to trace view. <br>
     * ************************************************
     */
@@ -469,23 +456,8 @@ TEST_F(IGUIControllerFixture, adding_to_trace_view)
 
    m_test_subject->addToTraceView("TEXT", 0x0001, 0x0002);
 
-   /**
-    * <b>scenario</b>: addToTraceView requested, when scrolling enabled <br>
-    * <b>expected</b>: Text added to trace view, view scrolled to bottom. <br>
-    * ************************************************
-    */
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_new()).WillOnce(Return(&list_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setText(&list_item, QString("TEXT")));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&list_item, QColor(0x0001)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&list_item, QColor(0x0002)));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &list_item));
-   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
-
-   m_test_subject->setTraceScrollingEnabled(true);
-   m_test_subject->addToTraceView("TEXT", 0x0001, 0x0002);
-
    EXPECT_EQ(m_test_subject->countTerminalItems(), 0);
-   EXPECT_EQ(m_test_subject->countTraceItems(), 2);
+   EXPECT_EQ(m_test_subject->countTraceItems(), 1);
 }
 
 TEST_F(IGUIControllerFixture, active_port_changed_event)

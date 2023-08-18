@@ -74,7 +74,7 @@ public:
    QTextEdit *terminalView;
    QComboBox *portComboBox;
    QPushButton *sendButton;
-   QPushButton *scrollButton;
+   QPushButton *terminalBottomButton;
    QComboBox *lineEndingComboBox;
    QComboBox *textEdit;
    QPushButton *clearButton;
@@ -88,7 +88,7 @@ public:
    QWidget *gridLayoutWidget_5;
    QGridLayout *traceFilterSetting;
    QPushButton *traceClearButton;
-   QPushButton *traceScrollButton;
+   QPushButton *traceBottomButton;
    QListWidget *traceView;
    QLineEdit *traceFilter_0;
    QLineEdit *traceFilter_1;
@@ -221,9 +221,9 @@ public:
       sendButton->setSizePolicy(sizePolicy2);
       terminalLayout->addWidget(sendButton, 2, 4, 1, 1);
 
-      scrollButton = new QPushButton(gridLayoutWidget_2);
-      scrollButton->setObjectName(QString::fromUtf8("scrollButton"));
-      terminalLayout->addWidget(scrollButton, 0, 3, 1, 2);
+      terminalBottomButton = new QPushButton(gridLayoutWidget_2);
+      terminalBottomButton->setObjectName(QString::fromUtf8("bottomButton"));
+      terminalLayout->addWidget(terminalBottomButton, 0, 3, 1, 2);
 
       lineEndingComboBox = new QComboBox(gridLayoutWidget_2);
       lineEndingComboBox->setObjectName(QString::fromUtf8("lineEndingComboBox"));
@@ -265,9 +265,9 @@ public:
       traceClearButton->setObjectName(QString::fromUtf8("traceClearButton"));
       traceFilterLayout->addWidget(traceClearButton, 0, 0, 1, 1);
 
-      traceScrollButton = new QPushButton(gridLayoutWidget_3);
-      traceScrollButton->setObjectName(QString::fromUtf8("traceScrollButton"));
-      traceFilterLayout->addWidget(traceScrollButton, 0, 1, 1, 1);
+      traceBottomButton = new QPushButton(gridLayoutWidget_3);
+      traceBottomButton->setObjectName(QString::fromUtf8("traceBottomButton"));
+      traceFilterLayout->addWidget(traceBottomButton, 0, 1, 1, 1);
 
       traceView = new QListWidget(gridLayoutWidget_3);
       traceView->setObjectName(QString::fromUtf8("traceView"));
@@ -436,10 +436,10 @@ public:
       m_buttons.push_back(loggingButton);
       m_buttons.push_back(settingsButton);
       m_buttons.push_back(sendButton);
-      m_buttons.push_back(scrollButton);
+      m_buttons.push_back(terminalBottomButton);
       m_buttons.push_back(clearButton);
       m_buttons.push_back(traceClearButton);
-      m_buttons.push_back(traceScrollButton);
+      m_buttons.push_back(traceBottomButton);
       m_buttons.push_back(traceFilterButton_0);
       m_buttons.push_back(traceFilterButton_1);
       m_buttons.push_back(traceFilterButton_2);
@@ -478,10 +478,10 @@ public:
       loggingButton->setText(QCoreApplication::translate("MainWindow", "LOG", nullptr));
       settingsButton->setText(QCoreApplication::translate("MainWindow", "SETTINGS", nullptr));
       sendButton->setText(QCoreApplication::translate("MainWindow", "SEND", nullptr));
-      scrollButton->setText(QCoreApplication::translate("MainWindow", "SCROLL", nullptr));
+      terminalBottomButton->setText(QCoreApplication::translate("MainWindow", "BOTTOM", nullptr));
       clearButton->setText(QCoreApplication::translate("MainWindow", "CLEAR", nullptr));
       traceClearButton->setText(QCoreApplication::translate("MainWindow", "CLEAR", nullptr));
-      traceScrollButton->setText(QCoreApplication::translate("MainWindow", "SCROLL", nullptr));
+      traceBottomButton->setText(QCoreApplication::translate("MainWindow", "BOTTOM", nullptr));
       traceFilterButton_0->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_1->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));
       traceFilterButton_2->setText(QCoreApplication::translate("MainWindow", "ACTIVE", nullptr));

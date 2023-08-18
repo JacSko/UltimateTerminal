@@ -445,6 +445,9 @@ public:
    void setWordWrap(bool);
    int count();
    void clear();
+   QScrollBar* verticalScrollBar(){return &vertical_scroll_bar;}
+private:
+   QScrollBar vertical_scroll_bar;
 
 };
 

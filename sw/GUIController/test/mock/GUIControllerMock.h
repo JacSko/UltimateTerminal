@@ -22,8 +22,8 @@ struct GUIControllerMock
    MOCK_METHOD3(addToTraceView, void(const std::string&, uint32_t, uint32_t));
    MOCK_METHOD0(countTerminalItems, uint32_t());
    MOCK_METHOD0(countTraceItems, uint32_t());
-   MOCK_METHOD1(setTerminalScrollingEnabled, void(bool));
-   MOCK_METHOD1(setTraceScrollingEnabled, void(bool));
+   MOCK_METHOD0(scrollTerminalToBottom, void());
+   MOCK_METHOD0(scrollTraceViewToBottom, void());
    MOCK_METHOD1(subscribeForActivePortChangedEvent, void(std::function<bool(const std::string&)>));
    MOCK_METHOD1(registerPortOpened, void(const std::string&));
    MOCK_METHOD1(registerPortClosed, void(const std::string&));
@@ -153,13 +153,13 @@ uint32_t GUIController::countTraceItems()
 {
    return g_gui_controller_mock->countTraceItems();
 }
-void GUIController::setTerminalScrollingEnabled(bool enabled)
+void GUIController::scrollTerminalToBottom()
 {
-   g_gui_controller_mock->setTerminalScrollingEnabled(enabled);
+   g_gui_controller_mock->scrollTerminalToBottom();
 }
-void GUIController::setTraceScrollingEnabled(bool enabled)
+void GUIController::scrollTraceViewToBottom()
 {
-   g_gui_controller_mock->setTraceScrollingEnabled(enabled);
+   g_gui_controller_mock->scrollTraceViewToBottom();
 }
 void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback)
 {

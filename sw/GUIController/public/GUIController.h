@@ -97,13 +97,13 @@ public:
    void addToTerminalView(const std::string& text, uint32_t background_color, uint32_t font_color);
    void clearTerminalView();
    uint32_t countTerminalItems();
-   void setTerminalScrollingEnabled(bool enabled);
+   void scrollTerminalToBottom();
 
    /* Trace view */
    void addToTraceView(const std::string& text, uint32_t background_color, uint32_t font_color);
    void clearTraceView();
    uint32_t countTraceItems();
-   void setTraceScrollingEnabled(bool enabled);
+   void scrollTraceViewToBottom();
 
    /* Port handling */
    void subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback);
@@ -169,8 +169,8 @@ signals:
    void addToTerminalViewSignal(const std::string& text, qint32 background_color, qint32 font_color);
    void addToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color);
    void addToTraceViewSignal(QString text, qint32 background_color, qint32 font_color);
-   void setTerminalScrollingEnabledSignal(bool enabled);
-   void setTraceScrollingEnabledSignal(bool enabled);
+   void scrollTerminalToBottomSignal();
+   void scrollTraceViewToBottomSignal();
    void registerPortOpenedSignal(QString name);
    void registerPortClosedSignal(QString name);
    void setCommandHistorySignal(QVector<QString> history);
@@ -202,8 +202,8 @@ public slots:
    void onClearTraceViewSignal();
    void onAddToTerminalViewSignal(QString text, qint32 background_color, qint32 font_color);
    void onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color);
-   void onSetTerminalScrollingEnabledSignal(bool enabled);
-   void onSetTraceScrollingEnabledSignal(bool enabled);
+   void onScrollTerminalToBottomSignal();
+   void onScrollTraceViewToBottomSignal();
    void onRegisterPortOpenedSignal(QString name);
    void onRegisterPortClosedSignal(QString name);
    void onSetCommandHistorySignal(QVector<QString> history);

@@ -99,6 +99,8 @@ uint32_t countItems();
 uint32_t countItemsWithBackgroundColor(uint32_t color);
 uint32_t countItemsWithFontColor(uint32_t color);
 uint32_t countItemsWithText(const std::string& text);
+int getScrollPosition();
+bool setPosition(int position);
 }
 
 namespace TraceView
@@ -107,6 +109,8 @@ uint32_t countItems();
 uint32_t countItemsWithBackgroundColor(uint32_t color);
 uint32_t countItemsWithFontColor(uint32_t color);
 uint32_t countItemsWithText(const std::string& text);
+int getScrollPosition();
+bool setPosition(int position);
 }
 
 namespace UserButtons

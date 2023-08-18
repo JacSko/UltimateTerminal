@@ -69,8 +69,8 @@ void GUIController::run()
    connect(this, SIGNAL(clearTraceViewSignal()), this, SLOT(onClearTraceViewSignal()));
    connect(this, SIGNAL(addToTerminalViewSignal(QString, qint32, qint32)), this, SLOT(onAddToTerminalViewSignal(QString, qint32, qint32)));
    connect(this, SIGNAL(addToTraceViewSignal(QString, qint32, qint32)), this, SLOT(onAddToTraceViewSignal(QString, qint32, qint32)));
-   connect(this, SIGNAL(setTerminalScrollingEnabledSignal(bool)), this, SLOT(onSetTerminalScrollingEnabledSignal(bool)));
-   connect(this, SIGNAL(setTraceScrollingEnabledSignal(bool)), this, SLOT(onSetTraceScrollingEnabledSignal(bool)));
+   connect(this, SIGNAL(scrollTerminalToBottomSignal()), this, SLOT(onScrollTerminalToBottomSignal()));
+   connect(this, SIGNAL(scrollTraceViewToBottomSignal()), this, SLOT(onScrollTraceViewToBottomSignal()));
    connect(this, SIGNAL(registerPortOpenedSignal(QString)), this, SLOT(onRegisterPortOpenedSignal(QString)));
    connect(this, SIGNAL(registerPortClosedSignal(QString)), this, SLOT(onRegisterPortClosedSignal(QString)));
    connect(this, SIGNAL(setCommandHistorySignal(QVector<QString>)), this, SLOT(onSetCommandHistorySignal(QVector<QString>)));
@@ -90,6 +90,9 @@ void GUIController::run()
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 #ifdef SIMULATION
    m_gui_test_server = std::unique_ptr<GUITestServer>(new GUITestServer(ui));
+   /* ugly hack to make terminalView slider position working */
+   show();
+   hide();
 #else
    show();
 #endif
@@ -186,13 +189,13 @@ uint32_t GUIController::countTraceItems()
 {
    return m_trace_view_status.item_count;
 }
-void GUIController::setTerminalScrollingEnabled(bool enabled)
+void GUIController::scrollTerminalToBottom()
 {
-   emit setTerminalScrollingEnabledSignal(enabled);
+   emit scrollTerminalToBottomSignal();
 }
-void GUIController::setTraceScrollingEnabled(bool enabled)
+void GUIController::scrollTraceViewToBottom()
 {
-   emit setTraceScrollingEnabledSignal(enabled);
+   emit scrollTraceViewToBottomSignal();
 }
 void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback)
 {
@@ -552,14 +555,6 @@ void GUIController::onAddToTerminalViewSignal(QString text, qint32, qint32)
 
    ui->terminalView->append(text);
    m_terminal_view_status.item_count++;
-   if (m_terminal_view_status.scrolling_enabled)
-   {
-      ui->terminalView->verticalScrollBar()->setValue(ui->terminalView->verticalScrollBar()->maximum());
-   }
-   else
-   {
-      ui->terminalView->verticalScrollBar()->setValue(m_terminal_view_status.last_position);
-   }
 }
 void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color)
 {
@@ -570,22 +565,20 @@ void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color
    item->setForeground(QColor(font_color));
    ui->traceView->addItem(item);
    m_trace_view_status.item_count++;
-   //TODO do not scroll on each line - it is CPU consuming. Can be replaced with e.g 100ms timer
-   if (m_trace_view_status.scrolling_enabled)
+   if ((ui->traceView->verticalScrollBar()->maximum() == ui->traceView->verticalScrollBar()->sliderPosition()))
    {
       ui->traceView->scrollToBottom();
    }
 }
-void GUIController::onSetTerminalScrollingEnabledSignal(bool enabled)
+void GUIController::onScrollTerminalToBottomSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %u", __func__, enabled);
-   m_terminal_view_status.scrolling_enabled = enabled;
-   m_terminal_view_status.last_position = ui->terminalView->verticalScrollBar()->sliderPosition();
+   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   ui->terminalView->verticalScrollBar()->setValue(ui->terminalView->verticalScrollBar()->maximum());
 }
-void GUIController::onSetTraceScrollingEnabledSignal(bool enabled)
+void GUIController::onScrollTraceViewToBottomSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %u", __func__, enabled);
-   m_trace_view_status.scrolling_enabled = enabled;
+   UT_Log(MAIN_GUI, HIGH, "%s %u", __func__);
+   ui->traceView->verticalScrollBar()->setValue(ui->traceView->verticalScrollBar()->maximum());
 }
 void GUIController::onRegisterPortOpenedSignal(QString name)
 {
