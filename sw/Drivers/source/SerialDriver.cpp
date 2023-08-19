@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <map>
 #include "SerialDriver.h"
-#include "Logger.h"
 
 
 namespace Drivers
@@ -45,25 +44,21 @@ std::string EnumValue<T>::toName() const
 template<>
 std::string EnumValue<Drivers::Serial::BaudRate>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::BaudRate::BAUDRATE_MAX);
    return Drivers::Serial::g_baudrates_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::ParityType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::ParityType::PARITY_BIT_MAX);
    return Drivers::Serial::g_paritybits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::StopBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::StopBitType::STOP_BIT_MAX);
    return Drivers::Serial::g_stopbits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::DataBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::DataBitType::DATA_BIT_MAX);
    return Drivers::Serial::g_databits_names[(size_t)value];
 }
 
@@ -148,8 +143,6 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
 {
    bool result = false;
    m_mode = mode;
-   UT_Log(SERIAL_DRV, INFO, "Opening serial port %s with baudrate %u, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
-         settings.stopBits.toName().c_str(), settings.dataBits.toName().c_str());
    m_fd = ::open(settings.device.c_str(), O_RDWR);
    if (m_fd >= 0)
    {
@@ -166,21 +159,8 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
          {
             result = true;
             m_worker.start(SERIAL_THREAD_START_TIMEOUT);
-            UT_Log(SERIAL_DRV, LOW, "Successfully opened %s!", settings.device.c_str());
-         }
-         else
-         {
-            UT_Log(SERIAL_DRV, ERROR, "Cannot tcsetattr(), error %s(%d)", strerror(errno), errno);
          }
       }
-      else
-      {
-         UT_Log(SERIAL_DRV, ERROR, "Cannot tcgetattr(), error %s(%d)", strerror(errno), errno);
-      }
-   }
-   else
-   {
-      UT_Log(SERIAL_DRV, ERROR, "Cannot open %s, error %s(%d)", settings.device.c_str(), strerror(errno), errno);
    }
 
    return result;
@@ -302,7 +282,6 @@ void SerialDriver::receivingThread()
       }
       else if(recv_bytes == -1)
       {
-         UT_Log(SERIAL_DRV, ERROR, "Cannot read(), error %s(%d)", strerror(errno), errno);
          break;
       }
    }

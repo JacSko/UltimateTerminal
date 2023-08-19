@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "Logger.h"
+#include "TestLogger.h"
 
 /**
  * @file ProcessorUsage.hpp
@@ -38,7 +38,7 @@ static double getProcessorUsage(pid_t pid, uint32_t timeout = 1000)
 
    std::ifstream stat_file("/proc/" + std::to_string(pid) + "/stat");
    if (!stat_file.is_open()) {
-       UT_Log(TEST_FRAMEWORK, ERROR, "Error: Could not open stat file for process %u", static_cast<uint32_t>(pid));
+       TF_Log(TEST_FRAMEWORK, "Error: Could not open stat file for process %u", static_cast<uint32_t>(pid));
        return result;
    }
 
@@ -59,7 +59,7 @@ static double getProcessorUsage(pid_t pid, uint32_t timeout = 1000)
 
    std::ifstream stat_file2("/proc/" + std::to_string(pid) + "/stat");
    if (!stat_file2.is_open()) {
-      UT_Log(TEST_FRAMEWORK, ERROR, "Error: Could not open stat file for process %u", static_cast<uint32_t>(pid));
+      TF_Log(TEST_FRAMEWORK, "Error: Could not open stat file for process %u", static_cast<uint32_t>(pid));
       return result;
    }
 

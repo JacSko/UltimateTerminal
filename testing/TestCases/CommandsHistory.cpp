@@ -10,9 +10,11 @@ struct CommandsHistoryTests : public testing::Test
 {
    static void SetUpTestSuite()
    {
+      TF::Init();
    }
    static void TearDownTestSuite()
    {
+      TF::Deinit();
    }
    virtual void SetUp()
    {

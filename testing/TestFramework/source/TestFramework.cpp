@@ -5,8 +5,7 @@
 #include "TestFrameworkCommon.h"
 #include "TestFrameworkAPI.h"
 #include "RPCClient.h"
-#include "Logger.h"
-#include "Settings.h"
+#include "TestLogger.h"
 #include "ApplicationExecutor.hpp"
 #include "ISocketClient.h"
 #include "ISocketServer.h"
@@ -25,13 +24,13 @@ public:
    m_port(port),
    m_server(Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER))
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "starting server on port %u", port);
+      TF_Log(TEST_FRAMEWORK, "starting server on port %u", port);
       m_server->addListener(this);
       m_server->start(port, 1);
    }
    ~SocketServerHandler()
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "stopping server on port %u", m_port);
+      TF_Log(TEST_FRAMEWORK, "stopping server on port %u", m_port);
       m_server->stop();
    }
    void clearBuffer()
@@ -66,16 +65,16 @@ private:
       switch(ev)
       {
       case Drivers::SocketServer::ServerEvent::CLIENT_CONNECTED:
-         UT_Log(TEST_FRAMEWORK, LOW, "client connected on port %u", m_port);
+         TF_Log(TEST_FRAMEWORK, "client connected on port %u", m_port);
          break;
       case Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED:
-         UT_Log(TEST_FRAMEWORK, LOW, "client disconnected on port %u", m_port);
+         TF_Log(TEST_FRAMEWORK, "client disconnected on port %u", m_port);
          break;
       case Drivers::SocketServer::ServerEvent::CLIENT_DATA_RECV:
          m_buffer.push_back(std::string(data.begin(), data.end()));
          break;
       default:
-         UT_Assert(false && "Incorrect event");
+         TF_Assert(false && "Incorrect event");
          break;
       }
    }
@@ -92,12 +91,12 @@ struct TraceForwarder : public Drivers::SocketClient::ClientListener
       {
       case Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED:
       {
-         UT_Log(TEST_FRAMEWORK, ERROR, "application trace server disconnected!");
+         TF_Log(TEST_FRAMEWORK, "application trace server disconnected!");
          break;
       }
       default:
       {
-         UT_Log(TEST_FRAMEWORK, INFO, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
+         TF_Log(TEST_FRAMEWORK, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
          break;
       }
       }
@@ -141,60 +140,58 @@ std::string createTimestamp()
 namespace TF
 {
 
+void Init()
+{
+   TestLogger::get()->startFrontends();
+   TestLogger::get()->setLogFileName(std::string(RUNTIME_OUTPUT_DIR) + "/" +
+                                       ::testing::UnitTest::GetInstance()->current_test_suite()->name() + "_" +
+                                       createTimestamp() + ".log");
+}
 
 bool Connect()
 {
    bool result = false;
 
-   Settings::SettingsHandler::create();
-   Settings::SettingsHandler::get()->start(CONFIG_FILE);
-
-   SETTING_SET_BOOL(Logger_supportSocketLogging, false);
-   SETTING_SET_BOOL(Logger_supportFileLogging, true);
-
-   LoggerEngine::get()->startFrontends();
-   LoggerEngine::get()->setLogFileName(std::string(RUNTIME_OUTPUT_DIR) + "/" +
-                                       ::testing::UnitTest::GetInstance()->current_test_suite()->name() + "_" +
-                                       createTimestamp());
-
-   UT_Log(TEST_FRAMEWORK, LOW, "starting application %s", APPLICATION_PATH.c_str());
-   UT_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
+   TF_Log(TEST_FRAMEWORK, "starting application %s", APPLICATION_PATH.c_str());
+   TF_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-   UT_Log(TEST_FRAMEWORK, LOW, "connecting TestFramework to RPC server");
+   TF_Log(TEST_FRAMEWORK, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
-   UT_Assert(g_rpc_client);
+   TF_Assert(g_rpc_client);
 
    if (g_rpc_client->connect(std::string(SERVER_IP_ADDRESS), SERVER_PORT))
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "TestFramework connected, trying to connect to application trace server");
+      TF_Log(TEST_FRAMEWORK, "TestFramework connected, trying to connect to application trace server");
       g_trace_client = Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::DataMode::NEW_LINE_DELIMITER);
-      UT_Assert(g_trace_client);
-      result = g_trace_client->connect("127.0.0.1", SETTING_GET_U32(Logger_socketPort));
+      TF_Assert(g_trace_client);
+      result = g_trace_client->connect("127.0.0.1", 5555);
       g_trace_client->addListener(&g_trace_forwarder);
-      UT_Log_If(!result, TEST_FRAMEWORK, LOW, "Cannot connect to trace server at 127.0.0.1:%u", SETTING_GET_U32(Logger_socketPort));
+      TF_Log_If(!result, TEST_FRAMEWORK, "Cannot connect to trace server at 127.0.0.1:5555");
    }
    return result;
 }
 void Disconnect()
 {
-   UT_Assert(g_rpc_client);
+   TF_Assert(g_rpc_client);
    g_rpc_client->disconnect();
    g_trace_client->disconnect();
    g_trace_client->removeListener(&g_trace_forwarder);
    g_rpc_client.reset(nullptr);
    g_trace_client.reset(nullptr);
-   UT_Assert(g_test_application.stopApplication());
-   LoggerEngine::get()->stopFrontends();
-   Settings::SettingsHandler::destroy();
+   TF_Assert(g_test_application.stopApplication());
+}
+void Deinit()
+{
+   TestLogger::get()->stopFrontends();
 }
 void BeginTest()
 {
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
+   TF_Log(TEST_FRAMEWORK, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
 }
 void FinishTest()
 {
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
+   TF_Log(TEST_FRAMEWORK, "%s %s", __func__, ::testing::UnitTest::GetInstance()->current_test_info()->name());
 }
 void wait(uint32_t ms)
 {
@@ -202,7 +199,7 @@ void wait(uint32_t ms)
 }
 double getCPUUsage()
 {
-   UT_Assert(g_test_application.isRunning());
+   TF_Assert(g_test_application.isRunning());
    return g_test_application.getCPUUsage();
 }
 namespace Serial
@@ -242,11 +239,11 @@ bool openSerialPort(const Drivers::Serial::Settings& settings)
    bool result = false;
    if (g_serial_drivers.find(settings.device) == g_serial_drivers.end())
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s not found, creating driver", __func__, settings.device.c_str());
+      TF_Log(TEST_FRAMEWORK, "%s device %s not found, creating driver", __func__, settings.device.c_str());
       auto driver = Drivers::Serial::ISerialDriver::create();
       if (driver->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, settings))
       {
-         UT_Log(TEST_FRAMEWORK, LOW, "%s device %s started", __func__, settings.device.c_str());
+         TF_Log(TEST_FRAMEWORK, "%s device %s started", __func__, settings.device.c_str());
          g_serial_drivers[settings.device] = std::move(driver);
          result = true;
       }
@@ -259,7 +256,7 @@ bool closeSerialPort(const std::string& device)
    auto it = g_serial_drivers.find(device);
    if (it != g_serial_drivers.end())
    {
-      UT_Log(TEST_FRAMEWORK, LOW, "%s device %s found, closing", __func__, device);
+      TF_Log(TEST_FRAMEWORK, "%s device %s found, closing", __func__, device);
       g_serial_drivers[device]->close();
       g_serial_drivers[device].reset(nullptr);
       g_serial_drivers.erase(it);
@@ -274,7 +271,7 @@ bool sendMessage(const std::string& device, const std::string& message)
    {
       result = g_serial_drivers[device]->write({message.begin(), message.end()}, message.size());
    }
-   UT_Log_If(!result, TEST_FRAMEWORK, LOW, "%s device %s not found or not opened!", __func__, device);
+   TF_Log_If(!result, TEST_FRAMEWORK, "%s device %s not found or not opened!", __func__, device);
    return result;
 }
 
@@ -360,7 +357,7 @@ uint32_t getBackgroundColor(const std::string& name)
    {
       result = reply.reply.background_color;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %.6x", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %.6x", __func__, name.c_str(), result);
    return result;
 }
 uint32_t getFontColor(const std::string& name)
@@ -374,7 +371,7 @@ uint32_t getFontColor(const std::string& name)
    {
       result = reply.reply.font_color;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %.6x", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %.6x", __func__, name.c_str(), result);
    return result;
 }
 bool isEnabled(const std::string& name)
@@ -388,7 +385,7 @@ bool isEnabled(const std::string& name)
    {
       result = reply.reply.enabled;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
 bool isChecked(const std::string& name)
@@ -402,7 +399,7 @@ bool isChecked(const std::string& name)
    {
       result = reply.reply.checked;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
 bool isCheckable(const std::string& name)
@@ -416,7 +413,7 @@ bool isCheckable(const std::string& name)
    {
       result = reply.reply.checkable;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
 std::string getText(const std::string& name)
@@ -430,7 +427,7 @@ std::string getText(const std::string& name)
    {
       result = reply.reply.text;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s [%s]", __func__, name.c_str(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %s [%s]", __func__, name.c_str(), result.c_str());
    return result;
 }
 bool simulateButtonClick(const std::string& name)
@@ -444,7 +441,7 @@ bool simulateButtonClick(const std::string& name)
    {
       result = reply.reply.clicked;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
 bool simulateContextMenuClick(const std::string& name)
@@ -458,7 +455,7 @@ bool simulateContextMenuClick(const std::string& name)
    {
       result = reply.reply.clicked;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %s %u", __func__, name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %s %u", __func__, name.c_str(), result);
    return result;
 }
 
@@ -476,7 +473,7 @@ std::string getCommand()
    {
       result = reply.reply.command;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %u %s", __func__, reply.ready(), result.c_str());
    return result;
 }
 bool setCommand(const std::string& command)
@@ -490,7 +487,7 @@ bool setCommand(const std::string& command)
    {
       result = reply.reply.reply;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 bool isLineEndingVisible(const std::string ending)
@@ -503,7 +500,7 @@ bool isLineEndingVisible(const std::string ending)
    {
       result = std::find(reply.reply.lineendings.begin(), reply.reply.lineendings.end(), ending) != reply.reply.lineendings.end();
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s [%s] %u %u", __func__, ending.c_str(), reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s [%s] %u %u", __func__, ending.c_str(), reply.ready(), result);
    return result;
 }
 bool setLineEnding(const std::string ending)
@@ -517,7 +514,7 @@ bool setLineEnding(const std::string ending)
    {
       result = true;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 std::string getLineEnding()
@@ -530,7 +527,7 @@ std::string getLineEnding()
    {
       result = reply.reply.lineending;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u [%s]", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %u [%s]", __func__, reply.ready(), result.c_str());
    return result;
 }
 bool isTargetPortVisible(const std::string port_name)
@@ -543,7 +540,7 @@ bool isTargetPortVisible(const std::string port_name)
    {
       result = std::find(reply.reply.port_names.begin(), reply.reply.port_names.end(), port_name) != reply.reply.port_names.end();
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s [%s] %u %u", __func__, port_name.c_str(), reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s [%s] %u %u", __func__, port_name.c_str(), reply.ready(), result);
    return result;
 }
 bool setTargetPort(const std::string port_name)
@@ -557,7 +554,7 @@ bool setTargetPort(const std::string port_name)
    {
       result = true;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 std::string getTargetPort()
@@ -570,7 +567,7 @@ std::string getTargetPort()
    {
       result = reply.reply.port_name;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u [%s]", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %u [%s]", __func__, reply.ready(), result.c_str());
    return result;
 }
 uint32_t countTargetPorts()
@@ -583,7 +580,7 @@ uint32_t countTargetPorts()
    {
       result = (uint32_t)reply.reply.port_names.size();
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 uint32_t countCommandHistory()
@@ -596,7 +593,7 @@ uint32_t countCommandHistory()
    {
       result = (uint32_t)reply.reply.history.size();
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 bool isCommandInHistory(const std::string& command, uint32_t index)
@@ -612,11 +609,11 @@ bool isCommandInHistory(const std::string& command, uint32_t index)
       if (result)
       {
          uint32_t position = std::distance(reply.reply.history.begin(), it);
-         UT_Log(TEST_FRAMEWORK, HIGH, "text %s found @ pos %u", command.c_str(), position);
+         TF_Log(TEST_FRAMEWORK, "text %s found @ pos %u", command.c_str(), position);
          result = (position == index);
       }
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %u", __func__, reply.ready(), result);
+   TF_Log(TEST_FRAMEWORK, "%s %u %u", __func__, reply.ready(), result);
    return result;
 }
 
@@ -630,7 +627,7 @@ std::string getMessageBoxText()
    {
       result = reply.reply.text;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
    return result;
 }
 std::string getMessageBoxTitle()
@@ -643,7 +640,7 @@ std::string getMessageBoxTitle()
    {
       result = reply.reply.title;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u text %s", __func__, reply.ready(), result.c_str());
    return result;
 }
 Dialogs::MessageDialog::Icon getMessageBoxIcon()
@@ -656,7 +653,7 @@ Dialogs::MessageDialog::Icon getMessageBoxIcon()
    {
       result = reply.reply.icon;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u icon %u", __func__, reply.ready(), (uint8_t)reply.reply.icon);
+   TF_Log(TEST_FRAMEWORK, "%s ready %u icon %u", __func__, reply.ready(), (uint8_t)reply.reply.icon);
    return result;
 }
 bool resetMessageBox()
@@ -669,7 +666,7 @@ bool resetMessageBox()
    {
       result = reply.reply.result;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u reply %u", __func__, reply.ready(), reply.reply.result);
+   TF_Log(TEST_FRAMEWORK, "%s ready %u reply %u", __func__, reply.ready(), reply.reply.result);
    return result;
 }
 bool setLoggingPath(const std::string& path)
@@ -683,7 +680,7 @@ bool setLoggingPath(const std::string& path)
    {
       result = reply.reply.result;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), path.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %u %s", __func__, reply.ready(), path.c_str());
    return result;
 }
 std::string getLoggingPath()
@@ -696,7 +693,7 @@ std::string getLoggingPath()
    {
       result = reply.reply.path;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s %u %s", __func__, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s %u %s", __func__, reply.ready(), result.c_str());
    return result;
 }
 
@@ -715,7 +712,7 @@ std::string getLabelText(uint8_t id)
    {
       result = reply.reply.text;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
    return result;
 }
 std::string getLabelStylesheet(uint8_t id)
@@ -729,7 +726,7 @@ std::string getLabelStylesheet(uint8_t id)
    {
       result = reply.reply.stylesheet;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
    return result;
 }
 Dialogs::PortSettingDialog::Settings getPortSettings(uint8_t port_id)
@@ -743,7 +740,7 @@ Dialogs::PortSettingDialog::Settings getPortSettings(uint8_t port_id)
    {
       result = reply.reply.settings;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u settings %s", __func__, reply.ready(), port_id, reply.reply.settings.shortSettingsString().c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u settings %s", __func__, reply.ready(), port_id, reply.reply.settings.shortSettingsString().c_str());
    return result;
 }
 bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings& settings)
@@ -758,7 +755,7 @@ bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings
    {
       result = reply.reply.result;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u result %u settings %s", __func__, reply.ready(), port_id, reply.reply.result, settings.shortSettingsString().c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u result %u settings %s", __func__, reply.ready(), port_id, reply.reply.result, settings.shortSettingsString().c_str());
    return result;
 }
 
@@ -778,7 +775,7 @@ std::string getText(const std::string& filter_name)
    {
       result = reply.reply.text;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s text %s", __func__, reply.reply.filter_name.c_str(), result.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s name %s text %s", __func__, reply.reply.filter_name.c_str(), result.c_str());
    return result;
 }
 uint32_t getBackgroundColor(const std::string& filter_name)
@@ -792,7 +789,7 @@ uint32_t getBackgroundColor(const std::string& filter_name)
    {
       result = reply.reply.background_color;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
    return result;
 }
 uint32_t getFontColor(const std::string& filter_name)
@@ -806,7 +803,7 @@ uint32_t getFontColor(const std::string& filter_name)
    {
       result = reply.reply.background_color;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
    return result;
 }
 bool isEditable(const std::string& filter_name)
@@ -820,7 +817,7 @@ bool isEditable(const std::string& filter_name)
    {
       result = reply.reply.enabled;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s editable %u", __func__, reply.reply.filter_name.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s name %s editable %u", __func__, reply.reply.filter_name.c_str(), result);
    return result;
 }
 bool setText(const std::string& filter_name, const std::string& filter)
@@ -835,7 +832,7 @@ bool setText(const std::string& filter_name, const std::string& filter)
    {
       result = true;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s name %s text %s result %u", __func__, filter_name.c_str(), filter.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s name %s text %s result %u", __func__, filter_name.c_str(), filter.c_str(), result);
    return result;
 }
 bool setSettings(uint8_t id, const Dialogs::TraceFilterSettingDialog::Settings& settings)
@@ -850,7 +847,7 @@ bool setSettings(uint8_t id, const Dialogs::TraceFilterSettingDialog::Settings& 
    {
       result = reply.reply.result;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, request.settings.regex.c_str(),
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, request.settings.regex.c_str(),
          request.settings.background,
          request.settings.font);
    return result;
@@ -866,7 +863,7 @@ Dialogs::TraceFilterSettingDialog::Settings getSettings(uint8_t id)
    {
       result = reply.reply.settings;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, reply.reply.settings.regex.c_str(),
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u regex [%s] bg %.6x fg %.6x", __func__, reply.ready(), id, reply.reply.settings.regex.c_str(),
          reply.reply.settings.background,
          reply.reply.settings.font);
    return result;
@@ -887,7 +884,7 @@ uint32_t countItems()
    {
       result = reply.reply.count;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s count %u", __func__, result);
+   TF_Log(TEST_FRAMEWORK, "%s count %u", __func__, result);
    return result;
 }
 uint32_t countItemsWithBackgroundColor(uint32_t color)
@@ -902,7 +899,7 @@ uint32_t countItemsWithBackgroundColor(uint32_t color)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.background_color == color;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   TF_Log(TEST_FRAMEWORK, "%s color %.8x items %u", __func__, color, result);
    return result;
 }
 uint32_t countItemsWithFontColor(uint32_t color)
@@ -915,7 +912,7 @@ uint32_t countItemsWithFontColor(uint32_t color)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.font_color == color;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   TF_Log(TEST_FRAMEWORK, "%s color %.8x items %u", __func__, color, result);
    return result;
 }
 uint32_t countItemsWithText(const std::string& text)
@@ -928,7 +925,7 @@ uint32_t countItemsWithText(const std::string& text)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.text == text;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s text %s items %u", __func__, text.c_str(), result);
    return result;
 }
 int getScrollPosition()
@@ -941,7 +938,7 @@ int getScrollPosition()
    {
       result = reply.reply.position;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d", __func__, result);
+   TF_Log(TEST_FRAMEWORK, "%s position %d", __func__, result);
    return result;
 }
 bool setPosition(int position)
@@ -950,7 +947,7 @@ bool setPosition(int position)
    request.position = position;
 
    RPC::result<RPC::SetTerminalScrollPositionReply> reply = g_rpc_client->invoke<RPC::SetTerminalScrollPositionReply, RPC::SetTerminalScrollPositionRequest>(request);
-   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d ready %u", __func__, position, reply.ready());
+   TF_Log(TEST_FRAMEWORK, "%s position %d ready %u", __func__, position, reply.ready());
    return reply.ready();
 }
 
@@ -968,7 +965,7 @@ uint32_t countItems()
    {
       result = reply.reply.count;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s count %u", __func__, result);
+   TF_Log(TEST_FRAMEWORK, "%s count %u", __func__, result);
    return result;
 }
 uint32_t countItemsWithBackgroundColor(uint32_t color)
@@ -981,7 +978,7 @@ uint32_t countItemsWithBackgroundColor(uint32_t color)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.background_color == color;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   TF_Log(TEST_FRAMEWORK, "%s color %.8x items %u", __func__, color, result);
    return result;
 }
 uint32_t countItemsWithFontColor(uint32_t color)
@@ -994,7 +991,7 @@ uint32_t countItemsWithFontColor(uint32_t color)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.font_color == color;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s color %.8x items %u", __func__, color, result);
+   TF_Log(TEST_FRAMEWORK, "%s color %.8x items %u", __func__, color, result);
    return result;
 }
 uint32_t countItemsWithText(const std::string& text)
@@ -1007,7 +1004,7 @@ uint32_t countItemsWithText(const std::string& text)
    {
       result = std::count_if(reply.reply.content.begin(), reply.reply.content.end(), [&](const RPC::ViewItem& item){return item.text == text;});
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s text %s items %u", __func__, text.c_str(), result);
+   TF_Log(TEST_FRAMEWORK, "%s text %s items %u", __func__, text.c_str(), result);
    return result;
 }
 int getScrollPosition()
@@ -1020,7 +1017,7 @@ int getScrollPosition()
    {
       result = reply.reply.position;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d", __func__, result);
+   TF_Log(TEST_FRAMEWORK, "%s position %d", __func__, result);
    return result;
 }
 bool setPosition(int position)
@@ -1029,7 +1026,7 @@ bool setPosition(int position)
    request.position = position;
 
    RPC::result<RPC::SetTraceViewScrollPositionReply> reply = g_rpc_client->invoke<RPC::SetTraceViewScrollPositionReply, RPC::SetTraceViewScrollPositionRequest>(request);
-   UT_Log(TEST_FRAMEWORK, LOW, "%s position %d ready %u", __func__, position, reply.ready());
+   TF_Log(TEST_FRAMEWORK, "%s position %d ready %u", __func__, position, reply.ready());
    return reply.ready();
 }
 
@@ -1049,7 +1046,7 @@ bool setSettings(uint8_t id, const Dialogs::UserButtonDialog::Settings& settings
    {
       result = reply.reply.result;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u name %s", __func__, reply.ready(), id, request.settings.button_name.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u name %s", __func__, reply.ready(), id, request.settings.button_name.c_str());
    return result;
 
 }
@@ -1064,7 +1061,7 @@ Dialogs::UserButtonDialog::Settings getSettings(uint8_t id)
    {
       result = reply.reply.settings;
    }
-   UT_Log(TEST_FRAMEWORK, LOW, "%s ready %u id %u name %s", __func__, reply.ready(), id, result.button_name.c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u name %s", __func__, reply.ready(), id, result.button_name.c_str());
    return result;
 }
 } // UserButtons

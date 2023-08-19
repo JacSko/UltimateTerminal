@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "SocketServer.h"
-#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -72,10 +71,9 @@ m_mode(mode),
 m_listeners {},
 m_handlers {}
 {
-   UT_Stdout_Log(SOCK_DRV, ERROR, "starting server, mode %s", mode == DataMode::NEW_LINE_DELIMITER? "NEW_LINE_DELIMITER" : "PAYLOAD_HEADER");
    if (!m_working_thread.start(SERVER_THREAD_START_TIMEOUT))
    {
-      UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start thread %s", m_working_thread.getThreadName().c_str());
+      printf("cannot start thread %s", m_working_thread.getThreadName().c_str());
    }
 }
 bool SocketServer::start(uint16_t port, uint8_t max_clients)
@@ -83,15 +81,12 @@ bool SocketServer::start(uint16_t port, uint8_t max_clients)
    bool result = false;
    m_port = port;
    m_max_clients = max_clients;
-   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] %s", port, __func__);
 
    if (port == 0)
    {
-      UT_Stdout_Log(SOCK_DRV, ERROR, "Invalid port %u", port);
       return false;
    }
 
-   UT_Stdout_Log(SOCK_DRV, MEDIUM, "[%u] creating socket", port);
    m_server_fd = system_call::socket(AF_INET, SOCK_STREAM, 0);
    if (m_server_fd != -1)
    {
@@ -109,7 +104,6 @@ bool SocketServer::start(uint16_t port, uint8_t max_clients)
 
             if (system_call::bind(m_server_fd, (struct sockaddr *)&address, sizeof(address)) != -1)
             {
-               UT_Stdout_Log(SOCK_DRV, MEDIUM, "[%u] bind OK, starting thread", m_port);
                result = m_listening_thread.start(SERVER_THREAD_START_TIMEOUT);
             }
          }
@@ -154,7 +148,6 @@ void SocketServer::listening_thread()
    /* This method is calling from different thread! */
    struct sockaddr_in address;
    int addrlen = sizeof(address);
-   UT_Stdout_Log(SOCK_DRV, INFO, "[%u] Listening", m_port);
 
    while(m_listening_thread.isRunning())
    {
@@ -166,11 +159,9 @@ void SocketServer::listening_thread()
             bool handler_ready = true;
             {
                std::lock_guard<std::mutex> lock(m_handlers_mutex);
-               UT_Stdout_Log(SOCK_DRV, LOW, "[%u] New client connected, id %d, starting thread", m_port, new_socket);
                m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
                if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
                {
-                  UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] Cannot start thread", m_port);
                   m_handlers.pop_back();
                   system_call::close(new_socket);
                   handler_ready = false;
@@ -181,10 +172,6 @@ void SocketServer::listening_thread()
                notifyListeners(new_socket, ServerEvent::CLIENT_CONNECTED, {}, 0);
             }
          }
-      }
-      else
-      {
-         UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] Cannot listen - %s(%d)", m_port, strerror(errno), errno);
       }
    }
 }
@@ -199,7 +186,6 @@ void SocketServer::worker_thread()
          while(m_client_events.size() > 0)
          {
             ClientEventData& data = m_client_events.front();
-            UT_Stdout_Log(SOCK_DRV, LOW, "[%u] got event in thread! event %u, client %d, data_size %u", m_port, (uint8_t)data.event, data.client_id, data.data.size());
             switch(data.event)
             {
             case ClientEvent::DATA_RECEIVED:
@@ -219,7 +205,6 @@ void SocketServer::worker_thread()
 void SocketServer::onClientEvent(int client_id, ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_client_mtx);
-   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] event %u, client %d, data_size %u", m_port, (uint8_t)ev, client_id, (uint32_t)size);
    storeEvent(client_id, ev, data, size);
    m_cond_var.notify_all();
 }
@@ -281,7 +266,7 @@ bool SocketServer::write(const std::vector<uint8_t>& data, size_t size)
          result |= handler->write(data, size);
          if (!result)
          {
-            UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] Cannot sent data to ClientID%d", m_port, handler->getClientID());
+            printf("[%u] Cannot sent data to ClientID%d", m_port, handler->getClientID());
          }
       }
    }

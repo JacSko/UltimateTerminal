@@ -1,3 +1,5 @@
 add_subdirectory(TestCases)
 add_subdirectory(TestFramework)
 add_subdirectory(TestStubs)
+add_subdirectory(RPC)
+add_subdirectory(TestLogger)

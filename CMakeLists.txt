@@ -87,7 +87,6 @@ else()
       add_subdirectory(ext_libs/googletest)
       add_subdirectory(testing)
       add_subdirectory(tools)
-      add_subdirectory(sw/RPC)
       add_definitions(-DSIMULATION) 
    endif()
 

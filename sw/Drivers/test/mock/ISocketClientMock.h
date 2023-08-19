@@ -1,6 +1,5 @@
 #pragma once
 #include <gmock/gmock.h>
-#include "Logger.h"
 #include "ISerialDriver.h"
 
 

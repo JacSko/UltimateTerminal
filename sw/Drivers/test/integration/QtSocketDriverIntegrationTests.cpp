@@ -2,7 +2,6 @@
 #include "gmock/gmock.h"
 #include <thread>
 
-#include "Logger.h"
 #include "ISocketServer.h"
 #include "ISocketClient.h"
 /* ============================= */

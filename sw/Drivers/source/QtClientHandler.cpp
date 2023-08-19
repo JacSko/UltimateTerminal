@@ -28,7 +28,6 @@ m_mode(mode)
 
 bool QtClientHandler::start(uint32_t timeout)
 {
-   UT_Stdout_Log(SOCK_DRV, LOW, "starting thread for client %u", m_client_id);
    std::unique_lock<std::mutex> lock(m_starting_mutex);
    m_state = State::STARTING;
    m_worker.start(timeout);
@@ -38,7 +37,6 @@ bool QtClientHandler::start(uint32_t timeout)
 
 void QtClientHandler::stop()
 {
-   UT_Stdout_Log(SOCK_DRV, LOW, "stopping thread for client %u", m_client_id);
    m_state = State::STOPPING;
    m_worker.stop();
 }
@@ -47,7 +45,6 @@ void QtClientHandler::stop()
 bool QtClientHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
-   UT_Stdout_Log(SOCK_DRV, LOW, "writing %d for client %u", size, m_client_id);
 
    std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
    m_write_buffer.clear();
@@ -112,19 +109,12 @@ void QtClientHandler::execute()
    {
       m_mode == DataMode::NEW_LINE_DELIMITER? startDelimiterMode() : startHeaderMode();
    }
-   else
-   {
-      UT_Stdout_Log(SOCK_DRV, LOW, "cannot setSocketDescriptor");
-   }
-
    m_socket->abort();
    delete m_socket;
    m_socket = nullptr;
 }
 void QtClientHandler::startDelimiterMode()
 {
-   UT_Stdout_Log(SOCK_DRV, HIGH, "%s", __func__);
-
    while(m_state == State::RUNNING)
    {
       writePendingData();
@@ -148,7 +138,6 @@ void QtClientHandler::startDelimiterMode()
                   if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
                   {
                      it++; //include the found newline too
-                     UT_Stdout_Log(SOCK_DRV, HIGH, "received %u bytes from server", (uint32_t)std::distance(m_recv_buffer.begin(), it));
                      m_listener->onClientEvent(m_client_id, ClientEvent::DATA_RECEIVED, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
                      std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
                      m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
@@ -168,17 +157,14 @@ void QtClientHandler::startDelimiterMode()
       }
       else if (m_socket->error() == QAbstractSocket::RemoteHostClosedError)
       {
-         UT_Stdout_Log(SOCK_DRV, INFO, "remote server disconnected");
          m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
          break;
       }
-      UT_Log_If(m_state == State::STOPPING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 void QtClientHandler::startHeaderMode()
 {
    std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
-   UT_Stdout_Log(SOCK_DRV, HIGH, "%s", __func__);
 
    while(m_state == State::RUNNING)
    {
@@ -216,11 +202,9 @@ void QtClientHandler::startHeaderMode()
       }
       else if (m_socket->error() == QAbstractSocket::RemoteHostClosedError)
       {
-         UT_Stdout_Log(SOCK_DRV, INFO, "remote server disconnected");
          m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
          break;
       }
-      UT_Log_If(m_state == State::STOPPING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 

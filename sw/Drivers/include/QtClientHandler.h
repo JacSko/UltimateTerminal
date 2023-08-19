@@ -25,7 +25,6 @@
 #include "ThreadWorker.h"
 #include "ISocketServer.h"
 #include "ISocketClientHandler.h"
-#include "Logger.h"
 #include "SocketHeaderHandler.hpp"
 /* =============================
  *           Defines

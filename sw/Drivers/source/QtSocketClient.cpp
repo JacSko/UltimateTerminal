@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "QtSocketClient.h"
-#include "Logger.h"
 
 /* =============================
  *   Includes of common headers
@@ -42,7 +41,6 @@ m_listeners {}
 bool QtSocketClient::connect(std::string ip_address, uint16_t port)
 {
    bool result = false;
-   UT_Log(SOCK_DRV, INFO, "Connecting to %s:%u", m_ip_address.c_str(), m_port);
 
    if (!isConnected())
    {
@@ -50,20 +48,16 @@ bool QtSocketClient::connect(std::string ip_address, uint16_t port)
       m_ip_address = ip_address;
       m_port = port;
       m_state = State::CONNECTION_REQUESTED;
-      UT_Log(SOCK_DRV, HIGH, "Connection to %s:%u requested", m_ip_address.c_str(), m_port);
       m_cond_var.notify_all();
       if (m_cond_var.wait_for(lock, std::chrono::milliseconds(CLIENT_THREAD_START_TIMEOUT), [&]()->bool{return (m_state == State::CONNECTED) || (m_state == State::IDLE);}))
       {
          result = (m_state == State::CONNECTED);
-         UT_Log(SOCK_DRV, LOW, "Connection to %s:%u - result %d", m_ip_address.c_str(), m_port, result);
       }
    }
    return result;
 }
 void QtSocketClient::disconnect()
 {
-   UT_Log(SOCK_DRV, INFO, "Trying to disconnect from %s:%u", m_ip_address.c_str(), m_port);
-
    std::unique_lock<std::mutex> lock(m_mutex);
    if (m_state == State::CONNECTED)
    {
@@ -93,8 +87,6 @@ void QtSocketClient::removeListener(ClientListener* callback)
 bool QtSocketClient::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
-
-   UT_Log(SOCK_DRV, HIGH, "Writing %u bytes to %s:%u", data.size(), m_ip_address.c_str(), m_port);
 
    std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
    m_write_buffer.clear();
@@ -146,8 +138,6 @@ void QtSocketClient::receivingThread()
 {
    bool is_started = false;
    m_socket = new QTcpSocket();
-   UT_Assert(m_socket);
-   UT_Log(SOCK_DRV, HIGH, "Starting thread");
 
    while(m_worker.isRunning())
    {
@@ -167,11 +157,9 @@ void QtSocketClient::receivingThread()
 
       if (is_started)
       {
-         UT_Log(SOCK_DRV, LOW, "Starting connection to %s:%u", m_ip_address.c_str(), m_port);
          m_socket->connectToHost(QString(m_ip_address.c_str()), m_port);
          if (m_socket->waitForConnected(CLIENT_CONNECTION_TIMEOUT))
          {
-            UT_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
             {
                std::unique_lock<std::mutex> lock(m_mutex);
                m_state = State::CONNECTED;
@@ -180,21 +168,17 @@ void QtSocketClient::receivingThread()
 
             m_mode == DataMode::NEW_LINE_DELIMITER? startDelimiterMode() : startHeaderMode();
          }
-         UT_Log(SOCK_DRV, INFO, "Main reading loop exited");
          m_state = State::IDLE;
          m_socket->abort();
          m_cond_var.notify_all();
       }
    }
 
-   UT_Log(SOCK_DRV, HIGH, "Thread stop requested...");
    m_cond_var.notify_all();
    delete m_socket;
 }
 void QtSocketClient::startDelimiterMode()
 {
-   UT_Log(SOCK_DRV, HIGH, "%s", __func__);
-
    while(m_state == State::CONNECTED)
    {
       writePendingData();
@@ -218,7 +202,6 @@ void QtSocketClient::startDelimiterMode()
                   if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
                   {
                      it++; //include the found newline too
-                     UT_Log(SOCK_DRV, HIGH, "received %u bytes from server", (uint32_t)std::distance(m_recv_buffer.begin(), it));
                      notifyListeners(ClientEvent::SERVER_DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
                      std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
                      m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
@@ -238,17 +221,14 @@ void QtSocketClient::startDelimiterMode()
       }
       else if (m_socket->error() == QAbstractSocket::RemoteHostClosedError)
       {
-         UT_Log(SOCK_DRV, INFO, "remote server disconnected");
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
          break;
       }
-      UT_Log_If(m_state == State::DISCONNECTING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 void QtSocketClient::startHeaderMode()
 {
    std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
-   UT_Log(SOCK_DRV, HIGH, "%s", __func__);
 
    while(m_state == State::CONNECTED)
    {
@@ -286,11 +266,9 @@ void QtSocketClient::startHeaderMode()
       }
       else if (m_socket->error() == QAbstractSocket::RemoteHostClosedError)
       {
-         UT_Log(SOCK_DRV, INFO, "remote server disconnected");
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
          break;
       }
-      UT_Log_If(m_state == State::DISCONNECTING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 

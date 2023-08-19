@@ -1,5 +1,5 @@
 #include "Settings.h"
-
+#include "Logger.h"
 #include "PortSettingDialog.h"
 #include "QtWidgets/QColorDialog"
 #include <QtWidgets/qabstractitemview.h>

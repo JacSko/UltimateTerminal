@@ -7,7 +7,6 @@
 #include <map>
 
 #include "ISocketServer.h"
-#include "Logger.h"
 #include "RPCCommon.h"
 
 namespace RPC

@@ -12,7 +12,6 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QLabel>
 
-#include "Logger.h"
 #include "ISerialDriver.h"
 
 /**
@@ -53,6 +52,7 @@ enum class PortType
    PORT_TYPE_MAX
 };
 #undef DEF_PORT_TYPE
+
    /** Set of setting used to describe port connection */
    class Settings
    {

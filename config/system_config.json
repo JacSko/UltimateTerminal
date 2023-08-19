@@ -1,7 +1,7 @@
 {
   "Settings_reloadOnFileChange": true,
   "Settings_fileCheckPeriod": 5000,
-  "Logger_supportFileLogging": false,
+  "Logger_supportFileLogging": true,
   "Logger_supportStdoutLogging": false,
   "Logger_supportSocketLogging": true,
   "Logger_socketPort": 5555,

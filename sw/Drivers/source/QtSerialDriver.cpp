@@ -1,5 +1,4 @@
 #include <map>
-#include "Logger.h"
 #include "QtSerialDriver.h"
 
 namespace Drivers
@@ -40,25 +39,21 @@ std::string EnumValue<T>::toName() const
 template<>
 std::string EnumValue<Drivers::Serial::BaudRate>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::BaudRate::BAUDRATE_MAX);
    return Drivers::Serial::g_baudrates_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::ParityType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::ParityType::PARITY_BIT_MAX);
    return Drivers::Serial::g_paritybits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::StopBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::StopBitType::STOP_BIT_MAX);
    return Drivers::Serial::g_stopbits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::DataBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::DataBitType::DATA_BIT_MAX);
    return Drivers::Serial::g_databits_names[(size_t)value];
 }
 
@@ -167,14 +162,11 @@ bool QtSerialDriver::open(DataMode mode, const Settings& settings)
    {
       m_mode = mode;
       m_settings = settings;
-      UT_Log(SERIAL_DRV, INFO, "Opening serial port %s with baudrate %s, parity %s stop %s data %s", settings.device.c_str(), settings.baudRate.toName().c_str(), settings.parityBits.toName().c_str(),
-            settings.stopBits.toName().c_str(), settings.dataBits.toName().c_str());
       m_state = State::CONNECTION_REQUESTED;
       m_cond_var.notify_all();
       if (m_cond_var.wait_for(lock, std::chrono::milliseconds(SERIAL_THREAD_START_TIMEOUT), [&]()->bool{return (m_state == State::CONNECTED) || (m_state == State::IDLE);}))
       {
          result = (m_state == State::CONNECTED);
-         UT_Log(SERIAL_DRV, LOW, "Port openend!");
       }
 
    }
@@ -183,7 +175,6 @@ bool QtSerialDriver::open(DataMode mode, const Settings& settings)
 
 void QtSerialDriver::close()
 {
-   UT_Log(SERIAL_DRV, LOW, "closing serial port!");
    std::unique_lock<std::mutex> lock(m_mutex);
    if(m_state == State::CONNECTED)
    {
@@ -200,14 +191,12 @@ void QtSerialDriver::receivingThread()
 {
    bool is_started = false;
    m_serial_port = new QSerialPort();
-   UT_Assert(m_serial_port);
 
    while(m_worker.isRunning())
    {
       {
          std::unique_lock<std::mutex> lock(m_mutex);
          is_started = false;
-         UT_Log(SERIAL_DRV, LOW, "Waiting for start request!");
          m_cond_var.wait(lock);
          if (m_state == State::CONNECTION_REQUESTED)
          {
@@ -234,8 +223,6 @@ void QtSerialDriver::receivingThread()
 
             if (m_serial_port->open(QIODevice::ReadWrite))
             {
-               UT_Log(SERIAL_DRV, LOW, "Successfully opened %s!", m_settings.device.c_str());
-
                {
                   std::unique_lock<std::mutex> lock(m_mutex);
                   m_state = State::CONNECTED;
@@ -268,21 +255,12 @@ void QtSerialDriver::receivingThread()
                         }
                         while(is_next_new_line);
                      }
-                     else if (recv_bytes == 0)
-                     {
-                        UT_Log(SERIAL_DRV, HIGH, "No more bytes to read");
-                     }
-                     else
-                     {
-                        UT_Log(SERIAL_DRV, ERROR, "Error reading from serial port");
-                     }
                   }
                   else
                   {
                      std::lock_guard<std::mutex> lock (m_mutex);
                      if (m_state == State::DISCONNECTING)
                      {
-                        UT_Log(SERIAL_DRV, HIGH, "Disconnecting");
                         m_state = State::IDLE;
                         m_serial_port->close();
                         m_cond_var.notify_all();
@@ -291,14 +269,6 @@ void QtSerialDriver::receivingThread()
                   }
                }
             }
-            else
-            {
-               UT_Log(SERIAL_DRV, ERROR, "Error opening serial port %s, error %u", m_settings.device.c_str(), (uint8_t)m_serial_port->error());
-            }
-         }
-         else
-         {
-            UT_Log(SERIAL_DRV, ERROR, "Invalid settings, not found in translation map");
          }
       }
       std::unique_lock<std::mutex> lock(m_mutex);
@@ -306,7 +276,6 @@ void QtSerialDriver::receivingThread()
       m_cond_var.notify_all();
    }
 
-   UT_Log(SERIAL_DRV, HIGH, "Exiting main loop...");
    m_serial_port->close();
    delete m_serial_port;
 }
@@ -370,8 +339,6 @@ void QtSerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>&
 bool QtSerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
    bool result = false;
-
-   UT_Log(SERIAL_DRV, HIGH, "Writing %u bytes to %s", m_settings.device.c_str());
 
    std::unique_lock<std::mutex> lock(m_write_buffer_mutex);
    m_write_buffer.clear();

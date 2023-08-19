@@ -10,7 +10,6 @@ target_include_directories(UtilitiesIf INTERFACE public/)
 add_library(ThreadWorker
             source/ThreadWorker.cpp)
 target_include_directories(ThreadWorker PUBLIC public/ PRIVATE include/)
-target_link_libraries(ThreadWorker PRIVATE Logger)
 
 if (UNIT_TESTS)
    add_subdirectory(test)

@@ -4,7 +4,6 @@
 
 #include "ISocketServer.h"
 #include "ISocketClient.h"
-#include "Logger.h"
 /* ============================= */
 /**
  * @file SocketDriverIntegrationTests.cpp

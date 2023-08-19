@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "QtSocketServer.h"
-#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -38,17 +37,15 @@ m_state(State::IDLE)
 {
    if (!m_working_thread.start(SERVER_THREAD_START_TIMEOUT))
    {
-      UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start working thread %s", m_working_thread.getThreadName().c_str());
+      printf("cannot start working thread %s\n", m_working_thread.getThreadName().c_str());
    }
 }
 bool QtSocketServer::start(uint16_t port, uint8_t max_clients)
 {
    m_port = port;
    m_max_clients = max_clients;
-   UT_Stdout_Log(SOCK_DRV, LOW, "%s", __func__);
    if (port == 0)
    {
-      UT_Stdout_Log(SOCK_DRV, ERROR, "Invalid port %u", port);
       return false;
    }
 
@@ -88,12 +85,9 @@ void QtSocketServer::listening_thread()
    {
       std::lock_guard<std::mutex> lock(m_starting_mutex);
       m_server = new QTcpServer();
-      UT_Assert(m_server);
       m_state = State::RUNNING;
-      UT_Stdout_Log(SOCK_DRV, INFO, "Listening on port %u", m_port);
       if (!m_server->listen(QHostAddress::Any, m_port))
       {
-         UT_Stdout_Log(SOCK_DRV, LOW, "cannot listen for clients!");
          m_state = State::IDLE;
          delete m_server;
          m_server = nullptr;
@@ -109,11 +103,9 @@ void QtSocketServer::listening_thread()
       {
          QTcpSocket* socket = m_server->nextPendingConnection();
          std::lock_guard<std::mutex> lock(m_handlers_mutex);
-         UT_Stdout_Log(SOCK_DRV, LOW, "New client connected, starting thread");
          m_handlers.emplace_back(createClientHandler(socket->socketDescriptor()));
          if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
          {
-            UT_Stdout_Log(SOCK_DRV, ERROR, "Cannot start thread, aborting client %u", socket->socketDescriptor());
             m_handlers.pop_back();
             socket->abort();
          }
@@ -121,7 +113,6 @@ void QtSocketServer::listening_thread()
       }
    }
 
-   UT_Stdout_Log(SOCK_DRV, LOW, "Exiting listening thread");
    delete m_server;
    m_server = nullptr;
 }
@@ -140,7 +131,6 @@ void QtSocketServer::worker_thread()
          while(m_client_events.size() > 0)
          {
             ClientEventData& data = m_client_events.front();
-            UT_Stdout_Log(SOCK_DRV, LOW, "got event in thread! event %u, client %d, data_size %u", (uint8_t)data.event, data.client_id, data.data.size());
             switch(data.event)
             {
             case ClientEvent::DATA_RECEIVED:
@@ -160,7 +150,6 @@ void QtSocketServer::worker_thread()
 void QtSocketServer::onClientEvent(int client_id, ClientEvent ev, const std::vector<uint8_t>& data, size_t size)
 {
    std::lock_guard<std::mutex> lock(m_client_mtx);
-   UT_Stdout_Log(SOCK_DRV, LOW, "event %u, client %d, data_size %u", (uint8_t)ev, client_id, (uint32_t)size);
    storeEvent(client_id, ev, data, size);
    m_cond_var.notify_all();
 }
@@ -221,7 +210,7 @@ bool QtSocketServer::write(const std::vector<uint8_t>& data, size_t size)
          result |= handler->write(data, size);
          if (!result)
          {
-            UT_Stdout_Log(SOCK_DRV, ERROR, "Cannot sent data to ClientID%d", handler->getClientID());
+            printf("Cannot sent data to ClientID%d", handler->getClientID());
          }
       }
    }

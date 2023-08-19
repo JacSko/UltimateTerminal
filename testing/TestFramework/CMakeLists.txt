@@ -4,4 +4,4 @@ add_library(TestFramework STATIC
 target_include_directories(TestFramework PUBLIC 
    public/
 )
-target_link_libraries(TestFramework Utilities NativeDrivers Logger RPC SettingsHandler DialogsSimulation gtest)
+target_link_libraries(TestFramework UtilitiesIf DialogsSimulation NativeDrivers RPC DialogsIf Qt5::Widgets gtest)

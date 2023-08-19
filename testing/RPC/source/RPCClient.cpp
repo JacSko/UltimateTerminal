@@ -1,5 +1,4 @@
 #include "RPCClient.h"
-#include "Logger.h"
 namespace RPC
 {
 
@@ -55,10 +54,6 @@ void RPCClient::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::
          {
             m_ntf_handlers[data[RPC_COMMAND_BYTE_OFFSET]](std::vector<uint8_t>(data.begin() + RPC_MESSAGE_HEADER_SIZE, data.end()));
          }
-      }
-      else
-      {
-         UT_Log(RPC_SERVER, ERROR, "Data received when no expected!! transaction:%u, event %u", m_transaction_ongoing.load(), m_event_ready.load());
       }
       break;
    }

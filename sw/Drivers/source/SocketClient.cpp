@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "SocketClient.h"
-#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -76,7 +75,6 @@ m_listeners {},
 m_state(State::IDLE)
 {
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
-   UT_Log(SOCK_DRV, HIGH, "Starting socket client thread, mode %s", mode == DataMode::NEW_LINE_DELIMITER? "NEW_LINE_DELIMITER" : "PAYLOAD_HEADER");
    m_worker.start(CLIENT_THREAD_START_TIMEOUT);
 }
 bool SocketClient::connect(std::string ip_address, uint16_t port)
@@ -103,49 +101,32 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
             {
                if (system_call::connect(m_sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == 0)
                {
-                  UT_Log(SOCK_DRV, HIGH, "Connected, waiting for thread start", m_ip_address.c_str(), m_port);
                   std::unique_lock<std::mutex> lock(m_mutex);
                   m_state = State::CONNECTING;
                   m_cond_var.notify_all();
                   if (m_cond_var.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state != State::CONNECTING;}))
                   {
-                     UT_Log(SOCK_DRV, INFO, "Connection to %s:%u successfull", m_ip_address.c_str(), m_port);
                      result = true;
-                  }
-                  else
-                  {
-                     UT_Log(SOCK_DRV, ERROR, "Timeout waiting for thread unlock");
                   }
                }
                else
                {
-                  UT_Log(SOCK_DRV, ERROR, "cannot connect to %s:%u", m_ip_address.c_str(), m_port);
                   system_call::close(m_sock_fd);
                   m_sock_fd = -1;
                }
             }
             else
             {
-               UT_Log(SOCK_DRV, ERROR, "cannot convert ip address %s:%u", m_ip_address.c_str(), m_port);
                system_call::close(m_sock_fd);
                m_sock_fd = -1;
             }
          }
          else
          {
-            UT_Log(SOCK_DRV, ERROR, "cannot set receive timeout");
             system_call::close(m_sock_fd);
             m_sock_fd = -1;
          }
       }
-      else
-      {
-         UT_Log(SOCK_DRV, ERROR, "cannot create socket %s:%u", m_ip_address.c_str(), m_port);
-      }
-   }
-   else
-   {
-      UT_Log(SOCK_DRV, ERROR, "already connected to %s:%u", m_ip_address.c_str(), m_port);
    }
 
    return result;
@@ -154,7 +135,6 @@ void SocketClient::disconnect()
 {
    if (isConnected())
    {
-      UT_Log(SOCK_DRV, LOW, "%s", __func__);
       std::unique_lock<std::mutex> lock(m_mutex);
       m_state = State::DISCONNECTING;
       m_cond_var.notify_all();
@@ -223,18 +203,15 @@ void SocketClient::receivingThread()
       {
          std::unique_lock<std::mutex> lock(m_mutex);
          is_started = false;
-         UT_Log(SOCK_DRV, HIGH, "Waiting for connection request");
          m_cond_var.wait(lock, [&](){return m_state != State::IDLE;});
          if (m_state == State::CONNECTING)
          {
-            UT_Log(SOCK_DRV, HIGH, "Connect requested, notifying thread started");
             m_state = State::CONNECTED;
             m_cond_var.notify_all();
             is_started = true;
          }
          else if (m_state == State::CLOSING)
          {
-            UT_Log(SOCK_DRV, HIGH, "Close request received");
             is_started = false;
             break;
          }
@@ -244,8 +221,6 @@ void SocketClient::receivingThread()
       {
          m_mode == DataMode::NEW_LINE_DELIMITER? startDelimiterMode() : startHeaderMode();
       }
-
-      UT_Log(SOCK_DRV, HIGH, "Main reading loop exited");
 
       m_state = State::IDLE;
       system_call::close(m_sock_fd);
@@ -287,11 +262,9 @@ void SocketClient::startDelimiterMode()
       {
          /* client disconnected */
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
-         UT_Log(SOCK_DRV, LOW, "Remote server closed unexpectedly!");
          break;
       }
 
-      UT_Log_If(m_state == State::DISCONNECTING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 
@@ -323,11 +296,9 @@ void SocketClient::startHeaderMode()
       {
          /* client disconnected */
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
-         UT_Log(SOCK_DRV, LOW, "Remote server closed unexpectedly!");
          break;
       }
 
-      UT_Log_If(m_state == State::DISCONNECTING, SOCK_DRV, HIGH, "Disconnect requested, exiting read loop");
    }
 }
 void SocketClient::notifyListeners(ClientEvent ev, const std::vector<uint8_t>& data, size_t size)

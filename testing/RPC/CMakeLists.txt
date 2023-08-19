@@ -4,8 +4,8 @@ add_library(RPC
          
 target_include_directories(RPC PUBLIC public/ PRIVATE include/)
 target_link_libraries(RPC PUBLIC 
-                      Logger 
-                      Utilities
+                      TestLogger
+                      UtilitiesIf
                       NativeDrivers)
 
 if (UNIT_TESTS)

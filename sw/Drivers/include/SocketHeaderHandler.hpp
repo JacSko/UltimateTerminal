@@ -2,7 +2,6 @@
 #define __SOCKET_HEADER_HANDLER_HPP_
 #include <vector>
 #include <stdint.h>
-#include "Logger.h"
 #include "Serialize.hpp"
 
 namespace Drivers

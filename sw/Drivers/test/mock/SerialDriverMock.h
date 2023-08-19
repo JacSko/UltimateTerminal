@@ -1,6 +1,5 @@
 #pragma once
 #include <gmock/gmock.h>
-#include "Logger.h"
 #include "ISerialDriver.h"
 
 
@@ -42,25 +41,21 @@ std::string EnumValue<T>::toName() const
 template<>
 std::string EnumValue<Drivers::Serial::BaudRate>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::BaudRate::BAUDRATE_MAX);
    return Drivers::Serial::g_baudrates_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::ParityType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::ParityType::PARITY_BIT_MAX);
    return Drivers::Serial::g_paritybits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::StopBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::StopBitType::STOP_BIT_MAX);
    return Drivers::Serial::g_stopbits_names[(size_t)value];
 }
 template<>
 std::string EnumValue<Drivers::Serial::DataBitType>::toName() const
 {
-   UT_Assert(value < Drivers::Serial::DataBitType::DATA_BIT_MAX);
    return Drivers::Serial::g_databits_names[(size_t)value];
 }
 

@@ -8,7 +8,7 @@
 #include <vector>
 #include <condition_variable>
 
-#include "Logger.h"
+#include "TestLogger.h"
 #include "ISocketClient.h"
 #include "RPCCommon.h"
 
@@ -60,24 +60,24 @@ public:
 
          if(!m_socket_client->isConnected())
          {
-            UT_Log(RPC_CLIENT, ERROR, "not connected to server!");
+            TF_Log(RPC_CLIENT, "not connected to server!");
             break;
          }
 
          serialize(m_buffer, request);
          if(!m_socket_client->write(m_buffer, m_buffer.size()))
          {
-            UT_Log(RPC_CLIENT, ERROR, "write error");
+            TF_Log(RPC_CLIENT, "write error");
             break;
          }
          if(!m_cond_var.wait_for(lock, std::chrono::milliseconds(SOCKET_TRANSACTION_TIMEOUT), [&](){return m_event_ready.load();}))
          {
-            UT_Log(RPC_CLIENT, ERROR, "server response timeout");
+            TF_Log(RPC_CLIENT, "server response timeout");
             break;
          }
          if (m_last_event != Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV)
          {
-            UT_Log(RPC_CLIENT, ERROR, "incorrect event received while waiting for response (%u)", (uint8_t)m_last_event.load());
+            TF_Log(RPC_CLIENT, "incorrect event received while waiting for response (%u)", (uint8_t)m_last_event.load());
             m_event_ready = false;
             break;
          }

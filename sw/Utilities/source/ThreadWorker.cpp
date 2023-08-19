@@ -8,7 +8,6 @@
  *  Includes of project headers
  * =============================*/
 #include "ThreadWorker.h"
-#include "Logger.h"
 /* =============================
  *      Global variables
  * =============================*/

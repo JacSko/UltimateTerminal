@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "TestFramework.h"
-#include "Settings.h"
 #include "ApplicationExecutor.hpp"
 
 const uint32_t TEST_SOCKET_PORT = 2222;
@@ -16,12 +15,14 @@ struct SocketRead : public testing::Test
 {
    static void SetUpTestSuite()
    {
+      TF::Init();
       ASSERT_TRUE(TF::Connect());
       TF::wait(1000);
    }
    static void TearDownTestSuite()
    {
       TF::Disconnect();
+      TF::Deinit();
    }
    virtual void SetUp()
    {
@@ -87,8 +88,8 @@ TEST_F(SocketRead, read_data_from_socket)
    port_settings.font_color = FONT_COLOR;
 
    /* check port button and label before test */
-   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
-   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
 
@@ -124,8 +125,8 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
 
    /* check button and label state */
-   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
-   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
@@ -175,8 +176,8 @@ TEST_F(SocketRead, write_socket)
    port_settings.font_color = FONT_COLOR;
 
    /* check port button and label before test */
-   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
-   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
 
@@ -220,8 +221,8 @@ TEST_F(SocketRead, write_socket)
    EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
 
    /* check button and label state */
-   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowBackground));
-   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), SETTING_GET_U32(GUI_Dark_WindowText));
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
@@ -384,4 +385,5 @@ TEST_F(SocketRead, open_close_socket_multiple_times_during_high_traffic)
       EXPECT_GT(TF::TerminalView::countItems(), 400);
    }
    EXPECT_TRUE(serial_data_generator.stopApplication());
+   TF::wait(5000);
 }

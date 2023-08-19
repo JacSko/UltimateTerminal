@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "TestFrameworkSettings.h"
 #include "PortSettingDialog.h"
 #include "TraceFilterSettingDialog.h"
 #include "UserButtonDialog.h"
@@ -8,9 +9,10 @@
 
 namespace TF
 {
-
+void Init();
 bool Connect();
 void Disconnect();
+void Deinit();
 void BeginTest();
 void FinishTest();
 void wait(uint32_t ms);
