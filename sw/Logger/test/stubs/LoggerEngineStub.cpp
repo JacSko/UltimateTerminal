@@ -65,7 +65,7 @@ LoggerEngine::~LoggerEngine()
 {
 }
 
-void LoggerEngine::startFrontends()
+void LoggerEngine::startFrontends(const std::string&)
 {
 }
 

@@ -20,6 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #  File paths configurations
 #########################################
 set(CONFIG_FILE ".system_config.json") 
+set(LOGS_FILE ".logs.log") 
 if (UNIX)
    message(STATUS "Building for UNIX")
    set(PERSISTENCE_FILE "$ENV{HOME}/.Ultimate_terminal_persistence.bin")
@@ -36,7 +37,8 @@ endif()
 #########################################
 add_definitions(-D_UNICODE
 			    -DUNICODE
-				-DCONFIG_FILE="${CONFIG_FILE}" 
+				-DCONFIG_FILE="${CONFIG_FILE}"
+				-DLOGS_FILE="${LOGS_FILE}"
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
                 -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" 
                 -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}"

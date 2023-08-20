@@ -83,9 +83,10 @@ public:
 
    /**
     * @brief Starts all aux writers, like socket or file.
+    * @param[in] filename - name of the file to store logs
     * @return void
     */
-   void startFrontends();
+   void startFrontends(const std::string& filename = "");
 
    /**
     * @brief Stops all aux writers, like socket or file.

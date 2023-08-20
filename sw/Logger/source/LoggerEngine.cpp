@@ -69,7 +69,7 @@ LoggerEngine::~LoggerEngine()
    }
 }
 
-void LoggerEngine::startFrontends()
+void LoggerEngine::startFrontends(const std::string& file_path)
 {
    refreshGroupLevelSettings();
 
@@ -80,7 +80,7 @@ void LoggerEngine::startFrontends()
 
    if (SETTING_GET_BOOL(Logger_supportFileLogging))
    {
-      m_frontends.emplace_back(new LoggerFileWriter(SETTING_GET_STRING(Logger_logfilePath)));
+      m_frontends.emplace_back(new LoggerFileWriter(file_path));
    }
 
    if (SETTING_GET_BOOL(Logger_supportSocketLogging))
@@ -250,32 +250,3 @@ LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
    }
    return result;
 }
-bool LoggerEngine::setLogFileName(const std::string& path)
-{
-   bool result = false;
-
-   std::lock_guard<std::recursive_mutex> lock(m_mutex);
-   auto it = std::find_if(m_frontends.begin(), m_frontends.end(), [](std::unique_ptr<ILoggerWriter>& writer){return writer->getType() == FILE_WRITER;});
-   if (it != m_frontends.end())
-   {
-      std::unique_ptr<ILoggerWriter> writer = std::unique_ptr<ILoggerWriter>(new LoggerFileWriter(path));
-      result = writer->init();
-      if (result)
-      {
-         (*it)->deinit();
-         m_frontends.erase(it);
-         m_frontends.emplace_back(std::move(writer));
-      }
-   }
-   return result;
-}
-
-
-
-
-
-
-
-
-
-

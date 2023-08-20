@@ -9,13 +9,10 @@
 
 
 #define SETTING_GROUPS\
-   DEF_SETTING_GROUP(Settings_reloadOnFileChange, bool, true) \
-   DEF_SETTING_GROUP(Settings_fileCheckPeriod, uint32_t, 5000) \
    DEF_SETTING_GROUP(Logger_supportFileLogging, bool, true) \
    DEF_SETTING_GROUP(Logger_supportStdoutLogging, bool, false) \
    DEF_SETTING_GROUP(Logger_supportSocketLogging, bool, true) \
    DEF_SETTING_GROUP(Logger_socketPort, uint32_t, 5555) \
-   DEF_SETTING_GROUP(Logger_logfilePath, std::string, "/home/jskowronek/log.log") \
    DEF_SETTING_GROUP(Logger_group_MAIN, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_MAIN_GUI, std::string, "HIGH") \
    DEF_SETTING_GROUP(Logger_group_SETTINGS, std::string, "HIGH") \

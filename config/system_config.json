@@ -1,11 +1,8 @@
 {
-  "Settings_reloadOnFileChange": true,
-  "Settings_fileCheckPeriod": 5000,
   "Logger_supportFileLogging": true,
   "Logger_supportStdoutLogging": false,
   "Logger_supportSocketLogging": true,
   "Logger_socketPort": 5555,
-  "Logger_logfilePath": "/home/jskowronek/log.log",
   "Logger_group_MAIN": "HIGH",
   "Logger_group_MAIN_GUI": "HIGH",
   "Logger_group_SETTINGS": "HIGH",

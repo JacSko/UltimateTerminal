@@ -184,7 +184,6 @@ void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>& data)
          ::deserialize(data, offset, bool_value);
          set_setting<bool>(id,bool_value);
          break;
-
       }
       case SettingType::STRING:
       {
