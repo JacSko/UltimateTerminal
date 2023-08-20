@@ -51,6 +51,7 @@ m_file_logger(IFileLogger::create()),
 m_gui_controller(nullptr),
 m_marker_index(0)
 {
+   UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
    Settings::SettingsHandler::create();
@@ -67,7 +68,6 @@ m_marker_index(0)
       m_gui_controller.reloadTheme(Theme::DEFAULT);
    }
    m_gui_controller.setApplicationTitle(std::string("UltimateTerminal"));
-   UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
    m_gui_controller.setInfoLabelText(std::string("UltimateTerminal v") + std::string(APPLICATION_VERSION));
 
    Settings::SettingsHandler::get()->printSettings();
@@ -114,7 +114,7 @@ m_marker_index(0)
       m_port_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
           new GUI::PortHandler(i, m_gui_controller, button_name, *m_timers, this, m_persistence)));
    }
-   UT_Log(MAIN, ALWAYS, "%u PortHandlers created", port_numbers);
+   UT_Log(MAIN, LOW, "%u PortHandlers created", port_numbers);
 
    /* create handlers for user buttons */
    uint32_t user_buttons_count = m_gui_controller.countUserButtons();
@@ -124,7 +124,7 @@ m_marker_index(0)
       m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
           new GUI::UserButtonHandler(m_gui_controller, i, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
-   UT_Log(MAIN, ALWAYS, "%u UserButtonHandlers created", user_buttons_count);
+   UT_Log(MAIN, LOW, "%u UserButtonHandlers created", user_buttons_count);
 
    uint32_t filters_count = m_gui_controller.countTraceFilters();
    for (uint32_t i = 0; i < filters_count; i++)
@@ -132,7 +132,7 @@ m_marker_index(0)
       std::string button_name = "traceFilterButton_" + std::to_string(i);
       m_trace_filter_handlers.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(i, m_gui_controller, button_name, m_persistence)));
    }
-   UT_Log(MAIN, ALWAYS, "%u TraceFilterHandlers created", filters_count);
+   UT_Log(MAIN, LOW, "%u TraceFilterHandlers created", filters_count);
 
    m_gui_controller.addLineEnding("\\r\\n");
    m_gui_controller.addLineEnding("\\n");
@@ -154,6 +154,8 @@ m_marker_index(0)
 }
 MainApplication::~MainApplication()
 {
+   UT_Log(MAIN, ALWAYS, "Closing application!");
+
    m_gui_controller.unsubscribeFromButtonEvent(m_marker_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.unsubscribeFromButtonEvent(m_logging_button_id, ButtonEvent::CLICKED, this);
    m_gui_controller.unsubscribeFromButtonEvent(m_settings_button_id, ButtonEvent::CLICKED, this);
@@ -167,7 +169,6 @@ MainApplication::~MainApplication()
 
    m_button_listeners.clear();
 
-   UT_Log(MAIN, INFO, "Closing application!");
    if (!m_persistence.save(PERSISTENCE_PATH))
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
@@ -184,7 +185,7 @@ MainApplication::~MainApplication()
 }
 void MainApplication::onButtonEvent(uint32_t button_id, ButtonEvent event)
 {
-   UT_Log(MAIN, INFO, "%s: btn %u ev %u", __func__, button_id, (uint32_t)event);
+   UT_Log(MAIN, LOW, "%s: btn %u ev %u", __func__, button_id, (uint32_t)event);
 
    for (auto& listener : m_button_listeners)
    {
@@ -196,7 +197,7 @@ void MainApplication::onButtonEvent(uint32_t button_id, ButtonEvent event)
 }
 void MainApplication::onThemeChange(Theme theme)
 {
-   UT_Log(MAIN, INFO, "%s: theme %s", __func__, m_gui_controller.themeToName(theme).c_str());
+   UT_Log(MAIN, LOW, "%s: theme %s", __func__, m_gui_controller.themeToName(theme).c_str());
    //TODO refresh whole Ui here
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
@@ -312,7 +313,7 @@ void MainApplication::onTraceClearButtonClicked()
 void MainApplication::onLoggingButtonContextMenuRequested()
 {
    Dialogs::LoggingSettingDialog dialog;
-   UT_Log(MAIN, MEDIUM, "Opening log setting dialog with path %s", m_file_logging_path.c_str());
+   UT_Log(MAIN, LOW, "Opening log setting dialog with path %s", m_file_logging_path.c_str());
    auto result = dialog.showDialog(m_gui_controller.getParent(), m_file_logging_path, !m_file_logger->isActive());
    if (result)
    {
@@ -338,6 +339,7 @@ bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
 }
 void MainApplication::onSettingsButtonClicked()
 {
+   UT_Log(MAIN, LOW, "Setting windows show");
    Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
    dialog.showDialog(m_gui_controller.getParent());
 }
@@ -405,6 +407,7 @@ void MainApplication::setButtonState(uint32_t button_id, bool state)
       m_gui_controller.setButtonBackgroundColor(button_id, DEFAULT_BACKGROUND);
       m_gui_controller.setButtonFontColor(button_id, DEFAULT_FONT);
    }
+   UT_Log(MAIN, LOW, "%s id %u state %u", __func__, button_id, state);
 }
 void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
 {
@@ -416,8 +419,10 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
    ::deserialize(data, offset, application_version);
    ::deserialize(data, offset, m_file_logging_path);
    ::deserialize(data, offset, line_ending);
+   UT_Log(MAIN, HIGH, "Restored [%s] logging path", m_file_logging_path.c_str());
 
    ::deserialize(data, offset, ports_count);
+   UT_Log(MAIN, HIGH, "Restored %u ports", ports_count);
    for (uint8_t i = 0; i < ports_count; i++)
    {
       uint8_t port_id;
@@ -439,6 +444,7 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
    m_gui_controller.setCurrentLineEnding(line_ending);
+
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
 void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
@@ -447,8 +453,10 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, m_file_logging_path);
    ::serialize(data, m_gui_controller.getCurrentLineEnding());
    ::serialize(data, (uint8_t)m_commands_history.size());
+   UT_Log(MAIN, HIGH, "Saving logging file [%s]", m_file_logging_path.c_str());
    for (const auto& item : m_commands_history)
    {
+      UT_Log(MAIN, HIGH, "Saving commands history for port %u, size %u", item.first, item.second.size());
       ::serialize(data, item.first);
       ::serialize(data, (uint32_t)item.second.size());
       for (const std::string& history_item : item.second)

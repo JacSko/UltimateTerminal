@@ -124,7 +124,6 @@ public:
    void setCurrentLineEnding(const std::string& ending);
 
    /* Trace filters */
-   uint32_t getTraceFilterID(const std::string& name);
    void setTraceFilter(uint8_t id, const std::string& filter);
    std::string getTraceFilter(uint8_t id);
    void setTraceFilterEnabled(uint8_t id, bool enabled);

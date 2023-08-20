@@ -34,11 +34,11 @@ std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, con
    m_dialog->setLayout(createLayout(current_path, allow_edit));
    addDialogButtons();
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(MAIN_GUI, INFO, "logging dialog show");
+   UT_Log(GUI_DIALOG, LOW, "Logging dialog show, current path: [%s]", current_path.c_str());
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(MAIN_GUI, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues();
+      UT_Log(GUI_DIALOG, LOW, "New logging path, result %u, path [%s]", result.has_value(), result.has_value()? result.value().c_str() : "");
    }
 
    destroyLayout();

@@ -4,7 +4,7 @@
   "Logger_supportSocketLogging": true,
   "Logger_socketPort": 5555,
   "Logger_group_MAIN": "HIGH",
-  "Logger_group_MAIN_GUI": "HIGH",
+  "Logger_group_GUI_CONTROLLER": "HIGH",
   "Logger_group_SETTINGS": "HIGH",
   "Logger_group_UTILITIES": "HIGH",
   "Logger_group_SOCK_DRV": "HIGH",

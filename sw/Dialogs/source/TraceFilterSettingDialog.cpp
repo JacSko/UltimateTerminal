@@ -29,20 +29,19 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
    std::string window_title = "FILTER" + std::to_string(current_settings.id) + " Settings";
    m_dialog->setWindowTitle(QString(window_title.c_str()));
 
-
    m_dialog->setLayout(createLayout(m_dialog, current_settings, allow_edit));
    addDialogButtons();
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(GUI_DIALOG, INFO, "Trace filter dialog opened");
+   UT_Log(GUI_DIALOG, LOW, "%s - settings %u [%s] bg %u font %u", __func__, current_settings.id, current_settings.regex.c_str(), current_settings.background, current_settings.font);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(GUI_DIALOG, LOW, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
+      UT_Log(GUI_DIALOG, LOW, "%s - new settings %u [%s] bg %u font %u", __func__, out_settings.id, out_settings.regex.c_str(), out_settings.background, out_settings.font);
    }
 
    delete m_form;
    delete m_dialog;
-   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
+   UT_Log(GUI_DIALOG, LOW, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
 
    return result;
 }

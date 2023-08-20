@@ -22,6 +22,7 @@ GUIController::~GUIController()
 }
 void GUIController::run()
 {
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->setupUi(this);
 
    for (QPushButton* button : ui->getButtons())
@@ -89,11 +90,13 @@ void GUIController::run()
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 #ifdef SIMULATION
+   UT_Log(GUI_CONTROLLER, LOW, "SIMULATION build");
    m_gui_test_server = std::unique_ptr<GUITestServer>(new GUITestServer(ui));
    /* ugly hack to make terminalView slider position working */
    show();
    hide();
 #else
+   UT_Log(GUI_CONTROLLER, LOW, "showing main application window");
    show();
 #endif
 }
@@ -110,7 +113,7 @@ uint32_t GUIController::getButtonID(const std::string& name)
          break;
       }
    }
-   UT_Log_If(result == UINT32_MAX, MAIN_GUI, ERROR, "Element with name %s not found", name.c_str());
+   UT_Log_If(result == UINT32_MAX, GUI_CONTROLLER, ERROR, "Element with name %s not found", name.c_str());
    return result;
 }
 void GUIController::subscribeForButtonEvent(uint32_t button_id, ButtonEvent event, ButtonEventListener* listener)
@@ -119,12 +122,12 @@ void GUIController::subscribeForButtonEvent(uint32_t button_id, ButtonEvent even
    auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) && (item.event == event);});
    if (it != m_button_listeners.end())
    {
-      UT_Log(MAIN_GUI, ERROR, "event %u for buttonID %u already registered, replacing!");
+      UT_Log(GUI_CONTROLLER, ERROR, "event %u for buttonID %u already registered, replacing!");
       *it = ButtonEventItem{button_id, event, listener};
    }
    else
    {
-      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u registered!", (uint32_t)event, button_id);
+      UT_Log(GUI_CONTROLLER, MEDIUM, "event %u for buttonID %u registered!", (uint32_t)event, button_id);
       m_button_listeners.push_back(ButtonEventItem{button_id, event, listener});
    }
 }
@@ -134,10 +137,10 @@ void GUIController::unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent e
    auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) &&
                                                                                                                         (item.event == event) &&
                                                                                                                         (item.listener == listener);});
-   UT_Log_If(it == m_button_listeners.end(), MAIN_GUI, ERROR, "event %u for buttonID %u not found!");
+   UT_Log_If(it == m_button_listeners.end(), GUI_CONTROLLER, ERROR, "event %u for buttonID %u not found!");
    if (it != m_button_listeners.end())
    {
-      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u unregistered", (uint32_t)event, button_id);
+      UT_Log(GUI_CONTROLLER, MEDIUM, "event %u for buttonID %u unregistered", (uint32_t)event, button_id);
       m_button_listeners.erase(it);
    }
 }
@@ -199,7 +202,7 @@ void GUIController::scrollTraceViewToBottom()
 }
 void GUIController::subscribeForActivePortChangedEvent(std::function<bool(const std::string&)> callback)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, HIGH, "%s", __func__);
    m_active_port_listener = std::move(callback);
 }
 void GUIController::registerPortOpened(const std::string& port_name)
@@ -242,23 +245,6 @@ void GUIController::addLineEnding(const std::string& ending)
 void GUIController::setCurrentLineEnding(const std::string& ending)
 {
    emit setCurrentLineEndingSignal(QString(ending.c_str()));
-}
-uint32_t GUIController::getTraceFilterID(const std::string& name)
-{
-   uint32_t result = UINT32_MAX;
-   auto filters = ui->getTraceFilters();
-   for (uint32_t i = 0; i < filters.size(); i++)
-   {
-      UT_Assert(filters[i].button);
-      UT_Assert(filters[i].line_edit);
-      if ((filters[i].button->objectName().toStdString() == name) ||
-          (filters[i].line_edit->objectName().toStdString() == name))
-      {
-         result = i;
-         break;
-      }
-   }
-   return result;
 }
 void GUIController::setTraceFilter(uint8_t id, const std::string& filter)
 {
@@ -329,24 +315,19 @@ void GUIController::subscribeForThemeReloadEvent(ThemeListener* listener)
 {
    std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
    auto it = std::find_if(m_theme_listeners.begin(), m_theme_listeners.end(), [&](ThemeListener* theme_listener){return theme_listener == listener;});
+   UT_Log_If(it != m_theme_listeners.end(), GUI_CONTROLLER, ERROR, "Theme listener already found!");
    if (it == m_theme_listeners.end())
    {
-      UT_Log(MAIN_GUI, ERROR, "new theme listener registered!");
       m_theme_listeners.push_back(listener);
-   }
-   else
-   {
-      UT_Log(MAIN_GUI, ERROR, "theme listener already registered!");
    }
 }
 void GUIController::unsubscribeFromThemeReloadEvent(ThemeListener* listener)
 {
    std::lock_guard<std::mutex> lock(m_theme_listeners_mutex);
    auto it = std::find_if(m_theme_listeners.begin(), m_theme_listeners.end(), [&](ThemeListener* theme_listener){return (theme_listener == listener);});
-   UT_Log_If(it == m_theme_listeners.end(), MAIN_GUI, ERROR, "Theme listener not found!");
+   UT_Log_If(it == m_theme_listeners.end(), GUI_CONTROLLER, ERROR, "Theme listener not found!");
    if (it != m_theme_listeners.end())
    {
-      UT_Log(MAIN_GUI, MEDIUM, "event %u for buttonID %u unregistered");
       m_theme_listeners.erase(it);
    }
 }
@@ -381,18 +362,16 @@ uint32_t GUIController::countTraceFilters()
 bool GUIController::executeGUIRequest(CommandExecutor* request)
 {
    std::lock_guard<std::mutex> lock(m_command_mutex);
-   UT_Log(MAIN_GUI, INFO, "%s", __func__);
    bool result = true;
    m_current_command = request;
 
    emit guiRequestSignal();
    if (!request->waitReady(500))
    {
-      UT_Log(MAIN_GUI, ERROR, "%s timeout", __func__);
+      UT_Log(GUI_CONTROLLER, ERROR, "%s timeout", __func__);
       result = false;
    }
    m_current_command = nullptr;
-   UT_Log(MAIN_GUI, INFO, "%s finished", __func__);
 
    return result;
 }
@@ -400,14 +379,14 @@ void GUIController::onButtonClicked()
 {
    QObject* object = sender();
 
-   UT_Log(MAIN_GUI, HIGH, "object %s clicked", object->objectName().toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, HIGH, "button %s clicked", object->objectName().toStdString().c_str());
 
    QPushButton* button = nullptr;
    if (m_shortcuts_map.find(object) != m_shortcuts_map.end())
    {
       // check if sender has respective button alternative
       button = m_shortcuts_map[object];
-      UT_Log(MAIN_GUI, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
+      UT_Log(GUI_CONTROLLER, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
                                                               button->objectName().toStdString().c_str());
    }
    else
@@ -420,8 +399,8 @@ void GUIController::onButtonClicked()
    auto it = std::find(buttons.begin(), buttons.end(), button);
    if (it != buttons.end())
    {
-
       uint32_t id = std::distance(buttons.begin(), it);
+      UT_Log(GUI_CONTROLLER, HIGH, "notifying button%u click event", id);
       for (auto& listener : m_button_listeners)
       {
          if (listener.id == id && listener.event == ButtonEvent::CLICKED && listener.listener)
@@ -435,14 +414,14 @@ void GUIController::onButtonContextMenuRequested()
 {
    QObject* object = sender();
 
-   UT_Log(MAIN_GUI, HIGH, "object %s context requested", object->objectName().toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, HIGH, "object %s context requested", object->objectName().toStdString().c_str());
 
    QPushButton* button = nullptr;
    if (m_shortcuts_map.find(object) != m_shortcuts_map.end())
    {
       // check if sender has respective button alternative
       button = m_shortcuts_map[object];
-      UT_Log(MAIN_GUI, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
+      UT_Log(GUI_CONTROLLER, HIGH, "found alternative for %s : %s", object->objectName().toStdString().c_str(),
                                                               button->objectName().toStdString().c_str());
    }
    else
@@ -454,6 +433,7 @@ void GUIController::onButtonContextMenuRequested()
    if (it != buttons.end())
    {
       uint32_t id = std::distance(buttons.begin(), it);
+      UT_Log(GUI_CONTROLLER, HIGH, "notifying button%u context menu event", id);
       for (auto& listener : m_button_listeners)
       {
          if (listener.id == id && listener.event == ButtonEvent::CONTEXT_MENU_REQUESTED && listener.listener)
@@ -466,32 +446,36 @@ void GUIController::onButtonContextMenuRequested()
 void GUIController::onCurrentPortSelectionChanged(int index)
 {
    std::string port_name = ui->portComboBox->itemText(index).toStdString();
-   UT_Log(MAIN_GUI, LOW, "Selected port changed, idx %u, name %s", (uint8_t) index, port_name.c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "Selected port changed, idx %u, name %s", (uint8_t) index, port_name.c_str());
    if (m_active_port_listener)
    {
       bool result = m_active_port_listener(port_name);
-      UT_Log(MAIN_GUI, LOW, "%s - Event %s consumed", __func__, result? "" : "not");
+      UT_Log(GUI_CONTROLLER, LOW, "%s - Event %s consumed", __func__, result? "" : "not");
    }
 }
 void GUIController::onPortSwitchRequest()
 {
    int element_count = ui->portComboBox->count();
+   UT_Log_If(element_count == 0, GUI_CONTROLLER, ERROR, "Empty port list, cannot select next item");
+
    if (element_count > 1)
    {
       int idx = ui->portComboBox->currentIndex();
       if (idx == (element_count - 1))
       {
+         UT_Log(GUI_CONTROLLER, LOW, "List end reached, selecting first available port");
          ui->portComboBox->setCurrentIndex(0);
       }
       else
       {
+         UT_Log(GUI_CONTROLLER, LOW, "Selecting next available port");
          ui->portComboBox->setCurrentIndex(idx+1);
       }
    }
 }
 void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    QPalette palette = buttons[id]->palette();
@@ -501,7 +485,7 @@ void GUIController::onButtonBackgroundColorSignal(qint32 id, qint32 color)
 }
 void GUIController::onButtonFontColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %.6x", __func__, id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %.6x", __func__, id, color);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    QPalette palette = buttons[id]->palette();
@@ -511,54 +495,52 @@ void GUIController::onButtonFontColorSignal(qint32 id, qint32 color)
 }
 void GUIController::onButtonCheckableSignal(qint32 id, bool checkable)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u checkable %u", __func__, id, checkable);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u checkable %u", __func__, id, checkable);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setCheckable(checkable);
 }
 void GUIController::onButtonCheckedSignal(qint32 id, bool checked)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u checked %u", __func__, id, checked);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u checked %u", __func__, id, checked);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setChecked(checked);
 }
 void GUIController::onButtonEnabledSignal(qint32 id, bool enabled)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u enabled %u", __func__, id, enabled);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u enabled %u", __func__, id, enabled);
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setEnabled(enabled);
 }
 void GUIController::onButtonTextSignal(qint32 id, QString text)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u text %s", __func__, id, text.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u text %s", __func__, id, text.toStdString().c_str());
    auto buttons = ui->getButtons();
    UT_Assert(buttons.size() > (size_t)id);
    buttons[id]->setText(text);
 }
 void GUIController::onClearTerminalViewSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->terminalView->clear();
    m_terminal_view_status.item_count = 0;
 }
 void GUIController::onClearTraceViewSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->traceView->clear();
    m_trace_view_status.item_count = 0;
 }
 void GUIController::onAddToTerminalViewSignal(QString text, qint32, qint32)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
-
    ui->terminalView->append(text);
    m_terminal_view_status.item_count++;
 }
 void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color, qint32 font_color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s bg color %.6x font %.6x", __func__, background_color, font_color);
+   UT_Log(GUI_CONTROLLER, HIGH, "%s bg color %.6x font %.6x", __func__, background_color, font_color);
    QListWidgetItem* item = new QListWidgetItem();
    item->setText(text);
    item->setBackground(QColor(background_color));
@@ -572,36 +554,36 @@ void GUIController::onAddToTraceViewSignal(QString text, qint32 background_color
 }
 void GUIController::onScrollTerminalToBottomSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->terminalView->verticalScrollBar()->setValue(ui->terminalView->verticalScrollBar()->maximum());
 }
 void GUIController::onScrollTraceViewToBottomSignal()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %u", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s %u", __func__);
    ui->traceView->verticalScrollBar()->setValue(ui->traceView->verticalScrollBar()->maximum());
 }
 void GUIController::onRegisterPortOpenedSignal(QString name)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %s", __func__, name.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s %s", __func__, name.toStdString().c_str());
    ui->portComboBox->addItem(name);
 }
 void GUIController::onRegisterPortClosedSignal(QString name)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %s", __func__, name.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s %s", __func__, name.toStdString().c_str());
    int index = ui->portComboBox->findText(name);
    if (index != -1)
    {
       ui->portComboBox->removeItem(index);
    }
-   UT_Log_If(index == -1, MAIN_GUI, ERROR, "%s %s not found", __func__, name.toStdString().c_str());
+   UT_Log_If(index == -1, GUI_CONTROLLER, ERROR, "%s %s not found", __func__, name.toStdString().c_str());
 }
 void GUIController::onSetCommandHistorySignal(QVector<QString> history)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s size %u", __func__, history.size());
+   UT_Log(GUI_CONTROLLER, LOW, "%s size %u", __func__, history.size());
    ui->textEdit->clear();
    for (const QString& command : history)
    {
-      UT_Log(MAIN_GUI, LOW, "%s inserting %s", __func__, command.toStdString().c_str());
+      UT_Log(GUI_CONTROLLER, HIGH, "%s inserting %s", __func__, command.toStdString().c_str());
       ui->textEdit->insertItem(0, command);
    }
    ui->textEdit->setCurrentIndex(-1);
@@ -613,53 +595,53 @@ void GUIController::onGuiRequestSignal()
 }
 void GUIController::onAddLineEndingSignal(QString ending)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->lineEndingComboBox->addItem(ending);
 }
 void GUIController::onSetCurrentLineEndingSignal(QString ending)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->lineEndingComboBox->setCurrentText(ending);
 }
 void GUIController::onSetTraceFilterSignal(qint8 id, QString filter)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u filter %s", __func__, id, filter.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u filter %s", __func__, id, filter.toStdString().c_str());
    auto filters = ui->getTraceFilters();
    UT_Assert(filters.size() > (size_t)id);
    filters[id].line_edit->setText(filter);
 }
 void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u state %u", __func__, id, enabled);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u state %u", __func__, id, enabled);
    auto filters = ui->getTraceFilters();
    UT_Assert(filters.size() > (size_t)id);
    filters[id].line_edit->setEnabled(enabled);
 }
 void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::BACKGROUND_COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
    filters[id].line_edit->update();
-   UT_Log(MAIN_GUI, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
+   UT_Log(GUI_CONTROLLER, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u color %x", __func__, id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
    filters[id].line_edit->update();
-   UT_Log(MAIN_GUI, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
+   UT_Log(GUI_CONTROLLER, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s id %u text %s", __func__, id, description.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u text %s", __func__, id, description.toStdString().c_str());
    auto& ports = ui->getPorts();
    UT_Assert((size_t)id < ports.size());
    ports[id].label->setText(description);
@@ -667,7 +649,7 @@ void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 void GUIController::onReloadThemeSignal(qint8 id)
 {
    UT_Assert((Theme)id < Theme::APPLICATION_THEMES_MAX);
-   UT_Log(MAIN_GUI, HIGH, "%s id %u name %s", __func__, id, themeToName((Theme)id).c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u name %s", __func__, id, themeToName((Theme)id).c_str());
    ui->loadTheme((Theme)id);
    for (auto& listener : m_theme_listeners)
    {
@@ -676,21 +658,21 @@ void GUIController::onReloadThemeSignal(qint8 id)
 }
 void GUIController::onSetStatusBarNotificationSignal(QString notification, qint32 timeout)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %s time %u", __func__, notification.toStdString().c_str(), timeout);
+   UT_Log(GUI_CONTROLLER, LOW, "%s %s time %u", __func__, notification.toStdString().c_str(), timeout);
    ui->statusbar->showMessage(notification, timeout);
 }
 void GUIController::onSetInfoLabelTextSignal(QString text)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %s ", __func__, text.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s %s ", __func__, text.toStdString().c_str());
    ui->infoLabel->setText(text);
 }
 void GUIController::onSetApplicationTitle(QString title)
 {
-   UT_Log(MAIN_GUI, HIGH, "%s %s ", __func__, title.toStdString().c_str());
+   UT_Log(GUI_CONTROLLER, LOW, "%s %s ", __func__, title.toStdString().c_str());
    this->setWindowTitle(title);
 }
 void GUIController::onClearCurrentCommand()
 {
-   UT_Log(MAIN_GUI, HIGH, "%s", __func__);
+   UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->textEdit->lineEdit()->clear();
 }

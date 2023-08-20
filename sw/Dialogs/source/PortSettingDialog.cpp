@@ -83,17 +83,17 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_dialog->setLayout(createLayout(m_dialog, current_settings, allow_edit));
    addDialogButtons();
 
-   UT_Log(GUI_DIALOG, INFO, "%s for [%s] edit possible: %u", __func__, current_settings.port_name.c_str(), allow_edit);
+   UT_Log(GUI_DIALOG, LOW, "%s settings [%s] edit possible: %u", __func__, current_settings.shortSettingsString().c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(GUI_DIALOG, HIGH, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
+      UT_Log(GUI_DIALOG, LOW, "%s new settings [%s]", __func__, out_settings.shortSettingsString().c_str());
    }
 
    clearDialog();
    delete m_form;
    delete m_dialog;
-   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
+   UT_Log(GUI_DIALOG, LOW, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
    return result;
 }
 QLayout* PortSettingDialog::createLayout(QWidget* parent, const Settings& current_settings, bool allow_edit)
@@ -167,7 +167,7 @@ void PortSettingDialog::addDialogButtons()
 }
 void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& settings)
 {
-   UT_Log(GUI_DIALOG, LOW, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
+   UT_Log(GUI_DIALOG, HIGH, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    /* create port name */
@@ -274,7 +274,7 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
 }
 void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& settings)
 {
-   UT_Log(GUI_DIALOG, LOW, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
+   UT_Log(GUI_DIALOG, HIGH, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
    clearDialog();
 
    /* create port name */
@@ -329,7 +329,7 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
 }
 void PortSettingDialog::onBackgroundColorButtonClicked()
 {
-   UT_Log(GUI_DIALOG, LOW, "color button clicked, current RGB %.6x", m_current_settings.trace_color);
+   UT_Log(GUI_DIALOG, HIGH, "color button clicked, current RGB %.6x", m_current_settings.trace_color);
 
    QColor color = QColorDialog::getColor(m_current_settings.trace_color, m_parent, "Select background color");
 
@@ -345,7 +345,7 @@ void PortSettingDialog::onBackgroundColorButtonClicked()
 }
 void PortSettingDialog::onFontColorButtonClicked()
 {
-   UT_Log(GUI_DIALOG, LOW, "font color button clicked, current RGB %.6x", m_current_settings.font_color);
+   UT_Log(GUI_DIALOG, HIGH, "font color button clicked, current RGB %.6x", m_current_settings.font_color);
 
    QColor color = QColorDialog::getColor(m_current_settings.font_color, m_parent, "Select font color");
 
@@ -361,7 +361,7 @@ void PortSettingDialog::onFontColorButtonClicked()
 }
 void PortSettingDialog::clearDialog()
 {
-   UT_Log(GUI_DIALOG, MEDIUM, "removing %u widgets from GUI", m_current_widgets.size());
+   UT_Log(GUI_DIALOG, HIGH, "removing %u widgets from GUI", m_current_widgets.size());
    for (auto item : m_current_widgets)
    {
       m_form->removeRow(item);
@@ -396,7 +396,7 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
 }
 void PortSettingDialog::onPortTypeChanged(const QString & name)
 {
-   UT_Log(MAIN_GUI, LOW, "new port type %s, rendering", name.toStdString().c_str());
+   UT_Log(GUI_DIALOG, HIGH, "new port type %s, rendering", name.toStdString().c_str());
 
    if (EnumValue<PortType>(name.toStdString()) == PortType::SERIAL)
    {

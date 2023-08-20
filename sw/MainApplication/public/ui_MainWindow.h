@@ -182,7 +182,7 @@ public:
       uint8_t tabs_count = SETTING_GET_U32(GUI_UserButtons_Tabs);
       for (uint8_t i = 0; i < tabs_count; i++)
       {
-         UT_Log(MAIN_GUI, LOW, "Creating user button tab %u", i);
+         UT_Log(GUI_CONTROLLER, LOW, "Creating user button tab %u", i);
          createUserButtonTab(i);
       }
       verticalLayout_3->addWidget(buttonsTabWidget);
@@ -592,7 +592,7 @@ private:
       QGridLayout* widget_layout = new QGridLayout();
       uint8_t buttons_rows = SETTING_GET_U32(GUI_UserButtons_RowsPerTab);
       uint8_t buttons_per_row = SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
-      UT_Log(MAIN_GUI, LOW, "Creating tab with %u rows, each with %u buttons", buttons_rows, buttons_per_row);
+      UT_Log(GUI_CONTROLLER, LOW, "Creating tab with %u rows, each with %u buttons", buttons_rows, buttons_per_row);
       uint8_t current_row = 0;
 
       for (uint8_t i = 0; i < buttons_rows; i++)
@@ -603,7 +603,7 @@ private:
             m_buttons.push_back(button);
             /* button name in format BUTTON<tab>:<row>:<idx>*/
             std::string button_name = "BUTTON" + std::to_string(((index * buttons_rows * buttons_per_row) + (i * buttons_per_row) + j));
-            UT_Log(MAIN_GUI, LOW, "button with name %s created", button_name.c_str());
+            UT_Log(GUI_CONTROLLER, LOW, "button with name %s created", button_name.c_str());
             button->setObjectName(QString(button_name.c_str()));
             widget_layout->addWidget(button, current_row, j, 1, 1);
          }
@@ -612,7 +612,7 @@ private:
       tab_widget->setLayout(widget_layout);
       std::string tab_name = "BUTTONS" + std::to_string(index);
       buttonsTabWidget->addTab(tab_widget, QString(tab_name.c_str()));
-      UT_Log(MAIN_GUI, LOW, "tab %s created", tab_name.c_str());
+      UT_Log(GUI_CONTROLLER, LOW, "tab %s created", tab_name.c_str());
    }
 
    std::vector<QPushButton*> m_buttons;

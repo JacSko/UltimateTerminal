@@ -42,7 +42,7 @@ m_persistence(persistence)
 
    m_settings.port_id = id;
    m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
-   UT_Log(PORT_HANDLER, INFO, "Creating port handler for PORT%u", m_settings.port_id);
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Creating port handler", m_settings.port_id, m_settings.port_name.c_str());
 
    Persistence::PersistenceListener::setName(m_settings.port_name);
    m_persistence.addListener(*this);
@@ -54,6 +54,7 @@ m_persistence(persistence)
 }
 PortHandler::~PortHandler()
 {
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Destroying port handler", m_settings.port_id, m_settings.port_name.c_str());
    m_persistence.removeListener(*this);
    GenericListener::removeAllListeners();
    m_socket->removeListener(this);
@@ -80,7 +81,6 @@ void PortHandler::onButtonEvent(uint32_t button_id, ButtonEvent event)
 }
 void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
-   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] - Notifying listeners, event %u", m_settings.port_id, m_settings.port_name.c_str(), (uint8_t)event);
    GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, event, data});});
 }
 Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
@@ -93,10 +93,6 @@ Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
    {
       return Event::NEW_DATA;
    }
-}
-Event PortHandler::toPortHandlerEvent(Drivers::Serial::DriverEvent)
-{
-   return Event::NEW_DATA;
 }
 const std::string& PortHandler::getName()
 {
@@ -146,10 +142,10 @@ void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std
    m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
    onPortEvent();
 }
-void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t)
+void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, Event::NEW_DATA, data});
    onPortEvent();
 }
 void PortHandler::onPortEvent()
@@ -364,7 +360,7 @@ void PortHandler::onPersistenceRead(const std::vector<uint8_t>& data)
 }
 void PortHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
-   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence", m_settings.port_id, m_settings.port_name.c_str());
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence [%s]", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
    serialize(data);
 }
 void PortHandler::serialize(std::vector<uint8_t>& buffer)

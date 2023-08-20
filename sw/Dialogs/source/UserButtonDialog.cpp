@@ -39,16 +39,16 @@ std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings
    addDialogButtons();
 
    m_dialog->setWindowModality(Qt::ApplicationModal);
-   UT_Log(GUI_DIALOG, INFO, "Command button dialog opened for [%s], edit possible %u", current_settings.button_name.c_str(), allow_edit);
+   UT_Log(GUI_DIALOG, LOW, "%s [%u:%s], edit possible %u", __func__, current_settings.id, current_settings.button_name.c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
-      UT_Log(GUI_DIALOG, LOW, "dialog accepted, gathering new settings");
       result = convertGuiValues(out_settings);
+      UT_Log(GUI_DIALOG, LOW, "%s [%u:%s], new content [%s]", __func__, current_settings.id, out_settings.button_name.c_str(), out_settings.raw_commands.c_str());
    }
 
    delete m_form;
    delete m_dialog;
-   UT_Log(GUI_DIALOG, INFO, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
+   UT_Log(GUI_DIALOG, LOW, "%s result %s", __func__, result.has_value()? (result.value()? "OK" : "NOK") : "NO_VALUE");
 
    return result;
 }

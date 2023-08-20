@@ -165,7 +165,6 @@ private:
    void setButtonName(const std::string name);
    void notifyListeners(Event event, const std::vector<uint8_t>& data = {});
    Event toPortHandlerEvent(Drivers::SocketClient::ClientEvent);
-   Event toPortHandlerEvent(Drivers::Serial::DriverEvent);
    void onPersistenceRead(const std::vector<uint8_t>& data) override;
    void onPersistenceWrite(std::vector<uint8_t>& data) override;
    void serialize(std::vector<uint8_t>& buffer);
