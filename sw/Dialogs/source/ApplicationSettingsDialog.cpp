@@ -149,7 +149,15 @@ void ApplicationSettingsDialog::createAboutTab(QTabWidget* main_tab, QWidget*)
 {
    QLabel* about_label = new QLabel();
    std::string about_text = "UltimateTerminal\nv." + std::string(APPLICATION_VERSION) + '\n' +
-                            "Author: Jacek Skowronek\n" + "email:jacekskowronekk@gmail.com";
+                            "Author: Jacek Skowronek\n" + "email:jacekskowronekk@gmail.com\n" +
+                            "Build type: " +
+                            #ifdef DEBUG
+                            "Debug"
+                            #else
+                            "Release"
+                            #endif
+                            ;
+
    about_label->setText(about_text.c_str());
    about_label->setAlignment(Qt::AlignCenter);
    main_tab->addTab(about_label, "ABOUT");

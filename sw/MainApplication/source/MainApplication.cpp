@@ -51,12 +51,12 @@ m_file_logger(IFileLogger::create()),
 m_gui_controller(nullptr),
 m_marker_index(0)
 {
-   UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
    Settings::SettingsHandler::create();
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends(system_call::getExecutablePath() + '/' + LOGS_FILE);
+   UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
 
    m_gui_controller.run();
    if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
