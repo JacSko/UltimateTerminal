@@ -189,6 +189,7 @@ private:
    void notifyListeners(KeyID id);
    std::vector<KeyID> applySettings();
    void onPersistenceRead(const std::vector<uint8_t>& data);
+   bool settingExist(const std::string& name);
    void onPersistenceWrite(std::vector<uint8_t>& data);
 
    std::string m_file_path;

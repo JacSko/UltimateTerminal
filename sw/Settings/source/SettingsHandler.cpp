@@ -173,42 +173,45 @@ void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>& data)
    while (offset != data.size())
    {
       std::string setting_name;
+      std::string setting_type;
+
       KeyID id;
       ::deserialize(data, offset, setting_name);
+      ::deserialize(data, offset, setting_type);
+
       id = fromString(setting_name);
-      switch(getType(id))
-      {
-      case SettingType::BOOL:
+
+      if (setting_type == "bool")
       {
          bool bool_value;
          ::deserialize(data, offset, bool_value);
-         set_setting<bool>(id,bool_value);
-         break;
+         if (settingExist(setting_name)) set_setting<bool>(id,bool_value);
       }
-      case SettingType::STRING:
-      {
-         std::string string_value;
-         ::deserialize(data, offset, string_value);
-         set_setting<std::string>(id,string_value);
-         break;
-      }
-      case SettingType::U32:
+      else if (setting_type == "uint32_t")
       {
          uint32_t u32_value;
          ::deserialize(data, offset, u32_value);
-         set_setting<uint32_t>(id,u32_value);
-         break;
+         if (settingExist(setting_name)) set_setting<uint32_t>(id,u32_value);
       }
-      default:
-         break;
+      else if (setting_type == "std::string")
+      {
+         std::string string_value;
+         ::deserialize(data, offset, string_value);
+         if (settingExist(setting_name)) set_setting<std::string>(id,string_value);
       }
    }
    UT_Log(SETTINGS, INFO, "Settings restored from persistence!");
 }
+bool SettingsHandler::settingExist(const std::string& name)
+{
+   return std::find(m_setting_names.begin(), m_setting_names.end(), name) != m_setting_names.end();
+}
 void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>& data)
 {
 #undef DEF_SETTING_GROUP
-#define DEF_SETTING_GROUP(name, type, default_value) (::serialize(data, std::string(#name)));::serialize(data, (type)(get_setting<type>(name)));
+#define DEF_SETTING_GROUP(name, type, default_value) (::serialize(data, std::string(#name)));   \
+                                                     (::serialize(data, std::string(#type)));   \
+                                                      ::serialize(data, (type)(get_setting<type>(name)));
    SETTING_GROUPS
 #undef DEF_SETTING_GROUP
    UT_Log(SETTINGS, INFO, "Settings saved to persistence!");
