@@ -48,6 +48,8 @@ TestLogger::TestLogger()
 
 TestLogger::~TestLogger()
 {
+   std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
    for (auto& frontend : m_frontends)
    {
       frontend->deinit();
@@ -56,6 +58,8 @@ TestLogger::~TestLogger()
 
 void TestLogger::startFrontends()
 {
+   std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
    m_frontends.emplace_back(new LoggerStdoutWriter());
    m_frontends.emplace_back(new LoggerFileWriter(""));
 
@@ -67,6 +71,8 @@ void TestLogger::startFrontends()
 
 void TestLogger::stopFrontends()
 {
+   std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
    for (auto& frontend : m_frontends)
    {
       frontend->deinit();
