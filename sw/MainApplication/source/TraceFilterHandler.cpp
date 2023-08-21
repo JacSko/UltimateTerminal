@@ -162,6 +162,8 @@ void TraceFilterHandler::onContextMenuRequested()
       UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u showing context", m_settings.id);
       Dialogs::TraceFilterSettingDialog::Settings new_settings;
       Dialogs::TraceFilterSettingDialog dialog;
+      m_settings.regex = m_gui_controller.getTraceFilter(m_settings.id);
+
       std::optional<bool> result = dialog.showDialog(m_gui_controller.getParent(), m_settings, new_settings, true);
       if (result.has_value() && result.value())
       {

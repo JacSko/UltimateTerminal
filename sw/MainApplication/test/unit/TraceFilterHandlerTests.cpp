@@ -11,6 +11,7 @@ using namespace ::testing;
 
 const std::string TEST_BUTTON_NAME = "TEST_NAME";
 constexpr uint32_t TEST_BUTTON_ID = 1;
+constexpr uint32_t TEST_FILTER_ID = 0;
 constexpr uint32_t GREEN_COLOR = 0x00FF00;
 constexpr uint32_t BLACK_COLOR = 0x000000;
 constexpr uint32_t BUTTON_DEFAULT_BACKGROUND_COLOR = 0x111111;
@@ -42,7 +43,7 @@ struct TraceFilterHandlerTests : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, test_palette.color(QPalette::Base).rgb()));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, test_palette.color(QPalette::Text).rgb()));
-      m_test_subject.reset(new TraceFilterHandler(0, test_controller, TEST_BUTTON_NAME, fake_persistence));
+      m_test_subject.reset(new TraceFilterHandler(TEST_FILTER_ID, test_controller, TEST_BUTTON_NAME, fake_persistence));
    }
    void TearDown()
    {
@@ -83,22 +84,24 @@ TEST_F(TraceFilterHandlerTests, enabling_filter)
     * ************************************************
     */
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
 
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), showDialog(_,_,_,true)).WillOnce(DoAll(SetArgReferee<2>(settings),Return(true)));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(TEST_FILTER_ID, settings.background));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(TEST_FILTER_ID, settings.font));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(TEST_FILTER_ID, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* filter enabling */
-   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(_)).WillOnce(Return(settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterEnabled(_, false));
+   EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterEnabled(TEST_FILTER_ID, false));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
 
    auto result = m_test_subject->tryMatch("ABCDEF");
@@ -123,6 +126,7 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
     * ************************************************
     */
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
@@ -132,6 +136,7 @@ TEST_F(TraceFilterHandlerTests, disabling_filter)
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* filter enabling */
@@ -171,6 +176,7 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
     * ************************************************
     */
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
@@ -180,6 +186,7 @@ TEST_F(TraceFilterHandlerTests, color_change_requesting_when_filter_active)
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* filter enabling */
@@ -208,6 +215,7 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
     */
    std::vector<uint8_t> data_buffer;
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
@@ -217,6 +225,7 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* filter enabling */
@@ -295,6 +304,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_user_colors_used)
     * ************************************************
     */
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
@@ -304,6 +314,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_user_colors_used)
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
@@ -322,6 +333,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_filer_active)
     * ************************************************
     */
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;
    settings.font = 0x332211;
    settings.regex = "CDE";
@@ -331,6 +343,7 @@ TEST_F(TraceFilterHandlerTests, refresh_ui_when_filer_active)
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
    EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+   EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* filter enabling */
@@ -362,11 +375,13 @@ TEST_F(TraceFilterHandlerTests, settings_set_and_get_tests)
    uint32_t TEST_NEW_FONT_COLOR = 0x778899;
    std::string TEST_NEW_REGEX = "TEST_NEW_REGEX";
    Dialogs::TraceFilterSettingDialog::Settings settings;
+   settings.id = TEST_FILTER_ID;
    settings.background = TEST_BACKGROUND_COLOR;
    settings.font = TEST_FONT_COLOR;
    settings.regex = TEST_REGEX;
 
    Dialogs::TraceFilterSettingDialog::Settings new_settings;
+   settings.id = TEST_FILTER_ID;
    new_settings.background = TEST_NEW_BACKGROUND_COLOR;
    new_settings.font = TEST_NEW_FONT_COLOR;
    new_settings.regex = TEST_NEW_REGEX;
@@ -382,6 +397,7 @@ TEST_F(TraceFilterHandlerTests, settings_set_and_get_tests)
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterBackgroundColor(_, settings.background));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilterFontColor(_, settings.font));
       EXPECT_CALL(*GUIControllerMock_get(), setTraceFilter(_, settings.regex));
+      EXPECT_CALL(*GUIControllerMock_get(), getTraceFilter(TEST_FILTER_ID)).WillOnce(Return(settings.regex));
       m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
       /* filter enabling */
