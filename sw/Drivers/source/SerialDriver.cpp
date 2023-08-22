@@ -258,7 +258,7 @@ void SerialDriver::receivingThread()
 {
    while(m_worker.isRunning())
    {
-      int recv_bytes = read(m_fd, m_recv_buffer.data() + m_recv_buffer_idx, SERIAL_MAX_PAYLOAD_LENGTH);
+      int recv_bytes = read(m_fd, m_recv_buffer.data() + m_recv_buffer_idx, m_recv_buffer.size() - m_recv_buffer_idx);
       if (recv_bytes > 0)
       {
          m_recv_buffer_idx += recv_bytes;
