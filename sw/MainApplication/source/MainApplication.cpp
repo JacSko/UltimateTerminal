@@ -53,7 +53,7 @@ m_marker_index(0)
 {
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
-   Settings::SettingsHandler::create();
+   Settings::SettingsHandler::create(getSettingsPersistenceFile());
    Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
    LoggerEngine::get()->startFrontends(system_call::getExecutablePath() + '/' + LOGS_FILE);
    UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
@@ -146,7 +146,7 @@ m_marker_index(0)
    }
 
 #ifndef SIMULATION
-   if (!m_persistence.restore(PERSISTENCE_PATH))
+   if (!m_persistence.restore(getPersistenceFile()))
    {
       UT_Log(MAIN, ERROR, "Cannot restore persistence!");
    }
@@ -169,7 +169,7 @@ MainApplication::~MainApplication()
 
    m_button_listeners.clear();
 
-   if (!m_persistence.save(PERSISTENCE_PATH))
+   if (!m_persistence.save(getPersistenceFile()))
    {
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }
@@ -340,7 +340,7 @@ bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
 void MainApplication::onSettingsButtonClicked()
 {
    UT_Log(MAIN, LOW, "Setting windows show");
-   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path);
+   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path, getPersistenceFile(), getSettingsPersistenceFile());
    dialog.showDialog(m_gui_controller.getParent());
 }
 
@@ -510,4 +510,13 @@ std::string MainApplication::createLogFileName()
                                    ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec).toStdString();
    return result;
+}
+
+std::string MainApplication::getPersistenceFile()
+{
+   return system_call::getExecutablePath() + "/" + std::string(PERSISTENCE_FILE);
+}
+std::string MainApplication::getSettingsPersistenceFile()
+{
+   return system_call::getExecutablePath() + "/" + std::string(SETTINGS_PERSISTENCE_FILE);
 }

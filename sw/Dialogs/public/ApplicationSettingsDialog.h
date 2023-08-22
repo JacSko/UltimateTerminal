@@ -45,7 +45,9 @@ public:
                              std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
                              std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                              std::unique_ptr<IFileLogger>& logger,
-                             std::string& logging_path);
+                             std::string& logging_path,
+                             const std::string& persistence_path,
+                             const std::string& settings_persistence_path);
    ~ApplicationSettingsDialog();
 
    /**
@@ -122,6 +124,9 @@ private:
    std::vector<QLineEdit*> m_setting_lineedits;
    QComboBox* m_theme_combobox;
    QLineEdit* m_max_traces_edit;
+   std::string m_persistence_path;
+   std::string m_settings_persistence_path;
+
 };
 
 }

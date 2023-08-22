@@ -75,6 +75,8 @@ private:
    void removeCommandHistoryDuplicates(std::vector<std::string>& history, const std::string& text);
    uint8_t portNameToId(const std::string& name);
    std::string createLogFileName();
+   std::string getPersistenceFile();
+   std::string getSettingsPersistenceFile();
 
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

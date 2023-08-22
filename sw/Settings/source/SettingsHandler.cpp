@@ -71,9 +71,9 @@ SettingsHandler* SettingsHandler::get()
    return g_settings;
 }
 
-void SettingsHandler::create()
+void SettingsHandler::create(const std::string& persistence_file)
 {
-   g_settings = new SettingsHandler();
+   g_settings = new SettingsHandler(persistence_file);
 }
 
 void SettingsHandler::destroy()
@@ -81,10 +81,10 @@ void SettingsHandler::destroy()
    delete g_settings;
 }
 
-SettingsHandler::SettingsHandler()
+SettingsHandler::SettingsHandler(const std::string& persistence_file)
 {
    Persistence::PersistenceListener::setName("SETTINGS");
-
+   m_persistence_file = persistence_file;
 /* load default settings from SettingsHolder.h macro */
 #undef DEF_SETTING_GROUP
 #define DEF_SETTING_GROUP(name, type, default_value) (set_setting<type>(name, default_value));
@@ -95,11 +95,11 @@ SettingsHandler::SettingsHandler()
 
 void SettingsHandler::start(const std::string& settings_file_path)
 {
-   m_file_path = settings_file_path;
+   m_settings_file = settings_file_path;
    parseSettings();
    m_persistence.addListener(*this);
    UT_Log(SETTINGS, INFO, "Trying to restore from persistence");
-   if (!m_persistence.restore(SETTINGS_PERSISTENCE_PATH))
+   if (!m_persistence.restore(m_persistence_file))
    {
       UT_Log(SETTINGS, ERROR, "Cannot restore persistence!");
    }
@@ -107,7 +107,7 @@ void SettingsHandler::start(const std::string& settings_file_path)
 
 void SettingsHandler::stop()
 {
-   if (!m_persistence.save(SETTINGS_PERSISTENCE_PATH))
+   if (!m_persistence.save(m_persistence_file))
    {
       UT_Log(SETTINGS, ERROR, "Cannot write persistence!");
    }
@@ -117,7 +117,7 @@ void SettingsHandler::stop()
 bool SettingsHandler::parseSettings()
 {
    bool result = false;
-   std::ifstream file(m_file_path);
+   std::ifstream file(m_settings_file);
    if (file)
    {
       applySettings();
@@ -131,7 +131,7 @@ std::vector<KeyID> SettingsHandler::applySettings()
    std::vector<KeyID> result;
    using json = nlohmann::json;
    json j;
-   std::ifstream file(m_file_path);
+   std::ifstream file(m_settings_file);
    if (file)
    {
       file >> j;
@@ -362,7 +362,7 @@ void SettingsHandler::notifyListeners(KeyID id)
 
 std::string SettingsHandler::getFilePath()
 {
-   return m_file_path;
+   return m_settings_file;
 }
 
 

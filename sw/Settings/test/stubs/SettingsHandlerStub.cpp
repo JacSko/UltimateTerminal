@@ -48,16 +48,16 @@ void set_setting<bool>(KeyID id, bool setting)
 
 SettingsHandler* SettingsHandler::get()
 {
-   static SettingsHandler g_settings;
+   static SettingsHandler g_settings("");
    return &g_settings;
 }
-void SettingsHandler::create()
+void SettingsHandler::create(const std::string&)
 {
 }
 void SettingsHandler::destroy()
 {
 }
-SettingsHandler::SettingsHandler()
+SettingsHandler::SettingsHandler(const std::string&)
 {
 
 /* load default settings from SettingsHolder.h macro */
@@ -200,6 +200,6 @@ SettingType SettingsHandler::getType(KeyID id)
 }
 std::string SettingsHandler::getFilePath()
 {
-   return m_file_path;
+   return m_settings_file;
 }
 }

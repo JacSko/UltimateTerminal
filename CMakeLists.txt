@@ -21,15 +21,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #########################################
 set(CONFIG_FILE ".system_config.json") 
 set(LOGS_FILE ".logs.log") 
+set(PERSISTENCE_FILE ".Ultimate_terminal_persistence.bin")
+set(SETTINGS_PERSISTENCE_FILE ".Ultimate_terminal_settings_persistence.bin")
 if (UNIX)
    message(STATUS "Building for UNIX")
-   set(PERSISTENCE_FILE ".Ultimate_terminal_persistence.bin")
-   set(SETTINGS_PERSISTENCE_FILE ".Ultimate_terminal_settings_persistence.bin")
    set(DRIVER_VARIANT NativeDrivers)
 else()
    message(STATUS "Building for WINDOWS")
-   cmake_path(SET PERSISTENCE_FILE ".Ultimate_terminal_persistence.bin")
-   cmake_path(SET SETTINGS_PERSISTENCE_FILE ".Ultimate_terminal_settings_persistence.bin")
    set(DRIVER_VARIANT QtDrivers)
 endif()
 #########################################
@@ -40,8 +38,8 @@ add_definitions(-D_UNICODE
 				-DCONFIG_FILE="${CONFIG_FILE}"
 				-DLOGS_FILE="${LOGS_FILE}"
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
-                -DPERSISTENCE_PATH="${PERSISTENCE_FILE}" 
-                -DSETTINGS_PERSISTENCE_PATH="${SETTINGS_PERSISTENCE_FILE}"
+                -DPERSISTENCE_FILE="${PERSISTENCE_FILE}" 
+                -DSETTINGS_PERSISTENCE_FILE="${SETTINGS_PERSISTENCE_FILE}"
                 -DRUNTIME_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 #########################################

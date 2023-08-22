@@ -64,7 +64,7 @@ public:
 class SettingsHandler : public Persistence::PersistenceListener
 {
 public:
-   SettingsHandler();
+   SettingsHandler(const std::string& persistence_file);
    /**
     * @brief Returns instance of SettingsHandler object.
     * @return Pointer to SettingsHandler object
@@ -74,7 +74,7 @@ public:
     * @brief Creates SettingsHandler object.
     * @return void
     */
-   static void create();
+   static void create(const std::string& persistence_file);
    /**
     * @brief Destroys SettingsHandler object.
     * @return void
@@ -192,7 +192,8 @@ private:
    bool settingExist(const std::string& name);
    void onPersistenceWrite(std::vector<uint8_t>& data);
 
-   std::string m_file_path;
+   std::string m_settings_file;
+   std::string m_persistence_file;
    std::mutex m_settings_mutex;
    std::vector<std::pair<KeyID, SettingsListener*>> m_listeners;
    Persistence::PersistenceHandler m_persistence;

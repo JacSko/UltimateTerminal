@@ -74,7 +74,7 @@ struct ApplicationSettingsDialogFixture : public testing::Test
          test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(i, test_controller, "", test_persistence)));
       }
       test_file_logger = IFileLogger::create();
-      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path));
+      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path, "persistence_path", "settings_persistence_path"));
    }
    void TearDown()
    {
