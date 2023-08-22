@@ -15,7 +15,7 @@ endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 #########################################
 #  File paths configurations
 #########################################
@@ -133,6 +133,6 @@ printVariable("Persistence path" STRING ${PERSISTENCE_FILE})
 printVariable("Settings persistence path" STRING ${SETTINGS_PERSISTENCE_FILE})
 printVariable("CXX flags" STRING ${CMAKE_CXX_FLAGS})
 printVariable("C flags" STRING ${CMAKE_C_FLAGS})
-
+printVariable("Build type" STRING ${CMAKE_BUILD_TYPE})
 
 
