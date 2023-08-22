@@ -419,11 +419,14 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
    std::string application_version;
    uint32_t offset = 0;
    uint8_t ports_count = 0;
+   uint8_t theme = 0;
 
    ::deserialize(data, offset, application_version);
    ::deserialize(data, offset, m_file_logging_path);
    ::deserialize(data, offset, line_ending);
+   ::deserialize(data, offset, theme);
    UT_Log(MAIN, HIGH, "Restored [%s] logging path", m_file_logging_path.c_str());
+   UT_Log(MAIN, HIGH, "Restored theme with ID %u", theme);
 
    ::deserialize(data, offset, ports_count);
    UT_Log(MAIN, HIGH, "Restored %u ports", ports_count);
@@ -448,6 +451,7 @@ void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
       UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
    }
    m_gui_controller.setCurrentLineEnding(line_ending);
+   m_gui_controller.reloadTheme(static_cast<Theme>(theme));
 
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
 }
@@ -456,6 +460,7 @@ void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
    ::serialize(data, std::string(APPLICATION_VERSION));
    ::serialize(data, m_file_logging_path);
    ::serialize(data, m_gui_controller.getCurrentLineEnding());
+   ::serialize(data, static_cast<uint8_t>(m_gui_controller.currentTheme()));
    ::serialize(data, (uint8_t)m_commands_history.size());
    UT_Log(MAIN, HIGH, "Saving logging file [%s]", m_file_logging_path.c_str());
    for (const auto& item : m_commands_history)

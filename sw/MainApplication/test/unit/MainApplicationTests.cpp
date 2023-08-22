@@ -435,6 +435,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
 
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    /* different name to not match empty name from combobox */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
@@ -477,6 +478,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
@@ -513,6 +515,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
@@ -549,6 +552,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("Cannot send data to port"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
@@ -561,10 +565,9 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
     */
    std::vector<uint8_t> data_buffer;
    std::string log_path = "/home/user";
-   const std::string PORT_HANDLER_NAME = "NAME1";
-   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
-   const std::string DATA_TO_SEND = "some command to send";
+   Theme theme = Theme::DARK;
    const std::string LINE_ENDING = "\\n";
+
    EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillRepeatedly(Return(DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillRepeatedly(Return(DEFAULT_FONT_COLOR));
 
@@ -574,6 +577,7 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
    m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
+   EXPECT_CALL(*GUIControllerMock_get(), currentTheme()).WillOnce(Return(theme));
    ASSERT_EQ(data_buffer.size(), 0);
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_THAT(data_buffer.size(), Gt(0));
@@ -585,6 +589,7 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    //restore
+   EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(theme));
    EXPECT_CALL(*GUIControllerMock_get(), setCurrentLineEnding(LINE_ENDING));
    ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
 
