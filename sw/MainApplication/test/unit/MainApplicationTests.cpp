@@ -52,12 +52,18 @@ struct MainApplicationFixture : public testing::Test
    const uint32_t DEFAULT_FONT_COLOR = 0xFFFFFF;
    const uint32_t GREEN_COLOR = 0x00FF00;
    const uint32_t BLACK_COLOR = 0x000000;
+   const uint8_t PORTS_COUNT = 5;
+   const uint8_t TRACE_FILTERS_COUNT = 7;
+   const uint8_t BUTTONS_TABS = 1;
+   const uint8_t BUTTONS_ROWS_PER_TAB = 2;
+   const uint8_t BUTTONS_PER_ROW = 5;
+   const uint16_t BUTTONS_COUNT = BUTTONS_TABS * BUTTONS_ROWS_PER_TAB * BUTTONS_PER_ROW;
 
    void SetUp()
    {
-      SETTING_SET_U32(GUI_UserButtons_Tabs, 1);
-      SETTING_SET_U32(GUI_UserButtons_RowsPerTab, 2);
-      SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, 5);
+      SETTING_SET_U32(GUI_UserButtons_Tabs, BUTTONS_TABS);
+      SETTING_SET_U32(GUI_UserButtons_RowsPerTab, BUTTONS_ROWS_PER_TAB);
+      SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, BUTTONS_PER_ROW);
       m_button_listener = nullptr;
 
       GUI::PortHandlerMock_init();
@@ -75,7 +81,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), restore(_)).WillOnce(Return(true));
       EXPECT_CALL(*GUIControllerMock_get(), run());
       EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(_));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_)).WillOnce(SaveArg<0>(&m_theme_listener));
       EXPECT_CALL(*GUIControllerMock_get(), setApplicationTitle(_));
       EXPECT_CALL(*GUIControllerMock_get(), setInfoLabelText(_));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("markerButton")).WillOnce(Return(MARKER_BUTTON_ID));
@@ -103,14 +109,15 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("EMPTY"));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForActivePortChangedEvent(_)).WillOnce(SaveArg<0>(&m_port_change_listener));
-      EXPECT_CALL(*GUIControllerMock_get(), countUserButtons()).WillOnce(Return(10));
-      EXPECT_CALL(*GUIControllerMock_get(), countPorts()).WillOnce(Return(5));
-      EXPECT_CALL(*GUIControllerMock_get(), countTraceFilters()).WillOnce(Return(7));
+      EXPECT_CALL(*GUIControllerMock_get(), countUserButtons()).WillOnce(Return(BUTTONS_COUNT));
+      EXPECT_CALL(*GUIControllerMock_get(), countPorts()).WillOnce(Return(PORTS_COUNT));
+      EXPECT_CALL(*GUIControllerMock_get(), countTraceFilters()).WillOnce(Return(TRACE_FILTERS_COUNT));
 
       m_test_subject = std::unique_ptr<MainApplication>(new MainApplication());
 
       ASSERT_TRUE(m_button_listener);
       ASSERT_TRUE(m_port_change_listener);
+      ASSERT_TRUE(m_theme_listener);
 
       Mock::VerifyAndClearExpectations(g_timers_mock);
       Mock::VerifyAndClearExpectations(GUIControllerMock_get());
@@ -147,6 +154,7 @@ struct MainApplicationFixture : public testing::Test
    }
    std::unique_ptr<MainApplication> m_test_subject;
    ButtonEventListener* m_button_listener;
+   ThemeListener* m_theme_listener;
    std::function<bool(const std::string&)> m_port_change_listener;
 };
 
@@ -582,4 +590,36 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
 
 }
 
-//TODO add tests for command history handling
+TEST_F(MainApplicationFixture, theme_reloading)
+{
+   /**
+    * <b>scenario</b>: Theme reload event received, file logging not activated. <br>
+    * <b>expected</b>: Logging button shall be refreshed. <br>
+    *                  All port handlers shall be refreshed. <br>
+    *                  All trace filters shall be refreshed. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), themeToName(_)).WillOnce(Return(""));
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, DEFAULT_FONT_COLOR));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), refreshUi()).Times(PORTS_COUNT);
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
+   m_theme_listener->onThemeChange(Theme::DEFAULT);
+
+
+   /**
+    * <b>scenario</b>: Theme reload event received, file logging activated. <br>
+    * <b>expected</b>: All port handlers shall be refreshed. <br>
+    *                  All trace filters shall be refreshed. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*GUIControllerMock_get(), themeToName(_)).WillOnce(Return(""));
+   EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), refreshUi()).Times(PORTS_COUNT);
+   EXPECT_CALL(*TraceFilterHandlerMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
+   m_theme_listener->onThemeChange(Theme::DEFAULT);
+
+}

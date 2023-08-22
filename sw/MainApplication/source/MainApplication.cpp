@@ -191,7 +191,18 @@ void MainApplication::onButtonEvent(uint32_t button_id, ButtonEvent event)
 void MainApplication::onThemeChange(Theme theme)
 {
    UT_Log(MAIN, LOW, "%s: theme %s", __func__, m_gui_controller.themeToName(theme).c_str());
-   //TODO refresh whole Ui here
+   if (!m_file_logger->isActive())
+   {
+      setButtonState(m_logging_button_id, false);
+   }
+   for (auto& handler : m_port_handlers)
+   {
+      handler->refreshUi();
+   }
+   for (auto& filter : m_trace_filter_handlers)
+   {
+      filter->refreshUi();
+   }
 }
 void MainApplication::onPortHandlerEvent(const GUI::PortHandlerEvent& event)
 {
