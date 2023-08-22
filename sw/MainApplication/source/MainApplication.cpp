@@ -59,14 +59,7 @@ m_marker_index(0)
    UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
 
    m_gui_controller.run();
-   if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Dark_Theme_ID))
-   {
-      m_gui_controller.reloadTheme(Theme::DARK);
-   }
-   else if (SETTING_GET_U32(GUI_Theme_ID) == SETTING_GET_U32(GUI_Default_Theme_ID))
-   {
-      m_gui_controller.reloadTheme(Theme::DEFAULT);
-   }
+   m_gui_controller.reloadTheme(Theme::DARK);
    m_gui_controller.setApplicationTitle(std::string("UltimateTerminal"));
    m_gui_controller.setInfoLabelText(std::string("UltimateTerminal v") + std::string(APPLICATION_VERSION));
 
