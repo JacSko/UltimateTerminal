@@ -84,8 +84,8 @@ bool PortHandler::isOpened()
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>&, size_t){};
 void PortHandler::onTimeout(uint32_t){};
-void PortHandler::onPersistenceRead(const std::vector<uint8_t>&){};
-void PortHandler::onPersistenceWrite(std::vector<uint8_t>&){};
+void PortHandler::onPersistenceRead(const PersistenceItems&){};
+void PortHandler::onPersistenceWrite(PersistenceItems&){};
 void PortHandler::onButtonEvent(uint32_t, ButtonEvent){};
 
 

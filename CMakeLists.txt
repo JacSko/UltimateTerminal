@@ -19,10 +19,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 #########################################
 #  File paths configurations
 #########################################
-set(CONFIG_FILE ".system_config.json") 
 set(LOGS_FILE ".logs.log") 
-set(PERSISTENCE_FILE ".Ultimate_terminal_persistence.bin")
-set(SETTINGS_PERSISTENCE_FILE ".Ultimate_terminal_settings_persistence.bin")
+set(PERSISTENCE_FILE ".persistence.json")
 if (UNIX)
    message(STATUS "Building for UNIX")
    set(DRIVER_VARIANT NativeDrivers)
@@ -35,11 +33,9 @@ endif()
 #########################################
 add_definitions(-D_UNICODE
 			    -DUNICODE
-				-DCONFIG_FILE="${CONFIG_FILE}"
 				-DLOGS_FILE="${LOGS_FILE}"
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
                 -DPERSISTENCE_FILE="${PERSISTENCE_FILE}" 
-                -DSETTINGS_PERSISTENCE_FILE="${SETTINGS_PERSISTENCE_FILE}"
                 -DRUNTIME_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 #########################################
@@ -77,10 +73,6 @@ else()
    else()
       target_link_libraries(UltimateTerminal pthread)
    endif()
-   # copying-out system config file to bin
-   add_custom_command(TARGET UltimateTerminal POST_BUILD
-                      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/config/system_config.json ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/.system_config.json
-                      COMMENT "Copying setitngs file")
    if (SIMULATION)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
       enable_testing()
@@ -128,9 +120,7 @@ printVariable("Target OS WIN32" BOOL ${WIN32})
 printVariable("Unit Tests" BOOL ${UNIT_TESTS})
 printVariable("Simulation Testing" BOOL ${SIMULATION})
 printVariable("Logger disabled" BOOL ${UT_NO_DEBUG_OUTPUT})
-printVariable("Config file path" STRING ${CONFIG_FILE})
 printVariable("Persistence path" STRING ${PERSISTENCE_FILE})
-printVariable("Settings persistence path" STRING ${SETTINGS_PERSISTENCE_FILE})
 printVariable("CXX flags" STRING ${CMAKE_CXX_FLAGS})
 printVariable("C flags" STRING ${CMAKE_C_FLAGS})
 printVariable("Build type" STRING ${CMAKE_BUILD_TYPE})

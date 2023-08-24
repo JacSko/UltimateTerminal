@@ -46,8 +46,7 @@ public:
                              std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                              std::unique_ptr<IFileLogger>& logger,
                              std::string& logging_path,
-                             const std::string& persistence_path,
-                             const std::string& settings_persistence_path);
+                             const std::string& persistence_path);
    ~ApplicationSettingsDialog();
 
    /**
@@ -125,7 +124,6 @@ private:
    QComboBox* m_theme_combobox;
    QLineEdit* m_max_traces_edit;
    std::string m_persistence_path;
-   std::string m_settings_persistence_path;
 
 };
 

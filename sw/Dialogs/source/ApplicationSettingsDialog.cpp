@@ -17,16 +17,14 @@ ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controll
                                                      std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
                                                      std::unique_ptr<IFileLogger>& logger,
                                                      std::string& logging_path,
-                                                     const std::string& persistence_path,
-                                                     const std::string& settings_persistence_path):
+                                                     const std::string& persistence_path):
 m_handlers(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
 m_gui_controller(gui_controller),
 m_theme_combobox(nullptr),
 m_max_traces_edit(nullptr),
-m_persistence_path(persistence_path),
-m_settings_persistence_path(settings_persistence_path)
+m_persistence_path(persistence_path)
 {
 }
 ApplicationSettingsDialog::~ApplicationSettingsDialog()
@@ -99,14 +97,6 @@ void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab, QWidget* 
    QLabel* persistence_path = new QLabel();
    persistence_path->setText(QString(m_persistence_path.c_str()));
    tab_layout->addRow("Data persistence", persistence_path);
-
-   QLabel* settings_persistence_path = new QLabel();
-   settings_persistence_path->setText(QString(m_settings_persistence_path.c_str()));
-   tab_layout->addRow("Settings persistence", settings_persistence_path);
-
-   QLabel* settings_path = new QLabel();
-   settings_path->setText(QString(Settings::SettingsHandler::get()->getFilePath().c_str()));
-   tab_layout->addRow("Settings file", settings_path);
 
    main_tab->addTab(tab_widget, "GENERAL");
 }

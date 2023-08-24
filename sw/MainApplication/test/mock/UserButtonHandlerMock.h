@@ -17,11 +17,11 @@ UserButtonHandler::~UserButtonHandler()
 {
 
 }
-void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>&)
+void UserButtonHandler::onPersistenceRead(const PersistenceItems&)
 {
 
 }
-void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>&)
+void UserButtonHandler::onPersistenceWrite(PersistenceItems&)
 {
 
 }

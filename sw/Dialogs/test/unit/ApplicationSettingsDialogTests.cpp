@@ -74,7 +74,7 @@ struct ApplicationSettingsDialogFixture : public testing::Test
          test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(i, test_controller, "", test_persistence)));
       }
       test_file_logger = IFileLogger::create();
-      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path, "persistence_path", "settings_persistence_path"));
+      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path, "persistence_path"));
    }
    void TearDown()
    {
@@ -128,8 +128,6 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    QComboBox test_theme_combobox;
    QLineEdit test_max_trace_edit;
    QLabel test_persistence_label;
-   QLabel test_settings_persistence_label;
-   QLabel test_settingspath_label;
 
    /* PORTS tab widgets */
    QTabWidget test_ports_tab;
@@ -192,8 +190,6 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_max_trace_edit))
                                                      .WillRepeatedly(Return(&test_setting_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_persistence_label))
-                                                  .WillOnce(Return(&test_settings_persistence_label))
-                                                  .WillOnce(Return(&test_settingspath_label))
                                                   .WillOnce(Return(&test_about_label));
 
    /* expect connecting the dialog button signals */
@@ -212,11 +208,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_max_trace_edit));
 
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_persistence_label, _));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_settings_persistence_label, _));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_settingspath_label, _));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_persistence_label));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_settings_persistence_label));
-   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_general_layout, _, &test_settingspath_label));
 
    /* expect PORTS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_ports_tab,_,HasSubstr("PORT"))).Times(PORT_HANDLERS_COUNT);

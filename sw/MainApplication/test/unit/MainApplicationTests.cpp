@@ -563,7 +563,7 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
     * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
     * ************************************************
     */
-   std::vector<uint8_t> data_buffer;
+   Persistence::PersistenceListener::PersistenceItems data_buffer;
    std::string log_path = "/home/user";
    Theme theme = Theme::DARK;
    const std::string LINE_ENDING = "\\n";

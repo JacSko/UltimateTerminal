@@ -64,7 +64,7 @@ public:
 class SettingsHandler : public Persistence::PersistenceListener
 {
 public:
-   SettingsHandler(const std::string& persistence_file);
+   SettingsHandler(Persistence::PersistenceHandler& persistence);
    /**
     * @brief Returns instance of SettingsHandler object.
     * @return Pointer to SettingsHandler object
@@ -74,7 +74,7 @@ public:
     * @brief Creates SettingsHandler object.
     * @return void
     */
-   static void create(const std::string& persistence_file);
+   static void create(Persistence::PersistenceHandler& persistence);
    /**
     * @brief Destroys SettingsHandler object.
     * @return void
@@ -86,18 +86,12 @@ public:
     * @param[in] settings_file_path - path to JSON file with settings.
     * @return void
     */
-   void start(const std::string& settings_file_path);
+   void start();
    /**
     * @brief Stops settings handler module.
     * @return void
     */
    void stop();
-   /**
-    * @brief Reads settings from file.
-    * @param[in] settings_file_path - path to settings file.
-    * @return True if parsed correctly.
-    */
-   bool parseSettings();
    /**
     * @brief Get setting value.
     * @param[in] id - id of the setting.
@@ -188,15 +182,14 @@ public:
 private:
    void notifyListeners(KeyID id);
    std::vector<KeyID> applySettings();
-   void onPersistenceRead(const std::vector<uint8_t>& data);
    bool settingExist(const std::string& name);
-   void onPersistenceWrite(std::vector<uint8_t>& data);
 
-   std::string m_settings_file;
-   std::string m_persistence_file;
+   void onPersistenceRead(const PersistenceItems&);
+   void onPersistenceWrite(PersistenceItems&);
+
    std::mutex m_settings_mutex;
    std::vector<std::pair<KeyID, SettingsListener*>> m_listeners;
-   Persistence::PersistenceHandler m_persistence;
+   Persistence::PersistenceHandler& m_persistence;
 };
 
 }

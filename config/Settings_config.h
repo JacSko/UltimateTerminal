@@ -1,13 +1,6 @@
 #ifndef _SETTINGS_CONFIG_H
 #define _SETTINGS_CONFIG_H
 
-/* ==========================================================*/
-/* ========== auto-generated file - do not modify! ==========*/
-/* ==========================================================*/
-/* ==== edit system_config.json and rebuild the target! =====*/
-/* ==========================================================*/
-
-
 #define SETTING_GROUPS\
    DEF_SETTING_GROUP(Logger_supportFileLogging, bool, true) \
    DEF_SETTING_GROUP(Logger_supportStdoutLogging, bool, false) \

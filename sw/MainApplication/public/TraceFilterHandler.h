@@ -78,8 +78,8 @@ private:
    /* ButtonEventListener */
    void onButtonEvent(uint32_t button_id, ButtonEvent event);
 
-   void onPersistenceRead(const std::vector<uint8_t>& data);
-   void onPersistenceWrite(std::vector<uint8_t>& data);
+   void onPersistenceRead(const PersistenceItems&) override;
+   void onPersistenceWrite(PersistenceItems&) override;
    void handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
 
    GUIController& m_gui_controller;

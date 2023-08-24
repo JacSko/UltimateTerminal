@@ -89,53 +89,42 @@ bool TraceFilterHandler::isActive()
 {
    return filteringActive();
 }
-void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>& data)
+void TraceFilterHandler::onPersistenceRead(const PersistenceItems& items)
 {
-   UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u Restoring persistence", m_settings.id);
+   UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u restoring persistence", m_settings.id);
+   Dialogs::TraceFilterSettingDialog::Settings settings = m_settings;
+   bool isActive = false;
 
-   uint32_t offset = 0;
+   Persistence::readItem(items, "isActive", isActive);
+   Persistence::readItem(items, "text", settings.regex);
+   Persistence::readItem(items, "backgroundColor", settings.background);
+   Persistence::readItem(items, "fontColor", settings.font);
+   Persistence::readItem(items, "userDefined", m_user_defined);
+   Persistence::readItem(items, "id", settings.id);
 
-   uint32_t background_color;
-   uint32_t font_color;
-   uint8_t id;
-   std::string text;
-   bool is_active;
-   Dialogs::TraceFilterSettingDialog::Settings settings;
-
-   ::deserialize(data, offset, is_active);
-   ::deserialize(data, offset, text);
-   ::deserialize(data, offset, background_color);
-   ::deserialize(data, offset, font_color);
-   ::deserialize(data, offset, m_user_defined);
-   ::deserialize(data, offset, id);
-
-   settings.background = background_color;
-   settings.font = font_color;
-   settings.regex = text;
-   settings.id = id;
    handleNewSettings(settings);
-   setButtonState(is_active);
+   setButtonState(isActive);
 
-   m_gui_controller.setButtonChecked(m_button_id, is_active);
-   m_gui_controller.setTraceFilterEnabled(m_settings.id, !is_active);
-   m_is_active = is_active;
+   m_gui_controller.setButtonChecked(m_button_id, isActive);
+   m_gui_controller.setTraceFilterEnabled(m_settings.id, !isActive);
+   m_is_active = isActive;
 
-   UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x active %u, text %s", m_settings.id, m_settings.background, m_settings.font, is_active, text.c_str());
+   UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x active %u, text %s", m_settings.id, m_settings.background, m_settings.font, isActive, m_settings.regex.c_str());
 }
-void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>& data)
+void TraceFilterHandler::onPersistenceWrite(PersistenceItems& buffer)
 {
-   UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u Saving persistence", m_settings.id);
    std::string text = m_gui_controller.getTraceFilter(m_settings.id);
 
-   ::serialize(data, m_is_active);
-   ::serialize(data, text);
-   ::serialize(data, m_settings.background);
-   ::serialize(data, m_settings.font);
-   ::serialize(data, m_user_defined);
-   ::serialize(data, m_settings.id);
-   UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x, active %u, text %s", m_settings.id, m_settings.background, m_settings.font, m_is_active, text.c_str());
+   Persistence::writeItem(buffer, "isActive", m_is_active);
+   Persistence::writeItem(buffer, "text", text);
+   Persistence::writeItem(buffer, "backgroundColor", m_settings.background);
+   Persistence::writeItem(buffer, "fontColor", m_settings.font);
+   Persistence::writeItem(buffer, "userDefined", m_user_defined);
+   Persistence::writeItem(buffer, "id", m_settings.id);
 
+   UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x, active %u, text %s", m_settings.id, m_settings.background, m_settings.font, m_is_active, text.c_str());
 }
+
 void TraceFilterHandler::onButtonClicked()
 {
    if (!filteringActive())

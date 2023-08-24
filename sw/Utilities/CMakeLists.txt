@@ -1,8 +1,12 @@
+add_library(Persistence source/PersistenceHandler.cpp)
+target_include_directories(Persistence PUBLIC public/ PRIVATE include/)
+target_link_libraries(Persistence Logger nlohmann_json::nlohmann_json)
+
 add_library(Utilities
             source/TimersImpl.cpp
             source/PersistenceHandler.cpp)
 target_include_directories(Utilities PUBLIC public/ PRIVATE include/)
-target_link_libraries(Utilities PRIVATE Logger ThreadWorker)
+target_link_libraries(Utilities PRIVATE Persistence Logger ThreadWorker)
 
 add_library(UtilitiesIf INTERFACE)
 target_include_directories(UtilitiesIf INTERFACE public/)

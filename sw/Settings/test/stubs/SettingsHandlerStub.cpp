@@ -48,16 +48,18 @@ void set_setting<bool>(KeyID id, bool setting)
 
 SettingsHandler* SettingsHandler::get()
 {
-   static SettingsHandler g_settings("");
+   static Persistence::PersistenceHandler g_handler;
+   static SettingsHandler g_settings(g_handler);
    return &g_settings;
 }
-void SettingsHandler::create(const std::string&)
+void SettingsHandler::create(Persistence::PersistenceHandler&)
 {
 }
 void SettingsHandler::destroy()
 {
 }
-SettingsHandler::SettingsHandler(const std::string&)
+SettingsHandler::SettingsHandler(Persistence::PersistenceHandler& persistence):
+m_persistence(persistence)
 {
 
 /* load default settings from SettingsHolder.h macro */
@@ -68,19 +70,11 @@ SettingsHandler::SettingsHandler(const std::string&)
 
    UT_Log(SETTINGS, INFO, "Default setting loaded");
 }
-void SettingsHandler::start(const std::string&)
+void SettingsHandler::start()
 {
 }
 void SettingsHandler::stop()
 {
-}
-bool SettingsHandler::parseSettings()
-{
-   return false;
-}
-std::vector<KeyID> SettingsHandler::applySettings()
-{
-   return {};
 }
 void SettingsHandler::printSettings()
 {
@@ -152,10 +146,10 @@ void SettingsHandler::unregisterListener(KeyID, SettingsListener*)
 void SettingsHandler::notifyListeners(KeyID)
 {
 }
-void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>&)
+void SettingsHandler::onPersistenceRead(const PersistenceItems&)
 {
 }
-void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>&)
+void SettingsHandler::onPersistenceWrite(PersistenceItems&)
 {
 }
 std::string SettingsHandler::toString(KeyID id)
@@ -197,9 +191,5 @@ SettingType SettingsHandler::getType(KeyID id)
       }
    }
    return SettingType::UNKNOWN;
-}
-std::string SettingsHandler::getFilePath()
-{
-   return m_settings_file;
 }
 }

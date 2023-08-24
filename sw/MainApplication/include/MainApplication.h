@@ -69,14 +69,13 @@ private:
    bool sendToPort(const std::string&);
    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color);
    void setButtonState(uint32_t button_id, bool active);
-   void onPersistenceRead(const std::vector<uint8_t>& data);
-   void onPersistenceWrite(std::vector<uint8_t>& data);
+   void onPersistenceRead(const PersistenceItems&) override;
+   void onPersistenceWrite(PersistenceItems&) override;
    void addToCommandHistory(uint8_t port_id, const std::string& text);
    void removeCommandHistoryDuplicates(std::vector<std::string>& history, const std::string& text);
    uint8_t portNameToId(const std::string& name);
    std::string createLogFileName();
    std::string getPersistenceFile();
-   std::string getSettingsPersistenceFile();
 
    void onMarkerButtonClicked();
    void onLoggingButtonClicked();

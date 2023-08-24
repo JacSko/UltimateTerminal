@@ -33,8 +33,8 @@ private:
 
    void handleNewSettings(const Dialogs::UserButtonDialog::Settings&);
    void setButtonName(const std::string name);
-   void onPersistenceRead(const std::vector<uint8_t>& data) override;
-   void onPersistenceWrite(std::vector<uint8_t>& data) override;
+   void onPersistenceRead(const PersistenceItems&) override;
+   void onPersistenceWrite(PersistenceItems&) override;
    void onCommandExecutionEvent(bool result);
    void onUserButtonContextMenuRequested();
    void onUserButtonClicked();

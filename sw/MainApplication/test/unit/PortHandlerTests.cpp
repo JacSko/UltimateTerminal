@@ -46,6 +46,7 @@ constexpr uint32_t BUTTON_DEFAULT_FONT_COLOR = 0x222222;
 constexpr int TEST_TIMER_ID = 1;
 const std::string TEST_BUTTON_NAME = "BUTTON_NAME";
 constexpr uint32_t TEST_BUTTON_ID = 1;
+constexpr uint8_t TEST_PORT_ID = 0;
 
 struct TestParam
 {
@@ -82,7 +83,7 @@ struct PortHandlerFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, HasSubstr("PORT")));
       EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
-      m_test_subject.reset(new PortHandler(0, gui_controller, TEST_BUTTON_NAME, timer_mock, &listener_mock, fake_persistence));
+      m_test_subject.reset(new PortHandler(TEST_PORT_ID, gui_controller, TEST_BUTTON_NAME, timer_mock, &listener_mock, fake_persistence));
       Mock::VerifyAndClearExpectations(g_socket_mock);
       Mock::VerifyAndClearExpectations(g_serial_mock);
       Mock::VerifyAndClearExpectations(&timer_mock);
@@ -697,6 +698,116 @@ TEST_F(PortHandlerFixture, settings_set_and_get_tests)
    EXPECT_TRUE(m_test_subject->setSettings(user_settings));
 
 }
+
+TEST_F(PortHandlerFixture, persistence_writing)
+{
+   Dialogs::PortSettingDialog::Settings user_settings;
+   user_settings.port_name = "TEST_NAME";
+   user_settings.port_id = 0;
+   user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
+   user_settings.serialSettings.mode = Drivers::Serial::DataMode::NEW_LINE_DELIMITER;
+   user_settings.serialSettings.device = "";
+   user_settings.ip_address = "192.168.1.100";
+   user_settings.port = 1234;
+   user_settings.trace_color = 1;
+   user_settings.font_color = 2;
+   ASSERT_TRUE(user_settings != m_test_subject->getSettings());
+
+   /**
+    * <b>scenario</b>: Persistence written.<br>
+    * <b>expected</b>: Persistence was correctly serialized. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(TEST_PORT_ID, HasSubstr(user_settings.serialSettings.baudRate.toName())));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
+   EXPECT_TRUE(m_test_subject->setSettings(user_settings));
+
+   Persistence::PersistenceListener::PersistenceItems persistence_written;
+   dynamic_cast<Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceWrite(persistence_written);
+
+   Dialogs::PortSettingDialog::Settings serialized_settings;
+   std::string baudrate_name;
+   std::string databits_name;
+   std::string paritybits_name;
+   std::string stopbits_name;
+   std::string porttype_name;
+
+   Persistence::readItem(persistence_written, "ipAddress", serialized_settings.ip_address);
+   Persistence::readItem(persistence_written, "ipPort", serialized_settings.port);
+   Persistence::readItem(persistence_written, "portId", serialized_settings.port_id);
+   Persistence::readItem(persistence_written, "portName", serialized_settings.port_name);
+   Persistence::readItem(persistence_written, "baudRate", baudrate_name);
+   Persistence::readItem(persistence_written, "dataBits", databits_name);
+   Persistence::readItem(persistence_written, "parityBits", paritybits_name);
+   Persistence::readItem(persistence_written, "stopBits", stopbits_name);
+   Persistence::readItem(persistence_written, "device", serialized_settings.serialSettings.device);
+   Persistence::readItem(persistence_written, "mode", (uint8_t&)serialized_settings.serialSettings.mode);
+   Persistence::readItem(persistence_written, "traceColor", serialized_settings.trace_color);
+   Persistence::readItem(persistence_written, "fontColor", serialized_settings.font_color);
+   Persistence::readItem(persistence_written, "type", porttype_name);
+   serialized_settings.serialSettings.baudRate.fromName(baudrate_name);
+   serialized_settings.serialSettings.dataBits.fromName(databits_name);
+   serialized_settings.serialSettings.parityBits.fromName(paritybits_name);
+   serialized_settings.serialSettings.stopBits.fromName(stopbits_name);
+   serialized_settings.type.fromName(porttype_name);
+
+   EXPECT_TRUE(user_settings == serialized_settings);
+}
+
+TEST_F(PortHandlerFixture, persistence_restoring)
+{
+   Persistence::PersistenceListener::PersistenceItems persistence_written;
+   Dialogs::PortSettingDialog::Settings user_settings;
+   /**
+    * <b>scenario</b>: Persistence written.<br>
+    * <b>expected</b>: Persistence was correctly serialized. <br>
+    * ************************************************
+    */
+   user_settings.port_name = "TEST_NAME";
+   user_settings.port_id = 0;
+   user_settings.type = Dialogs::PortSettingDialog::PortType::SERIAL;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
+   user_settings.serialSettings.mode = Drivers::Serial::DataMode::NEW_LINE_DELIMITER;
+   user_settings.serialSettings.device = "";
+   user_settings.ip_address = "192.168.1.100";
+   user_settings.port = 1234;
+   user_settings.trace_color = 1;
+   user_settings.font_color = 2;
+   ASSERT_TRUE(user_settings != m_test_subject->getSettings());
+
+   Persistence::writeItem(persistence_written, "ipAddress", user_settings.ip_address);
+   Persistence::writeItem(persistence_written, "ipPort", user_settings.port);
+   Persistence::writeItem(persistence_written, "portId", user_settings.port_id);
+   Persistence::writeItem(persistence_written, "portName", user_settings.port_name);
+   Persistence::writeItem(persistence_written, "baudRate", user_settings.serialSettings.baudRate.toName());
+   Persistence::writeItem(persistence_written, "dataBits", user_settings.serialSettings.dataBits.toName());
+   Persistence::writeItem(persistence_written, "parityBits", user_settings.serialSettings.parityBits.toName());
+   Persistence::writeItem(persistence_written, "stopBits", user_settings.serialSettings.stopBits.toName());
+   Persistence::writeItem(persistence_written, "device", user_settings.serialSettings.device);
+   Persistence::writeItem(persistence_written, "mode", (uint8_t)user_settings.serialSettings.mode);
+   Persistence::writeItem(persistence_written, "traceColor", user_settings.trace_color);
+   Persistence::writeItem(persistence_written, "fontColor", user_settings.font_color);
+   Persistence::writeItem(persistence_written, "type", user_settings.type.toName());
+
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, user_settings.shortSettingsString()));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
+   dynamic_cast<Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceRead(persistence_written);
+
+   EXPECT_TRUE(user_settings == m_test_subject->getSettings());
+
+}
+
 
 TestParam params[] = {{Dialogs::PortSettingDialog::PortType::SERIAL},{Dialogs::PortSettingDialog::PortType::ETHERNET}};
 INSTANTIATE_TEST_CASE_P(PortHandlerParamFixture, PortHandlerParamFixture, ValuesIn(params));

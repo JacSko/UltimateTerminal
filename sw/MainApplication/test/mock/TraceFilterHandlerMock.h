@@ -64,7 +64,7 @@ bool TraceFilterHandler::isActive()
 {
    return TraceFilterHandlerMock_get()->isActive();
 }
-void TraceFilterHandler::onPersistenceRead(const std::vector<uint8_t>&){}
-void TraceFilterHandler::onPersistenceWrite(std::vector<uint8_t>&){}
+void TraceFilterHandler::onPersistenceRead(const PersistenceItems&){};
+void TraceFilterHandler::onPersistenceWrite(PersistenceItems&){};
 void TraceFilterHandler::onButtonEvent(uint32_t, ButtonEvent){};
 

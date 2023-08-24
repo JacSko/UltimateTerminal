@@ -213,7 +213,7 @@ TEST_F(TraceFilterHandlerTests, persistence_write_and_read)
     * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
     * ************************************************
     */
-   std::vector<uint8_t> data_buffer;
+   Persistence::PersistenceListener::PersistenceItems data_buffer;
    Dialogs::TraceFilterSettingDialog::Settings settings;
    settings.id = TEST_FILTER_ID;
    settings.background = 0x112233;

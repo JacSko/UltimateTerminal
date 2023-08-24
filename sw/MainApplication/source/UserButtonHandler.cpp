@@ -87,22 +87,23 @@ void UserButtonHandler::setButtonName(const std::string name)
 {
    m_gui_controller.setButtonText(m_button_id, name);
 }
-void UserButtonHandler::onPersistenceRead(const std::vector<uint8_t>& data)
+void UserButtonHandler::onPersistenceRead(const PersistenceItems& items)
 {
-   uint32_t offset = 0;
-   Dialogs::UserButtonDialog::Settings new_settings = {};
+   Dialogs::UserButtonDialog::Settings new_settings = m_settings;
 
-   ::deserialize(data, offset, new_settings.button_name);
-   ::deserialize(data, offset, new_settings.raw_commands);
+   Persistence::readItem(items, "ButtonName", new_settings.button_name);
+   Persistence::readItem(items, "ButtonCommands", new_settings.raw_commands);
+
    UT_Log(USER_BTN_HANDLER, HIGH, "BUTTON%u[%s] Persistence read - text [%s]", m_settings.id, m_settings.button_name.c_str(), new_settings.raw_commands.c_str());
 
    handleNewSettings(new_settings);
 }
-void UserButtonHandler::onPersistenceWrite(std::vector<uint8_t>& data)
+void UserButtonHandler::onPersistenceWrite(PersistenceItems& buffer)
 {
    UT_Log(USER_BTN_HANDLER, HIGH, "BUTTON%u[%s] Persistence write - text [%s]", m_settings.id, m_settings.button_name.c_str(), m_settings.raw_commands.c_str());
-   ::serialize(data, m_settings.button_name);
-   ::serialize(data, m_settings.raw_commands);
+
+   Persistence::writeItem(buffer, "ButtonName", m_settings.button_name);
+   Persistence::writeItem(buffer, "ButtonCommands", m_settings.raw_commands);
 
 }
 void UserButtonHandler::onCommandExecutionEvent(bool result)

@@ -2,116 +2,77 @@
 #include <fstream>
 #include <numeric>
 #include "PersistenceHandler.h"
-#include "Serialize.hpp"
 #include "Logger.h"
+#include "nlohmann/json.hpp"
+
 
 namespace Persistence
 {
 
-/* size of each persistence block is stored on 4 bytes */
-constexpr uint8_t PERSISTENCE_DATA_BLOCK_SIZE = 4;
-/* persistence checksum size */
-constexpr uint8_t PERSISTENCE_CHECKSUM_SIZE = 4;
-
 bool PersistenceHandler::restore(const std::string& file_name)
 {
+   using json = nlohmann::json;
+   std::ifstream file(file_name);
    bool result = false;
-   std::ifstream file(file_name, std::ios::binary);
-
    if (file)
    {
-      uint32_t file_size = getFileSize(file);
-      if (file_size)
+      UT_Log(PERSISTENCE, LOW, "Persistence file opened [%s], reading items", file_name.c_str());
+      json jsonFile = json::parse(file);
+      for (auto& module : jsonFile.items())
       {
-         std::vector<uint8_t> buffer;
-         buffer.resize(file_size);
-         file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-         if (validateChecksum(buffer))
+         UT_Log(PERSISTENCE, HIGH, "Processing module %s", module.key().c_str());
+         PersistenceListener::PersistenceItems items;
+         auto& moduleSettings = jsonFile[module.key()];
+         for (auto& setting : moduleSettings.items())
          {
-            auto it = buffer.begin();
-            while (it != (buffer.end() - PERSISTENCE_CHECKSUM_SIZE))
-            {
-               /* get block name */
-               std::string name ((char*)&(*it));
-               it += name.size() + 1;
-               /* get block size */
-               uint32_t offset = std::distance(buffer.begin(), it);
-               uint32_t data_size = 0;
-               ::deserialize(buffer, offset, data_size);
-               it += PERSISTENCE_DATA_BLOCK_SIZE;
-               /* get block data */
-               std::vector<uint8_t> data (it, it + data_size);
-               it += data_size;
-               UT_Log(PERSISTENCE, HIGH, "got %u bytes for %s", data.size(), name.c_str());
-               GenericListener::notifyChange([&](PersistenceListener* l)
-                     {
-                        if (l->getName() == name)
-                        {
-                           l->onPersistenceRead(data);
-                        }
-                     });
-            }
-            result = true;
+            std::string key = setting.key();
+            std::string value = setting.value();
+            UT_Log(PERSISTENCE, HIGH, "Got item - module %s key %s value %s", module.key().c_str(), key.c_str(), value.c_str());
+            items.push_back(PersistenceListener::PersistenceItem{key, value});
          }
+         GenericListener::notifyChange([&](PersistenceListener* l)
+               {
+                  if (l->getName() == module.key())
+                  {
+                     UT_Log(PERSISTENCE, HIGH, "Found handler for %s, sending %u items...", module.key().c_str(), items.size());
+                     l->onPersistenceRead(items);
+                  }
+               });
       }
+      result = true;
    }
+   UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
 }
 bool PersistenceHandler::save(const std::string& file_name)
 {
+   using json = nlohmann::json;
+   json jsonFile;
+   std::ofstream file(file_name);
    bool result = false;
-   std::ofstream file (file_name, std::ios::binary);
    if (file)
    {
-      std::vector<uint8_t> out_buffer;
-      std::vector<uint8_t> temp_buffer;
+      UT_Log(PERSISTENCE, LOW, "Persistence file opened [%s], collect settings", file_name.c_str());
       GenericListener::notifyChange([&](PersistenceListener* l)
             {
-               temp_buffer.clear();
-               l->onPersistenceWrite(temp_buffer);
-               /* write block name */
-               std::string name = l->getName();
-               UT_Log(PERSISTENCE, HIGH, "got %u bytes from %s", temp_buffer.size(), name.c_str());
-               out_buffer.insert(out_buffer.end(), name.begin(), name.end());
-               /* put NULL char to indicate string end */
-               out_buffer.push_back(0x00);
-               /* put block size on 4 bytes */
-               ::serialize(out_buffer, (uint32_t)temp_buffer.size());
-               /* insert serialized block data */
-               out_buffer.insert(out_buffer.end(), temp_buffer.begin(), temp_buffer.end());
-               UT_Log(PERSISTENCE, HIGH, "Persistence file size %u", out_buffer.size());
+               UT_Log(PERSISTENCE, HIGH, "Gathering settings for %s", l->getName().c_str());
+               PersistenceListener::PersistenceItems items = {};
+               l->onPersistenceWrite(items);
+               UT_Log(PERSISTENCE, HIGH, "Got %u items from %s", items.size(), l->getName().c_str());
+               auto& moduleJson = jsonFile[l->getName()];
+               for (auto& item : items)
+               {
+                  moduleJson[item.key] = item.value;
+               }
             });
-      addChecksum(out_buffer);
-      file.write(reinterpret_cast<char*>(out_buffer.data()), out_buffer.size());
+      UT_Log(PERSISTENCE, LOW, "All settings collected (%u entries), writing to file", jsonFile.size());
+      file << jsonFile;
       file.flush();
       file.close();
       result = true;
    }
+   UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
 }
-uint32_t PersistenceHandler::getFileSize(std::istream& file)
-{
-   file.seekg(0, std::ios::end);
-   uint32_t result = file.tellg();
-   file.seekg(0, std::ios::beg);
-   UT_Log(PERSISTENCE, LOW, "file size $u", result);
-   return result;
-}
-void PersistenceHandler::addChecksum(std::vector<uint8_t>& data)
-{
-   uint32_t checksum = std::accumulate(data.begin(), data.end(), 0);
-   UT_Log(MAIN, HIGH, "writing checksum %.4x", checksum);
-   ::serialize(data, checksum);
-}
-bool PersistenceHandler::validateChecksum(const std::vector<uint8_t>& data)
-{
-   uint32_t offset = data.size() - PERSISTENCE_CHECKSUM_SIZE;
-   uint32_t read_checksum = 0;
-   uint32_t real_checksum = std::accumulate(data.begin(), data.end() - PERSISTENCE_CHECKSUM_SIZE, 0);
-   ::deserialize(data, offset, read_checksum);
-   UT_Log(PERSISTENCE, INFO, "checksum read %.4x, checksum calculated %.4x", read_checksum, real_checksum);
-   return read_checksum == real_checksum;
-}
-
 
 }

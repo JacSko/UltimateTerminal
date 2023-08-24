@@ -71,9 +71,9 @@ SettingsHandler* SettingsHandler::get()
    return g_settings;
 }
 
-void SettingsHandler::create(const std::string& persistence_file)
+void SettingsHandler::create(Persistence::PersistenceHandler& persistence)
 {
-   g_settings = new SettingsHandler(persistence_file);
+   g_settings = new SettingsHandler(persistence);
 }
 
 void SettingsHandler::destroy()
@@ -81,10 +81,10 @@ void SettingsHandler::destroy()
    delete g_settings;
 }
 
-SettingsHandler::SettingsHandler(const std::string& persistence_file)
+SettingsHandler::SettingsHandler(Persistence::PersistenceHandler& persistence):
+m_persistence(persistence)
 {
    Persistence::PersistenceListener::setName("SETTINGS");
-   m_persistence_file = persistence_file;
 /* load default settings from SettingsHolder.h macro */
 #undef DEF_SETTING_GROUP
 #define DEF_SETTING_GROUP(name, type, default_value) (set_setting<type>(name, default_value));
@@ -93,128 +93,19 @@ SettingsHandler::SettingsHandler(const std::string& persistence_file)
 
 }
 
-void SettingsHandler::start(const std::string& settings_file_path)
+void SettingsHandler::start()
 {
-   m_settings_file = settings_file_path;
-   parseSettings();
+   printSettings();
    m_persistence.addListener(*this);
-   UT_Log(SETTINGS, INFO, "Trying to restore from persistence");
-   if (!m_persistence.restore(m_persistence_file))
-   {
-      UT_Log(SETTINGS, ERROR, "Cannot restore persistence!");
-   }
 }
 
 void SettingsHandler::stop()
 {
-   if (!m_persistence.save(m_persistence_file))
-   {
-      UT_Log(SETTINGS, ERROR, "Cannot write persistence!");
-   }
    m_persistence.removeListener(*this);
-}
-
-bool SettingsHandler::parseSettings()
-{
-   bool result = false;
-   std::ifstream file(m_settings_file);
-   if (file)
-   {
-      applySettings();
-      printSettings();
-      result = true;
-   }
-   return result;
-}
-std::vector<KeyID> SettingsHandler::applySettings()
-{
-   std::vector<KeyID> result;
-   using json = nlohmann::json;
-   json j;
-   std::ifstream file(m_settings_file);
-   if (file)
-   {
-      file >> j;
-      for (auto it = m_setting_names.begin(); it < m_setting_names.end(); it++)
-      {
-         json::value_t type = j[m_setting_names[std::distance(m_setting_names.begin(), it)]].type();
-         switch(type)
-         {
-         case json::value_t::number_integer:
-         case json::value_t::number_unsigned:
-            if (setU32((KeyID)std::distance(m_setting_names.begin(), it), j[m_setting_names[std::distance(m_setting_names.begin(), it)]].get<uint32_t>()))
-            {
-               result.push_back((KeyID)std::distance(m_setting_names.begin(), it));
-            }
-            break;
-         case json::value_t::boolean:
-            if (setBool((KeyID)std::distance(m_setting_names.begin(), it), j[m_setting_names[std::distance(m_setting_names.begin(), it)]].get<bool>()))
-            {
-               result.push_back((KeyID)std::distance(m_setting_names.begin(), it));
-            }
-            break;
-         case json::value_t::string:
-            if(setString((KeyID)std::distance(m_setting_names.begin(), it), j[m_setting_names[std::distance(m_setting_names.begin(), it)]].get<std::string>()))
-            {
-               result.push_back((KeyID)std::distance(m_setting_names.begin(), it));
-            }
-            break;
-         default:
-            break;
-         }
-      }
-   }
-   return result;
-}
-void SettingsHandler::onPersistenceRead(const std::vector<uint8_t>& data)
-{
-   uint32_t offset = 0;
-
-   while (offset != data.size())
-   {
-      std::string setting_name;
-      std::string setting_type;
-
-      KeyID id;
-      ::deserialize(data, offset, setting_name);
-      ::deserialize(data, offset, setting_type);
-
-      id = fromString(setting_name);
-
-      if (setting_type == "bool")
-      {
-         bool bool_value;
-         ::deserialize(data, offset, bool_value);
-         if (settingExist(setting_name)) set_setting<bool>(id,bool_value);
-      }
-      else if (setting_type == "uint32_t")
-      {
-         uint32_t u32_value;
-         ::deserialize(data, offset, u32_value);
-         if (settingExist(setting_name)) set_setting<uint32_t>(id,u32_value);
-      }
-      else if (setting_type == "std::string")
-      {
-         std::string string_value;
-         ::deserialize(data, offset, string_value);
-         if (settingExist(setting_name)) set_setting<std::string>(id,string_value);
-      }
-   }
-   UT_Log(SETTINGS, INFO, "Settings restored from persistence!");
 }
 bool SettingsHandler::settingExist(const std::string& name)
 {
    return std::find(m_setting_names.begin(), m_setting_names.end(), name) != m_setting_names.end();
-}
-void SettingsHandler::onPersistenceWrite(std::vector<uint8_t>& data)
-{
-#undef DEF_SETTING_GROUP
-#define DEF_SETTING_GROUP(name, type, default_value) (::serialize(data, std::string(#name)));   \
-                                                     (::serialize(data, std::string(#type)));   \
-                                                      ::serialize(data, (type)(get_setting<type>(name)));
-   SETTING_GROUPS
-#undef DEF_SETTING_GROUP
-   UT_Log(SETTINGS, INFO, "Settings saved to persistence!");
 }
 SettingType SettingsHandler::getType(KeyID id)
 {
@@ -241,25 +132,77 @@ SettingType SettingsHandler::getType(KeyID id)
    }
    return SettingType::UNKNOWN;
 }
+
+void SettingsHandler::onPersistenceRead(const PersistenceItems& items)
+{
+   UT_Log(SETTINGS, LOW, "Restoring %u settings from persistence", items.size());
+   for (const auto& item : items)
+   {
+      std::string settingType = "";
+      std::string settingValue = "";
+      KeyID settingID = fromString(item.key);
+
+      std::stringstream value (item.value);
+      std::getline(value, settingType, '.');
+      std::getline(value, settingValue);
+      UT_Log(SETTINGS, HIGH, "Got setting %s, type %s, value %s", item.key.c_str(), settingType.c_str(), settingValue.c_str());
+
+      if (settingType == "bool")
+      {
+         bool boolValue = settingValue == "1"? true : false;
+         if (settingExist(item.key)) set_setting<bool>(settingID, boolValue);
+      }
+      else if (settingType == "uint32_t")
+      {
+         uint32_t u32Value = std::stoi(settingValue);
+         if (settingExist(item.key)) set_setting<uint32_t>(settingID, u32Value);
+      }
+      else if (settingType == "std::string")
+      {
+         if (settingExist(item.key)) set_setting<std::string>(settingID,settingValue);
+      }
+   }
+   printSettings();
+}
+void SettingsHandler::onPersistenceWrite(PersistenceItems& buffer)
+{
+   for (uint32_t i = 0; i < m_setting_names.size(); i++)
+   {
+      KeyID settingID = fromString(m_setting_names[i]);
+      switch(getType(settingID))
+      {
+      case SettingType::BOOL:
+         buffer.push_back(PersistenceItem{m_setting_names[i], std::string("bool") + '.' + std::to_string(get_setting<bool>(settingID))});
+         break;
+      case SettingType::U32:
+         buffer.push_back(PersistenceItem{m_setting_names[i], std::string("uint32_t") + '.' + std::to_string(get_setting<uint32_t>(settingID))});
+         break;
+      default:
+         buffer.push_back(PersistenceItem{m_setting_names[i], std::string("std::string") + '.' + get_setting<std::string>(settingID)});
+         break;
+      }
+   }
+   UT_Log(SETTINGS, LOW, "%u settings saved to persistence!", buffer.size());
+}
+
 void SettingsHandler::printSettings()
 {
    std::lock_guard<std::mutex> lock(m_settings_mutex);
-   UT_Log(SETTINGS, INFO, "U32 SETTINGS:");
+   UT_Log(SETTINGS, LOW, "U32 SETTINGS:");
    for (auto& it : m_u32_items)
    {
-      UT_Log(SETTINGS, INFO, "%s => %u", m_setting_names[(uint32_t)it.first].c_str(), it.second);
+      UT_Log(SETTINGS, LOW, "%s => %u", m_setting_names[(uint32_t)it.first].c_str(), it.second);
    }
-   UT_Log(SETTINGS, INFO, "BOOL SETTINGS:");
+   UT_Log(SETTINGS, LOW, "BOOL SETTINGS:");
    for (auto& it : m_bool_items)
    {
-      UT_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second? "true" : "false");
+      UT_Log(SETTINGS, LOW, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second? "true" : "false");
    }
-   UT_Log(SETTINGS, INFO, "STRING SETTINGS:");
+   UT_Log(SETTINGS, LOW, "STRING SETTINGS:");
    for (auto& it : m_string_items)
    {
-      UT_Log(SETTINGS, INFO, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second.c_str());
+      UT_Log(SETTINGS, LOW, "%s => %s", m_setting_names[(uint32_t)it.first].c_str(), it.second.c_str());
    }
-
 }
 std::string SettingsHandler::toString(KeyID id)
 {
@@ -359,11 +302,5 @@ void SettingsHandler::notifyListeners(KeyID id)
       }
    }
 }
-
-std::string SettingsHandler::getFilePath()
-{
-   return m_settings_file;
-}
-
 
 }

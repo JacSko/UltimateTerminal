@@ -53,8 +53,8 @@ m_marker_index(0)
 {
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
    m_persistence.addListener(*this);
-   Settings::SettingsHandler::create(getSettingsPersistenceFile());
-   Settings::SettingsHandler::get()->start(system_call::getExecutablePath() + '/' + CONFIG_FILE);
+   Settings::SettingsHandler::create(m_persistence);
+   Settings::SettingsHandler::get()->start();
    LoggerEngine::get()->startFrontends(system_call::getExecutablePath() + '/' + LOGS_FILE);
    UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
 
@@ -344,7 +344,7 @@ bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
 void MainApplication::onSettingsButtonClicked()
 {
    UT_Log(MAIN, LOW, "Setting windows show");
-   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path, getPersistenceFile(), getSettingsPersistenceFile());
+   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_port_handlers, m_trace_filter_handlers, m_file_logger, m_file_logging_path, getPersistenceFile());
    dialog.showDialog(m_gui_controller.getParent());
 }
 
@@ -413,67 +413,71 @@ void MainApplication::setButtonState(uint32_t button_id, bool state)
    }
    UT_Log(MAIN, LOW, "%s id %u state %u", __func__, button_id, state);
 }
-void MainApplication::onPersistenceRead(const std::vector<uint8_t>& data)
+void MainApplication::onPersistenceRead(const PersistenceItems& items)
 {
    std::string line_ending;
    std::string application_version;
-   uint32_t offset = 0;
-   uint8_t ports_count = 0;
+   std::string logging_path;
    uint8_t theme = 0;
+   std::string portsWithHistory;
 
-   ::deserialize(data, offset, application_version);
-   ::deserialize(data, offset, m_file_logging_path);
-   ::deserialize(data, offset, line_ending);
-   ::deserialize(data, offset, theme);
-   UT_Log(MAIN, HIGH, "Restored [%s] logging path", m_file_logging_path.c_str());
-   UT_Log(MAIN, HIGH, "Restored theme with ID %u", theme);
-
-   ::deserialize(data, offset, ports_count);
-   UT_Log(MAIN, HIGH, "Restored %u ports", ports_count);
-   for (uint8_t i = 0; i < ports_count; i++)
-   {
-      uint8_t port_id;
-      uint32_t commands_size;
-      std::vector<std::string> port_commands;
-      ::deserialize(data, offset, port_id);
-      ::deserialize(data, offset, commands_size);
-      for (uint32_t i = 0; i < commands_size; i++)
-      {
-         std::string command;
-         ::deserialize(data, offset, command);
-         port_commands.push_back(command);
-      }
-
-      if (port_id <= PORT_HANDLERS_COUNT)
-      {
-         m_commands_history[port_id] = port_commands;
-      }
-      UT_Log(MAIN, HIGH, "Restored %u commands for port %u", commands_size, port_id);
-   }
-   m_gui_controller.setCurrentLineEnding(line_ending);
-   m_gui_controller.reloadTheme(static_cast<Theme>(theme));
-
+   Persistence::readItem(items, "applicationVersion", application_version);
    UT_Log_If(application_version != std::string(APPLICATION_VERSION), MAIN, INFO, "Application update detected %s -> %s", application_version.c_str(), std::string(APPLICATION_VERSION).c_str());
+
+   Persistence::readItem(items, "portsWithHistory", portsWithHistory);
+   std::stringstream ss (portsWithHistory);
+   std::string portID;
+   while (std::getline(ss, portID, '.'))
+   {
+      std::string commandsHistoryInLine;
+      UT_Log(MAIN, HIGH, "Looking for command history for portID %s", portID.c_str());
+      Persistence::readItem(items, "history." + portID, commandsHistoryInLine);
+      std::stringstream commandHistoryStream(commandsHistoryInLine);
+      std::string command;
+      while(std::getline(commandHistoryStream, command, ':'))
+      {
+         UT_Log(MAIN, HIGH, "Got command for portID %s [%s]", portID.c_str(), command.c_str());
+         m_commands_history[std::stoi(portID)].push_back(command);
+      }
+   }
+
+   if (Persistence::readItem(items, "lineEnding", line_ending))
+   {
+      UT_Log(MAIN, HIGH, "Restored line ending");
+      m_gui_controller.setCurrentLineEnding(line_ending);
+   }
+   if(Persistence::readItem(items, "currentTheme", theme))
+   {
+      UT_Log(MAIN, HIGH, "Restored theme with ID %u", theme);
+      m_gui_controller.reloadTheme(static_cast<Theme>(theme));
+   }
+   if(Persistence::readItem(items, "loggingFile", logging_path))
+   {
+      UT_Log(MAIN, HIGH, "Restored ligging file [%s]", logging_path.c_str());
+      m_file_logging_path = logging_path;
+   }
+
 }
-void MainApplication::onPersistenceWrite(std::vector<uint8_t>& data)
+void MainApplication::onPersistenceWrite(PersistenceItems& buffer)
 {
-   ::serialize(data, std::string(APPLICATION_VERSION));
-   ::serialize(data, m_file_logging_path);
-   ::serialize(data, m_gui_controller.getCurrentLineEnding());
-   ::serialize(data, static_cast<uint8_t>(m_gui_controller.currentTheme()));
-   ::serialize(data, (uint8_t)m_commands_history.size());
-   UT_Log(MAIN, HIGH, "Saving logging file [%s]", m_file_logging_path.c_str());
+   Persistence::writeItem(buffer, "applicationVersion", std::string(APPLICATION_VERSION));
+   Persistence::writeItem(buffer, "loggingFile", m_file_logging_path);
+   Persistence::writeItem(buffer, "lineEnding", m_gui_controller.getCurrentLineEnding());
+   Persistence::writeItem(buffer, "currentTheme", static_cast<uint8_t>(m_gui_controller.currentTheme()));
+   std::string portsWithHistory = "";
    for (const auto& item : m_commands_history)
    {
       UT_Log(MAIN, HIGH, "Saving commands history for port %u, size %u", item.first, item.second.size());
-      ::serialize(data, item.first);
-      ::serialize(data, (uint32_t)item.second.size());
+      std::string commandHistoryInString;
       for (const std::string& history_item : item.second)
       {
-         ::serialize(data, history_item);
+         commandHistoryInString += (history_item + ':');
       }
+      Persistence::writeItem(buffer, "history." + std::to_string(item.first), commandHistoryInString);
+      portsWithHistory += std::to_string(item.first) + '.';
       UT_Log(MAIN, HIGH, "Serialized %u commands for port %u", item.second.size(), item.first);
    }
+   Persistence::writeItem(buffer, "portsWithHistory", portsWithHistory);
 }
 
 void MainApplication::addToCommandHistory(uint8_t port_id, const std::string& text)
@@ -524,8 +528,4 @@ std::string MainApplication::createLogFileName()
 std::string MainApplication::getPersistenceFile()
 {
    return system_call::getExecutablePath() + "/" + std::string(PERSISTENCE_FILE);
-}
-std::string MainApplication::getSettingsPersistenceFile()
-{
-   return system_call::getExecutablePath() + "/" + std::string(SETTINGS_PERSISTENCE_FILE);
 }

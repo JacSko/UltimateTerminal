@@ -194,7 +194,7 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
     *                  Data should be correctly deserialized. <br>
     * ************************************************
     */
-   std::vector<uint8_t> data_buffer;
+   Persistence::PersistenceListener::PersistenceItems data_buffer;
 
    /* simulate user settings change */
    Dialogs::UserButtonDialog::Settings new_settings;
