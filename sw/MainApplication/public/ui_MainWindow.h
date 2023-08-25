@@ -51,6 +51,7 @@ public:
    };
    struct PortItem
    {
+      QLabel* throughputLabel;
       QLabel* label;
       QPushButton* button;
    };
@@ -119,6 +120,11 @@ public:
    QLabel *portLabel_2;
    QLabel *portLabel_3;
    QLabel *portLabel_4;
+   QLabel *portThroughput_0;
+   QLabel *portThroughput_1;
+   QLabel *portThroughput_2;
+   QLabel *portThroughput_3;
+   QLabel *portThroughput_4;
 
    /* upper and lower bars */
    QMenuBar *menubar;
@@ -403,6 +409,36 @@ public:
       portLabel_4->setSizePolicy(sizePolicy5);
       portButtonsLayout->addWidget(portLabel_4, 1, 4, 1, 1);
 
+      portThroughput_0 = new QLabel(layoutWidget);
+      portThroughput_0->setObjectName(QString::fromUtf8("portThroughput_0"));
+      sizePolicy5.setHeightForWidth(portThroughput_0->sizePolicy().hasHeightForWidth());
+      portThroughput_0->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portThroughput_0, 2, 0, 1, 1);
+
+      portThroughput_1 = new QLabel(layoutWidget);
+      portThroughput_1->setObjectName(QString::fromUtf8("portThroughput_1"));
+      sizePolicy5.setHeightForWidth(portThroughput_1->sizePolicy().hasHeightForWidth());
+      portThroughput_1->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portThroughput_1, 2, 1, 1, 1);
+
+      portThroughput_2 = new QLabel(layoutWidget);
+      portThroughput_2->setObjectName(QString::fromUtf8("portThroughput_2"));
+      sizePolicy5.setHeightForWidth(portThroughput_2->sizePolicy().hasHeightForWidth());
+      portThroughput_2->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portThroughput_2, 2, 2, 1, 1);
+
+      portThroughput_3 = new QLabel(layoutWidget);
+      portThroughput_3->setObjectName(QString::fromUtf8("portThroughput_3"));
+      sizePolicy5.setHeightForWidth(portThroughput_3->sizePolicy().hasHeightForWidth());
+      portThroughput_3->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portThroughput_3, 2, 3, 1, 1);
+
+      portThroughput_4 = new QLabel(layoutWidget);
+      portThroughput_4->setObjectName(QString::fromUtf8("portThroughput_4"));
+      sizePolicy5.setHeightForWidth(portThroughput_4->sizePolicy().hasHeightForWidth());
+      portThroughput_4->setSizePolicy(sizePolicy5);
+      portButtonsLayout->addWidget(portThroughput_4, 2, 4, 1, 1);
+
       verticalLayout_2->addLayout(portButtonsLayout);
       splitter_2->addWidget(layoutWidget);
       verticalLayout_3->addWidget(splitter_2);
@@ -463,11 +499,11 @@ public:
 
 
 
-      m_ports.push_back({portLabel_0, portButton_0});
-      m_ports.push_back({portLabel_1, portButton_1});
-      m_ports.push_back({portLabel_2, portButton_2});
-      m_ports.push_back({portLabel_3, portButton_3});
-      m_ports.push_back({portLabel_4, portButton_4});
+      m_ports.push_back({portThroughput_0, portLabel_0, portButton_0});
+      m_ports.push_back({portThroughput_1, portLabel_1, portButton_1});
+      m_ports.push_back({portThroughput_2, portLabel_2, portButton_2});
+      m_ports.push_back({portThroughput_3, portLabel_3, portButton_3});
+      m_ports.push_back({portThroughput_4, portLabel_4, portButton_4});
    }
 
    void retranslateUi(QMainWindow *MainWindow)
@@ -499,6 +535,12 @@ public:
       portLabel_2->setText(QString());
       portLabel_3->setText(QString());
       portLabel_4->setText(QString());
+      portThroughput_0->setText(QString());
+      portThroughput_1->setText(QString());
+      portThroughput_2->setText(QString());
+      portThroughput_3->setText(QString());
+      portThroughput_4->setText(QString());
+
    }
 
    void loadTheme(Theme new_theme)

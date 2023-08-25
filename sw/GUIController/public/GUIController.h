@@ -110,7 +110,7 @@ public:
    void registerPortOpened(const std::string& port_name);
    void registerPortClosed(const std::string& port_name);
    void setPortLabelText(uint8_t id, const std::string& description);
-   void setPortLabelStylesheet(uint8_t id, const std::string& stylesheet);
+   void setThroughputText(uint8_t id, const std::string& text);
 
    /* Command history */
    void setCommandsHistory(const std::vector<std::string>& history);
@@ -181,6 +181,7 @@ signals:
    void setTraceFilterBackgroundColorSignal(qint32 id, qint32 color);
    void setTraceFilterFontColorSignal(qint32 id, qint32 color);
    void setPortLabelTextSignal(qint8 id, QString description);
+   void setThroughputTextSignal(qint8 id, QString text);
    void reloadThemeSignal(qint8);
    void setStatusBarNotificationSignal(QString notification, qint32 timeout);
    void setInfoLabelTextSignal(QString text);
@@ -214,6 +215,7 @@ public slots:
    void onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color);
    void onSetTraceFilterFontColorSignal(qint32 id, qint32 color);
    void onSetPortLabelTextSignal(qint8 id, QString description);
+   void onSetThroughputTextSignal(qint8 id, QString text);
    void onReloadThemeSignal(qint8);
    void onSetStatusBarNotificationSignal(QString notification, qint32 timeout);
    void onSetInfoLabelTextSignal(QString text);

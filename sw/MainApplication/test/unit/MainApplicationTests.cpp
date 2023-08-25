@@ -217,6 +217,7 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
 
+
    EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
    ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
 

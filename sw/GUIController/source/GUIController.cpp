@@ -36,6 +36,8 @@ void GUIController::run()
    {
       port.label->setAutoFillBackground(true);
       port.label->setAlignment(Qt::AlignCenter);
+      port.throughputLabel->setAutoFillBackground(true);
+      port.throughputLabel->setAlignment(Qt::AlignCenter);
    }
 
    for (auto& filter : ui->getTraceFilters())
@@ -82,6 +84,7 @@ void GUIController::run()
    connect(this, SIGNAL(setTraceFilterBackgroundColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterBackgroundColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setTraceFilterFontColorSignal(qint32, qint32)), this, SLOT(onSetTraceFilterFontColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setPortLabelTextSignal(qint8, QString)), this, SLOT(onSetPortLabelTextSignal(qint8, QString)));
+   connect(this, SIGNAL(setThroughputTextSignal(qint8, QString)), this, SLOT(onSetThroughputTextSignal(qint8, QString)));
    connect(this, SIGNAL(reloadThemeSignal(qint8)), this, SLOT(onReloadThemeSignal(qint8)));
    connect(this, SIGNAL(setStatusBarNotificationSignal(QString, qint32)), this, SLOT(onSetStatusBarNotificationSignal(QString, qint32)));
    connect(this, SIGNAL(setInfoLabelTextSignal(QString)), this, SLOT(onSetInfoLabelTextSignal(QString)));
@@ -271,6 +274,10 @@ void GUIController::setTraceFilterFontColor(uint32_t id, uint32_t color)
 void GUIController::setPortLabelText(uint8_t id, const std::string& description)
 {
    emit setPortLabelTextSignal(id, QString(description.c_str()));
+}
+void GUIController::setThroughputText(uint8_t port_id, const std::string& text)
+{
+   emit setThroughputTextSignal(port_id, QString(text.c_str()));
 }
 void GUIController::reloadTheme(Theme theme)
 {
@@ -645,6 +652,14 @@ void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
    auto& ports = ui->getPorts();
    UT_Assert((size_t)id < ports.size());
    ports[id].label->setText(description);
+}
+void GUIController::onSetThroughputTextSignal(qint8 id, QString text)
+{
+   UT_Log(GUI_CONTROLLER, LOW, "%s id %u text %s", __func__, id, text.toStdString().c_str());
+   auto& ports = ui->getPorts();
+   UT_Assert((size_t)id < ports.size());
+   ports[id].throughputLabel->setText(text);
+
 }
 void GUIController::onReloadThemeSignal(qint8 id)
 {

@@ -88,5 +88,4 @@ void PortHandler::onPersistenceRead(const PersistenceItems&){};
 void PortHandler::onPersistenceWrite(PersistenceItems&){};
 void PortHandler::onButtonEvent(uint32_t, ButtonEvent){};
 
-
 }

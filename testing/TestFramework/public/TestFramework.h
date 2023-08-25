@@ -80,6 +80,7 @@ namespace Ports
 {
 std::string getLabelText(uint8_t id);
 std::string getLabelStylesheet(uint8_t id);
+std::string getThroughput(uint8_t id);
 Dialogs::PortSettingDialog::Settings getPortSettings(uint8_t port_id);
 bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings&);
 }

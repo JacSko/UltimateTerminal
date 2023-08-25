@@ -252,7 +252,8 @@ bool GUITestServer::onGetPortLabel(const std::vector<uint8_t>& data)
    reply.stylesheet = ports[request.id].label->styleSheet().toStdString();
 
    reply.text = ports[request.id].label->text().toStdString();
-   UT_Log(TEST_SERVER, LOW, "%s id %u %s %s", __func__, reply.id, reply.text.c_str(), reply.stylesheet.c_str());
+   reply.throughput = ports[request.id].throughputLabel->text().toStdString();
+   UT_Log(TEST_SERVER, LOW, "%s id %u %s %s %s %s", __func__, reply.id, reply.text.c_str(), reply.stylesheet.c_str(), reply.text.c_str(), reply.throughput.c_str());
    return rpc_server->respond<RPC::GetPortLabelReply>(reply);
 }
 bool GUITestServer::onGetLineEnding(const std::vector<uint8_t>&)

@@ -19,7 +19,6 @@
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
 constexpr uint8_t PORT_HANDLERS_COUNT = 5;
 
-
 namespace system_call
 {
 __attribute__((weak)) std::string getExecutablePath()

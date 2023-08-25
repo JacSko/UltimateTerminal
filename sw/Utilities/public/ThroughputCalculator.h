@@ -36,6 +36,7 @@ class ThroughputCalculator
 public:
    void start()
    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       if (!m_start.time_since_epoch().count())
       {
          m_start = std::chrono::steady_clock::now();
@@ -44,11 +45,13 @@ public:
    }
    void reset()
    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       m_start = {};
       m_bytesCount = 0;
    }
    void reportBytes(uint32_t bytes_count)
    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       if (m_start.time_since_epoch().count())
       {
          m_bytesCount += bytes_count;
@@ -56,6 +59,7 @@ public:
    }
    ThroughputResult get()
    {
+      std::lock_guard<std::mutex> lock(m_mutex);
       ThroughputResult result = {};
       if (m_start.time_since_epoch().count())
       {
@@ -88,6 +92,7 @@ private:
 
    uint32_t m_bytesCount;
    std::chrono::steady_clock::time_point m_start;
+   std::mutex m_mutex;
 };
 
 }

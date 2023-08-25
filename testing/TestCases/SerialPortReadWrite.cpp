@@ -320,12 +320,16 @@ TEST_P(SerialPortWritingTests, write_serial_port)
    EXPECT_EQ(TF::Buttons::getFontColor(FIRST_PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(FIRST_PORT_BUTTON_NAME), FIRST_PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(FIRST_PORT_ID), FIRST_PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
+   /* check throughput label before test */
+   EXPECT_EQ(TF::Ports::getThroughput(FIRST_PORT_ID), "");
 
    /* check second port button and label before test */
    EXPECT_EQ(TF::Buttons::getBackgroundColor(SECOND_PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(SECOND_PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(SECOND_PORT_BUTTON_NAME), SECOND_PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), SECOND_PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
+   /* check throughput label before test */
+   EXPECT_EQ(TF::Ports::getThroughput(SECOND_PORT_ID), "");
 
    /* set new first port settings */
    EXPECT_TRUE(TF::Ports::setPortSettings(FIRST_PORT_ID, first_port_settings));
@@ -363,6 +367,11 @@ TEST_P(SerialPortWritingTests, write_serial_port)
 
    /* clear terminal view before test */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
+
+   /* check throughputs before test */
+   TF::wait(500);
+   EXPECT_EQ(TF::Ports::getThroughput(FIRST_PORT_ID), "0,00 B/s");
+   EXPECT_EQ(TF::Ports::getThroughput(SECOND_PORT_ID), "0,00 B/s");
 
    /* send data from first to second port */
    EXPECT_TRUE(TF::Common::setLineEnding("\\n"));
@@ -413,6 +422,10 @@ TEST_P(SerialPortWritingTests, write_serial_port)
    EXPECT_EQ(TF::Buttons::getFontColor(SECOND_PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(SECOND_PORT_BUTTON_NAME), NEW_SECOND_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.shortSettingsString());
+
+   TF::wait(500);
+   EXPECT_EQ(TF::Ports::getThroughput(FIRST_PORT_ID), "");
+   EXPECT_EQ(TF::Ports::getThroughput(SECOND_PORT_ID), "");
 
 }
 

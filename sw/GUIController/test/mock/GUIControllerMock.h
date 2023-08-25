@@ -57,6 +57,8 @@ struct GUIControllerMock
    MOCK_METHOD0(countUserButtons, uint32_t());
    MOCK_METHOD0(countPorts, uint32_t());
    MOCK_METHOD0(countTraceFilters, uint32_t());
+   MOCK_METHOD2(setThroughputText, void(uint8_t, const std::string&));
+
 };
 
 GUIControllerMock* g_gui_controller_mock;
@@ -285,11 +287,15 @@ uint32_t GUIController::countUserButtons()
 {
    return g_gui_controller_mock->countUserButtons();
 }
-uint32_t GUIController::GUIController::countPorts()
+uint32_t GUIController::countPorts()
 {
    return g_gui_controller_mock->countPorts();
 }
-uint32_t GUIController::GUIController::countTraceFilters()
+uint32_t GUIController::countTraceFilters()
 {
    return g_gui_controller_mock->countTraceFilters();
+}
+void GUIController::setThroughputText(uint8_t id, const std::string& text)
+{
+   g_gui_controller_mock->setThroughputText(id, text);
 }

@@ -53,7 +53,12 @@ struct IGUIControllerFixture : public testing::Test
                                                      .WillOnce(Return(&test_port_label_1))
                                                      .WillOnce(Return(&test_port_label_2))
                                                      .WillOnce(Return(&test_port_label_3))
-                                                     .WillOnce(Return(&test_port_label_4));
+                                                     .WillOnce(Return(&test_port_label_4))
+                                                     .WillOnce(Return(&test_port_throughput_0))
+                                                     .WillOnce(Return(&test_port_throughput_1))
+                                                     .WillOnce(Return(&test_port_throughput_2))
+                                                     .WillOnce(Return(&test_port_throughput_3))
+                                                     .WillOnce(Return(&test_port_throughput_4));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
                                                         .WillOnce(Return(&test_line_ending_box))
                                                         .WillOnce(Return(&test_text_edit));
@@ -143,6 +148,11 @@ struct IGUIControllerFixture : public testing::Test
    QLabel test_port_label_2;
    QLabel test_port_label_3;
    QLabel test_port_label_4;
+   QLabel test_port_throughput_0;
+   QLabel test_port_throughput_1;
+   QLabel test_port_throughput_2;
+   QLabel test_port_throughput_3;
+   QLabel test_port_throughput_4;
    QComboBox test_port_box;
    QComboBox test_line_ending_box;
    QComboBox test_text_edit;
@@ -198,6 +208,7 @@ void GUIController::setInfoLabelTextSignal(QString text){onSetInfoLabelTextSigna
 void GUIController::setApplicationTitle(QString title){onSetApplicationTitle(title);}
 void GUIController::setCurrentLineEndingSignal(QString ending){onSetCurrentLineEndingSignal(ending);}
 void GUIController::clearCurrentCommand(){onClearCurrentCommand();}
+void GUIController::setThroughputTextSignal(uint8_t id, QString text){onSetThroughputTextSignal(id, text);}
 
 class ButtonEventListenerMock : public ButtonEventListener
 {

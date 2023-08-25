@@ -27,7 +27,8 @@ m_socket(Drivers::SocketClient::ISocketClient::create(Drivers::SocketClient::Dat
 m_serial(Drivers::Serial::ISerialDriver::create()),
 m_timer_id(TIMERS_INVALID_ID),
 m_button_state(ButtonState::DISCONNECTED),
-m_persistence(persistence)
+m_persistence(persistence),
+m_throughputCalculatorTimerID(TIMERS_INVALID_ID)
 {
 
    m_button_id = m_gui_controller.getButtonID(button_name);
@@ -39,7 +40,7 @@ m_persistence(persistence)
    m_socket->addListener(this);
    m_serial->addListener(this);
    m_timer_id = m_timers.createTimer(this, m_connect_retry_period);
-
+   m_throughputCalculatorTimerID = m_timers.createTimer(this, SETTING_GET_U32(Throughput_Calculation_Window));
    m_settings.port_id = id;
    m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Creating port handler", m_settings.port_id, m_settings.port_name.c_str());
@@ -61,6 +62,8 @@ PortHandler::~PortHandler()
    m_serial->removeListener(this);
    m_timers.removeTimer(m_timer_id);
    m_timer_id = TIMERS_INVALID_ID;
+   m_timers.removeTimer(m_throughputCalculatorTimerID);
+   m_throughputCalculatorTimerID = TIMERS_INVALID_ID;
    m_socket->disconnect();
    m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
@@ -136,6 +139,7 @@ bool PortHandler::isOpened()
 {
    return (m_button_state != ButtonState::DISCONNECTED);
 }
+
 void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
@@ -163,6 +167,7 @@ void PortHandler::onPortEvent()
       }
       else if (event.event == Event::NEW_DATA)
       {
+         m_throughputCalculator.reportBytes(event.data.size());
          notifyListeners(Event::NEW_DATA, event.data);
       }
       else
@@ -180,7 +185,27 @@ void PortHandler::onTimeout(uint32_t timer_id)
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Retrying connect...", m_settings.port_id, m_settings.port_name.c_str());
       tryConnectToSocket();
    }
+
+   if (timer_id == m_throughputCalculatorTimerID)
+   {
+      auto throughputCalculation = m_throughputCalculator.get();
+      UT_Log(PORT_HANDLER, HIGH, "PORT%u[%s] Reading throughput, value %.5f unit %u", m_settings.port_id, m_settings.port_name.c_str(), throughputCalculation.value, (uint32_t)throughputCalculation.unit);
+      m_throughputCalculator.reset();
+      m_throughputCalculator.start();
+      m_timers.startTimer(m_throughputCalculatorTimerID);
+      reportThroughput(throughputCalculation);
+   }
 }
+void PortHandler::reportThroughput(const Utilities::ThroughputResult& throughput)
+{
+   static const std::map<Utilities::ByteUnit, std::string> unitMap = {{Utilities::ByteUnit::bytes_s, "B/s"},
+                                                                      {Utilities::ByteUnit::kilobytes_s, "KB/s"},
+                                                                      {Utilities::ByteUnit::megabytes_s, "MB/s"}};
+   char buffer [50];
+   std::snprintf(buffer, 50, "%.2f %s", throughput.value, unitMap.at(throughput.unit).c_str());
+   m_gui_controller.setThroughputText(m_settings.port_id, std::string(buffer));
+}
+
 void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& settings)
 {
    m_settings = settings;
@@ -227,9 +252,12 @@ void PortHandler::handleButtonClickSerial()
    if (m_serial->isOpened())
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to close serial port", m_settings.port_id, m_settings.port_name.c_str());
+      m_timers.stopTimer(m_throughputCalculatorTimerID);
       m_serial->close();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
+      m_throughputCalculator.reset();
+      m_gui_controller.setThroughputText(m_settings.port_id, "");
    }
    else
    {
@@ -239,6 +267,8 @@ void PortHandler::handleButtonClickSerial()
          UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] serial port opened correctly", m_settings.port_id, m_settings.port_name.c_str());
          setButtonState(ButtonState::CONNECTED);
          notifyListeners(Event::CONNECTED);
+         m_throughputCalculator.start();
+         m_timers.startTimer(m_throughputCalculatorTimerID);
       }
       else
       {
@@ -255,9 +285,12 @@ void PortHandler::handleButtonClickEthernet()
    if (m_socket->isConnected())
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to disconnet socket", m_settings.port_id, m_settings.port_name.c_str());
-      m_socket->disconnect();
+      m_timers.stopTimer(m_throughputCalculatorTimerID);
       setButtonState(ButtonState::DISCONNECTED);
+      m_socket->disconnect();
       notifyListeners(Event::DISCONNECTED);
+      m_throughputCalculator.reset();
+      m_gui_controller.setThroughputText(m_settings.port_id, "");
    }
    else if (m_button_state == ButtonState::CONNECTING)
    {
@@ -280,12 +313,15 @@ void PortHandler::tryConnectToSocket()
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTED);
       notifyListeners(Event::CONNECTED);
+      m_throughputCalculator.start();
+      m_timers.startTimer(m_throughputCalculatorTimerID);
    }
    else
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
+      m_timers.stopTimer(m_throughputCalculatorTimerID);
       setButtonState(ButtonState::CONNECTING);
       notifyListeners(Event::CONNECTING);
    }

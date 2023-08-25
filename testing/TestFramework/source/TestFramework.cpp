@@ -60,7 +60,7 @@ public:
    }
 private:
 
-   void onServerEvent(int client_id, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t size) override
+   void onServerEvent(int, Drivers::SocketServer::ServerEvent ev, const std::vector<uint8_t>& data, size_t) override
    {
       switch(ev)
       {
@@ -725,6 +725,20 @@ std::string getLabelStylesheet(uint8_t id)
    if (reply.ready())
    {
       result = reply.reply.stylesheet;
+   }
+   TF_Log(TEST_FRAMEWORK, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
+   return result;
+}
+std::string getThroughput(uint8_t id)
+{
+   std::string result = "";
+   RPC::GetPortLabelRequest request {};
+   request.id = id;
+
+   RPC::result<RPC::GetPortLabelReply> reply = g_rpc_client->invoke<RPC::GetPortLabelReply, RPC::GetPortLabelRequest>(request);
+   if (reply.ready())
+   {
+      result = reply.reply.throughput;
    }
    TF_Log(TEST_FRAMEWORK, "%s id %u %u %s", __func__, id, reply.ready(), result.c_str());
    return result;

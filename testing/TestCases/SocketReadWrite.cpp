@@ -93,6 +93,9 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
 
+   /* check throughput label before test */
+   EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "");
+
    /* set new port settings */
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
@@ -110,6 +113,10 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
 
+   /* check throughput label after port open */
+   TF::wait(500);
+   EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "0,00 B/s");
+
    /* start generating data on socket server */
    for (uint8_t i = 0; i < TEST_TRACES_COUNT; i++)
    {
@@ -119,7 +126,6 @@ TEST_F(SocketRead, read_data_from_socket)
 
    TF::wait(1000);
    EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
-
    /* close socket in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
    EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
@@ -129,6 +135,10 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
    EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* check throughput label after test */
+   TF::wait(500);
+   EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "");
 
    /* close socket server on FIRST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
@@ -293,6 +303,8 @@ TEST_F(SocketRead, server_reconnection)
    /* check button color on server disconnection */
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), BLUE_COLOR);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+   /* check throughput label after disconnection */
+   EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "0,00 B/s");
 
    /* start server once again */
    EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
@@ -320,6 +332,10 @@ TEST_F(SocketRead, server_reconnection)
 
    /* close socket server on FIRST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
+
+   TF::wait(500);
+   /* check throughput label after disconnection */
+   EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "");
 
 }
 

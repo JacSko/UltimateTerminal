@@ -14,6 +14,7 @@
 #include "ITimers.h"
 #include "PersistenceHandler.h"
 #include "GUIController.h"
+#include "ThroughputCalculator.h"
 
 /**
  * @file PortHandler.h
@@ -145,12 +146,13 @@ private:
    std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
    std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
    uint32_t m_timer_id;
-   ButtonState m_button_state;
+   std::atomic<ButtonState> m_button_state;
    std::queue<PortHandlerEvent> m_events;
    std::mutex m_event_mutex;
    std::mutex m_listener_mutex;
    Persistence::PersistenceHandler& m_persistence;
-
+   Utilities::ThroughputCalculator m_throughputCalculator;
+   uint32_t m_throughputCalculatorTimerID;
    /* ButtonEventListener */
    void onButtonEvent(uint32_t button_id, ButtonEvent event);
 
@@ -167,7 +169,7 @@ private:
    Event toPortHandlerEvent(Drivers::SocketClient::ClientEvent);
    void onPersistenceRead(const PersistenceItems&) override;
    void onPersistenceWrite(PersistenceItems&) override;
-
+   void reportThroughput(const Utilities::ThroughputResult& throughput);
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
    void onPortEvent();

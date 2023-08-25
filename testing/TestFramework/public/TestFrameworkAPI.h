@@ -125,6 +125,7 @@ struct GetPortLabelReply
    uint8_t id;
    std::string stylesheet;
    std::string text;
+   std::string throughput;
 };
 struct SetLineEndingRequest
 {
@@ -470,6 +471,7 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelReply item)
    ::serialize(buffer, item.id);
    ::serialize(buffer, item.stylesheet);
    ::serialize(buffer, item.text);
+   ::serialize(buffer, item.throughput);
 
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLineEndingRequest item)
@@ -877,6 +879,7 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelRep
    ::deserialize(buffer, offset, item.id);
    ::deserialize(buffer, offset, item.stylesheet);
    ::deserialize(buffer, offset, item.text);
+   ::deserialize(buffer, offset, item.throughput);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLineEndingRequest& item)
 {

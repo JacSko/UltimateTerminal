@@ -25,6 +25,7 @@
    DEF_SETTING_GROUP(GUI_UserButtons_Tabs, uint32_t, 1) \
    DEF_SETTING_GROUP(GUI_UserButtons_RowsPerTab, uint32_t, 2) \
    DEF_SETTING_GROUP(GUI_UserButtons_ButtonsPerRow, uint32_t, 5) \
+   DEF_SETTING_GROUP(Throughput_Calculation_Window, uint32_t, 200) \
 
 
 #endif
