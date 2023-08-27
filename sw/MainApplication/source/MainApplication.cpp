@@ -51,6 +51,12 @@ m_gui_controller(nullptr),
 m_marker_index(0)
 {
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
+#ifndef SIMULATION
+   if (!m_persistence.loadFile(getPersistenceFile()))
+   {
+      UT_Log(MAIN, ERROR, "Cannot open persistence file!");
+   }
+#endif
    m_persistence.addListener(*this);
    Settings::SettingsHandler::create(m_persistence);
    Settings::SettingsHandler::get()->start();
@@ -62,7 +68,6 @@ m_marker_index(0)
    m_gui_controller.setApplicationTitle(std::string("UltimateTerminal"));
    m_gui_controller.setInfoLabelText(std::string("UltimateTerminal v") + std::string(APPLICATION_VERSION));
 
-   Settings::SettingsHandler::get()->printSettings();
    m_timers->start();
 
    m_marker_button_id  = m_gui_controller.getButtonID("markerButton");
@@ -136,13 +141,7 @@ m_marker_index(0)
    {
       handler->startThread();
    }
-
-#ifndef SIMULATION
-   if (!m_persistence.restore(getPersistenceFile()))
-   {
-      UT_Log(MAIN, ERROR, "Cannot restore persistence!");
-   }
-#endif
+   m_persistence.restore();
 }
 MainApplication::~MainApplication()
 {

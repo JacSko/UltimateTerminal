@@ -95,8 +95,9 @@ m_persistence(persistence)
 
 void SettingsHandler::start()
 {
-   printSettings();
    m_persistence.addListener(*this);
+   m_persistence.restoreModule(*this);
+   printSettings();
 }
 
 void SettingsHandler::stop()

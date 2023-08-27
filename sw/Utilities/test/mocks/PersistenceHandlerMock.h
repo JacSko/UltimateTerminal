@@ -7,7 +7,8 @@ namespace Persistence
 
 struct PersistenceHandlerMock
 {
-   MOCK_METHOD1(restore, bool(const std::string&));
+   MOCK_METHOD1(loadFile, bool(const std::string&));
+   MOCK_METHOD0(restore, void());
    MOCK_METHOD1(save, bool(const std::string&));
 };
 
@@ -35,10 +36,13 @@ PersistenceHandlerMock* PersistenceHandlerMock_get()
    UT_Assert(g_pers_handler_mock && "Create persistence handler mock first!");
    return g_pers_handler_mock;
 }
-
-bool PersistenceHandler::restore(const std::string& file_name)
+bool PersistenceHandler::loadFile(const std::string& name)
 {
-   return g_pers_handler_mock->restore(file_name);
+   return g_pers_handler_mock->loadFile(name);
+}
+void PersistenceHandler::restore()
+{
+   return g_pers_handler_mock->restore();
 }
 bool PersistenceHandler::save(const std::string& file_name)
 {

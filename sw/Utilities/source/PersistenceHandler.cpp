@@ -3,46 +3,32 @@
 #include <numeric>
 #include "PersistenceHandler.h"
 #include "Logger.h"
-#include "nlohmann/json.hpp"
 
 
 namespace Persistence
 {
-
-bool PersistenceHandler::restore(const std::string& file_name)
+bool PersistenceHandler::loadFile(const std::string& file_name)
 {
-   using json = nlohmann::json;
    std::ifstream file(file_name);
    bool result = false;
    if (file)
    {
-      UT_Log(PERSISTENCE, LOW, "Persistence file opened [%s], reading items", file_name.c_str());
-      json jsonFile = json::parse(file);
-      for (auto& module : jsonFile.items())
-      {
-         UT_Log(PERSISTENCE, HIGH, "Processing module %s", module.key().c_str());
-         PersistenceListener::PersistenceItems items;
-         auto& moduleSettings = jsonFile[module.key()];
-         for (auto& setting : moduleSettings.items())
-         {
-            std::string key = setting.key();
-            std::string value = setting.value();
-            UT_Log(PERSISTENCE, HIGH, "Got item - module %s key %s value %s", module.key().c_str(), key.c_str(), value.c_str());
-            items.push_back(PersistenceListener::PersistenceItem{key, value});
-         }
-         GenericListener::notifyChange([&](PersistenceListener* l)
-               {
-                  if (l->getName() == module.key())
-                  {
-                     UT_Log(PERSISTENCE, HIGH, "Found handler for %s, sending %u items...", module.key().c_str(), items.size());
-                     l->onPersistenceRead(items);
-                  }
-               });
-      }
+      UT_Log(PERSISTENCE, LOW, "Persistence file opened [%s], reading file content", file_name.c_str());
+      m_jsonFile = nlohmann::json::parse(file);
       result = true;
    }
    UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
+}
+void PersistenceHandler::restore()
+{
+   UT_Log(PERSISTENCE, LOW, "Restoring persistence items");
+
+   GenericListener::notifyChange([&](PersistenceListener* l)
+         {
+               UT_Assert(l);
+               restoreModule(*l);
+         });
 }
 bool PersistenceHandler::save(const std::string& file_name)
 {
@@ -74,5 +60,19 @@ bool PersistenceHandler::save(const std::string& file_name)
    UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
 }
-
+void PersistenceHandler::restoreModule(PersistenceListener& listener)
+{
+   UT_Log(PERSISTENCE, HIGH, "%s %s", __func__, listener.getName().c_str());
+   PersistenceListener::PersistenceItems items = {};
+   auto& moduleSettings = m_jsonFile[listener.getName()];
+   for (auto& setting : moduleSettings.items())
+   {
+      std::string key = setting.key();
+      std::string value = setting.value();
+      UT_Log(PERSISTENCE, HIGH, "Got item - module %s key %s value %s", listener.getName().c_str(), key.c_str(), value.c_str());
+      items.push_back(PersistenceListener::PersistenceItem{key, value});
+   }
+   UT_Log_If(items.empty(), PERSISTENCE, ERROR, "No keys found for [%s]", listener.getName().c_str());
+   listener.onPersistenceRead(items);
+}
 }

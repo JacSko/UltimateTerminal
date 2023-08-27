@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <GenericListener.hpp>
+#include "nlohmann/json.hpp"
+
 
 namespace Persistence
 {
@@ -37,8 +39,12 @@ private:
 class PersistenceHandler : public GenericListener<PersistenceListener>
 {
 public:
-   bool restore(const std::string& file_name);
+   bool loadFile(const std::string& file_name);
+   void restore();
    bool save(const std::string& file_name);
+   void restoreModule(PersistenceListener& listener);
+private:
+   nlohmann::json m_jsonFile;
 };
 
 template<typename T>

@@ -78,7 +78,8 @@ struct MainApplicationFixture : public testing::Test
       g_logger_mock = new IFileLoggerMock;
 
       EXPECT_CALL(*g_timers_mock, start());
-      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), restore(_)).WillOnce(Return(true));
+      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), loadFile(_)).WillOnce(Return(true));
+      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), restore());
       EXPECT_CALL(*GUIControllerMock_get(), run());
       EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(_));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_)).WillOnce(SaveArg<0>(&m_theme_listener));
