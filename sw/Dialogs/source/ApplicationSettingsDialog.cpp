@@ -142,14 +142,18 @@ void ApplicationSettingsDialog::createDebugTab(QTabWidget* main_tab, QWidget* pa
 void ApplicationSettingsDialog::createAboutTab(QTabWidget* main_tab, QWidget*)
 {
    QLabel* about_label = new QLabel();
-   std::string about_text = "UltimateTerminal\nv." + std::string(APPLICATION_VERSION) + '\n' +
-                            "Author: Jacek Skowronek\n" + "email:jacekskowronekk@gmail.com\n" +
+   std::string about_text = "UltimateTerminal v." + std::string(APPLICATION_VERSION) + '\n' +
+                            "Author: Jacek Skowronek\n" +
+                            "email: jacekskowronekk@gmail.com\n" +
                             "Build type: " +
                             #ifdef DEBUG
                             "Debug"
                             #else
                             "Release"
                             #endif
+                            + '\n'
+                            + "Build date: " + std::string(__DATE__) + '\n'
+                            + "Build time: " + std::string(__TIME__)
                             ;
 
    about_label->setText(about_text.c_str());
