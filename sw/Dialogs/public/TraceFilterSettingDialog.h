@@ -48,7 +48,8 @@ public:
       uint32_t font;         /**< Font color         */
       bool operator == (const Settings& lhs)
       {
-         return (regex == lhs.regex)           &&
+         return (id == lhs.id)                 &&
+                (regex == lhs.regex)           &&
                 (background == lhs.background) &&
                 (font == lhs.font);
       }

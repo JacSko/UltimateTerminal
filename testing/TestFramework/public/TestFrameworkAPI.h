@@ -48,6 +48,7 @@ enum class Command : uint8_t
    GetTraceViewScrollPosition,
    SetTerminalScrollPosition,
    SetTraceViewScrollPosition,
+   CloseApplication,
 };
 
 struct GetButtonStateRequest
@@ -402,6 +403,14 @@ struct SetTraceViewScrollPositionReply
 {
    Command cmd = Command::SetTraceViewScrollPosition;
    bool result;
+};
+struct CloseApplicationRequest
+{
+   Command cmd = Command::CloseApplication;
+};
+struct CloseApplicationReply
+{
+   Command cmd = Command::CloseApplication;
 };
 }
 
@@ -800,6 +809,14 @@ static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPosit
 {
    ::serialize(buffer, (uint8_t)item.cmd);
    ::serialize(buffer, item.result);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::CloseApplicationRequest item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
+}
+static void serialize(std::vector<uint8_t>& buffer, RPC::CloseApplicationReply item)
+{
+   ::serialize(buffer, (uint8_t)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
@@ -1309,5 +1326,15 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceViewScr
    uint32_t offset = 0;
    ::deserialize(buffer, offset, (uint8_t&)item.cmd);
    ::deserialize(buffer, offset, item.result);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::CloseApplicationRequest& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+}
+static void deserialize(const std::vector<uint8_t>& buffer, RPC::CloseApplicationReply& item)
+{
+   uint32_t offset = 0;
+   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 

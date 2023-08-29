@@ -11,12 +11,15 @@ struct UserButtonsSendingTests : public testing::Test
    static void SetUpTestSuite()
    {
       TF::Init();
+      ASSERT_TRUE(TF::StartTestSubject());
+      TF::wait(500);
       ASSERT_TRUE(TF::Connect());
       TF::wait(1000);
    }
    static void TearDownTestSuite()
    {
       TF::Deinit();
+      TF::StopTestSubject();
       TF::Disconnect();
    }
    virtual void SetUp()

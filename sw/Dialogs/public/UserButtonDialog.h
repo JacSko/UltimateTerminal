@@ -43,6 +43,12 @@ public:
       uint8_t id;                /**< ID of the button */
       std::string button_name;   /**< Name of the button. */
       std::string raw_commands;  /**< Commands in raw format, e.g. "CMD1\nCMD2"*/
+      bool operator == (const Settings& lhs)
+      {
+         return (id == lhs.id) &&
+                (button_name == lhs.button_name) &&
+                (raw_commands == lhs.raw_commands);
+      }
    };
 
    /**

@@ -1,5 +1,6 @@
 #include <memory>
 #include <thread>
+#include <stdio.h>
 #include "gtest/gtest.h"
 #include "TestFramework.h"
 #include "TestFrameworkCommon.h"
@@ -96,7 +97,9 @@ struct TraceForwarder : public Drivers::SocketClient::ClientListener
       }
       default:
       {
-         TF_Log(TEST_FRAMEWORK, "FWD: %s", std::string({data.begin(), data.end()}).c_str());
+         std::string log ({data.begin(), data.end()});
+         log.erase(std::remove_if(log.begin(), log.end(), [](char c) { return std::iscntrl(c);}));
+         TF_Log(TEST_FRAMEWORK, "FWD: %s", log.c_str());
          break;
       }
       }
@@ -152,10 +155,6 @@ bool Connect()
 {
    bool result = false;
 
-   TF_Log(TEST_FRAMEWORK, "starting application %s", APPLICATION_PATH.c_str());
-   TF_Assert(g_test_application.startApplication(APPLICATION_PATH, ""));
-   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
    TF_Log(TEST_FRAMEWORK, "connecting TestFramework to RPC server");
    g_rpc_client = std::unique_ptr<RPC::RPCClient>(new RPC::RPCClient);
    TF_Assert(g_rpc_client);
@@ -179,7 +178,6 @@ void Disconnect()
    g_trace_client->removeListener(&g_trace_forwarder);
    g_rpc_client.reset(nullptr);
    g_trace_client.reset(nullptr);
-   TF_Assert(g_test_application.stopApplication());
 }
 void Deinit()
 {
@@ -201,6 +199,22 @@ double getCPUUsage()
 {
    TF_Assert(g_test_application.isRunning());
    return g_test_application.getCPUUsage();
+}
+bool StopTestSubject()
+{
+   TF_Assert(g_test_application.isRunning());
+   return g_test_application.stopApplication();
+}
+bool StartTestSubject()
+{
+   TF_Log(TEST_FRAMEWORK, "starting application %s", APPLICATION_PATH.c_str());
+   return g_test_application.startApplication(APPLICATION_PATH, "");
+}
+void deletePersistenceFile()
+{
+   TF_Log(TEST_FRAMEWORK, "removing persistence file [%s]", PERSISTENCE_FILE);
+   std::string file = std::string(RUNTIME_OUTPUT_DIR) + "/" + std::string(PERSISTENCE_FILE);
+   std::remove(file.c_str());
 }
 namespace Serial
 {
@@ -463,6 +477,12 @@ bool simulateContextMenuClick(const std::string& name)
 
 namespace Common
 {
+void closeApplication()
+{
+   RPC::CloseApplicationRequest request = {};
+   RPC::result<RPC::CloseApplicationReply> reply = g_rpc_client->invoke<RPC::CloseApplicationReply, RPC::CloseApplicationRequest>(request);
+   TF_Log(TEST_FRAMEWORK, "%s %u", __func__, reply.ready());
+}
 std::string getCommand()
 {
    std::string result = "";
@@ -815,7 +835,7 @@ uint32_t getFontColor(const std::string& filter_name)
    RPC::result<RPC::GetTraceFilterStateReply> reply = g_rpc_client->invoke<RPC::GetTraceFilterStateReply, RPC::GetTraceFilterStateRequest>(request);
    if (reply.ready())
    {
-      result = reply.reply.background_color;
+      result = reply.reply.font_color;
    }
    TF_Log(TEST_FRAMEWORK, "%s name %s color %.8x", __func__, reply.reply.filter_name.c_str(), result);
    return result;

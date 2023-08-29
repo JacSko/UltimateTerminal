@@ -94,7 +94,7 @@ void GUIController::run()
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 #ifdef SIMULATION
    UT_Log(GUI_CONTROLLER, LOW, "SIMULATION build");
-   m_gui_test_server = std::unique_ptr<GUITestServer>(new GUITestServer(ui));
+   m_gui_test_server = std::unique_ptr<GUITestServer>(new GUITestServer(ui, *this));
    /* ugly hack to make terminalView slider position working */
    show();
    hide();

@@ -51,17 +51,16 @@ m_gui_controller(nullptr),
 m_marker_index(0)
 {
    Persistence::PersistenceListener::setName("MAIN_APPLICATION");
-#ifndef SIMULATION
    if (!m_persistence.loadFile(getPersistenceFile()))
    {
       UT_Log(MAIN, ERROR, "Cannot open persistence file!");
    }
-#endif
+
    m_persistence.addListener(*this);
    Settings::SettingsHandler::create(m_persistence);
    Settings::SettingsHandler::get()->start();
    LoggerEngine::get()->startFrontends(system_call::getExecutablePath() + '/' + LOGS_FILE);
-   UT_Log(MAIN, ALWAYS, " start UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
+   UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
 
    m_gui_controller.run();
    m_gui_controller.reloadTheme(Theme::DARK);

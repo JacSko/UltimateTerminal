@@ -17,3 +17,7 @@ add_test(NAME CommandsHistory COMMAND CommandsHistory)
 add_executable(WindowScrolling WindowScrolling.cpp)
 target_link_libraries(WindowScrolling PUBLIC gtest_main TestFramework)
 add_test(NAME WindowScrolling COMMAND WindowScrolling)
+
+add_executable(PersistenceSaveRestore PersistenceSaveRestore.cpp)
+target_link_libraries(PersistenceSaveRestore PUBLIC gtest_main TestFramework)
+add_test(NAME PersistenceSaveRestore COMMAND PersistenceSaveRestore)

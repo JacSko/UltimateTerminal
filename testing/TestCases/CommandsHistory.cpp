@@ -18,6 +18,8 @@ struct CommandsHistoryTests : public testing::Test
    }
    virtual void SetUp()
    {
+      ASSERT_TRUE(TF::StartTestSubject());
+      TF::wait(500);
       ASSERT_TRUE(TF::Connect());
       TF::wait(1000);
       TF::BeginTest();
@@ -25,6 +27,7 @@ struct CommandsHistoryTests : public testing::Test
    virtual void TearDown()
    {
       TF::FinishTest();
+      TF::StopTestSubject();
       TF::Disconnect();
    }
 };

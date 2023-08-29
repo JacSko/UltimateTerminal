@@ -4,6 +4,7 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 #include "MessageDialog.h"
 #include "PortSettingDialog.h"
@@ -14,7 +15,7 @@ class GUITestServer : public QObject
 {
    Q_OBJECT
 public:
-   GUITestServer(Ui::MainWindow* ui);
+   GUITestServer(Ui::MainWindow* ui, QMainWindow& main_window);
    ~GUITestServer();
 
    struct MessageBoxDetails
@@ -34,10 +35,11 @@ public:
 
 signals:
    void executeGUIRequestSignal();
+   void shutdownRequest();
 
 public slots:
    void onExecuteGUIRequestSignal();
-//TODO old
+   void onShutdownRequest();
 
    static std::string onLoggingPathDialogShow(QWidget* parent, const std::string& current_path, bool allow_edit);
    static void onMessageBoxShow(Dialogs::MessageDialog::Icon icon, const std::string& window_title, const std::string& text, QPalette palette);
@@ -80,6 +82,8 @@ private:
    bool onGetTraceViewScrollPosition(const std::vector<uint8_t>&);
    bool onSetTerminalScrollPosition(const std::vector<uint8_t>&);
    bool onSetTraceViewScrollPosition(const std::vector<uint8_t>&);
+   bool onCloseApplication(const std::vector<uint8_t>&);
 
    Ui_MainWindow::TraceFilterItem getTraceFilterByName(const std::string& name);
+   QMainWindow& m_mainWindow;
 };

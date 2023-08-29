@@ -17,6 +17,10 @@ void BeginTest();
 void FinishTest();
 void wait(uint32_t ms);
 double getCPUUsage();
+bool StopTestSubject();
+bool StartTestSubject();
+void deletePersistenceFile();
+
 
 namespace Serial
 {
@@ -52,6 +56,9 @@ bool simulateContextMenuClick(const std::string& name);
 
 namespace Common
 {
+
+void closeApplication();
+
 std::string getCommand();
 bool setCommand(const std::string& command);
 

@@ -33,7 +33,6 @@ private:
     ButtonEvent event;
     std::function<void()> listener;
    };
-
    std::unique_ptr<Utilities::ITimers> m_timers;
    std::unique_ptr<IFileLogger> m_file_logger;
    GUIController m_gui_controller;

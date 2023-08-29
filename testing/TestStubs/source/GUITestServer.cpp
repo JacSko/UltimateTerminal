@@ -1,7 +1,6 @@
 #include <sstream>
 
 #include "GUITestServer.h"
-#include <QtCore/QVector>
 #include "TestFrameworkAPI.h"
 #include "TestFrameworkCommon.h"
 #include "RPCServer.h"
@@ -18,8 +17,9 @@ std::vector<Dialogs::UserButtonDialog::Settings> g_user_button_settings;
 GUITestServer::MessageBoxDetails g_messagebox_details;
 std::string g_logging_path;
 
-GUITestServer::GUITestServer(Ui::MainWindow* ui):
-ui(ui)
+GUITestServer::GUITestServer(Ui::MainWindow* ui, QMainWindow& main_window):
+ui(ui),
+m_mainWindow(main_window)
 {
    UT_Log(TEST_SERVER, INFO, "Starting %s", __func__);
 
@@ -90,11 +90,13 @@ ui(ui)
          {return executeInGUIThread([bytes, this]()->bool{return onSetTerminalScrollPosition(bytes);});});
    rpc_server->addCommandExecutor((uint8_t)RPC::Command::SetTraceViewScrollPosition, [&](const std::vector<uint8_t>& bytes)->bool
          {return executeInGUIThread([bytes, this]()->bool{return onSetTraceViewScrollPosition(bytes);});});
+   rpc_server->addCommandExecutor((uint8_t)RPC::Command::CloseApplication, [&](const std::vector<uint8_t>& bytes)->bool
+         {return onCloseApplication(bytes);});
 
    rpc_server->start(SERVER_PORT);
 
    connect(this, SIGNAL(executeGUIRequestSignal()), this, SLOT(onExecuteGUIRequestSignal()));
-
+   connect(this, SIGNAL(shutdownRequest()), this, SLOT(onShutdownRequest()));
    auto& filters = ui->getTraceFilters();
    for (uint32_t i = 0; i < filters.size(); i++)
    {
@@ -128,6 +130,11 @@ void GUITestServer::onExecuteGUIRequestSignal()
    UT_Log(TEST_SERVER, INFO, "Command execution %s!", result? "OK" : "NOK");
    m_command = nullptr;
    m_cond_var.notify_all();
+}
+void GUITestServer::onShutdownRequest()
+{
+   UT_Log(TEST_SERVER, INFO, "%s", __func__);
+   m_mainWindow.close();
 }
 bool GUITestServer::onGetButtonStateRequest(const std::vector<uint8_t>& data)
 {
@@ -413,7 +420,6 @@ bool GUITestServer::onGetTraceViewContent(const std::vector<uint8_t>&)
       reply.content.push_back({item->text().toStdString(), item->backgroundColor().rgb() & COLOR_MASK, item->textColor().rgb() & COLOR_MASK});
    }
 
-
    UT_Log(TEST_SERVER, LOW, "%s size %u", __func__, reply.content.size());
    return rpc_server->respond<RPC::GetTraceViewContentReply>(reply);
 }
@@ -542,6 +548,14 @@ bool GUITestServer::onGetLoggingPath(const std::vector<uint8_t>&)
    reply.path = g_logging_path;
    UT_Log(TEST_SERVER, LOW, "%s path %s", __func__, g_logging_path.c_str());
    return rpc_server->respond<RPC::GetLoggingPathReply>(reply);
+}
+bool GUITestServer::onCloseApplication(const std::vector<uint8_t>&)
+{
+   RPC::CloseApplicationReply reply = {};
+   UT_Log(TEST_SERVER, LOW, "%s", __func__);
+   rpc_server->respond<RPC::CloseApplicationReply>(reply);
+   emit shutdownRequest();
+   return true;
 }
 void GUITestServer::onCurrentPortSelectionChanged(int)
 {

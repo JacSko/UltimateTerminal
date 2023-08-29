@@ -58,6 +58,8 @@ struct SerialPortTests : public testing::Test
    static void SetUpTestSuite()
    {
       TF::Init();
+      ASSERT_TRUE(TF::StartTestSubject());
+      TF::wait(500);
       ASSERT_TRUE(TF::Connect());
       EXPECT_TRUE(TF::Serial::startForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
       TF::wait(1000);
@@ -66,6 +68,7 @@ struct SerialPortTests : public testing::Test
    {
       TF::Deinit();
       EXPECT_TRUE(TF::Serial::stopForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
+      TF::StopTestSubject();
       TF::Disconnect();
    }
    virtual void SetUp()
