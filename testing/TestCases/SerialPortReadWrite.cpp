@@ -388,7 +388,7 @@ TEST_P(SerialPortWritingTests, write_serial_port)
 
    /* check if data received on second port */
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItems(), 2 * TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
 
    /* clear terminal view before second test */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick("clearButton"));
@@ -404,7 +404,7 @@ TEST_P(SerialPortWritingTests, write_serial_port)
 
    /* check if data received on second port */
    TF::wait(1000);
-   EXPECT_EQ(TF::TerminalView::countItems(), 2 * TEST_TRACES_COUNT);
+   EXPECT_EQ(TF::TerminalView::countItems(), TEST_TRACES_COUNT);
 
    /* close first serial port in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(FIRST_PORT_BUTTON_NAME));

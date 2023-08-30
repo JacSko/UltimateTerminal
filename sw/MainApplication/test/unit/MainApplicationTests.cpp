@@ -459,8 +459,6 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "\\n";
 
-   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
@@ -470,17 +468,10 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
 
    /* size to write should be 1 byte more because \n is added */
    std::string data_payload = DATA_TO_SEND + '\n';
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
-
-   /* writing data to terminal */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
+
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
@@ -499,25 +490,16 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "EMPTY";
 
-   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
    /* simulate user action that changing the current port */
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
    m_port_change_listener(PORT_HANDLER_NAME);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
-
-   /* writing data to terminal */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some command to send"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr(DATA_TO_SEND)));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr(DATA_TO_SEND))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
+
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 
@@ -536,25 +518,17 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "EMPTY";
 
-   EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
-   EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentCommand()).WillOnce(Return(DATA_TO_SEND));
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
    /* simulate user action that changing the current port */
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_));
    m_port_change_listener(PORT_HANDLER_NAME);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
-
-   /* writing data to terminal */
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
-   EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("Cannot send data to port"), DEFAULT_BACKGROUND_COLOR, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("Cannot send data to port")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("Cannot send data to port"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
+   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
+
+   EXPECT_CALL(*MessageDialogMock_get(), show(_, "Error", _, _));
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
 

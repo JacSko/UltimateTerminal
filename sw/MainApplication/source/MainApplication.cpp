@@ -368,7 +368,6 @@ bool MainApplication::sendToPort(const std::string& string)
          if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
          {
             result = true;
-            addToTerminal(m_current_port_name, data_to_send, m_gui_controller.getBackgroundColor(), m_gui_controller.getTextColor());
             addToCommandHistory(port_id, string);
          }
          else
@@ -377,7 +376,7 @@ bool MainApplication::sendToPort(const std::string& string)
             error += m_current_port_name;
             UT_Log(MAIN, ERROR, "%s", error.c_str());
             error += '\n';
-            addToTerminal(m_current_port_name, error, m_gui_controller.getBackgroundColor(), m_gui_controller.getTextColor());
+            Dialogs::MessageDialog::show(Dialogs::MessageDialog::Icon::Critical, "Error", error, m_gui_controller.getApplicationPalette());
          }
       }
    }
