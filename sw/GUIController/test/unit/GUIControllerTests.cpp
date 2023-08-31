@@ -31,9 +31,9 @@ struct IGUIControllerFixture : public testing::Test
                                                          .WillOnce(Return(&test_user_button_8))
                                                          .WillOnce(Return(&test_user_button_9))
                                                          .WillOnce(Return(&test_user_button_10))
-                                                         .WillOnce(Return(&test_send_button))
-                                                         .WillOnce(Return(&test_scroll_button))
                                                          .WillOnce(Return(&test_clear_button))
+                                                         .WillOnce(Return(&test_scroll_button))
+                                                         .WillOnce(Return(&test_send_button))
                                                          .WillOnce(Return(&test_trace_clear_button))
                                                          .WillOnce(Return(&test_trace_scroll_button))
                                                          .WillOnce(Return(&test_trace_filter_button_0))
@@ -60,9 +60,11 @@ struct IGUIControllerFixture : public testing::Test
                                                      .WillOnce(Return(&test_port_throughput_3))
                                                      .WillOnce(Return(&test_port_throughput_4));
       EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_new()).WillOnce(Return(&test_port_box))
-                                                        .WillOnce(Return(&test_line_ending_box))
-                                                        .WillOnce(Return(&test_text_edit));
+                                                        .WillOnce(Return(&test_text_edit))
+                                                        .WillOnce(Return(&test_line_ending_box));
       EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_new()).WillOnce(Return(&test_trace_view));
+      EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff));
+      EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_setWordWrap(true));
       EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_new()).WillOnce(Return(&test_terminal_view));
       EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setReadOnly(&test_terminal_view, true));
       EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setHorizontalScrollBarPolicy(&test_terminal_view, Qt::ScrollBarAlwaysOff));
@@ -74,7 +76,6 @@ struct IGUIControllerFixture : public testing::Test
                                                         .WillOnce(Return(&test_trace_filter_4))
                                                         .WillOnce(Return(&test_trace_filter_5))
                                                         .WillOnce(Return(&test_trace_filter_6));
-      EXPECT_CALL(*QtWidgetsMock_get(), QMenuBar_new()).WillOnce(Return(&test_menu_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QStatusBar_new()).WillOnce(Return(&test_status_bar));
       EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(_,_)).Times(AtLeast(1));
       EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(_,_)).Times(AtLeast(1));
@@ -165,7 +166,6 @@ struct IGUIControllerFixture : public testing::Test
    QLineEdit test_trace_filter_4;
    QLineEdit test_trace_filter_5;
    QLineEdit test_trace_filter_6;
-   QMenuBar test_menu_bar;
    QStatusBar test_status_bar;
    QShortcut test_loggingButtonShortcut;
    QShortcut test_markerButtonShortcut;
@@ -464,6 +464,7 @@ TEST_F(IGUIControllerFixture, adding_to_trace_view)
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setBackground(&list_item, QColor(0x0001)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidgetItem_setForeground(&list_item, QColor(0x0002)));
    EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_addItem(&test_trace_view, &list_item));
+   EXPECT_CALL(*QtWidgetsMock_get(), QListWidget_scrollToBottom(&test_trace_view));
 
    m_test_subject->addToTraceView("TEXT", 0x0001, 0x0002);
 
@@ -534,6 +535,8 @@ TEST_F(IGUIControllerFixture, setting_command_history)
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString("C2")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString("C3")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_insertItem(&test_text_edit, 0, QString("C4")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentIndex(&test_text_edit, -1));
+
    m_test_subject->setCommandsHistory(commands);
 }
 

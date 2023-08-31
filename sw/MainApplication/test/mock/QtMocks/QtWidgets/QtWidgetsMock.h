@@ -138,6 +138,7 @@ class QTabWidget : public QWidget
 {
 public:
    QTabWidget(){};
+   QTabWidget(QWidget*){};
    void* operator new(size_t );
    void operator delete(void*){};
    void addTab(QWidget*, const QString& label);

@@ -674,7 +674,7 @@ void GUIController::onReloadThemeSignal(qint8 id)
 void GUIController::onSetStatusBarNotificationSignal(QString notification, qint32 timeout)
 {
    UT_Log(GUI_CONTROLLER, LOW, "%s %s time %u", __func__, notification.toStdString().c_str(), timeout);
-   ui->statusbar->showMessage(notification, timeout);
+   ui->statusBar->showMessage(notification, timeout);
 }
 void GUIController::onSetInfoLabelTextSignal(QString text)
 {
