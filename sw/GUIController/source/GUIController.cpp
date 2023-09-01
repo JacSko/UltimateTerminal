@@ -62,6 +62,7 @@ void GUIController::run()
    connect(ui->port2ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port3ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
    connect(ui->port4ButtonShortcut, SIGNAL(activated()), this, SLOT(onButtonClicked()));
+   connect(ui->buttonsTabWidget, SIGNAL(tabBarDoubleClicked(int)), this, SLOT(onTabNameChangeRequest(int)));
    connect(this, SIGNAL(setButtonBackgroundColorSignal(qint32, qint32)), this, SLOT(onButtonBackgroundColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setButtonFontColorSignal(qint32, qint32)), this, SLOT(onButtonFontColorSignal(qint32, qint32)));
    connect(this, SIGNAL(setButtonCheckableSignal(qint32, bool)), this, SLOT(onButtonCheckableSignal(qint32, bool)));
@@ -90,6 +91,7 @@ void GUIController::run()
    connect(this, SIGNAL(setInfoLabelTextSignal(QString)), this, SLOT(onSetInfoLabelTextSignal(QString)));
    connect(this, SIGNAL(setApplicationTitle(QString)), this, SLOT(onSetApplicationTitle(QString)));
    connect(this, SIGNAL(clearCurrentCommand()), this, SLOT(onClearCurrentCommand()));
+   connect(this, SIGNAL(setUserButtonTabNameSignal(qint32, QString)), this, SLOT(onSetUserButtonTabNameSignal(qint32, QString)));
 
    connect(this, SIGNAL(guiRequestSignal()), this, SLOT(onGuiRequestSignal()));
 #ifdef SIMULATION
@@ -125,7 +127,7 @@ void GUIController::subscribeForButtonEvent(uint32_t button_id, ButtonEvent even
    auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) && (item.event == event);});
    if (it != m_button_listeners.end())
    {
-      UT_Log(GUI_CONTROLLER, ERROR, "event %u for buttonID %u already registered, replacing!");
+      UT_Log(GUI_CONTROLLER, ERROR, "event %u for buttonID %u already registered, replacing!", static_cast<uint8_t>(event), button_id);
       *it = ButtonEventItem{button_id, event, listener};
    }
    else
@@ -140,7 +142,7 @@ void GUIController::unsubscribeFromButtonEvent(uint32_t button_id, ButtonEvent e
    auto it = std::find_if(m_button_listeners.begin(), m_button_listeners.end(), [&](const ButtonEventItem& item){return (item.id == button_id) &&
                                                                                                                         (item.event == event) &&
                                                                                                                         (item.listener == listener);});
-   UT_Log_If(it == m_button_listeners.end(), GUI_CONTROLLER, ERROR, "event %u for buttonID %u not found!");
+   UT_Log_If(it == m_button_listeners.end(), GUI_CONTROLLER, ERROR, "event %u for buttonID %u not found!", static_cast<uint8_t>(event), button_id);
    if (it != m_button_listeners.end())
    {
       UT_Log(GUI_CONTROLLER, MEDIUM, "event %u for buttonID %u unregistered", (uint32_t)event, button_id);
@@ -341,6 +343,54 @@ void GUIController::unsubscribeFromThemeReloadEvent(ThemeListener* listener)
 QWidget* GUIController::getParent()
 {
    return this;
+}
+void GUIController::subscribeForTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener* listener)
+{
+   std::lock_guard<std::mutex> lock(m_tab_name_listeners_mutex);
+   auto it = std::find_if(m_tab_name_listeners.begin(), m_tab_name_listeners.end(), [&](const TabNameListener& item)
+         {return (item.index == tab_idx) && (item.listener == listener);});
+   if (it != m_tab_name_listeners.end())
+   {
+      UT_Log(GUI_CONTROLLER, ERROR, "listener for tab index %d already registered, replacing!", tab_idx);
+      *it = TabNameListener{tab_idx, listener};
+   }
+   else
+   {
+      UT_Log(GUI_CONTROLLER, MEDIUM, "listener for tab index %d registered!", tab_idx);
+      m_tab_name_listeners.push_back(TabNameListener{tab_idx, listener});
+   }
+}
+void GUIController::unsubscribeFromTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener* listener)
+{
+   std::lock_guard<std::mutex> lock(m_tab_name_listeners_mutex);
+   auto it = std::find_if(m_tab_name_listeners.begin(), m_tab_name_listeners.end(), [&](const TabNameListener& item)
+         {return (item.index == tab_idx) && (item.listener == listener);});
+
+   UT_Log_If(it == m_tab_name_listeners.end(), GUI_CONTROLLER, ERROR, "listener for tab index %d not found!", tab_idx);
+   if (it != m_tab_name_listeners.end())
+   {
+      UT_Log(GUI_CONTROLLER, MEDIUM, "listener for tab index %d unregistered", tab_idx);
+      m_tab_name_listeners.erase(it);
+   }
+
+}
+void GUIController::setTabName(int tab_idx, const std::string& name)
+{
+   emit setUserButtonTabNameSignal(tab_idx, QString(name.c_str()));
+}
+std::string GUIController::getTabName (int tab_idx)
+{
+   GetUserButtonTabNameRequest request(tab_idx);
+   executeGUIRequest(&request);
+   return request.tab_name;
+}
+uint32_t GUIController::countTabs()
+{
+   return ui->countUserButtonsTabs();
+}
+uint32_t GUIController::countButtonsPerTab()
+{
+   return ui->countUserButtonsPerTab();
 }
 void GUIController::setStatusBarNotification(const std::string& notification, uint32_t timeout)
 {
@@ -691,3 +741,26 @@ void GUIController::onClearCurrentCommand()
    UT_Log(GUI_CONTROLLER, LOW, "%s", __func__);
    ui->textEdit->lineEdit()->clear();
 }
+void GUIController::onTabNameChangeRequest(int index)
+{
+   UT_Log(GUI_CONTROLLER, LOW, "%s index %d", __func__, index);
+   std::lock_guard<std::mutex> lock(m_tab_name_listeners_mutex);
+   for (auto& listener : m_tab_name_listeners)
+   {
+      if (listener.index == index && listener.listener)
+      {
+         listener.listener->onTabNameChangeRequest();
+      }
+   }
+}
+void GUIController::onSetUserButtonTabNameSignal(qint32 tab_idx, QString name)
+{
+   bool result = false;
+   if (ui->buttonsTabWidget->count() > tab_idx)
+   {
+      ui->buttonsTabWidget->setTabText(tab_idx, name);
+      result = true;
+   }
+   UT_Log(GUI_CONTROLLER, LOW, "%s index %d name %s result %u", __func__, tab_idx, name.toStdString().c_str(), result);
+}
+

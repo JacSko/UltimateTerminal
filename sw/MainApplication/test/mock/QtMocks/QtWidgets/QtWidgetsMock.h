@@ -142,6 +142,9 @@ public:
    void* operator new(size_t );
    void operator delete(void*){};
    void addTab(QWidget*, const QString& label);
+   QString tabText(int index);
+   void setTabText(int index, const QString& text);
+   int count();
 };
 
 class QShortcut : public QWidget
@@ -558,6 +561,9 @@ struct QtWidgetsMock
 
    MOCK_METHOD0(QTabWidget_new, void*());
    MOCK_METHOD3(QTabWidget_addTab, void(QTabWidget*, QWidget*, const QString&));
+   MOCK_METHOD2(QTabWidget_tabText, QString(QTabWidget*, int));
+   MOCK_METHOD3(QTabWidget_setTabText, void(QTabWidget*, int, const QString&));
+   MOCK_METHOD1(QTabWidget_count, int(QTabWidget*));
 
    MOCK_METHOD0(QScrollArea_new, void*());
    MOCK_METHOD2(QScrollArea_setWidget, void(QScrollArea*, QWidget*));

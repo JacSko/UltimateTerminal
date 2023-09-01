@@ -329,6 +329,18 @@ void QTabWidget::addTab(QWidget* widget, const QString& text)
 {
    g_widgets_mock->QTabWidget_addTab(this, widget, text);
 }
+QString QTabWidget::tabText(int index)
+{
+   return g_widgets_mock->QTabWidget_tabText(this, index);
+}
+void QTabWidget::setTabText(int index, const QString& text)
+{
+   g_widgets_mock->QTabWidget_setTabText(this, index, text);
+}
+int QTabWidget::count()
+{
+   g_widgets_mock->QTabWidget_count(this);
+}
 void QScrollArea::setWidget(QWidget* widget)
 {
    g_widgets_mock->QScrollArea_setWidget(this, widget);

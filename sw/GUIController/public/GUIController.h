@@ -38,6 +38,13 @@ public:
    virtual void onButtonEvent(uint32_t button_id, ButtonEvent event) = 0;
 };
 
+class TabNameChangeRequestListener
+{
+public:
+   virtual ~TabNameChangeRequestListener(){};
+   virtual void onTabNameChangeRequest() = 0;
+};
+
 class GUIController : public QMainWindow
 
 {
@@ -51,6 +58,12 @@ public:
       uint32_t id;
       ButtonEvent event;
       ButtonEventListener* listener;
+   };
+
+   struct TabNameListener
+   {
+      int index;
+      TabNameChangeRequestListener* listener;
    };
 
    struct LogViewStatus
@@ -75,6 +88,8 @@ public:
    std::vector<ButtonEventItem> m_button_listeners;
    //maps widgets to related buttons (i.e. traceFilter to traceFilterButton)
    std::map<QObject*, QPushButton*> m_shortcuts_map;
+   std::mutex m_tab_name_listeners_mutex;
+   std::vector<TabNameListener> m_tab_name_listeners;
 #ifdef SIMULATION
    std::unique_ptr<GUITestServer> m_gui_test_server;
 #endif
@@ -145,6 +160,14 @@ public:
    QPalette getApplicationPalette();
    QWidget* getParent();
 
+   /* User buttons */
+   void subscribeForTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener*);
+   void unsubscribeFromTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener*);
+   void setTabName(int tab_idx, const std::string& name);
+   std::string getTabName (int tab_idx);
+   uint32_t countTabs();
+   uint32_t countButtonsPerTab();
+
    /* Others */
    void setStatusBarNotification(const std::string& notification, uint32_t timeout);
    void setInfoLabelText(const std::string& text);
@@ -187,6 +210,7 @@ signals:
    void setInfoLabelTextSignal(QString text);
    void setApplicationTitle(QString title);
    void clearCurrentCommand();
+   void setUserButtonTabNameSignal(qint32 tab_idx, QString name);
 public slots:
    void onButtonClicked();
    void onButtonContextMenuRequested();
@@ -221,4 +245,7 @@ public slots:
    void onSetInfoLabelTextSignal(QString text);
    void onSetApplicationTitle(QString title);
    void onClearCurrentCommand();
+   void onTabNameChangeRequest(int index);
+   void onSetUserButtonTabNameSignal(qint32 tab_idx, QString name);
+
 };

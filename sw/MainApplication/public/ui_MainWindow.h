@@ -563,6 +563,14 @@ public:
    {
       return trace_filters.size();
    }
+   uint32_t countUserButtonsTabs()
+   {
+      return SETTING_GET_U32(GUI_UserButtons_Tabs);
+   }
+   uint32_t countUserButtonsPerTab()
+   {
+      return SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
+   }
 private:
 
    void renderDarkTheme()
@@ -615,8 +623,8 @@ private:
    {
       QWidget* tab_widget = new QWidget();
       QGridLayout* widget_layout = new QGridLayout();
-      uint8_t buttons_rows = 2;
-      uint8_t buttons_per_row = 5;
+      uint8_t buttons_rows = SETTING_GET_U32(GUI_UserButtons_RowsPerTab);
+      uint8_t buttons_per_row = SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow);
       UT_Log(GUI_CONTROLLER, LOW, "Creating tab with %u rows, each with %u buttons", buttons_rows, buttons_per_row);
       uint8_t current_row = 0;
 

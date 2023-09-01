@@ -75,6 +75,28 @@ private:
    }
 };
 
+class GetUserButtonTabNameRequest : public CommandExecutor
+{
+public:
+   GetUserButtonTabNameRequest(int index):
+   index(index)
+   {}
+   int index;
+   std::string tab_name;
+private:
+   void execute(Ui::MainWindow* ui)
+   {
+      std::unique_lock<std::mutex> lock(mutex);
+      tab_name = "";
+      if (ui->buttonsTabWidget->count() > index)
+      {
+         tab_name = ui->buttonsTabWidget->tabText(index).toStdString();
+      }
+      ready = true;
+      cond_var.notify_all();
+   }
+};
+
 class Stylesheet
 {
 public:

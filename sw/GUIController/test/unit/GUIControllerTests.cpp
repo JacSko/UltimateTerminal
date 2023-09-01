@@ -209,6 +209,7 @@ void GUIController::setApplicationTitle(QString title){onSetApplicationTitle(tit
 void GUIController::setCurrentLineEndingSignal(QString ending){onSetCurrentLineEndingSignal(ending);}
 void GUIController::clearCurrentCommand(){onClearCurrentCommand();}
 void GUIController::setThroughputTextSignal(uint8_t id, QString text){onSetThroughputTextSignal(id, text);}
+void GUIController::setUserButtonTabNameSignal(uint32_t idx, QString text){onSetUserButtonTabNameSignal(idx, text);}
 
 class ButtonEventListenerMock : public ButtonEventListener
 {
@@ -220,6 +221,11 @@ class ThemeListenerMock : public ThemeListener
 {
 public:
    MOCK_METHOD1(onThemeChange, void(Theme));
+};
+class TabNameChangeRequestListenerMock : public TabNameChangeRequestListener
+{
+public:
+   MOCK_METHOD0(onTabNameChangeRequest, void());
 };
 
 TEST_F(IGUIControllerFixture, getting_element_ids)
@@ -675,3 +681,155 @@ TEST_F(IGUIControllerFixture, theme_reload)
    m_test_subject->unsubscribeFromThemeReloadEvent(&theme_listener);
 }
 
+TEST_F(IGUIControllerFixture, tabNameChangeRequestedNoClientSubscribed)
+{
+   TabNameChangeRequestListenerMock listener;
+
+   EXPECT_CALL(listener, onTabNameChangeRequest()).Times(0);
+   m_test_subject->onTabNameChangeRequest(0);
+
+}
+
+TEST_F(IGUIControllerFixture, tabNameChangeRequestedWhenClientSubscribed)
+{
+   const int TAB_INDEX = 0;
+   TabNameChangeRequestListenerMock listener;
+
+   m_test_subject->subscribeForTabNameChangeRequest(TAB_INDEX, &listener);
+
+   /**
+    * <b>scenario</b>: Request received with correct tab index. <br>
+    * <b>expected</b>: Listener notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(listener, onTabNameChangeRequest());
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX);
+
+   /**
+    * <b>scenario</b>: Request received with incorrect tab index. <br>
+    * <b>expected</b>: Listener not notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(listener, onTabNameChangeRequest()).Times(0);
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX + 1);
+
+   m_test_subject->unsubscribeFromTabNameChangeRequest(TAB_INDEX, &listener);
+}
+
+TEST_F(IGUIControllerFixture, tabNameChangeRequestedWhenMultipleClientsSubscribed)
+{
+   const int TAB_INDEX = 0;
+   const int TAB_INDEX2 = 1;
+   TabNameChangeRequestListenerMock listener;
+   TabNameChangeRequestListenerMock listener2;
+
+   m_test_subject->subscribeForTabNameChangeRequest(TAB_INDEX, &listener);
+   m_test_subject->subscribeForTabNameChangeRequest(TAB_INDEX2, &listener2);
+
+   /**
+    * <b>scenario</b>: Request received with first tab index. <br>
+    * <b>expected</b>: Listener notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(listener, onTabNameChangeRequest());
+   EXPECT_CALL(listener2, onTabNameChangeRequest()).Times(0);
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX);
+
+   /**
+    * <b>scenario</b>: Request received with second tab index. <br>
+    * <b>expected</b>: Listener notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(listener, onTabNameChangeRequest()).Times(0);
+   EXPECT_CALL(listener2, onTabNameChangeRequest());
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX2);
+
+   /**
+    * <b>scenario</b>: Request received with tab index. <br>
+    * <b>expected</b>: Listener not notified. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(listener, onTabNameChangeRequest()).Times(0);
+   EXPECT_CALL(listener2, onTabNameChangeRequest());
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX + 1);
+
+   /**
+    * <b>scenario</b>: First tab index listener removed, event with this index received. <br>
+    * <b>expected</b>: Listener not notified. <br>
+    * ************************************************
+    */
+   m_test_subject->unsubscribeFromTabNameChangeRequest(TAB_INDEX, &listener);
+   EXPECT_CALL(listener, onTabNameChangeRequest()).Times(0);
+   EXPECT_CALL(listener2, onTabNameChangeRequest()).Times(0);
+   m_test_subject->onTabNameChangeRequest(TAB_INDEX);
+
+}
+TEST_F(IGUIControllerFixture, countUserButtonsTabs)
+{
+   /**
+    * <b>scenario</b>: Getting user buttons tab count. <br>
+    * <b>expected</b>: Correct number of tabs returned. <br>
+    * ************************************************
+    */
+   EXPECT_EQ(m_test_subject->countTabs(), SETTING_GET_U32(GUI_UserButtons_Tabs));
+}
+TEST_F(IGUIControllerFixture, countUserButtonsPerTab)
+{
+   /**
+    * <b>scenario</b>: Getting user buttons per tab count. <br>
+    * <b>expected</b>: Correct number of tabs returned. <br>
+    * ************************************************
+    */
+   EXPECT_EQ(m_test_subject->countButtonsPerTab(), SETTING_GET_U32(GUI_UserButtons_RowsPerTab) * SETTING_GET_U32(GUI_UserButtons_ButtonsPerRow));
+}
+TEST_F(IGUIControllerFixture, getting_tab_name_by_index)
+{
+   const int TABS_COUNT = 5;
+   const int CORRECT_TAB_INDEX = 3;
+   const int INCORRECT_TAB_INDEX = 6;
+
+   const std::string TAB_NAME = "TAB_NAME";
+   /**
+    * <b>scenario</b>: Getting tab name when index is valid <br>
+    * <b>expected</b>: Correct line ending returned. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_count(&test_tab_widget)).WillOnce(Return(TABS_COUNT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_tabText(&test_tab_widget,CORRECT_TAB_INDEX)).WillOnce(Return(QString(TAB_NAME.c_str())));
+   EXPECT_EQ(m_test_subject->getTabName(CORRECT_TAB_INDEX), TAB_NAME);
+
+   /**
+    * <b>scenario</b>: Getting tab name when index is invalid <br>
+    * <b>expected</b>: Correct line ending returned. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_count(&test_tab_widget)).WillOnce(Return(TABS_COUNT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_tabText(&test_tab_widget,CORRECT_TAB_INDEX)).Times(0);
+   EXPECT_EQ(m_test_subject->getTabName(INCORRECT_TAB_INDEX), "");
+}
+
+TEST_F(IGUIControllerFixture, setting_tab_name_by_index)
+{
+   const int TABS_COUNT = 5;
+   const int CORRECT_TAB_INDEX = 3;
+   const int INCORRECT_TAB_INDEX = 6;
+
+   const std::string TAB_NAME = "TAB_NAME";
+   /**
+    * <b>scenario</b>: Setting tab name when index is valid <br>
+    * <b>expected</b>: Name set correctly. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_count(&test_tab_widget)).WillOnce(Return(TABS_COUNT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_setTabText(&test_tab_widget,CORRECT_TAB_INDEX, QString(TAB_NAME.c_str())));
+   m_test_subject->setTabName(CORRECT_TAB_INDEX, TAB_NAME);
+
+   /**
+    * <b>scenario</b>: Setting tab name when index is invalid <br>
+    * <b>expected</b>: Name not set. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_count(&test_tab_widget)).WillOnce(Return(TABS_COUNT));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_setTabText(&test_tab_widget,CORRECT_TAB_INDEX, _)).Times(0);
+   m_test_subject->setTabName(INCORRECT_TAB_INDEX, TAB_NAME);
+}
