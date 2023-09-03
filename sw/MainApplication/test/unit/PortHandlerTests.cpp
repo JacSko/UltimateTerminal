@@ -184,8 +184,6 @@ struct PortHandlerFixture : public testing::Test
          EXPECT_CALL(*g_socket_mock, disconnect());
       }
       EXPECT_CALL(listener_mock, onPortHandlerEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
-      EXPECT_CALL(timer_mock, stopTimer(THROUGHPUT_TIMER_ID));
-      EXPECT_CALL(*GUIControllerMock_get(), setThroughputText(TEST_PORT_ID, ""));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
@@ -386,7 +384,6 @@ TEST_F(PortHandlerFixture, cannot_connect_to_socket_server)
 
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
-   EXPECT_CALL(timer_mock, stopTimer(THROUGHPUT_TIMER_ID)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID)).WillOnce(Invoke([&](int)
          {
             timer_running = false;
@@ -453,7 +450,6 @@ TEST_F(PortHandlerFixture, aborting_connection_trials)
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
-   EXPECT_CALL(timer_mock, stopTimer(THROUGHPUT_TIMER_ID)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
 
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
@@ -506,7 +502,6 @@ TEST_F(PortHandlerFixture, socket_server_closed_retrying_connection)
    /* server disconnected unexpectedly */
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
-   EXPECT_CALL(timer_mock, stopTimer(THROUGHPUT_TIMER_ID)).Times(AtLeast(1));
    EXPECT_CALL(*g_socket_mock, disconnect());
    EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
@@ -756,10 +751,19 @@ TEST_P(PortHandlerParamFixture, throughputForwardingWhenPortOpened)
    requestPortOpen(user_settings);
 
    EXPECT_CALL(timer_mock, startTimer(THROUGHPUT_TIMER_ID));
-   EXPECT_CALL(*GUIControllerMock_get(), setThroughputText(TEST_PORT_ID, _));
+   EXPECT_CALL(*GUIControllerMock_get(), setThroughputText(TEST_PORT_ID, "0.00 B/s"));
    dynamic_cast<Utilities::ITimerClient*>(m_test_subject.get())->onTimeout(THROUGHPUT_TIMER_ID);
 
    requestPortClose(user_settings);
+
+   /**
+    * <b>scenario</b>: Port gets closed, throughput timer expires. <br>
+    * <b>expected</b>: Throughtput text shall be cleared, timer should not be started again. <br>
+    * ************************************************
+    */
+   EXPECT_CALL(timer_mock, startTimer(THROUGHPUT_TIMER_ID)).Times(0);
+   EXPECT_CALL(*GUIControllerMock_get(), setThroughputText(TEST_PORT_ID, ""));
+   dynamic_cast<Utilities::ITimerClient*>(m_test_subject.get())->onTimeout(THROUGHPUT_TIMER_ID);
 
 }
 

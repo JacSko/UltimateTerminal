@@ -192,8 +192,16 @@ void PortHandler::onTimeout(uint32_t timer_id)
       UT_Log(PORT_HANDLER, HIGH, "PORT%u[%s] Reading throughput, value %.5f unit %u", m_settings.port_id, m_settings.port_name.c_str(), throughputCalculation.value, (uint32_t)throughputCalculation.unit);
       m_throughputCalculator.reset();
       m_throughputCalculator.start();
-      m_timers.startTimer(m_throughputCalculatorTimerID);
-      reportThroughput(throughputCalculation);
+      if (isOpened())
+      {
+         m_timers.startTimer(m_throughputCalculatorTimerID);
+         reportThroughput(throughputCalculation);
+      }
+      else
+      {
+         UT_Log(PORT_HANDLER, HIGH, "PORT%u[%s] stopping throughput reporting", m_settings.port_id, m_settings.port_name.c_str());
+         m_gui_controller.setThroughputText(m_settings.port_id, "");
+      }
    }
 }
 void PortHandler::reportThroughput(const Utilities::ThroughputResult& throughput)
@@ -252,12 +260,9 @@ void PortHandler::handleButtonClickSerial()
    if (m_serial->isOpened())
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to close serial port", m_settings.port_id, m_settings.port_name.c_str());
-      m_timers.stopTimer(m_throughputCalculatorTimerID);
       m_serial->close();
       setButtonState(ButtonState::DISCONNECTED);
       notifyListeners(Event::DISCONNECTED);
-      m_throughputCalculator.reset();
-      m_gui_controller.setThroughputText(m_settings.port_id, "");
    }
    else
    {
@@ -285,12 +290,9 @@ void PortHandler::handleButtonClickEthernet()
    if (m_socket->isConnected())
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] trying to disconnet socket", m_settings.port_id, m_settings.port_name.c_str());
-      m_timers.stopTimer(m_throughputCalculatorTimerID);
       setButtonState(ButtonState::DISCONNECTED);
       m_socket->disconnect();
       notifyListeners(Event::DISCONNECTED);
-      m_throughputCalculator.reset();
-      m_gui_controller.setThroughputText(m_settings.port_id, "");
    }
    else if (m_button_state == ButtonState::CONNECTING)
    {
@@ -321,7 +323,6 @@ void PortHandler::tryConnectToSocket()
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
-      m_timers.stopTimer(m_throughputCalculatorTimerID);
       setButtonState(ButtonState::CONNECTING);
       notifyListeners(Event::CONNECTING);
    }
