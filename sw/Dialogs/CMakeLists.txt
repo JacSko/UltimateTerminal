@@ -6,11 +6,13 @@ add_library(Dialogs STATIC
    source/TraceFilterSettingDialog.cpp
    source/ApplicationSettingsDialog.cpp
    source/MessageDialog.cpp
+   source/TabNameDialog.cpp
    public/PortSettingDialog.h
    public/UserButtonDialog.h
    public/LoggingSettingDialog.h
    public/TraceFilterSettingDialog.h
    public/ApplicationSettingsDialog.h
+   public/TabNameDialog.h
 )
 
 target_include_directories(Dialogs PUBLIC 

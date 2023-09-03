@@ -24,8 +24,10 @@ add_library(DialogsSimulation STATIC
        source/PortSettingDialog.cpp
        source/TraceFilterSettingDialog.cpp
        source/UserButtonDialog.cpp
+       source/TabNameDialog.cpp
        ../../sw/Dialogs/public/PortSettingDialog.h
        ../../sw/Dialogs/public/UserButtonDialog.h
+       ../../sw/Dialogs/public/TabNameDialog.h
        ../../sw/Dialogs/public/LoggingSettingDialog.h
        ../../sw/Dialogs/public/TraceFilterSettingDialog.h
        ../../sw/Dialogs/public/ApplicationSettingsDialog.h)

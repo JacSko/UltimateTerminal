@@ -19,4 +19,6 @@ target_link_libraries(MainApplicationMocks INTERFACE
                       Logger
                       gmock
                       GUIControllerMock
+                      DialogsMocks
+                      QtMocks
                       )

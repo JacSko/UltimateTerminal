@@ -10,7 +10,7 @@
 #include "PortHandler.h"
 #include "LoggingSettingDialog.h"
 #include "PersistenceHandler.h"
-#include "UserButtonHandler.h"
+#include "UserButtonsTabHandler.h"
 #include "TraceFilterHandler.h"
 #include "IFileLogger.h"
 #include "GUIController.h"
@@ -29,16 +29,16 @@ private:
 
    struct ButtonListener
    {
-    uint32_t button_id;
-    ButtonEvent event;
-    std::function<void()> listener;
+      uint32_t button_id;
+      ButtonEvent event;
+      std::function<void()> listener;
    };
    std::unique_ptr<Utilities::ITimers> m_timers;
    std::unique_ptr<IFileLogger> m_file_logger;
    GUIController m_gui_controller;
    std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
    std::mutex m_port_handler_mutex;
-   std::vector<std::unique_ptr<GUI::UserButtonHandler>> m_user_button_handlers;
+   std::vector<std::unique_ptr<GUI::UserButtonsTabHandler>> m_user_buttons_tab_handlers;
    std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
    uint32_t m_marker_index;
    std::string m_file_logging_path;

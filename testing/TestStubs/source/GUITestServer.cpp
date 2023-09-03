@@ -14,6 +14,7 @@ std::unique_ptr<RPC::RPCServer> rpc_server;
 std::vector<Dialogs::PortSettingDialog::Settings> g_port_settings;
 std::vector<Dialogs::TraceFilterSettingDialog::Settings> g_trace_filter_settings;
 std::vector<Dialogs::UserButtonDialog::Settings> g_user_button_settings;
+std::vector<std::string> g_user_buttons_tab_names;
 GUITestServer::MessageBoxDetails g_messagebox_details;
 std::string g_logging_path;
 
@@ -108,6 +109,7 @@ m_mainWindow(main_window)
       g_port_settings.push_back({});
    }
    g_user_button_settings.resize(ui->countUserButtons());
+   g_user_buttons_tab_names.resize(ui->countUserButtonsTabs());
 }
 GUITestServer::~GUITestServer()
 {
@@ -620,4 +622,8 @@ std::optional<bool> GUITestServer::onUserButtonSettingsDialogShow(QWidget*, cons
    out_settings = g_user_button_settings[current_settings.id];
    UT_Log(TEST_SERVER, LOW, "%s id %u", __func__, current_settings.id);
    return true;
+}
+std::optional<std::string> GUITestServer::onTabNameDialogShow(QWidget* parent, const std::string& current_name)
+{
+   return {};
 }

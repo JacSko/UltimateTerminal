@@ -3,7 +3,7 @@
 
 #include "MainApplication.h"
 #include "PortHandlerMock.h"
-#include "UserButtonHandlerMock.h"
+#include "UserButtonsTabHandlerMock.h"
 #include "TraceFilterHandlerMock.h"
 #include "LoggingSettingDialogMock.h"
 #include "ITimersMock.h"
@@ -110,7 +110,8 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("\\n"));
       EXPECT_CALL(*GUIControllerMock_get(), addLineEnding("EMPTY"));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForActivePortChangedEvent(_)).WillOnce(SaveArg<0>(&m_port_change_listener));
-      EXPECT_CALL(*GUIControllerMock_get(), countUserButtons()).WillOnce(Return(BUTTONS_COUNT));
+      EXPECT_CALL(*GUIControllerMock_get(), countTabs()).WillOnce(Return(BUTTONS_TABS));
+      EXPECT_CALL(*GUIControllerMock_get(), countButtonsPerTab()).WillRepeatedly(Return(0));
       EXPECT_CALL(*GUIControllerMock_get(), countPorts()).WillOnce(Return(PORTS_COUNT));
       EXPECT_CALL(*GUIControllerMock_get(), countTraceFilters()).WillOnce(Return(TRACE_FILTERS_COUNT));
 
@@ -471,6 +472,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
@@ -499,6 +501,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
 }
@@ -527,6 +530,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
                                                       .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
    EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
+   EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    EXPECT_CALL(*MessageDialogMock_get(), show(_, "Error", _, _));
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);

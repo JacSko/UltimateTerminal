@@ -113,14 +113,14 @@ m_marker_index(0)
    UT_Log(MAIN, LOW, "%u PortHandlers created", port_numbers);
 
    /* create handlers for user buttons */
-   uint32_t user_buttons_count = m_gui_controller.countUserButtons();
-   for (uint32_t i = 0; i < user_buttons_count; i++)
+   uint32_t count_tabs = m_gui_controller.countTabs();
+   for (uint32_t i = 0; i < count_tabs; i++)
    {
-      std::string name = "BUTTON" + std::to_string(i);
-      m_user_button_handlers.emplace_back(std::unique_ptr<GUI::UserButtonHandler>(
-          new GUI::UserButtonHandler(m_gui_controller, i, name, m_persistence, std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+      m_user_buttons_tab_handlers.emplace_back(std::unique_ptr<GUI::UserButtonsTabHandler>(
+          new GUI::UserButtonsTabHandler(m_gui_controller, i, m_gui_controller.countButtonsPerTab(), m_persistence,
+                                         std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
    }
-   UT_Log(MAIN, LOW, "%u UserButtonHandlers created", user_buttons_count);
+   UT_Log(MAIN, LOW, "%u UserButtonsTabHandlers created", count_tabs);
 
    uint32_t filters_count = m_gui_controller.countTraceFilters();
    for (uint32_t i = 0; i < filters_count; i++)
@@ -135,11 +135,6 @@ m_marker_index(0)
    m_gui_controller.addLineEnding("EMPTY");
 
    m_file_logging_path = system_call::getExecutablePath();
-
-   for (auto& handler : m_user_button_handlers)
-   {
-      handler->startThread();
-   }
    m_persistence.restore();
 }
 MainApplication::~MainApplication()
@@ -164,7 +159,7 @@ MainApplication::~MainApplication()
       UT_Log(MAIN, ERROR, "Cannot write persistence!");
    }
 
-   m_user_button_handlers.clear();
+   m_user_buttons_tab_handlers.clear();
    m_trace_filter_handlers.clear();
    m_port_handlers.clear();
 

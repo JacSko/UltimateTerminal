@@ -46,7 +46,7 @@ public slots:
    static std::optional<bool> onPortSettingsDialogShow(QWidget* parent, const Dialogs::PortSettingDialog::Settings& current_settings, Dialogs::PortSettingDialog::Settings& out_settings, bool allow_edit);
    static std::optional<bool> onTraceFilterSettingDialogShow(QWidget* parent, const Dialogs::TraceFilterSettingDialog::Settings& current_settings, Dialogs::TraceFilterSettingDialog::Settings& out_settings, bool allow_edit);
    static std::optional<bool> onUserButtonSettingsDialogShow(QWidget* parent, const Dialogs::UserButtonDialog::Settings& current_settings, Dialogs::UserButtonDialog::Settings& out_settings, bool allow_edit);
-
+   static std::optional<std::string> onTabNameDialogShow(QWidget* parent, const std::string& current_name);
 private:
    bool onButtonClickRequest(const std::vector<uint8_t>& data);
    bool onButtonContextMenuRequested(const std::vector<uint8_t>& data);

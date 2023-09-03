@@ -222,8 +222,8 @@ public:
    QObject(){}
    QObject(QWidget*){}
    void connect(QObject* source, const char* signal_name, QObject* dest, const char* slot_name);
-   QString objectName(){return QString(name.c_str());}
-   void setObjectName(const QString& new_name) {name = new_name.toStdString();};
+   QString objectName(){return QString(object_name.c_str());}
+   void setObjectName(const QString& new_name) {object_name = new_name.toStdString();};
 private:
-   std::string name;
+   std::string object_name;
 };

@@ -8,10 +8,12 @@ endif()
 add_library(MainApplication STATIC 	   
 	   source/MainApplication.cpp
 	   source/PortHandler.cpp
+       source/UserButtonsTabHandler.cpp
        source/UserButtonHandler.cpp
        source/TraceFilterHandler.cpp
        source/FileLogger.cpp
        include/MainApplication.h
+       include/UserButtonsTabHandler.h
        include/UserButtonHandler.h
        public/PortHandler.h
        public/TraceFilterHandler.h)

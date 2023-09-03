@@ -89,3 +89,24 @@ target_link_libraries(ApplicationSettingsDialogTests PUBLIC
         GUIControllerMock
 )
 add_test(NAME ApplicationSettingsDialogTests COMMAND ApplicationSettingsDialogTests)
+
+#####################################################################################
+
+add_executable(TabNameDialogTests
+            TabNameDialogTests.cpp
+            ../../source/TabNameDialog.cpp
+)
+
+target_include_directories(TabNameDialogTests PUBLIC
+        ../../include
+        ../../public
+)
+target_link_libraries(TabNameDialogTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        Utilities
+        QtMocks
+        GUIControllerMock
+)
+add_test(NAME TabNameDialogTests COMMAND TabNameDialogTests)

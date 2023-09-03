@@ -116,3 +116,25 @@ target_link_libraries(MainApplicationTests PUBLIC
         GUIControllerMock
 )
 add_test(NAME MainApplicationTests COMMAND MainApplicationTests)
+
+#####################################################################################
+
+add_executable(UserButtonsTabHandlerTests
+            UserButtonsTabHandlerTests.cpp
+            ../../source/UserButtonsTabHandler.cpp
+)
+
+target_include_directories(UserButtonsTabHandlerTests PUBLIC
+        ../../include
+        ../../public
+        ../mock
+)
+target_link_libraries(UserButtonsTabHandlerTests PUBLIC
+        gtest_main
+        gmock_main
+        Logger
+        UtilitiesMocks
+        SettingsHandler
+        MainApplicationMocks
+)
+add_test(NAME UserButtonsTabHandlerTests COMMAND UserButtonsTabHandlerTests)

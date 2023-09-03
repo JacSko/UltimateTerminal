@@ -2,7 +2,6 @@
 
 #include <QtCore/QObject>
 
-#include "GenericListener.hpp"
 #include "UserButtonDialog.h"
 #include "PersistenceHandler.h"
 #include "ButtonCommandsExecutor.hpp"

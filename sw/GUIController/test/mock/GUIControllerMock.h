@@ -58,7 +58,12 @@ struct GUIControllerMock
    MOCK_METHOD0(countPorts, uint32_t());
    MOCK_METHOD0(countTraceFilters, uint32_t());
    MOCK_METHOD2(setThroughputText, void(uint8_t, const std::string&));
-
+   MOCK_METHOD2(subscribeForTabNameChangeRequest, void(int tab_idx, TabNameChangeRequestListener*));
+   MOCK_METHOD2(unsubscribeFromTabNameChangeRequest, void(int tab_idx, TabNameChangeRequestListener*));
+   MOCK_METHOD2(setTabName, void(int tab_idx, const std::string& name));
+   MOCK_METHOD1(getTabName, std::string(int tab_idx));
+   MOCK_METHOD0(countTabs, uint32_t());
+   MOCK_METHOD0(countButtonsPerTab, uint32_t());
 };
 
 GUIControllerMock* g_gui_controller_mock;
@@ -298,4 +303,28 @@ uint32_t GUIController::countTraceFilters()
 void GUIController::setThroughputText(uint8_t id, const std::string& text)
 {
    g_gui_controller_mock->setThroughputText(id, text);
+}
+void GUIController::subscribeForTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener* listener)
+{
+   g_gui_controller_mock->subscribeForTabNameChangeRequest(tab_idx, listener);
+}
+void GUIController::unsubscribeFromTabNameChangeRequest(int tab_idx, TabNameChangeRequestListener* listener)
+{
+   g_gui_controller_mock->unsubscribeFromTabNameChangeRequest(tab_idx, listener);
+}
+void GUIController::setTabName(int tab_idx, const std::string& name)
+{
+   g_gui_controller_mock->setTabName(tab_idx, name);
+}
+std::string GUIController::getTabName (int tab_idx)
+{
+   return g_gui_controller_mock->getTabName(tab_idx);
+}
+uint32_t GUIController::countTabs()
+{
+   return g_gui_controller_mock->countTabs();
+}
+uint32_t GUIController::countButtonsPerTab()
+{
+   return g_gui_controller_mock->countButtonsPerTab();
 }
