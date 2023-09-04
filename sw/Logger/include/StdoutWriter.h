@@ -32,6 +32,8 @@
 /* =============================
  *       Data structures
  * =============================*/
+namespace Logger
+{
 
 class LoggerStdoutWriter : public ILoggerWriter
 {
@@ -66,4 +68,5 @@ public:
    }
 };
 
+}
 #endif

@@ -12,13 +12,13 @@
 namespace Dialogs
 {
 
-ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controller,
-                                                     std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
-                                                     std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
-                                                     std::unique_ptr<IFileLogger>& logger,
+ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController::GUIController& gui_controller,
+                                                     std::vector<std::unique_ptr<MainApplication::Port>>& ports,
+                                                     std::vector<std::unique_ptr<MainApplication::TraceFilter>>& filters,
+                                                     std::unique_ptr<MainApplication::IFileLogger>& logger,
                                                      std::string& logging_path,
                                                      const std::string& persistence_path):
-m_handlers(ports),
+m_ports(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
 m_gui_controller(gui_controller),
@@ -41,7 +41,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    QTabWidget* main_tab_view = new QTabWidget();
 
    createGeneralTab(main_tab_view, parent);
-   createPortHandlersTab(main_tab_view, parent);
+   createPortsTab(main_tab_view, parent);
    createTraceFiltersTab(main_tab_view, parent);
    createFileLoggerTab(main_tab_view);
    createDebugTab(main_tab_view, parent);
@@ -59,7 +59,7 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    main_dialog->setLayout(main_layout);
    if (main_dialog->exec() == QDialog::Accepted)
    {
-      notifyPortHandlersChanges();
+      notifyPortsChanges();
       notifyTraceFiltersChanges();
       notifyFileLoggingChanges();
       saveLoggerGroups();
@@ -100,14 +100,14 @@ void ApplicationSettingsDialog::createGeneralTab(QTabWidget* main_tab, QWidget* 
 
    main_tab->addTab(tab_widget, "GENERAL");
 }
-void ApplicationSettingsDialog::createPortHandlersTab(QTabWidget* main_tab, QWidget* parent)
+void ApplicationSettingsDialog::createPortsTab(QTabWidget* main_tab, QWidget* parent)
 {
    QTabWidget* ports_tab = new QTabWidget();
-   for (uint8_t i = 0; i < m_handlers.port_handlers.size(); i++)
+   for (uint8_t i = 0; i < m_ports.m_ports.size(); i++)
    {
       QWidget* port_widget = new QWidget();
-      std::string name = "PORT" + std::to_string(m_handlers.port_handlers[i]->getSettings().port_id);
-      port_widget->setLayout(m_handlers.dialogs[i].createLayout(parent, m_handlers.port_handlers[i]->getSettings(), !m_handlers.port_handlers[i]->isOpened()));
+      std::string name = "PORT" + std::to_string(m_ports.m_ports[i]->getSettings().port_id);
+      port_widget->setLayout(m_ports.m_dialogs[i].createLayout(parent, m_ports.m_ports[i]->getSettings(), !m_ports.m_ports[i]->isOpened()));
       ports_tab->addTab(port_widget, QString(name.c_str()));
    }
    main_tab->addTab(ports_tab, "PORTS");
@@ -116,11 +116,11 @@ void ApplicationSettingsDialog::createTraceFiltersTab(QTabWidget* main_tab,QWidg
 {
    QTabWidget* filters_tab = new QTabWidget();
 
-   for (uint8_t i = 0; i < m_filters.filters.size(); i++)
+   for (uint8_t i = 0; i < m_filters.m_filters.size(); i++)
    {
       QWidget* trace_widget = new QWidget();
       std::string name = "FILTER" + std::to_string(i+1);
-      trace_widget->setLayout(m_filters.dialogs[i].createLayout(parent, m_filters.filters[i]->getSettings(), !m_filters.filters[i]->isActive()));
+      trace_widget->setLayout(m_filters.m_dialogs[i].createLayout(parent, m_filters.m_filters[i]->getSettings(), !m_filters.m_filters[i]->isActive()));
       filters_tab->addTab(trace_widget, QString(name.c_str()));
    }
    main_tab->addTab(filters_tab, "FILTERS");
@@ -128,7 +128,7 @@ void ApplicationSettingsDialog::createTraceFiltersTab(QTabWidget* main_tab,QWidg
 void ApplicationSettingsDialog::createFileLoggerTab(QTabWidget* main_tab)
 {
    QWidget* logging_widget = new QWidget();
-   logging_widget->setLayout(m_file_logging.dialog.createLayout(m_file_logging.path, !m_file_logging.logger->isActive()));
+   logging_widget->setLayout(m_file_logging.m_dialog.createLayout(m_file_logging.m_path, !m_file_logging.m_logger->isActive()));
    main_tab->addTab(logging_widget, "FILE LOGGING");
 }
 void ApplicationSettingsDialog::createDebugTab(QTabWidget* main_tab, QWidget* parent)
@@ -173,11 +173,13 @@ void ApplicationSettingsDialog::createLoggerTab(QTabWidget* debug_tab, QWidget* 
       levelbox->view()->setPalette(parent->palette());
       for (uint8_t j = 0; j < LOGGER_LEVEL_MAX; j++)
       {
-         levelbox->addItem(QString(LoggerEngine::get()->getLevelName((LoggerLevelID)j).c_str()));
+         levelbox->addItem(QString(Logger::LoggerEngine::get()->getLevelName((LoggerLevelID)j).c_str()));
       }
-      levelbox->setCurrentText(QString(LoggerEngine::get()->getLevelName(LoggerEngine::get()->getLevel((LoggerGroupID)i)).c_str()));
+      levelbox->setCurrentText(QString(Logger::LoggerEngine::get()->getLevelName(
+                                       Logger::LoggerEngine::get()->getLevel((LoggerGroupID)i)).c_str()));
       m_logger_comboboxes.push_back(levelbox);
-      logger_widget_layout->addRow(QString(LoggerEngine::get()->getGroupName((LoggerGroupID)i).c_str()), levelbox);
+      logger_widget_layout->addRow(QString(Logger::LoggerEngine::get()->getGroupName(
+                                                                        (LoggerGroupID)i).c_str()), levelbox);
    }
    debug_tab->addTab(logger_widget, "LOGGING");
 }
@@ -226,39 +228,39 @@ void ApplicationSettingsDialog::writeSettingValue(int id, QLineEdit* edit)
       break;
    }
 }
-void ApplicationSettingsDialog::notifyPortHandlersChanges()
+void ApplicationSettingsDialog::notifyPortsChanges()
 {
-   for (uint8_t i = 0; i < m_handlers.port_handlers.size(); i++)
+   for (uint8_t i = 0; i < m_ports.m_ports.size(); i++)
    {
       Dialogs::PortSettingDialog::Settings new_settings;
-      Dialogs::PortSettingDialog::Settings current_settings = m_handlers.port_handlers[i]->getSettings();
-      if (m_handlers.dialogs[i].convertGuiValues(new_settings) && (new_settings != current_settings))
+      Dialogs::PortSettingDialog::Settings current_settings = m_ports.m_ports[i]->getSettings();
+      if (m_ports.m_dialogs[i].convertGuiValues(new_settings) && (new_settings != current_settings))
       {
          UT_Log(GUI_DIALOG, LOW, "Detected settings change for port %u", current_settings.port_id);
-         (void) m_handlers.port_handlers[i]->setSettings(new_settings);
+         (void) m_ports.m_ports[i]->setSettings(new_settings);
       }
    }
 }
 void ApplicationSettingsDialog::notifyTraceFiltersChanges()
 {
-   for (uint8_t i = 0; i < m_filters.filters.size(); i++)
+   for (uint8_t i = 0; i < m_filters.m_filters.size(); i++)
    {
       Dialogs::TraceFilterSettingDialog::Settings new_settings;
-      Dialogs::TraceFilterSettingDialog::Settings current_settings = m_filters.filters[i]->getSettings();
-      if (m_filters.dialogs[i].convertGuiValues(new_settings) && (new_settings != current_settings))
+      Dialogs::TraceFilterSettingDialog::Settings current_settings = m_filters.m_filters[i]->getSettings();
+      if (m_filters.m_dialogs[i].convertGuiValues(new_settings) && (new_settings != current_settings))
       {
          UT_Log(GUI_DIALOG, LOW, "Detected trace filter change for filter %u", current_settings.id);
-         (void) m_filters.filters[i]->setSettings(new_settings);
+         (void) m_filters.m_filters[i]->setSettings(new_settings);
       }
    }
 }
 void ApplicationSettingsDialog::notifyFileLoggingChanges()
 {
-   std::string new_logging_path = m_file_logging.dialog.convertGuiValues();
-   if (new_logging_path != m_file_logging.path)
+   std::string new_logging_path = m_file_logging.m_dialog.convertGuiValues();
+   if (new_logging_path != m_file_logging.m_path)
    {
-      UT_Log(GUI_DIALOG, LOW, "Detected logging path change %s -> %s", m_file_logging.path.c_str(), new_logging_path.c_str());
-      m_file_logging.path = new_logging_path;
+      UT_Log(GUI_DIALOG, LOW, "Detected logging path change %s -> %s", m_file_logging.m_path.c_str(), new_logging_path.c_str());
+      m_file_logging.m_path = new_logging_path;
    }
 }
 
@@ -280,9 +282,9 @@ void ApplicationSettingsDialog::saveLoggerGroups()
    {
       std::string level_name = m_logger_comboboxes[i]->currentText().toStdString();
       LoggerGroupID logger_id = (LoggerGroupID)i;
-      LoggerLevelID logger_level = LoggerEngine::get()->levelFromString(level_name);
-      LoggerEngine::get()->setLevel(logger_id, logger_level);
-      UT_Log(GUI_DIALOG, LOW, "Logger group %s set to %s", LoggerEngine::get()->getGroupName(logger_id).c_str(), level_name.c_str());
+      LoggerLevelID logger_level = Logger::LoggerEngine::get()->levelFromString(level_name);
+      Logger::LoggerEngine::get()->setLevel(logger_id, logger_level);
+      UT_Log(GUI_DIALOG, LOW, "Logger group %s set to %s", Logger::LoggerEngine::get()->getGroupName(logger_id).c_str(), level_name.c_str());
    }
 }
 void ApplicationSettingsDialog::saveThemeChange()

@@ -1,14 +1,17 @@
-#include "TraceFilterHandler.h"
+#include "TraceFilter.h"
 #include "Logger.h"
 #include "Serialize.hpp"
 
-TraceFilterHandler::TraceFilterHandler(uint8_t id, GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence):
+namespace MainApplication
+{
+
+TraceFilter::TraceFilter(uint8_t id, GUIController::GUIController& controller, const std::string& button_name, Utilities::Persistence::Persistence& persistence):
 m_gui_controller(controller),
 m_persistence(persistence),
 m_user_defined(false),
 m_is_active(false)
 {
-   Persistence::PersistenceListener::setName(std::string("TRACE_FILTER") + std::to_string(id));
+   Utilities::Persistence::PersistenceListener::setName(std::string("TRACE_FILTER") + std::to_string(id));
    m_persistence.addListener(*this);
 
    m_settings.background = m_gui_controller.getApplicationPalette().color(QPalette::Base).rgb();
@@ -17,8 +20,8 @@ m_is_active(false)
 
    m_button_id = m_gui_controller.getButtonID(button_name);
    UT_Assert(m_button_id != UINT32_MAX);
-   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
-   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, GUIController::ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED, this);
    m_gui_controller.setButtonCheckable(m_button_id, true);
    m_gui_controller.setTraceFilterEnabled(m_settings.id, true);
    setButtonState(false);
@@ -26,26 +29,26 @@ m_is_active(false)
 
    UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u Created trace filter with id %u", id);
 }
-TraceFilterHandler::~TraceFilterHandler()
+TraceFilter::~TraceFilter()
 {
    UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u Destroying trace filter", m_settings.id);
    m_persistence.removeListener(*this);
 }
-void TraceFilterHandler::onButtonEvent(uint32_t button_id, ButtonEvent event)
+void TraceFilter::onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event)
 {
    if (button_id == m_button_id)
    {
-      if (event == ButtonEvent::CLICKED)
+      if (event == GUIController::ButtonEvent::CLICKED)
       {
          onButtonClicked();
       }
-      else if (event == ButtonEvent::CONTEXT_MENU_REQUESTED)
+      else if (event == GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED)
       {
          onContextMenuRequested();
       }
    }
 }
-std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilterHandler::tryMatch(const std::string& text)
+std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilter::tryMatch(const std::string& text)
 {
    if (filteringActive())
    {
@@ -61,7 +64,7 @@ std::optional<Dialogs::TraceFilterSettingDialog::Settings> TraceFilterHandler::t
       return {};
    }
 }
-void TraceFilterHandler::refreshUi()
+void TraceFilter::refreshUi()
 {
    setButtonState(filteringActive());
    if (!m_user_defined)
@@ -71,7 +74,7 @@ void TraceFilterHandler::refreshUi()
    }
    setLineEditColor(m_settings.background, m_settings.font);
 }
-bool TraceFilterHandler::setSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
+bool TraceFilter::setSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
 {
    bool result = false;
    if (!filteringActive())
@@ -81,26 +84,26 @@ bool TraceFilterHandler::setSettings(const Dialogs::TraceFilterSettingDialog::Se
    }
    return result;
 }
-Dialogs::TraceFilterSettingDialog::Settings TraceFilterHandler::getSettings()
+Dialogs::TraceFilterSettingDialog::Settings TraceFilter::getSettings()
 {
    return m_settings;
 }
-bool TraceFilterHandler::isActive()
+bool TraceFilter::isActive()
 {
    return filteringActive();
 }
-void TraceFilterHandler::onPersistenceRead(const PersistenceItems& items)
+void TraceFilter::onPersistenceRead(const PersistenceItems& items)
 {
    UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u restoring persistence", m_settings.id);
    Dialogs::TraceFilterSettingDialog::Settings settings = m_settings;
    bool isActive = false;
 
-   Persistence::readItem(items, "isActive", isActive);
-   Persistence::readItem(items, "text", settings.regex);
-   Persistence::readItem(items, "backgroundColor", settings.background);
-   Persistence::readItem(items, "fontColor", settings.font);
-   Persistence::readItem(items, "userDefined", m_user_defined);
-   Persistence::readItem(items, "id", settings.id);
+   Utilities::Persistence::readItem(items, "isActive", isActive);
+   Utilities::Persistence::readItem(items, "text", settings.regex);
+   Utilities::Persistence::readItem(items, "backgroundColor", settings.background);
+   Utilities::Persistence::readItem(items, "fontColor", settings.font);
+   Utilities::Persistence::readItem(items, "userDefined", m_user_defined);
+   Utilities::Persistence::readItem(items, "id", settings.id);
 
    handleNewSettings(settings);
    setButtonState(isActive);
@@ -111,21 +114,21 @@ void TraceFilterHandler::onPersistenceRead(const PersistenceItems& items)
 
    UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x active %u, text %s", m_settings.id, m_settings.background, m_settings.font, isActive, m_settings.regex.c_str());
 }
-void TraceFilterHandler::onPersistenceWrite(PersistenceItems& buffer)
+void TraceFilter::onPersistenceWrite(PersistenceItems& buffer)
 {
    std::string text = m_gui_controller.getTraceFilter(m_settings.id);
 
-   Persistence::writeItem(buffer, "isActive", m_is_active);
-   Persistence::writeItem(buffer, "text", text);
-   Persistence::writeItem(buffer, "backgroundColor", m_settings.background);
-   Persistence::writeItem(buffer, "fontColor", m_settings.font);
-   Persistence::writeItem(buffer, "userDefined", m_user_defined);
-   Persistence::writeItem(buffer, "id", m_settings.id);
+   Utilities::Persistence::writeItem(buffer, "isActive", m_is_active);
+   Utilities::Persistence::writeItem(buffer, "text", text);
+   Utilities::Persistence::writeItem(buffer, "backgroundColor", m_settings.background);
+   Utilities::Persistence::writeItem(buffer, "fontColor", m_settings.font);
+   Utilities::Persistence::writeItem(buffer, "userDefined", m_user_defined);
+   Utilities::Persistence::writeItem(buffer, "id", m_settings.id);
 
    UT_Log(TRACE_FILTER, HIGH, "TRACE_FILTER%u Persistent data: background color %.6x, font color %.6x, active %u, text %s", m_settings.id, m_settings.background, m_settings.font, m_is_active, text.c_str());
 }
 
-void TraceFilterHandler::onButtonClicked()
+void TraceFilter::onButtonClicked()
 {
    if (!filteringActive())
    {
@@ -144,7 +147,7 @@ void TraceFilterHandler::onButtonClicked()
       m_is_active = false;
    }
 }
-void TraceFilterHandler::onContextMenuRequested()
+void TraceFilter::onContextMenuRequested()
 {
    if(!filteringActive())
    {
@@ -165,7 +168,7 @@ void TraceFilterHandler::onContextMenuRequested()
       UT_Log(TRACE_FILTER, ERROR, "TRACE_FILTER%u Cannot show dialog - filter is active!", m_settings.id);
    }
 }
-void TraceFilterHandler::handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
+void TraceFilter::handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings)
 {
    m_settings = settings;
 
@@ -174,7 +177,7 @@ void TraceFilterHandler::handleNewSettings(const Dialogs::TraceFilterSettingDial
    m_regex = std::regex(settings.regex);
    UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u %s bg %.6x text %.6x, regex [%s]", m_settings.id, __func__, settings.background, settings.font, settings.regex.c_str());
 }
-void TraceFilterHandler::setButtonState(bool active)
+void TraceFilter::setButtonState(bool active)
 {
    constexpr uint32_t GREEN = 0x00FF00;
    constexpr uint32_t BLACK = 0x000000;
@@ -192,13 +195,15 @@ void TraceFilterHandler::setButtonState(bool active)
       m_gui_controller.setButtonFontColor(m_button_id, DEFAULT_FONT);
    }
 }
-void TraceFilterHandler::setLineEditColor(uint32_t background_color, uint32_t font_color)
+void TraceFilter::setLineEditColor(uint32_t background_color, uint32_t font_color)
 {
    UT_Log(TRACE_FILTER, LOW, "TRACE_FILTER%u bg %.6x text %.6x", m_settings.id,  background_color, font_color);
    m_gui_controller.setTraceFilterBackgroundColor(m_settings.id, background_color);
    m_gui_controller.setTraceFilterFontColor(m_settings.id, font_color);
 }
-bool TraceFilterHandler::filteringActive()
+bool TraceFilter::filteringActive()
 {
    return m_is_active;
+}
+
 }

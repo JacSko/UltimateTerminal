@@ -4,12 +4,12 @@
 #include "QtWidgets/QLineEdit"
 #include <optional>
 #include <regex>
-#include "PersistenceHandler.h"
+#include "Persistence.h"
 #include "TraceFilterSettingDialog.h"
 #include "GUIController.h"
 
 /**
- * @file TraceFilterHandler.h
+ * @file TraceFilter.h
  *
  * @brief
  *    Class is responsible for filtering out traces based on regular expression defined by user.
@@ -25,10 +25,12 @@
  * @date   26/10/2022
  *
  */
+namespace MainApplication
+{
 
-class TraceFilterHandler : public QObject,
-                           public Persistence::PersistenceListener,
-                           public ButtonEventListener
+class TraceFilter : public QObject,
+                           public Utilities::Persistence::PersistenceListener,
+                           public GUIController::ButtonEventListener
 {
    Q_OBJECT
 
@@ -42,8 +44,8 @@ public:
     *
     * @return None.
     */
-   TraceFilterHandler(uint8_t id, GUIController& controller, const std::string& button_name, Persistence::PersistenceHandler& persistence);
-   ~TraceFilterHandler();
+   TraceFilter(uint8_t id, GUIController::GUIController& controller, const std::string& button_name, Utilities::Persistence::Persistence& persistence);
+   ~TraceFilter();
    /**
     * @brief Checks matching of provided text with regular expression defined by user.
     * @param[in] text - trace to test
@@ -76,15 +78,15 @@ public:
 
 private:
    /* ButtonEventListener */
-   void onButtonEvent(uint32_t button_id, ButtonEvent event);
+   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event);
 
    void onPersistenceRead(const PersistenceItems&) override;
    void onPersistenceWrite(PersistenceItems&) override;
    void handleNewSettings(const Dialogs::TraceFilterSettingDialog::Settings& settings);
 
-   GUIController& m_gui_controller;
+   GUIController::GUIController& m_gui_controller;
    uint32_t m_button_id;
-   Persistence::PersistenceHandler& m_persistence;
+   Utilities::Persistence::Persistence& m_persistence;
    std::regex m_regex;
    Dialogs::TraceFilterSettingDialog::Settings m_settings;
    bool m_user_defined;
@@ -98,3 +100,5 @@ public slots:
    void onContextMenuRequested();
 
 };
+
+}

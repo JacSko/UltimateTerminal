@@ -26,13 +26,13 @@
  *
  */
 
+namespace MainApplication
+{
+
 /** Timeout for thread starting */
 constexpr uint32_t THREAD_START_TIMEOUT = 1000;
 /** Maximum waiting time - see details for more description */
 constexpr uint32_t MAXIMUM_WAIT_TIME = 500;
-
-namespace GUI
-{
 
 class ButtonCommandsExecutor : public Utilities::ThreadWorker
 {

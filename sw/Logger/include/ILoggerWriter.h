@@ -26,6 +26,8 @@
 /* =============================
  *       Data structures
  * =============================*/
+namespace Logger
+{
 
 class ILoggerWriter
 {
@@ -56,4 +58,5 @@ public:
    virtual ~ILoggerWriter() {}
 };
 
+}
 #endif

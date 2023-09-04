@@ -1,13 +1,15 @@
 #include <sstream>
 #include <fstream>
 #include <numeric>
-#include "PersistenceHandler.h"
+#include "Persistence.h"
 #include "Logger.h"
 
 
+namespace Utilities
+{
 namespace Persistence
 {
-bool PersistenceHandler::loadFile(const std::string& file_name)
+bool Persistence::loadFile(const std::string& file_name)
 {
    std::ifstream file(file_name);
    bool result = false;
@@ -20,7 +22,7 @@ bool PersistenceHandler::loadFile(const std::string& file_name)
    UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
 }
-void PersistenceHandler::restore()
+void Persistence::restore()
 {
    UT_Log(PERSISTENCE, LOW, "Restoring persistence items");
 
@@ -30,7 +32,7 @@ void PersistenceHandler::restore()
                restoreModule(*l);
          });
 }
-bool PersistenceHandler::save(const std::string& file_name)
+bool Persistence::save(const std::string& file_name)
 {
    using json = nlohmann::json;
    json jsonFile;
@@ -60,7 +62,7 @@ bool PersistenceHandler::save(const std::string& file_name)
    UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
    return result;
 }
-void PersistenceHandler::restoreModule(PersistenceListener& listener)
+void Persistence::restoreModule(PersistenceListener& listener)
 {
    UT_Log(PERSISTENCE, HIGH, "%s %s", __func__, listener.getName().c_str());
    PersistenceListener::PersistenceItems items = {};
@@ -77,5 +79,6 @@ void PersistenceHandler::restoreModule(PersistenceListener& listener)
    {
       listener.onPersistenceRead(items);
    }
+}
 }
 }

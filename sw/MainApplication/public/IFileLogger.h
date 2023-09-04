@@ -2,6 +2,9 @@
 #include <string>
 #include <memory>
 
+namespace MainApplication
+{
+
 class IFileLogger
 {
 public:
@@ -45,3 +48,5 @@ public:
     */
    virtual void putLog(const std::string& log) = 0;
 };
+
+}

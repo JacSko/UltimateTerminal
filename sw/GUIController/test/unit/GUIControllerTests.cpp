@@ -6,6 +6,9 @@
 
 using namespace ::testing;
 
+namespace GUIController
+{
+
 struct IGUIControllerFixture : public testing::Test
 {
    void SetUp()
@@ -832,4 +835,6 @@ TEST_F(IGUIControllerFixture, setting_tab_name_by_index)
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_count(&test_tab_widget)).WillOnce(Return(TABS_COUNT));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_setTabText(&test_tab_widget,CORRECT_TAB_INDEX, _)).Times(0);
    m_test_subject->setTabName(INCORRECT_TAB_INDEX, TAB_NAME);
+}
+
 }

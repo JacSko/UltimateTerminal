@@ -5,6 +5,9 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 
+namespace GUIController
+{
+
 class CommandExecutor
 {
 public:
@@ -162,3 +165,5 @@ private:
    std::string m_stylesheet;
    std::map<Item, uint32_t> m_colors_map;
 };
+
+}

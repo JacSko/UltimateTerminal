@@ -1,11 +1,11 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "UserButtonsTabHandler.h"
+#include "UserButtonsTab.h"
 #include "GUIControllerMock.h"
-#include "UserButtonHandlerMock.h"
+#include "UserButtonMock.h"
 #include "TabNameDialogMock.h"
 
-namespace GUI
+namespace MainApplication
 {
 
 using namespace ::testing;
@@ -26,9 +26,9 @@ auto WriterFunction = [](const std::string& str)->bool
 constexpr uint32_t TEST_TAB_ID = 1;
 constexpr uint32_t TEST_BUTTONS_COUNT = 10;
 
-struct UserButtonsTabHandlerFixture : public testing::Test
+struct UserButtonsTabFixture : public testing::Test
 {
-   UserButtonsTabHandlerFixture():
+   UserButtonsTabFixture():
    test_controller(nullptr)
    {}
 
@@ -40,7 +40,7 @@ struct UserButtonsTabHandlerFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), setTabName(TEST_TAB_ID,TEST_TAB_NAME));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForTabNameChangeRequest(TEST_TAB_ID, _)).
                                                                   WillOnce(SaveArg<1>(&tab_name_listener));
-      m_test_subject.reset(new UserButtonsTabHandler(test_controller, TEST_TAB_ID, TEST_BUTTONS_COUNT,
+      m_test_subject.reset(new UserButtonsTab(test_controller, TEST_TAB_ID, TEST_BUTTONS_COUNT,
     		  	  	  	  	  	  	  	  	  	  	 fake_persistence, WriterFunction));
       ASSERT_TRUE(tab_name_listener);
    }
@@ -58,13 +58,13 @@ struct UserButtonsTabHandlerFixture : public testing::Test
    const uint32_t TEST_TAB_ID = 1;
    const uint32_t TEST_BUTTONS_COUNT = 10;
    const std::string TEST_TAB_NAME = "TAB" + std::to_string(TEST_TAB_ID);
-   std::unique_ptr<UserButtonsTabHandler> m_test_subject;
-   GUIController test_controller;
-   Persistence::PersistenceHandler fake_persistence;
-   TabNameChangeRequestListener* tab_name_listener;
+   std::unique_ptr<UserButtonsTab> m_test_subject;
+   GUIController::GUIController test_controller;
+   Utilities::Persistence::Persistence fake_persistence;
+   GUIController::TabNameChangeRequestListener* tab_name_listener;
 };
 
-TEST_F(UserButtonsTabHandlerFixture, tabNameChange)
+TEST_F(UserButtonsTabFixture, tabNameChange)
 {
    const std::string NEW_TAB_NAME = "NEW TAB NAME";
 
@@ -92,15 +92,15 @@ TEST_F(UserButtonsTabHandlerFixture, tabNameChange)
 
 }
 
-TEST_F(UserButtonsTabHandlerFixture, persistenceWriteAndRead)
+TEST_F(UserButtonsTabFixture, persistenceWriteAndRead)
 {
-   Persistence::PersistenceListener::PersistenceItems data_buffer;
+   Utilities::Persistence::PersistenceListener::PersistenceItems data_buffer;
    /**
     * <b>scenario</b>: Persistence write requested <br>
     * <b>expected</b>: Tab name stored in persistence. <br>
     * ************************************************
     */
-   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
+   ((Utilities::Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_FALSE(data_buffer.empty());
 
    /**
@@ -110,7 +110,7 @@ TEST_F(UserButtonsTabHandlerFixture, persistenceWriteAndRead)
     */
 
    EXPECT_CALL(*GUIControllerMock_get(), setTabName(TEST_TAB_ID,TEST_TAB_NAME));
-   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
+   ((Utilities::Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
 }
 
 

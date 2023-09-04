@@ -35,7 +35,7 @@ void printHelp()
    std::cout << "Possible values:"<< std::endl;
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::BaudRate::BAUDRATE_MAX; i++)
    {
-      EnumValue<Drivers::Serial::BaudRate> value ((Drivers::Serial::BaudRate)i);
+      Utilities::EnumValue<Drivers::Serial::BaudRate> value ((Drivers::Serial::BaudRate)i);
       std::cout << value.toName() << std::endl;
    }
    std::cout << "-----" << std::endl;
@@ -44,7 +44,7 @@ void printHelp()
    std::cout << "Possible values:"<< std::endl;
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::ParityType::PARITY_BIT_MAX; i++)
    {
-      EnumValue<Drivers::Serial::ParityType> value ((Drivers::Serial::ParityType)i);
+      Utilities::EnumValue<Drivers::Serial::ParityType> value ((Drivers::Serial::ParityType)i);
       std::cout << value.toName() << std::endl;
    }
    std::cout << "-----" << std::endl;
@@ -53,7 +53,7 @@ void printHelp()
    std::cout << "Possible values:"<< std::endl;
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::StopBitType::STOP_BIT_MAX; i++)
    {
-      EnumValue<Drivers::Serial::StopBitType> value ((Drivers::Serial::StopBitType)i);
+      Utilities::EnumValue<Drivers::Serial::StopBitType> value ((Drivers::Serial::StopBitType)i);
       std::cout << value.toName() << std::endl;
    }
    std::cout << "-----" << std::endl;
@@ -62,7 +62,7 @@ void printHelp()
    std::cout << "Possible values:"<< std::endl;
    for (uint8_t i = 0; i < (uint8_t)Drivers::Serial::DataBitType::DATA_BIT_MAX; i++)
    {
-      EnumValue<Drivers::Serial::DataBitType> value ((Drivers::Serial::DataBitType)i);
+      Utilities::EnumValue<Drivers::Serial::DataBitType> value ((Drivers::Serial::DataBitType)i);
       std::cout << value.toName() << std::endl;
    }
    std::cout << "-----" << std::endl;

@@ -1,5 +1,5 @@
 #include "RPCServer.h"
-#include "TestLogger.h"
+#include "Logger.h"
 
 namespace RPC
 {
@@ -41,22 +41,22 @@ void RPCServer::onServerEvent(int client_id, Drivers::SocketServer::ServerEvent 
       {
          std::lock_guard<std::mutex> lock(m_executors_mutex);
          uint8_t command = data[RPC_COMMAND_BYTE_OFFSET];
-         TF_Log(RPC_SERVER, "Got client data with command %u", command);
+         UT_Log(RPC_SERVER, HIGH, "Got client data with command %u", command);
          if (m_executors[command])
          {
             m_executors[command](std::vector<uint8_t>(data.begin() + RPC_MESSAGE_HEADER_SIZE, data.end()));
          }
          else
          {
-            TF_Log(RPC_SERVER, "No executor for command %u", command);
+            UT_Log(RPC_SERVER, ERROR, "No executor for command %u", command);
          }
       }
       break;
    case Drivers::SocketServer::ServerEvent::CLIENT_DISCONNECTED:
-      TF_Log(RPC_SERVER, "Client disconnected");
+      UT_Log(RPC_SERVER, LOW, "Client disconnected");
       break;
    case Drivers::SocketServer::ServerEvent::CLIENT_CONNECTED:
-      TF_Log(RPC_SERVER, "Client connected, id %d", client_id);
+      UT_Log(RPC_SERVER, LOW, "Client connected, id %d", client_id);
       break;
    }
 }

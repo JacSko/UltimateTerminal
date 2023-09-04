@@ -2,12 +2,12 @@
 #include "gmock/gmock.h"
 
 #include "MainApplication.h"
-#include "PortHandlerMock.h"
-#include "UserButtonsTabHandlerMock.h"
-#include "TraceFilterHandlerMock.h"
+#include "PortMock.h"
+#include "UserButtonsTabMock.h"
+#include "TraceFilterMock.h"
 #include "LoggingSettingDialogMock.h"
 #include "ITimersMock.h"
-#include "PersistenceHandlerMock.h"
+#include "PersistenceMock.h"
 #include "PortSettingDialogMock.h"
 #include "TraceFilterSettingDialogMock.h"
 #include "ApplicationSettingsDialogMock.h"
@@ -16,15 +16,19 @@
 #include "GUIControllerMock.h"
 #include "Settings.h"
 
-using namespace ::testing;
-
 Utilities::ITimersMock* g_timers_mock;
-IFileLoggerMock* g_logger_mock;
-
 std::unique_ptr<Utilities::ITimers> Utilities::ITimersFactory::create()
 {
    return std::unique_ptr<ITimers>(g_timers_mock);
 }
+
+
+namespace MainApplication
+{
+
+using namespace ::testing;
+
+IFileLoggerMock* g_logger_mock;
 std::unique_ptr<IFileLogger> IFileLogger::create()
 {
    return std::unique_ptr<IFileLogger>(g_logger_mock);
@@ -66,10 +70,10 @@ struct MainApplicationFixture : public testing::Test
       SETTING_SET_U32(GUI_UserButtons_ButtonsPerRow, BUTTONS_PER_ROW);
       m_button_listener = nullptr;
 
-      GUI::PortHandlerMock_init();
-      TraceFilterHandlerMock_init();
+      PortMock_init();
+      TraceFilterMock_init();
       LoggingSettingDialogMock_init();
-      Persistence::PersistenceHandlerMock_init();
+      Utilities::Persistence::PersistenceMock_init();
       ApplicationSettingsDialogMock_init();
       GUIControllerMock_init();
       MessageDialogMock_init();
@@ -78,8 +82,8 @@ struct MainApplicationFixture : public testing::Test
       g_logger_mock = new IFileLoggerMock;
 
       EXPECT_CALL(*g_timers_mock, start());
-      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), loadFile(_)).WillOnce(Return(true));
-      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), restore());
+      EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), loadFile(_)).WillOnce(Return(true));
+      EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), restore());
       EXPECT_CALL(*GUIControllerMock_get(), run());
       EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(_));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_)).WillOnce(SaveArg<0>(&m_theme_listener));
@@ -93,15 +97,15 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("clearButton")).WillOnce(Return(CLEAR_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("traceClearButton")).WillOnce(Return(TRACE_CLEAR_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID("traceBottomButton")).WillOnce(Return(TRACE_SCROLL_BOTTOM_BUTTON_ID));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SETTING_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(MARKER_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SETTING_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(SCROLL_BOTTOM_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), getBackgroundColor()).WillOnce(Return(DEFAULT_BACKGROUND_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(DEFAULT_FONT_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, _));
@@ -123,25 +127,25 @@ struct MainApplicationFixture : public testing::Test
 
       Mock::VerifyAndClearExpectations(g_timers_mock);
       Mock::VerifyAndClearExpectations(GUIControllerMock_get());
-      Mock::VerifyAndClearExpectations(GUI::PortHandlerMock_get());
-      Mock::VerifyAndClearExpectations(TraceFilterHandlerMock_get());
+      Mock::VerifyAndClearExpectations(PortMock_get());
+      Mock::VerifyAndClearExpectations(TraceFilterMock_get());
       Mock::VerifyAndClearExpectations(LoggingSettingDialogMock_get());
-      Mock::VerifyAndClearExpectations(Persistence::PersistenceHandlerMock_get());
+      Mock::VerifyAndClearExpectations(Utilities::Persistence::PersistenceMock_get());
    }
 
 
    void TearDown()
    {
-      EXPECT_CALL(*Persistence::PersistenceHandlerMock_get(), save(_)).WillOnce(Return(true));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SETTING_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), save(_)).WillOnce(Return(true));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(MARKER_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SETTING_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(SCROLL_BOTTOM_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TRACE_SCROLL_BOTTOM_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
       EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromThemeReloadEvent(_));
       EXPECT_CALL(*g_timers_mock, stop());
 
@@ -149,21 +153,21 @@ struct MainApplicationFixture : public testing::Test
       MessageDialogMock_deinit();
       GUIControllerMock_deinit();
       ApplicationSettingsDialogMock_deinit();
-      Persistence::PersistenceHandlerMock_deinit();
+      Utilities::Persistence::PersistenceMock_deinit();
       LoggingSettingDialogMock_deinit();
-      TraceFilterHandlerMock_deinit();
-      GUI::PortHandlerMock_deinit();
+      TraceFilterMock_deinit();
+      PortMock_deinit();
    }
    std::unique_ptr<MainApplication> m_test_subject;
-   ButtonEventListener* m_button_listener;
-   ThemeListener* m_theme_listener;
+   GUIController::ButtonEventListener* m_button_listener;
+   GUIController::ThemeListener* m_theme_listener;
    std::function<bool(const std::string&)> m_port_change_listener;
 };
 
 TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
 {
    /**
-    * <b>scenario</b>: Port handler reports opened terminal and start sending data <br>
+    * <b>scenario</b>: Port  reports opened terminal and start sending data <br>
     * <b>expected</b>: Data shall be added to terminal, but without trailing newline character. <br>
     *                  Check for trace matching shall be made. <br>
     *                  Window shall be scrolled to bottom. <br>
@@ -173,33 +177,33 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
    constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
    const uint32_t TEST_MAX_TRACE_NUMBER = SETTING_GET_U32(MainApplication_maxTerminalTraces);
-   GUI::PortHandlerEvent port_open_event;
+   PortEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;
-   port_open_event.event = GUI::Event::CONNECTED;
+   port_open_event.event = Event::CONNECTED;
    QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_data_event;
+   PortEvent port_data_event;
    port_data_event.name = "PORT_NAME";
    port_data_event.port_id = 2;
-   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.event = Event::NEW_DATA;
    port_data_event.background_color = TEST_BACKGROUND_COLOR;
    port_data_event.font_color = TEST_FONT_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   GUI::PortHandlerEvent port_close_event;
+   PortEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
-   port_close_event.event = GUI::Event::DISCONNECTED;
+   port_close_event.event = Event::DISCONNECTED;
 
    EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_open_event);
 
    /* adding item with newline at the end */
    EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_data_event);
 
    /* adding item without newline at the end */
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t'};
@@ -207,8 +211,8 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_data_event);
 
    /* items count exceeded the maximum count for terminal view, terminal shall be cleaned */
    EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(TEST_MAX_TRACE_NUMBER));
@@ -216,12 +220,12 @@ TEST_F(MainApplicationFixture, adding_data_from_port_handler_to_main_terminal)
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), port_data_event.background_color, port_data_event.font_color));
    EXPECT_CALL(*GUIControllerMock_get(), clearTerminalView());
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_data_event);
 
 
    EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_close_event);
 
 }
 
@@ -244,8 +248,8 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(TEST_TEXT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("MARKER1"), TEST_MARKER_COLOR, TEST_TEXT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    /* second marker added */
    EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
@@ -253,8 +257,8 @@ TEST_F(MainApplicationFixture, putting_marker_into_traces)
    EXPECT_CALL(*GUIControllerMock_get(), getTextColor()).WillOnce(Return(TEST_TEXT_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("MARKER2"), TEST_MARKER_COLOR, TEST_TEXT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER2")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER2"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("MARKER2"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
@@ -272,22 +276,22 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    constexpr uint32_t TEST_BACKGROUND_COLOR = 0x123321;
    constexpr uint32_t TEST_FONT_COLOR = 0xAABBCC;
    constexpr uint32_t TEST_MARKER_COLOR = 0xFF0000; //marker shall be red
-   GUI::PortHandlerEvent port_open_event;
+   PortEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;
-   port_open_event.event = GUI::Event::CONNECTED;
+   port_open_event.event = Event::CONNECTED;
    QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_data_event;
+   PortEvent port_data_event;
    port_data_event.name = "PORT_NAME";
    port_data_event.port_id = 2;
-   port_data_event.event = GUI::Event::NEW_DATA;
+   port_data_event.event = Event::NEW_DATA;
    port_data_event.background_color = TEST_BACKGROUND_COLOR;
    port_data_event.font_color = TEST_FONT_COLOR;
    port_data_event.data = {'s','o','m','e',' ','t','e','x','t','\n'};
-   GUI::PortHandlerEvent port_close_event;
+   PortEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
-   port_close_event.event = GUI::Event::DISCONNECTED;
+   port_close_event.event = Event::DISCONNECTED;
    std::string log_path = "/home/user";
 
    /* logging button colors change */
@@ -299,13 +303,13 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
 
    /* port opening */
    EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_open_event);
 
    /* user requested to change the logging file */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
@@ -313,33 +317,33 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*GUIControllerMock_get(), setStatusBarNotification(HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, BLACK_COLOR));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    /* first marker added */
    EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("MARKER1"), TEST_MARKER_COLOR, TEST_FONT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("MARKER1")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("MARKER1"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   m_button_listener->onButtonEvent(MARKER_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    /* adding item with newline at the end */
    EXPECT_CALL(*GUIControllerMock_get(), countTerminalItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), countTraceItems()).WillOnce(Return(0));
    EXPECT_CALL(*GUIControllerMock_get(), addToTerminalView(HasSubstr("some text"), TEST_BACKGROUND_COLOR, TEST_FONT_COLOR));
    EXPECT_CALL(*g_logger_mock, putLog(HasSubstr("some text")));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_data_event);
+   EXPECT_CALL(*TraceFilterMock_get(), tryMatch(HasSubstr("some text"))).WillRepeatedly(Return(std::optional<Dialogs::TraceFilterSettingDialog::Settings>()));
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_data_event);
 
    /* user requested to change the logging file, it should not be possible when logging is active */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,false)).WillOnce(Return(std::optional<std::string>()));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* closing port */
    EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_close_event);
 
    /* closing file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
@@ -347,7 +351,7 @@ TEST_F(MainApplicationFixture, logging_to_file_started_and_stopped)
    EXPECT_CALL(*GUIControllerMock_get(), setStatusBarNotification(_, SETTING_GET_U32(MainApplication_statusBarTimeout)));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, DEFAULT_FONT_COLOR));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
@@ -360,15 +364,15 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
     *                  Button shall be in red color. <br>
     * ************************************************
     */
-   GUI::PortHandlerEvent port_open_event;
+   PortEvent port_open_event;
    port_open_event.name = "PORT_NAME";
    port_open_event.port_id = 2;
-   port_open_event.event = GUI::Event::CONNECTED;
+   port_open_event.event = Event::CONNECTED;
    QListWidgetItem terminal_item;
-   GUI::PortHandlerEvent port_close_event;
+   PortEvent port_close_event;
    port_close_event.name = "PORT_NAME";
    port_close_event.port_id = 2;
-   port_close_event.event = GUI::Event::DISCONNECTED;
+   port_close_event.event = Event::DISCONNECTED;
    std::string log_path = "/home/user";
 
    /* logging button colors change */
@@ -382,7 +386,7 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* requesting file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
@@ -390,15 +394,15 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    EXPECT_CALL(*GUIControllerMock_get(), setStatusBarNotification(HasSubstr(log_path + "/log"), SETTING_GET_U32(MainApplication_statusBarTimeout)));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, BLACK_COLOR));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    /* port opening */
    EXPECT_CALL(*GUIControllerMock_get(), registerPortOpened("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_open_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_open_event);
 
    /* closing port */
    EXPECT_CALL(*GUIControllerMock_get(), registerPortClosed("PORT_NAME"));
-   ((GUI::PortHandlerListener*)m_test_subject.get())->onPortHandlerEvent(port_close_event);
+   ((PortListener*)m_test_subject.get())->onPortEvent(port_close_event);
 
    /* closing file logging */
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
@@ -406,7 +410,7 @@ TEST_F(MainApplicationFixture, filelogging_enabling_when_no_port_active)
    EXPECT_CALL(*GUIControllerMock_get(), setStatusBarNotification(_, SETTING_GET_U32(MainApplication_statusBarTimeout)));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, DEFAULT_FONT_COLOR));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
@@ -418,10 +422,10 @@ TEST_F(MainApplicationFixture, terminal_and_trace_view_clearing)
     * ************************************************
     */
    EXPECT_CALL(*GUIControllerMock_get(), clearTerminalView());
-   m_button_listener->onButtonEvent(CLEAR_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    EXPECT_CALL(*GUIControllerMock_get(), clearTraceView());
-   m_button_listener->onButtonEvent(TRACE_CLEAR_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(TRACE_CLEAR_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
 }
 
@@ -429,10 +433,10 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
 {
    /**
     * <b>scenario</b>: No port opened, data send requested by user. <br>
-    * <b>expected</b>: PortHandler shall be asked about write <br>
+    * <b>expected</b>: Port shall be asked about write <br>
     * ************************************************
     */
-   const std::string PORT_HANDLER_NAME = "NAME1";
+   const std::string PORT_NAME = "NAME1";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "\n";
 
@@ -441,8 +445,8 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    /* different name to not match empty name from combobox */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_HANDLER_NAME));
-   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_NAME));
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, sending_data_to_port)
@@ -450,13 +454,13 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    /**
     * <b>scenario</b>: Port opened, data send requested by user. <br>
     * <b>expected</b>: Current port name shall be read from combobox. <br>
-    *                  PortHandlers shall be asked about names. <br>
+    *                  Ports shall be asked about names. <br>
     *                  Data shall be sent to correct handler. <br>
     *                  Data shall be added to terminal view. <br>
     * ************************************************
     */
-   const std::string PORT_HANDLER_NAME = "NAME1";
-   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string PORT_NAME = "NAME1";
+   const std::string INCORRECT_PORT_NAME = "NAMEX";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "\\n";
 
@@ -465,16 +469,16 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
 
    /* simulate user action that changing the current port */
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
-   m_port_change_listener(PORT_HANDLER_NAME);
+   m_port_change_listener(PORT_NAME);
 
    /* size to write should be 1 byte more because \n is added */
    std::string data_payload = DATA_TO_SEND + '\n';
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
+   EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
-   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
@@ -482,13 +486,13 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    /**
     * <b>scenario</b>: Port opened, data send requested by user with empty line ending. <br>
     * <b>expected</b>: Current port name shall be read from combobox. <br>
-    *                  PortHandlers shall be asked about names. <br>
+    *                  Ports shall be asked about names. <br>
     *                  Data shall be sent to correct handler. <br>
     *                  Data shall be added to terminal view. <br>
     * ************************************************
     */
-   const std::string PORT_HANDLER_NAME = "NAME1";
-   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string PORT_NAME = "NAME1";
+   const std::string INCORRECT_PORT_NAME = "NAMEX";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "EMPTY";
 
@@ -497,13 +501,13 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
 
    /* simulate user action that changing the current port */
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
-   m_port_change_listener(PORT_HANDLER_NAME);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
+   m_port_change_listener(PORT_NAME);
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
+   EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
-   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, sending_data_to_port_failed)
@@ -511,13 +515,13 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    /**
     * <b>scenario</b>: Port opened, data send requested by user with empty line ending, but write to port fails. <br>
     * <b>expected</b>: Current port name shall be read from combobox. <br>
-    *                  PortHandlers shall be asked about names. <br>
+    *                  Ports shall be asked about names. <br>
     *                  Data shall be sent to correct handler. <br>
     *                  Error information shall be added to terminal. <br>
     * ************************************************
     */
-   const std::string PORT_HANDLER_NAME = "NAME1";
-   const std::string INCORRECT_PORT_HANDLER_NAME = "NAMEX";
+   const std::string PORT_NAME = "NAME1";
+   const std::string INCORRECT_PORT_NAME = "NAMEX";
    const std::string DATA_TO_SEND = "some command to send";
    const std::string LINE_ENDING = "EMPTY";
 
@@ -526,14 +530,14 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
 
    /* simulate user action that changing the current port */
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_));
-   m_port_change_listener(PORT_HANDLER_NAME);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getName(_)).WillOnce(ReturnRef(PORT_HANDLER_NAME))
-                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_HANDLER_NAME));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
+   m_port_change_listener(PORT_NAME);
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
+                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
+   EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
    EXPECT_CALL(*MessageDialogMock_get(), show(_, "Error", _, _));
-   m_button_listener->onButtonEvent(SEND_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
 TEST_F(MainApplicationFixture, persistence_write_and_read)
@@ -543,7 +547,7 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
     * <b>expected</b>: Newly created object shall correctly process the persistence data.<br>
     * ************************************************
     */
-   Persistence::PersistenceListener::PersistenceItems data_buffer;
+   Utilities::Persistence::PersistenceListener::PersistenceItems data_buffer;
    std::string log_path = "/home/user";
    Theme theme = Theme::DARK;
    const std::string LINE_ENDING = "\\n";
@@ -555,23 +559,23 @@ TEST_F(MainApplicationFixture, persistence_write_and_read)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(log_path));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
    EXPECT_CALL(*GUIControllerMock_get(), currentTheme()).WillOnce(Return(theme));
    ASSERT_EQ(data_buffer.size(), 0);
-   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
+   ((Utilities::Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_THAT(data_buffer.size(), Gt(0));
 
    // change object state to verify data restoration
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
    EXPECT_CALL(*LoggingSettingDialogMock_get(), showDialog(_,_,true)).WillOnce(Return(""));
-   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(LOGGING_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    //restore
    EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(theme));
    EXPECT_CALL(*GUIControllerMock_get(), setCurrentLineEnding(LINE_ENDING));
-   ((Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
+   ((Utilities::Persistence::PersistenceListener*)m_test_subject.get())->onPersistenceRead(data_buffer);
 
 }
 
@@ -580,7 +584,7 @@ TEST_F(MainApplicationFixture, theme_reloading)
    /**
     * <b>scenario</b>: Theme reload event received, file logging not activated. <br>
     * <b>expected</b>: Logging button shall be refreshed. <br>
-    *                  All port handlers shall be refreshed. <br>
+    *                  All ports shall be refreshed. <br>
     *                  All trace filters shall be refreshed. <br>
     * ************************************************
     */
@@ -590,21 +594,23 @@ TEST_F(MainApplicationFixture, theme_reloading)
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(LOGGING_BUTTON_ID, DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(LOGGING_BUTTON_ID, DEFAULT_FONT_COLOR));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), refreshUi()).Times(PORTS_COUNT);
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
+   EXPECT_CALL(*PortMock_get(), refreshUi()).Times(PORTS_COUNT);
+   EXPECT_CALL(*TraceFilterMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
    m_theme_listener->onThemeChange(Theme::DEFAULT);
 
 
    /**
     * <b>scenario</b>: Theme reload event received, file logging activated. <br>
-    * <b>expected</b>: All port handlers shall be refreshed. <br>
+    * <b>expected</b>: All port shall be refreshed. <br>
     *                  All trace filters shall be refreshed. <br>
     * ************************************************
     */
    EXPECT_CALL(*GUIControllerMock_get(), themeToName(_)).WillOnce(Return(""));
    EXPECT_CALL(*g_logger_mock, isActive()).WillOnce(Return(true));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), refreshUi()).Times(PORTS_COUNT);
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
+   EXPECT_CALL(*PortMock_get(), refreshUi()).Times(PORTS_COUNT);
+   EXPECT_CALL(*TraceFilterMock_get(), refreshUi()).Times(TRACE_FILTERS_COUNT);
    m_theme_listener->onThemeChange(Theme::DEFAULT);
+
+}
 
 }

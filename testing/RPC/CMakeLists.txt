@@ -1,10 +1,16 @@
-add_library(RPC
-            source/RPCServer.cpp
-            source/RPCClient.cpp)
+add_library(RPCClient source/RPCClient.cpp)
          
-target_include_directories(RPC PUBLIC public/ PRIVATE include/)
-target_link_libraries(RPC PUBLIC 
+target_include_directories(RPCClient PUBLIC public/ PRIVATE include/)
+target_link_libraries(RPCClient PUBLIC 
                       TestLogger
+                      UtilitiesIf
+                      NativeDrivers)
+
+add_library(RPCServer source/RPCServer.cpp)
+
+target_include_directories(RPCServer PUBLIC public/ PRIVATE include/)
+target_link_libraries(RPCServer PUBLIC 
+                      Logger
                       UtilitiesIf
                       NativeDrivers)
 

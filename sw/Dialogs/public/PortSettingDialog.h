@@ -57,6 +57,12 @@ enum class PortType
    class Settings
    {
    public:
+
+      #undef DEF_PORT_TYPE
+      #define DEF_PORT_TYPE(a) #a,
+      inline static const std::vector<std::string> port_names = { DEF_PORT_TYPES };
+      #undef DEF_PORT_TYPE
+
       Settings():
       port_id(0),
       type(PortType::SERIAL),
@@ -87,7 +93,7 @@ enum class PortType
       {}
 
       uint8_t port_id;                          /**< instance ID of the port        */
-      EnumValue<PortType> type;                 /**< Type of the connection         */
+      Utilities::EnumValue<PortType> type;      /**< Type of the connection         */
       std::string port_name;                    /**< User name of the port          */
       Drivers::Serial::Settings serialSettings; /**< Settings for serial connection */
       std::string ip_address;                   /**< Server's IP address            */
@@ -163,7 +169,7 @@ enum class PortType
 
 private:
 
-   void addPortTypeComboBox(const EnumValue<PortType>& current_selection);
+   void addPortTypeComboBox(const Utilities::EnumValue<PortType>& current_selection);
    void addDialogButtons();
    void renderSerialView(QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QFormLayout* form, const Settings& settings = {});
@@ -197,5 +203,30 @@ public slots:
 };
 
 }
+
+template<>
+inline std::string Utilities::EnumValue<Dialogs::PortSettingDialog::PortType>::toName() const
+{
+   if(value < Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX)
+   {
+      return Dialogs::PortSettingDialog::Settings::port_names[(size_t)value];
+   }
+   else
+   {
+      return "";
+   }
+}
+template<>
+inline Dialogs::PortSettingDialog::PortType Utilities::EnumValue<Dialogs::PortSettingDialog::PortType>::fromName(const std::string& name)
+{
+   value = Dialogs::PortSettingDialog::PortType::PORT_TYPE_MAX;
+   auto it = std::find(Dialogs::PortSettingDialog::Settings::port_names.begin(), Dialogs::PortSettingDialog::Settings::port_names.end(), name);
+   if (it != Dialogs::PortSettingDialog::Settings::port_names.end())
+   {
+      value = (Dialogs::PortSettingDialog::PortType)(std::distance(Dialogs::PortSettingDialog::Settings::port_names.begin(), it));
+   }
+   return value;
+}
+
 
 #endif

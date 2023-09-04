@@ -344,9 +344,9 @@ bool GUITestServer::onGetTraceFilterState(const std::vector<uint8_t>& data)
    reply.filter_name = request.filter_name;
 
    reply.enabled = filter.button->isEnabled() && filter.line_edit->isEnabled();
-   Stylesheet ss (filter.line_edit->styleSheet().toStdString());
-   reply.background_color = ss.getColor(Stylesheet::Item::BACKGROUND_COLOR);
-   reply.font_color = ss.getColor(Stylesheet::Item::COLOR);
+   GUIController::Stylesheet ss (filter.line_edit->styleSheet().toStdString());
+   reply.background_color = ss.getColor(GUIController::Stylesheet::Item::BACKGROUND_COLOR);
+   reply.font_color = ss.getColor(GUIController::Stylesheet::Item::COLOR);
    reply.text = filter.line_edit->text().toStdString();
 
    UT_Log(TEST_SERVER, LOW, "%s name %s bg %u fb %u text %s enabled %u", __func__, request.filter_name.c_str(), reply.background_color, reply.font_color, reply.text.c_str(), reply.enabled);

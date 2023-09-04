@@ -13,8 +13,8 @@ target_link_libraries(GUITestServer
    Utilities
    DialogsSimulation
    MainApplicationIf
-   RPC
-   TestFramework
+   RPCServer
+   TestFrameworkIf
 )
 
 add_library(DialogsSimulation STATIC      

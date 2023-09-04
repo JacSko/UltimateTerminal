@@ -32,6 +32,9 @@
  *       Data structures
  * =============================*/
 
+namespace Logger
+{
+
 class LoggerFileWriter : public ILoggerWriter
 {
 public:
@@ -89,5 +92,7 @@ private:
    std::string m_path;
    std::ofstream m_file_stream;
 };
+
+}
 
 #endif

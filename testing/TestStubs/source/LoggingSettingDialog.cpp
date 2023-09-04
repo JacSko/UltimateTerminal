@@ -1,7 +1,6 @@
 #include <QtCore/QObject>
 
 #include "LoggingSettingDialog.h"
-#include "Logger.h"
 #include "GUITestServer.h"
 
 
@@ -21,16 +20,13 @@ std::optional<std::string> LoggingSettingDialog::showDialog(QWidget* parent, con
 }
 QLayout* LoggingSettingDialog::createLayout(const std::string&, bool)
 {
-   UT_Assert(false);
    return nullptr;
 }
 void LoggingSettingDialog::destroyLayout()
 {
-   UT_Assert(false);
 }
 std::string LoggingSettingDialog::convertGuiValues()
 {
-   UT_Assert(false);
    return "";
 }
 void LoggingSettingDialog::onPathSelectButtonClicked(){}

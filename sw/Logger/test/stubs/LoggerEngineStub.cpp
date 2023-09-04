@@ -50,6 +50,8 @@ std::array<std::string, LOGGER_LEVEL_MAX> m_level_names = { LOGGER_LEVELS };
 /* =============================
  *       Data structures
  * =============================*/
+namespace Logger
+{
 
 LoggerEngine* LoggerEngine::get()
 {
@@ -189,4 +191,6 @@ LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
       result = (LoggerLevelID)(std::distance(m_level_names.begin(), it));
    }
    return result;
+}
+
 }

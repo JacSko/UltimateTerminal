@@ -18,6 +18,9 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 
+namespace GUIController
+{
+
 enum class ButtonEvent
 {
    CLICKED,
@@ -249,3 +252,5 @@ public slots:
    void onSetUserButtonTabNameSignal(qint32 tab_idx, QString name);
 
 };
+
+}

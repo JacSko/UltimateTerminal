@@ -1,20 +1,19 @@
 #include <array>
 #include <string>
 #include "ApplicationSettingsDialog.h"
-#include "Logger.h"
 #include "Settings.h"
 #include "GUIController.h"
 
 namespace Dialogs
 {
 
-ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController& gui_controller,
-                                                     std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
-                                                     std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
-                                                     std::unique_ptr<IFileLogger>& logger,
+ApplicationSettingsDialog::ApplicationSettingsDialog(GUIController::GUIController& gui_controller,
+                                                     std::vector<std::unique_ptr<MainApplication::Port>>& ports,
+                                                     std::vector<std::unique_ptr<MainApplication::TraceFilter>>& filters,
+                                                     std::unique_ptr<MainApplication::IFileLogger>& logger,
                                                      std::string& logging_path,
                                                      const std::string& persistence_path):
-m_handlers(ports),
+m_ports(ports),
 m_filters(filters),
 m_file_logging(logging_path, logger),
 m_gui_controller(gui_controller),

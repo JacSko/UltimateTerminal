@@ -4,6 +4,8 @@
 #include <vector>
 #include <stdint.h>
 #include <iostream>
+namespace Utilities
+{
 
 template<typename ITEM_TYPE>
 static void serialize(std::vector<uint8_t>& buffer, ITEM_TYPE item);
@@ -110,6 +112,8 @@ static void deserialize(const std::vector<uint8_t>& buffer, uint32_t& offset, st
       deserialize(buffer, offset, (uint8_t&)c);
       item += c;
    }
+}
+
 }
 
 

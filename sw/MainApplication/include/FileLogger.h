@@ -3,6 +3,9 @@
 #include "IFileLogger.h"
 #include <fstream>
 
+namespace MainApplication
+{
+
 class FileLogger : public IFileLogger
 {
 public:
@@ -16,3 +19,5 @@ private:
 
    std::ofstream m_file_stream;
 };
+
+}

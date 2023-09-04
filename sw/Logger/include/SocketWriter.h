@@ -31,6 +31,8 @@
 /* =============================
  *       Data structures
  * =============================*/
+namespace Logger
+{
 
 class LoggerSocketWriter : public ILoggerWriter
 {
@@ -76,4 +78,5 @@ private:
    uint16_t m_port;
 };
 
+}
 #endif

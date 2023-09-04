@@ -4,6 +4,9 @@
 #include "nlohmann/json.hpp"
 
 
+namespace Utilities
+{
+
 namespace Persistence
 {
 
@@ -36,7 +39,7 @@ private:
    std::string m_name;
 };
 
-class PersistenceHandler : public GenericListener<PersistenceListener>
+class Persistence : public GenericListener<PersistenceListener>
 {
 public:
    bool loadFile(const std::string& file_name);
@@ -82,6 +85,7 @@ inline bool readItem(const PersistenceListener::PersistenceItems& items, const s
       }
    }
    return false;
+}
 }
 
 }

@@ -1,7 +1,6 @@
 #include "QtWidgets/QColorDialog"
 #include <QtCore/QString>
 #include "TraceFilterSettingDialog.h"
-#include "Logger.h"
 #include "GUITestServer.h"
 
 namespace Dialogs
@@ -19,7 +18,6 @@ std::optional<bool> TraceFilterSettingDialog::showDialog(QWidget* parent, const 
 }
 QLayout* TraceFilterSettingDialog::createLayout(QWidget*, const Settings&, bool)
 {
-   UT_Assert(false);
    return nullptr;
 }
 void TraceFilterSettingDialog::destroyLayout()

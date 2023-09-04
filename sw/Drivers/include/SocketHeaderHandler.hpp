@@ -22,7 +22,7 @@ public:
     */
    void preapreHeader(std::vector<uint8_t>& output_buffer, uint32_t data_size)
    {
-      serialize(output_buffer, data_size);
+      Utilities::serialize(output_buffer, data_size);
    }
 
    /**
@@ -34,7 +34,7 @@ public:
    {
       uint32_t result = 0;
       uint32_t offset = 0;
-      deserialize(data, offset, result);
+      Utilities::deserialize(data, offset, result);
 
       return result;
    }

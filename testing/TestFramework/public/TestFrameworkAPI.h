@@ -416,665 +416,665 @@ struct CloseApplicationReply
 
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.button_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.button_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetButtonStateReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.button_name);
-   ::serialize(buffer, item.checked);
-   ::serialize(buffer, item.checkable);
-   ::serialize(buffer, item.enabled);
-   ::serialize(buffer, item.text);
-   ::serialize(buffer, item.background_color);
-   ::serialize(buffer, item.font_color);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.button_name);
+   Utilities::serialize(buffer, item.checked);
+   Utilities::serialize(buffer, item.checkable);
+   Utilities::serialize(buffer, item.enabled);
+   Utilities::serialize(buffer, item.text);
+   Utilities::serialize(buffer, item.background_color);
+   Utilities::serialize(buffer, item.font_color);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ButtonClickRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.button_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.button_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ButtonClickReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.clicked);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.clicked);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ButtonContextMenuClickRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.button_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.button_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ButtonContextMenuClickReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.clicked);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.clicked);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetCommandRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.command);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.command);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetCommandReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.reply);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.reply);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.command);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.command);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortLabelReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
-   ::serialize(buffer, item.stylesheet);
-   ::serialize(buffer, item.text);
-   ::serialize(buffer, item.throughput);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
+   Utilities::serialize(buffer, item.stylesheet);
+   Utilities::serialize(buffer, item.text);
+   Utilities::serialize(buffer, item.throughput);
 
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLineEndingRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.lineending);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.lineending);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLineEndingReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetLineEndingRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetLineEndingReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.lineending);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.lineending);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (uint32_t)item.lineendings.size());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint32_t)item.lineendings.size());
    for (auto& ending : item.lineendings)
    {
-      ::serialize(buffer, ending);
+      Utilities::serialize(buffer, ending);
    }
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTargetPortRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.port_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.port_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTargetPortReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTargetPortRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTargetPortReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.port_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.port_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (uint32_t)item.port_names.size());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint32_t)item.port_names.size());
    for (auto& port_name : item.port_names)
    {
-      ::serialize(buffer, port_name);
+      Utilities::serialize(buffer, port_name);
    }
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.filter_name);
-   ::serialize(buffer, item.text);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.filter_name);
+   Utilities::serialize(buffer, item.text);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.filter_name);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.filter_name);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.filter_name);
-   ::serialize(buffer, item.text);
-   ::serialize(buffer, item.background_color);
-   ::serialize(buffer, item.font_color);
-   ::serialize(buffer, item.enabled);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.filter_name);
+   Utilities::serialize(buffer, item.text);
+   Utilities::serialize(buffer, item.background_color);
+   Utilities::serialize(buffer, item.font_color);
+   Utilities::serialize(buffer, item.enabled);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandHistoryRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetCommandHistoryReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (uint32_t)item.history.size());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint32_t)item.history.size());
    for (auto& history_item : item.history)
    {
-      ::serialize(buffer, history_item);
+      Utilities::serialize(buffer, history_item);
    }
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.count);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.count);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewCountRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewCountReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.count);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.count);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (uint32_t)item.content.size());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint32_t)item.content.size());
    for (auto& content_item : item.content)
    {
-      ::serialize(buffer, content_item.text);
-      ::serialize(buffer, content_item.background_color);
-      ::serialize(buffer, content_item.font_color);
+      Utilities::serialize(buffer, content_item.text);
+      Utilities::serialize(buffer, content_item.background_color);
+      Utilities::serialize(buffer, content_item.font_color);
    }
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewContentReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (uint32_t)item.content.size());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint32_t)item.content.size());
    for (auto& content_item : item.content)
    {
-      ::serialize(buffer, content_item.text);
-      ::serialize(buffer, content_item.background_color);
-      ::serialize(buffer, content_item.font_color);
+      Utilities::serialize(buffer, content_item.text);
+      Utilities::serialize(buffer, content_item.background_color);
+      Utilities::serialize(buffer, content_item.font_color);
    }
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.port_id);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.port_id);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetPortSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.port_id);
-   ::serialize(buffer, item.settings.font_color);
-   ::serialize(buffer, item.settings.ip_address);
-   ::serialize(buffer, item.settings.port);
-   ::serialize(buffer, item.settings.port_id);
-   ::serialize(buffer, item.settings.port_name);
-   ::serialize(buffer, item.settings.serialSettings.baudRate.toName());
-   ::serialize(buffer, item.settings.serialSettings.dataBits.toName());
-   ::serialize(buffer, item.settings.serialSettings.device);
-   ::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
-   ::serialize(buffer, item.settings.serialSettings.parityBits.toName());
-   ::serialize(buffer, item.settings.serialSettings.stopBits.toName());
-   ::serialize(buffer, item.settings.trace_color);
-   ::serialize(buffer, item.settings.type.toName());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.port_id);
+   Utilities::serialize(buffer, item.settings.font_color);
+   Utilities::serialize(buffer, item.settings.ip_address);
+   Utilities::serialize(buffer, item.settings.port);
+   Utilities::serialize(buffer, item.settings.port_id);
+   Utilities::serialize(buffer, item.settings.port_name);
+   Utilities::serialize(buffer, item.settings.serialSettings.baudRate.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.dataBits.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.device);
+   Utilities::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
+   Utilities::serialize(buffer, item.settings.serialSettings.parityBits.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.stopBits.toName());
+   Utilities::serialize(buffer, item.settings.trace_color);
+   Utilities::serialize(buffer, item.settings.type.toName());
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetPortSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.port_id);
-   ::serialize(buffer, item.settings.font_color);
-   ::serialize(buffer, item.settings.ip_address);
-   ::serialize(buffer, item.settings.port);
-   ::serialize(buffer, item.settings.port_id);
-   ::serialize(buffer, item.settings.port_name);
-   ::serialize(buffer, item.settings.serialSettings.baudRate.toName());
-   ::serialize(buffer, item.settings.serialSettings.dataBits.toName());
-   ::serialize(buffer, item.settings.serialSettings.device);
-   ::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
-   ::serialize(buffer, item.settings.serialSettings.parityBits.toName());
-   ::serialize(buffer, item.settings.serialSettings.stopBits.toName());
-   ::serialize(buffer, item.settings.trace_color);
-   ::serialize(buffer, item.settings.type.toName());
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.port_id);
+   Utilities::serialize(buffer, item.settings.font_color);
+   Utilities::serialize(buffer, item.settings.ip_address);
+   Utilities::serialize(buffer, item.settings.port);
+   Utilities::serialize(buffer, item.settings.port_id);
+   Utilities::serialize(buffer, item.settings.port_name);
+   Utilities::serialize(buffer, item.settings.serialSettings.baudRate.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.dataBits.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.device);
+   Utilities::serialize(buffer, (uint32_t)item.settings.serialSettings.mode);
+   Utilities::serialize(buffer, item.settings.serialSettings.parityBits.toName());
+   Utilities::serialize(buffer, item.settings.serialSettings.stopBits.toName());
+   Utilities::serialize(buffer, item.settings.trace_color);
+   Utilities::serialize(buffer, item.settings.type.toName());
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
-   ::serialize(buffer, item.settings.background);
-   ::serialize(buffer, item.settings.font);
-   ::serialize(buffer, item.settings.id);
-   ::serialize(buffer, item.settings.regex);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
+   Utilities::serialize(buffer, item.settings.background);
+   Utilities::serialize(buffer, item.settings.font);
+   Utilities::serialize(buffer, item.settings.id);
+   Utilities::serialize(buffer, item.settings.regex);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
-   ::serialize(buffer, item.settings.background);
-   ::serialize(buffer, item.settings.font);
-   ::serialize(buffer, item.settings.id);
-   ::serialize(buffer, item.settings.regex);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
+   Utilities::serialize(buffer, item.settings.background);
+   Utilities::serialize(buffer, item.settings.font);
+   Utilities::serialize(buffer, item.settings.id);
+   Utilities::serialize(buffer, item.settings.regex);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
-   ::serialize(buffer, item.settings.button_name);
-   ::serialize(buffer, item.settings.id);
-   ::serialize(buffer, item.settings.raw_commands);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
+   Utilities::serialize(buffer, item.settings.button_name);
+   Utilities::serialize(buffer, item.settings.id);
+   Utilities::serialize(buffer, item.settings.raw_commands);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.id);
-   ::serialize(buffer, item.settings.button_name);
-   ::serialize(buffer, item.settings.id);
-   ::serialize(buffer, item.settings.raw_commands);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.id);
+   Utilities::serialize(buffer, item.settings.button_name);
+   Utilities::serialize(buffer, item.settings.id);
+   Utilities::serialize(buffer, item.settings.raw_commands);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetMessageBoxRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetMessageBoxReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.title);
-   ::serialize(buffer, (uint8_t)item.icon);
-   ::serialize(buffer, item.text);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.title);
+   Utilities::serialize(buffer, (uint8_t)item.icon);
+   Utilities::serialize(buffer, item.text);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ResetMessageBoxRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::ResetMessageBoxReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetLoggingPathRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetLoggingPathReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.path);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.path);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.path);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.path);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.position);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.position);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.position);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.position);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (int)item.position);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (int)item.position);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, (int)item.position);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (int)item.position);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
-   ::serialize(buffer, item.result);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, item.result);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::CloseApplicationRequest item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void serialize(std::vector<uint8_t>& buffer, RPC::CloseApplicationReply item)
 {
-   ::serialize(buffer, (uint8_t)item.cmd);
+   Utilities::serialize(buffer, (uint8_t)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (std::string&)item.button_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (std::string&)item.button_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetButtonStateReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.button_name);
-   ::deserialize(buffer, offset, item.checked);
-   ::deserialize(buffer, offset, item.checkable);
-   ::deserialize(buffer, offset, item.enabled);
-   ::deserialize(buffer, offset, item.text);
-   ::deserialize(buffer, offset, item.background_color);
-   ::deserialize(buffer, offset, item.font_color);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.button_name);
+   Utilities::deserialize(buffer, offset, item.checked);
+   Utilities::deserialize(buffer, offset, item.checkable);
+   Utilities::deserialize(buffer, offset, item.enabled);
+   Utilities::deserialize(buffer, offset, item.text);
+   Utilities::deserialize(buffer, offset, item.background_color);
+   Utilities::deserialize(buffer, offset, item.font_color);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ButtonClickRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.button_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.button_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ButtonClickReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.clicked);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.clicked);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ButtonContextMenuClickRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.button_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.button_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ButtonContextMenuClickReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.clicked);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.clicked);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetCommandRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.command);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.command);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetCommandReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.reply);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.reply);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.command);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.command);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortLabelReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
-   ::deserialize(buffer, offset, item.stylesheet);
-   ::deserialize(buffer, offset, item.text);
-   ::deserialize(buffer, offset, item.throughput);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, item.stylesheet);
+   Utilities::deserialize(buffer, offset, item.text);
+   Utilities::deserialize(buffer, offset, item.throughput);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLineEndingRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLineEndingReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.lineending);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.lineending);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLineEndingRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.lineending);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.lineending);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLineEndingReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllLineEndingsReply& item)
 {
    uint32_t offset = 0;
    uint32_t lineendings_count = 0;
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)lineendings_count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint32_t&)lineendings_count);
    for (uint32_t i = 0; i < lineendings_count; i++)
    {
       std::string line_ending = "";
-      ::deserialize(buffer, offset, line_ending);
+      Utilities::deserialize(buffer, offset, line_ending);
       item.lineendings.push_back(line_ending);
    }
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTargetPortRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTargetPortReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.port_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.port_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTargetPortRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.port_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.port_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTargetPortReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetAllTargetPortsReply& item)
 {
    uint32_t offset = 0;
    uint32_t ports_count = 0;
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)ports_count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint32_t&)ports_count);
    for (uint32_t i = 0; i < ports_count; i++)
    {
       std::string name = "";
-      ::deserialize(buffer, offset, name);
+      Utilities::deserialize(buffer, offset, name);
       item.port_names.push_back(name);
    }
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.filter_name);
-   ::deserialize(buffer, offset, item.text);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.filter_name);
+   Utilities::deserialize(buffer, offset, item.text);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.filter_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.filter_name);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterStateReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.filter_name);
-   ::deserialize(buffer, offset, item.text);
-   ::deserialize(buffer, offset, item.background_color);
-   ::deserialize(buffer, offset, item.font_color);
-   ::deserialize(buffer, offset, item.enabled);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.filter_name);
+   Utilities::deserialize(buffer, offset, item.text);
+   Utilities::deserialize(buffer, offset, item.background_color);
+   Utilities::deserialize(buffer, offset, item.font_color);
+   Utilities::deserialize(buffer, offset, item.enabled);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandHistoryRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetCommandHistoryReply& item)
 {
    uint32_t offset = 0;
    uint32_t commands_count = 0;
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)commands_count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint32_t&)commands_count);
    for (uint32_t i = 0; i < commands_count; i++)
    {
       std::string command = "";
-      ::deserialize(buffer, offset, command);
+      Utilities::deserialize(buffer, offset, command);
       item.history.push_back(command);
    }
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewCountReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.count);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewContentRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCountRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCountReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.count);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalViewContentReply& item)
 {
    uint32_t offset = 0;
    uint32_t terminal_count = 0;
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)terminal_count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint32_t&)terminal_count);
    for (uint32_t i = 0; i < terminal_count; i++)
    {
       RPC::ViewItem terminal_item = {};
-      ::deserialize(buffer, offset, terminal_item.text);
-      ::deserialize(buffer, offset, terminal_item.background_color);
-      ::deserialize(buffer, offset, terminal_item.font_color);
+      Utilities::deserialize(buffer, offset, terminal_item.text);
+      Utilities::deserialize(buffer, offset, terminal_item.background_color);
+      Utilities::deserialize(buffer, offset, terminal_item.font_color);
       item.content.push_back(terminal_item);
    }
 }
@@ -1083,22 +1083,22 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewCon
    uint32_t offset = 0;
    uint32_t terminal_count = 0;
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (uint32_t&)terminal_count);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint32_t&)terminal_count);
    for (uint32_t i = 0; i < terminal_count; i++)
    {
       RPC::ViewItem terminal_item = {};
-      ::deserialize(buffer, offset, terminal_item.text);
-      ::deserialize(buffer, offset, terminal_item.background_color);
-      ::deserialize(buffer, offset, terminal_item.font_color);
+      Utilities::deserialize(buffer, offset, terminal_item.text);
+      Utilities::deserialize(buffer, offset, terminal_item.background_color);
+      Utilities::deserialize(buffer, offset, terminal_item.font_color);
       item.content.push_back(terminal_item);
    }
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.port_id);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.port_id);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettingsReply& item)
 {
@@ -1110,21 +1110,21 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetPortSettings
    std::string stopbits_name = "";
    std::string type_name = "";
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.port_id);
-   ::deserialize(buffer, offset, item.settings.font_color);
-   ::deserialize(buffer, offset, item.settings.ip_address);
-   ::deserialize(buffer, offset, item.settings.port);
-   ::deserialize(buffer, offset, item.settings.port_id);
-   ::deserialize(buffer, offset, item.settings.port_name);
-   ::deserialize(buffer, offset, baudrate_name);
-   ::deserialize(buffer, offset, databits_name);
-   ::deserialize(buffer, offset, item.settings.serialSettings.device);
-   ::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
-   ::deserialize(buffer, offset, paritybits_name);
-   ::deserialize(buffer, offset, stopbits_name);
-   ::deserialize(buffer, offset, item.settings.trace_color);
-   ::deserialize(buffer, offset, type_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.port_id);
+   Utilities::deserialize(buffer, offset, item.settings.font_color);
+   Utilities::deserialize(buffer, offset, item.settings.ip_address);
+   Utilities::deserialize(buffer, offset, item.settings.port);
+   Utilities::deserialize(buffer, offset, item.settings.port_id);
+   Utilities::deserialize(buffer, offset, item.settings.port_name);
+   Utilities::deserialize(buffer, offset, baudrate_name);
+   Utilities::deserialize(buffer, offset, databits_name);
+   Utilities::deserialize(buffer, offset, item.settings.serialSettings.device);
+   Utilities::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
+   Utilities::deserialize(buffer, offset, paritybits_name);
+   Utilities::deserialize(buffer, offset, stopbits_name);
+   Utilities::deserialize(buffer, offset, item.settings.trace_color);
+   Utilities::deserialize(buffer, offset, type_name);
 
    item.settings.serialSettings.baudRate.fromName(baudrate_name);
    item.settings.serialSettings.dataBits.fromName(databits_name);
@@ -1142,21 +1142,21 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettings
    std::string stopbits_name = "";
    std::string type_name = "";
 
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.port_id);
-   ::deserialize(buffer, offset, item.settings.font_color);
-   ::deserialize(buffer, offset, item.settings.ip_address);
-   ::deserialize(buffer, offset, item.settings.port);
-   ::deserialize(buffer, offset, item.settings.port_id);
-   ::deserialize(buffer, offset, item.settings.port_name);
-   ::deserialize(buffer, offset, baudrate_name);
-   ::deserialize(buffer, offset, databits_name);
-   ::deserialize(buffer, offset, item.settings.serialSettings.device);
-   ::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
-   ::deserialize(buffer, offset, paritybits_name);
-   ::deserialize(buffer, offset, stopbits_name);
-   ::deserialize(buffer, offset, item.settings.trace_color);
-   ::deserialize(buffer, offset, type_name);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.port_id);
+   Utilities::deserialize(buffer, offset, item.settings.font_color);
+   Utilities::deserialize(buffer, offset, item.settings.ip_address);
+   Utilities::deserialize(buffer, offset, item.settings.port);
+   Utilities::deserialize(buffer, offset, item.settings.port_id);
+   Utilities::deserialize(buffer, offset, item.settings.port_name);
+   Utilities::deserialize(buffer, offset, baudrate_name);
+   Utilities::deserialize(buffer, offset, databits_name);
+   Utilities::deserialize(buffer, offset, item.settings.serialSettings.device);
+   Utilities::deserialize(buffer, offset, (uint32_t&)item.settings.serialSettings.mode);
+   Utilities::deserialize(buffer, offset, paritybits_name);
+   Utilities::deserialize(buffer, offset, stopbits_name);
+   Utilities::deserialize(buffer, offset, item.settings.trace_color);
+   Utilities::deserialize(buffer, offset, type_name);
 
    item.settings.serialSettings.baudRate.fromName(baudrate_name);
    item.settings.serialSettings.dataBits.fromName(databits_name);
@@ -1167,174 +1167,174 @@ static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettings
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetPortSettingsReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceFilterSettingsReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
-   ::deserialize(buffer, offset, item.settings.background);
-   ::deserialize(buffer, offset, item.settings.font);
-   ::deserialize(buffer, offset, item.settings.id);
-   ::deserialize(buffer, offset, item.settings.regex);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, item.settings.background);
+   Utilities::deserialize(buffer, offset, item.settings.font);
+   Utilities::deserialize(buffer, offset, item.settings.id);
+   Utilities::deserialize(buffer, offset, item.settings.regex);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
-   ::deserialize(buffer, offset, item.settings.background);
-   ::deserialize(buffer, offset, item.settings.font);
-   ::deserialize(buffer, offset, item.settings.id);
-   ::deserialize(buffer, offset, item.settings.regex);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, item.settings.background);
+   Utilities::deserialize(buffer, offset, item.settings.font);
+   Utilities::deserialize(buffer, offset, item.settings.id);
+   Utilities::deserialize(buffer, offset, item.settings.regex);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceFilterSettingsReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetUserButtonSettingsReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
-   ::deserialize(buffer, offset, item.settings.button_name);
-   ::deserialize(buffer, offset, item.settings.id);
-   ::deserialize(buffer, offset, item.settings.raw_commands);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, item.settings.button_name);
+   Utilities::deserialize(buffer, offset, item.settings.id);
+   Utilities::deserialize(buffer, offset, item.settings.raw_commands);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.id);
-   ::deserialize(buffer, offset, item.settings.button_name);
-   ::deserialize(buffer, offset, item.settings.id);
-   ::deserialize(buffer, offset, item.settings.raw_commands);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.id);
+   Utilities::deserialize(buffer, offset, item.settings.button_name);
+   Utilities::deserialize(buffer, offset, item.settings.id);
+   Utilities::deserialize(buffer, offset, item.settings.raw_commands);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetUserButtonSettingsReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetMessageBoxRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetMessageBoxReply& item)
 {
    uint32_t offset = 0;
    uint8_t icon = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.title);
-   ::deserialize(buffer, offset, icon);
-   ::deserialize(buffer, offset, item.text);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.title);
+   Utilities::deserialize(buffer, offset, icon);
+   Utilities::deserialize(buffer, offset, item.text);
    item.icon = static_cast<Dialogs::MessageDialog::Icon>(icon);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ResetMessageBoxRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::ResetMessageBoxReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLoggingPathRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetLoggingPathReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.path);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.path);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.path);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.path);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetLoggingPathReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTerminalScrollPositionReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (int&)item.position);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (int&)item.position);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::GetTraceViewScrollPositionReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (int&)item.position);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (int&)item.position);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (int&)item.position);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (int&)item.position);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTerminalScrollPositionReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, (int&)item.position);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (int&)item.position);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::SetTraceViewScrollPositionReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
-   ::deserialize(buffer, offset, item.result);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, item.result);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::CloseApplicationRequest& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 static void deserialize(const std::vector<uint8_t>& buffer, RPC::CloseApplicationReply& item)
 {
    uint32_t offset = 0;
-   ::deserialize(buffer, offset, (uint8_t&)item.cmd);
+   Utilities::deserialize(buffer, offset, (uint8_t&)item.cmd);
 }
 

@@ -103,21 +103,21 @@ enum class DataBitType
 }
 
 template<>
-std::string EnumValue<Drivers::Serial::BaudRate>::toName() const;
+std::string Utilities::EnumValue<Drivers::Serial::BaudRate>::toName() const;
 template<>
-std::string EnumValue<Drivers::Serial::ParityType>::toName() const;
+std::string Utilities::EnumValue<Drivers::Serial::ParityType>::toName() const;
 template<>
-std::string EnumValue<Drivers::Serial::StopBitType>::toName() const;
+std::string Utilities::EnumValue<Drivers::Serial::StopBitType>::toName() const;
 template<>
-std::string EnumValue<Drivers::Serial::DataBitType>::toName() const;
+std::string Utilities::EnumValue<Drivers::Serial::DataBitType>::toName() const;
 template<>
-Drivers::Serial::BaudRate EnumValue<Drivers::Serial::BaudRate>::fromName(const std::string& name);
+Drivers::Serial::BaudRate Utilities::EnumValue<Drivers::Serial::BaudRate>::fromName(const std::string& name);
 template<>
-Drivers::Serial::ParityType EnumValue<Drivers::Serial::ParityType>::fromName(const std::string& name);
+Drivers::Serial::ParityType Utilities::EnumValue<Drivers::Serial::ParityType>::fromName(const std::string& name);
 template<>
-Drivers::Serial::StopBitType EnumValue<Drivers::Serial::StopBitType>::fromName(const std::string& name);
+Drivers::Serial::StopBitType Utilities::EnumValue<Drivers::Serial::StopBitType>::fromName(const std::string& name);
 template<>
-Drivers::Serial::DataBitType EnumValue<Drivers::Serial::DataBitType>::fromName(const std::string& name);
+Drivers::Serial::DataBitType Utilities::EnumValue<Drivers::Serial::DataBitType>::fromName(const std::string& name);
 
 namespace Drivers
 {
@@ -152,11 +152,11 @@ struct Settings
 
    }
    std::string device;
-   EnumValue<BaudRate> baudRate;
+   Utilities::EnumValue<BaudRate> baudRate;
    DataMode mode;
-   EnumValue<ParityType> parityBits;
-   EnumValue<StopBitType> stopBits;
-   EnumValue<DataBitType> dataBits;
+   Utilities::EnumValue<ParityType> parityBits;
+   Utilities::EnumValue<StopBitType> stopBits;
+   Utilities::EnumValue<DataBitType> dataBits;
 
    bool operator==(const Settings& lhs)
    {

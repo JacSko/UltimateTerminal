@@ -4,21 +4,21 @@
 #include <errno.h>
 
 #include "Logger.h"
-#include "PortHandler.h"
+#include "Port.h"
 #include "MessageDialog.h"
 #include "Serialize.hpp"
 
-namespace GUI
+namespace MainApplication
 {
 
 constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
 
-PortHandler::PortHandler(uint8_t id,
-                         GUIController& gui_controller,
-                         const std::string& button_name,
-                         Utilities::ITimers& timers,
-                         PortHandlerListener* listener,
-                         Persistence::PersistenceHandler& persistence):
+Port::Port(uint8_t id,
+           GUIController::GUIController& gui_controller,
+           const std::string& button_name,
+           Utilities::ITimers& timers,
+           PortListener* listener,
+           Utilities::Persistence::Persistence& persistence):
 m_gui_controller(gui_controller),
 m_settings({}),
 m_connect_retry_period(DEFAULT_CONNECT_RETRY_PERIOD),
@@ -33,8 +33,8 @@ m_throughputCalculatorTimerID(TIMERS_INVALID_ID)
 
    m_button_id = m_gui_controller.getButtonID(button_name);
    UT_Assert(m_button_id != UINT32_MAX);
-   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CLICKED, this);
-   m_gui_controller.subscribeForButtonEvent(m_button_id, ButtonEvent::CONTEXT_MENU_REQUESTED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, GUIController::ButtonEvent::CLICKED, this);
+   m_gui_controller.subscribeForButtonEvent(m_button_id, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED, this);
 
    GenericListener::addListener(*listener);
    m_socket->addListener(this);
@@ -45,7 +45,7 @@ m_throughputCalculatorTimerID(TIMERS_INVALID_ID)
    m_settings.port_name = std::string("PORT") + std::to_string(m_settings.port_id);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Creating port handler", m_settings.port_id, m_settings.port_name.c_str());
 
-   Persistence::PersistenceListener::setName(m_settings.port_name);
+   Utilities::Persistence::PersistenceListener::setName(m_settings.port_name);
    m_persistence.addListener(*this);
    setButtonState(ButtonState::DISCONNECTED);
    setButtonName(m_settings.port_name);
@@ -53,7 +53,7 @@ m_throughputCalculatorTimerID(TIMERS_INVALID_ID)
 
    m_gui_controller.setPortLabelText(m_settings.port_id, m_settings.shortSettingsString().c_str());
 }
-PortHandler::~PortHandler()
+Port::~Port()
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Destroying port handler", m_settings.port_id, m_settings.port_name.c_str());
    m_persistence.removeListener(*this);
@@ -68,25 +68,25 @@ PortHandler::~PortHandler()
    m_serial->close();
    setButtonState(ButtonState::DISCONNECTED);
 }
-void PortHandler::onButtonEvent(uint32_t button_id, ButtonEvent event)
+void Port::onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event)
 {
    if (button_id == m_button_id)
    {
-      if (event == ButtonEvent::CLICKED)
+      if (event == GUIController::ButtonEvent::CLICKED)
       {
          onPortButtonClicked();
       }
-      else if (event == ButtonEvent::CONTEXT_MENU_REQUESTED)
+      else if (event == GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED)
       {
          onPortButtonContextMenuRequested();
       }
    }
 }
-void PortHandler::notifyListeners(Event event, const std::vector<uint8_t>& data)
+void Port::notifyListeners(Event event, const std::vector<uint8_t>& data)
 {
-   GenericListener::notifyChange([&](PortHandlerListener* l){l->onPortHandlerEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, event, data});});
+   GenericListener::notifyChange([&](PortListener* l){l->onPortEvent({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, event, data});});
 }
-Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
+Event Port::toPortEvent(Drivers::SocketClient::ClientEvent event)
 {
    if (event == Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED)
    {
@@ -97,11 +97,11 @@ Event PortHandler::toPortHandlerEvent(Drivers::SocketClient::ClientEvent event)
       return Event::NEW_DATA;
    }
 }
-const std::string& PortHandler::getName()
+const std::string& Port::getName()
 {
    return m_settings.port_name;
 }
-bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
+bool Port::write(const std::vector<uint8_t>& data, size_t size)
 {
    UT_Log(PORT_HANDLER, HIGH, "PORT%u[%s] writing %u bytes", m_settings.port_id, m_settings.port_name.c_str(), (uint32_t)data.size());
    if (m_socket->isConnected())
@@ -117,11 +117,11 @@ bool PortHandler::write(const std::vector<uint8_t>& data, size_t size)
       return false;
    }
 }
-void PortHandler::refreshUi()
+void Port::refreshUi()
 {
    handleNewSettings(m_settings);
 }
-bool PortHandler::setSettings(const Dialogs::PortSettingDialog::Settings& settings)
+bool Port::setSettings(const Dialogs::PortSettingDialog::Settings& settings)
 {
    bool result = false;
    if (m_button_state == ButtonState::DISCONNECTED)
@@ -131,32 +131,32 @@ bool PortHandler::setSettings(const Dialogs::PortSettingDialog::Settings& settin
    }
    return result;
 }
-const Dialogs::PortSettingDialog::Settings& PortHandler::getSettings()
+const Dialogs::PortSettingDialog::Settings& Port::getSettings()
 {
    return m_settings;
 }
-bool PortHandler::isOpened()
+bool Port::isOpened()
 {
    return (m_button_state != ButtonState::DISCONNECTED);
 }
 
-void PortHandler::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
+void Port::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortHandlerEvent(ev), data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortEvent(ev), data});
    onPortEvent();
 }
-void PortHandler::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>& data, size_t)
+void Port::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
    m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, Event::NEW_DATA, data});
    onPortEvent();
 }
-void PortHandler::onPortEvent()
+void Port::onPortEvent()
 {
    while (m_events.size())
    {
-      PortHandlerEvent& event = m_events.front();
+      PortEvent& event = m_events.front();
       if (event.event == Event::DISCONNECTED)
       {
          UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] server disconnected, trying to reconnect", m_settings.port_id, m_settings.port_name.c_str());
@@ -177,7 +177,7 @@ void PortHandler::onPortEvent()
       m_events.pop();
    }
 }
-void PortHandler::onTimeout(uint32_t timer_id)
+void Port::onTimeout(uint32_t timer_id)
 {
    // another thread
    if (timer_id == m_timer_id)
@@ -204,7 +204,7 @@ void PortHandler::onTimeout(uint32_t timer_id)
       }
    }
 }
-void PortHandler::reportThroughput(const Utilities::ThroughputResult& throughput)
+void Port::reportThroughput(const Utilities::ThroughputResult& throughput)
 {
    static const std::map<Utilities::ByteUnit, std::string> unitMap = {{Utilities::ByteUnit::bytes_s, "B/s"},
                                                                       {Utilities::ByteUnit::kilobytes_s, "KB/s"},
@@ -214,7 +214,7 @@ void PortHandler::reportThroughput(const Utilities::ThroughputResult& throughput
    m_gui_controller.setThroughputText(m_settings.port_id, std::string(buffer));
 }
 
-void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& settings)
+void Port::handleNewSettings(const Dialogs::PortSettingDialog::Settings& settings)
 {
    m_settings = settings;
    if (m_settings.port_name.empty())
@@ -232,7 +232,7 @@ void PortHandler::handleNewSettings(const Dialogs::PortSettingDialog::Settings& 
    setButtonState(m_button_state);
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
 }
-void PortHandler::onPortButtonContextMenuRequested()
+void Port::onPortButtonContextMenuRequested()
 {
    Dialogs::PortSettingDialog dialog;
    Dialogs::PortSettingDialog::Settings new_settings = {};
@@ -242,7 +242,7 @@ void PortHandler::onPortButtonContextMenuRequested()
       handleNewSettings(new_settings);
    }
 }
-void PortHandler::onPortButtonClicked()
+void Port::onPortButtonClicked()
 {
    if(m_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
    {
@@ -253,7 +253,7 @@ void PortHandler::onPortButtonClicked()
       handleButtonClickEthernet();
    }
 }
-void PortHandler::handleButtonClickSerial()
+void Port::handleButtonClickSerial()
 {
    UT_Assert(m_serial && "Serial client not created");
 
@@ -284,7 +284,7 @@ void PortHandler::handleButtonClickSerial()
       }
    }
 }
-void PortHandler::handleButtonClickEthernet()
+void Port::handleButtonClickEthernet()
 {
    UT_Assert(m_socket && "Socket client not created");
    if (m_socket->isConnected())
@@ -307,7 +307,7 @@ void PortHandler::handleButtonClickEthernet()
       tryConnectToSocket();
    }
 }
-void PortHandler::tryConnectToSocket()
+void Port::tryConnectToSocket()
 {
    if(m_socket->connect(m_settings.ip_address, m_settings.port))
    {
@@ -327,7 +327,7 @@ void PortHandler::tryConnectToSocket()
       notifyListeners(Event::CONNECTING);
    }
 }
-void PortHandler::setButtonState(ButtonState state)
+void Port::setButtonState(ButtonState state)
 {
    constexpr uint32_t GREEN = 0x00FF00;
    constexpr uint32_t BLUE = 0x0000FF;
@@ -359,11 +359,11 @@ void PortHandler::setButtonState(ButtonState state)
       }
    }
 }
-void PortHandler::setButtonName(const std::string name)
+void Port::setButtonName(const std::string name)
 {
    m_gui_controller.setButtonText(m_button_id, name);
 }
-void PortHandler::onPersistenceRead(const PersistenceItems& items)
+void Port::onPersistenceRead(const PersistenceItems& items)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] restoring persistence", m_settings.port_id, m_settings.port_name.c_str());
 
@@ -374,19 +374,19 @@ void PortHandler::onPersistenceRead(const PersistenceItems& items)
    std::string stopbits_name = m_settings.serialSettings.stopBits.toName();
    std::string porttype_name = m_settings.type.toName();
 
-   Persistence::readItem(items, "ipAddress", new_settings.ip_address);
-   Persistence::readItem(items, "ipPort", new_settings.port);
-   Persistence::readItem(items, "portId", new_settings.port_id);
-   Persistence::readItem(items, "portName", new_settings.port_name);
-   Persistence::readItem(items, "baudRate", baudrate_name);
-   Persistence::readItem(items, "dataBits", databits_name);
-   Persistence::readItem(items, "parityBits", paritybits_name);
-   Persistence::readItem(items, "stopBits", stopbits_name);
-   Persistence::readItem(items, "device", new_settings.serialSettings.device);
-   Persistence::readItem(items, "mode", (uint8_t&)new_settings.serialSettings.mode);
-   Persistence::readItem(items, "traceColor", new_settings.trace_color);
-   Persistence::readItem(items, "fontColor", new_settings.font_color);
-   Persistence::readItem(items, "type", porttype_name);
+   Utilities::Persistence::readItem(items, "ipAddress", new_settings.ip_address);
+   Utilities::Persistence::readItem(items, "ipPort", new_settings.port);
+   Utilities::Persistence::readItem(items, "portId", new_settings.port_id);
+   Utilities::Persistence::readItem(items, "portName", new_settings.port_name);
+   Utilities::Persistence::readItem(items, "baudRate", baudrate_name);
+   Utilities::Persistence::readItem(items, "dataBits", databits_name);
+   Utilities::Persistence::readItem(items, "parityBits", paritybits_name);
+   Utilities::Persistence::readItem(items, "stopBits", stopbits_name);
+   Utilities::Persistence::readItem(items, "device", new_settings.serialSettings.device);
+   Utilities::Persistence::readItem(items, "mode", (uint8_t&)new_settings.serialSettings.mode);
+   Utilities::Persistence::readItem(items, "traceColor", new_settings.trace_color);
+   Utilities::Persistence::readItem(items, "fontColor", new_settings.font_color);
+   Utilities::Persistence::readItem(items, "type", porttype_name);
 
    new_settings.serialSettings.baudRate.fromName(baudrate_name);
    new_settings.serialSettings.dataBits.fromName(databits_name);
@@ -396,23 +396,23 @@ void PortHandler::onPersistenceRead(const PersistenceItems& items)
 
    handleNewSettings(new_settings);
 }
-void PortHandler::onPersistenceWrite(PersistenceItems& buffer)
+void Port::onPersistenceWrite(PersistenceItems& buffer)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence [%s]", m_settings.port_id, m_settings.port_name.c_str(), m_settings.shortSettingsString().c_str());
 
-   Persistence::writeItem(buffer, "ipAddress", m_settings.ip_address);
-   Persistence::writeItem(buffer, "ipPort", m_settings.port);
-   Persistence::writeItem(buffer, "portId", m_settings.port_id);
-   Persistence::writeItem(buffer, "portName", m_settings.port_name);
-   Persistence::writeItem(buffer, "baudRate", m_settings.serialSettings.baudRate.toName());
-   Persistence::writeItem(buffer, "dataBits", m_settings.serialSettings.dataBits.toName());
-   Persistence::writeItem(buffer, "parityBits", m_settings.serialSettings.parityBits.toName());
-   Persistence::writeItem(buffer, "stopBits", m_settings.serialSettings.stopBits.toName());
-   Persistence::writeItem(buffer, "device", m_settings.serialSettings.device);
-   Persistence::writeItem(buffer, "mode", (uint8_t)m_settings.serialSettings.mode);
-   Persistence::writeItem(buffer, "traceColor", m_settings.trace_color);
-   Persistence::writeItem(buffer, "fontColor", m_settings.font_color);
-   Persistence::writeItem(buffer, "type", m_settings.type.toName());
+   Utilities::Persistence::writeItem(buffer, "ipAddress", m_settings.ip_address);
+   Utilities::Persistence::writeItem(buffer, "ipPort", m_settings.port);
+   Utilities::Persistence::writeItem(buffer, "portId", m_settings.port_id);
+   Utilities::Persistence::writeItem(buffer, "portName", m_settings.port_name);
+   Utilities::Persistence::writeItem(buffer, "baudRate", m_settings.serialSettings.baudRate.toName());
+   Utilities::Persistence::writeItem(buffer, "dataBits", m_settings.serialSettings.dataBits.toName());
+   Utilities::Persistence::writeItem(buffer, "parityBits", m_settings.serialSettings.parityBits.toName());
+   Utilities::Persistence::writeItem(buffer, "stopBits", m_settings.serialSettings.stopBits.toName());
+   Utilities::Persistence::writeItem(buffer, "device", m_settings.serialSettings.device);
+   Utilities::Persistence::writeItem(buffer, "mode", (uint8_t)m_settings.serialSettings.mode);
+   Utilities::Persistence::writeItem(buffer, "traceColor", m_settings.trace_color);
+   Utilities::Persistence::writeItem(buffer, "fontColor", m_settings.font_color);
+   Utilities::Persistence::writeItem(buffer, "type", m_settings.type.toName());
 
 }
 

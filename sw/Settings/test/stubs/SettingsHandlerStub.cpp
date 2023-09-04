@@ -48,17 +48,17 @@ void set_setting<bool>(KeyID id, bool setting)
 
 SettingsHandler* SettingsHandler::get()
 {
-   static Persistence::PersistenceHandler g_handler;
+   static Utilities::Persistence::Persistence g_handler;
    static SettingsHandler g_settings(g_handler);
    return &g_settings;
 }
-void SettingsHandler::create(Persistence::PersistenceHandler&)
+void SettingsHandler::create(Utilities::Persistence::Persistence&)
 {
 }
 void SettingsHandler::destroy()
 {
 }
-SettingsHandler::SettingsHandler(Persistence::PersistenceHandler& persistence):
+SettingsHandler::SettingsHandler(Utilities::Persistence::Persistence& persistence):
 m_persistence(persistence)
 {
 

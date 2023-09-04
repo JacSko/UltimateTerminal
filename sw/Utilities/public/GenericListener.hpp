@@ -4,6 +4,9 @@
 #include <mutex>
 #include <functional>
 
+namespace Utilities
+{
+
 template <typename LISTENER_TYPE>
 class GenericListener
 {
@@ -48,3 +51,5 @@ private:
    typename listenersContainter::iterator m_iterator;
    std::mutex m_mutex;
 };
+
+}

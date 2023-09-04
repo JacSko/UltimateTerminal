@@ -8,8 +8,8 @@ struct GUIControllerMock
 {
    MOCK_METHOD0(run, void());
    MOCK_METHOD1(getButtonID, uint32_t(const std::string&));
-   MOCK_METHOD3(subscribeForButtonEvent, void(uint32_t, ButtonEvent, ButtonEventListener*));
-   MOCK_METHOD3(unsubscribeFromButtonEvent, void(uint32_t, ButtonEvent, ButtonEventListener*));
+   MOCK_METHOD3(subscribeForButtonEvent, void(uint32_t, GUIController::ButtonEvent, GUIController::ButtonEventListener*));
+   MOCK_METHOD3(unsubscribeFromButtonEvent, void(uint32_t, GUIController::ButtonEvent, GUIController::ButtonEventListener*));
    MOCK_METHOD2(setButtonBackgroundColor, void(uint32_t, uint32_t));
    MOCK_METHOD2(setButtonFontColor, void(uint32_t, uint32_t));
    MOCK_METHOD2(setButtonCheckable, void(uint32_t, bool));
@@ -48,8 +48,8 @@ struct GUIControllerMock
    MOCK_METHOD0(getTerminalBackgroundColor, uint32_t());
    MOCK_METHOD0(getTextColor, uint32_t());
    MOCK_METHOD0(getApplicationPalette, QPalette());
-   MOCK_METHOD1(subscribeForThemeReloadEvent, void(ThemeListener*));
-   MOCK_METHOD1(unsubscribeFromThemeReloadEvent, void(ThemeListener*));
+   MOCK_METHOD1(subscribeForThemeReloadEvent, void(GUIController::ThemeListener*));
+   MOCK_METHOD1(unsubscribeFromThemeReloadEvent, void(GUIController::ThemeListener*));
    MOCK_METHOD0(getParent, QWidget*());
    MOCK_METHOD2(setStatusBarNotification, void(const std::string&, uint32_t));
    MOCK_METHOD1(setInfoLabelText, void(const std::string&));
@@ -58,8 +58,8 @@ struct GUIControllerMock
    MOCK_METHOD0(countPorts, uint32_t());
    MOCK_METHOD0(countTraceFilters, uint32_t());
    MOCK_METHOD2(setThroughputText, void(uint8_t, const std::string&));
-   MOCK_METHOD2(subscribeForTabNameChangeRequest, void(int tab_idx, TabNameChangeRequestListener*));
-   MOCK_METHOD2(unsubscribeFromTabNameChangeRequest, void(int tab_idx, TabNameChangeRequestListener*));
+   MOCK_METHOD2(subscribeForTabNameChangeRequest, void(int tab_idx, GUIController::TabNameChangeRequestListener*));
+   MOCK_METHOD2(unsubscribeFromTabNameChangeRequest, void(int tab_idx, GUIController::TabNameChangeRequestListener*));
    MOCK_METHOD2(setTabName, void(int tab_idx, const std::string& name));
    MOCK_METHOD1(getTabName, std::string(int tab_idx));
    MOCK_METHOD0(countTabs, uint32_t());
@@ -89,6 +89,8 @@ GUIControllerMock* GUIControllerMock_get()
    return g_gui_controller_mock;
 }
 
+namespace GUIController
+{
 
 GUIController::GUIController(QWidget *)
 {
@@ -327,4 +329,6 @@ uint32_t GUIController::countTabs()
 uint32_t GUIController::countButtonsPerTab()
 {
    return g_gui_controller_mock->countButtonsPerTab();
+}
+
 }

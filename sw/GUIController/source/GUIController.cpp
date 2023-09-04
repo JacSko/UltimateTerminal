@@ -1,6 +1,9 @@
 #include "GUIController.h"
 #include <QtCore/QVector>
 
+namespace GUIController
+{
+
 #undef APPLICATION_THEME
 #define APPLICATION_THEME(theme_name) #theme_name,
 std::array<std::string, (uint32_t)Theme::APPLICATION_THEMES_MAX> m_themes_names = { APPLICATION_THEMES };
@@ -764,3 +767,4 @@ void GUIController::onSetUserButtonTabNameSignal(qint32 tab_idx, QString name)
    UT_Log(GUI_CONTROLLER, LOW, "%s index %d name %s result %u", __func__, tab_idx, name.toStdString().c_str(), result);
 }
 
+}

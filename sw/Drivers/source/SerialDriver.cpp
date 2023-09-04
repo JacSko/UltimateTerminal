@@ -37,38 +37,38 @@ const std::vector<std::string> g_stopbits_names = { DEF_STOP_BITS };
 }
 
 template<typename T>
-std::string EnumValue<T>::toName() const
+std::string Utilities::EnumValue<T>::toName() const
 {
    return "";
 }
 template<>
-std::string EnumValue<Drivers::Serial::BaudRate>::toName() const
+std::string Utilities::EnumValue<Drivers::Serial::BaudRate>::toName() const
 {
    return Drivers::Serial::g_baudrates_names[(size_t)value];
 }
 template<>
-std::string EnumValue<Drivers::Serial::ParityType>::toName() const
+std::string Utilities::EnumValue<Drivers::Serial::ParityType>::toName() const
 {
    return Drivers::Serial::g_paritybits_names[(size_t)value];
 }
 template<>
-std::string EnumValue<Drivers::Serial::StopBitType>::toName() const
+std::string Utilities::EnumValue<Drivers::Serial::StopBitType>::toName() const
 {
    return Drivers::Serial::g_stopbits_names[(size_t)value];
 }
 template<>
-std::string EnumValue<Drivers::Serial::DataBitType>::toName() const
+std::string Utilities::EnumValue<Drivers::Serial::DataBitType>::toName() const
 {
    return Drivers::Serial::g_databits_names[(size_t)value];
 }
 
 template<typename T>
-T EnumValue<T>::fromName(const std::string& name)
+T Utilities::EnumValue<T>::fromName(const std::string& name)
 {
    return {};
 }
 template<>
-Drivers::Serial::BaudRate EnumValue<Drivers::Serial::BaudRate>::fromName(const std::string& name)
+Drivers::Serial::BaudRate Utilities::EnumValue<Drivers::Serial::BaudRate>::fromName(const std::string& name)
 {
    value = Drivers::Serial::BaudRate::BAUDRATE_MAX;
    auto it = std::find(Drivers::Serial::g_baudrates_names.begin(), Drivers::Serial::g_baudrates_names.end(), name);
@@ -79,7 +79,7 @@ Drivers::Serial::BaudRate EnumValue<Drivers::Serial::BaudRate>::fromName(const s
    return value;
 }
 template<>
-Drivers::Serial::ParityType EnumValue<Drivers::Serial::ParityType>::fromName(const std::string& name)
+Drivers::Serial::ParityType Utilities::EnumValue<Drivers::Serial::ParityType>::fromName(const std::string& name)
 {
    value = Drivers::Serial::ParityType::PARITY_BIT_MAX;
    auto it = std::find(Drivers::Serial::g_paritybits_names.begin(), Drivers::Serial::g_paritybits_names.end(), name);
@@ -90,7 +90,7 @@ Drivers::Serial::ParityType EnumValue<Drivers::Serial::ParityType>::fromName(con
    return value;
 }
 template<>
-Drivers::Serial::StopBitType EnumValue<Drivers::Serial::StopBitType>::fromName(const std::string& name)
+Drivers::Serial::StopBitType Utilities::EnumValue<Drivers::Serial::StopBitType>::fromName(const std::string& name)
 {
    value = Drivers::Serial::StopBitType::STOP_BIT_MAX;
    auto it = std::find(Drivers::Serial::g_stopbits_names.begin(), Drivers::Serial::g_stopbits_names.end(), name);
@@ -101,7 +101,7 @@ Drivers::Serial::StopBitType EnumValue<Drivers::Serial::StopBitType>::fromName(c
    return value;
 }
 template<>
-Drivers::Serial::DataBitType EnumValue<Drivers::Serial::DataBitType>::fromName(const std::string& name)
+Drivers::Serial::DataBitType Utilities::EnumValue<Drivers::Serial::DataBitType>::fromName(const std::string& name)
 {
    value = Drivers::Serial::DataBitType::DATA_BIT_MAX;
    auto it = std::find(Drivers::Serial::g_databits_names.begin(), Drivers::Serial::g_databits_names.end(), name);

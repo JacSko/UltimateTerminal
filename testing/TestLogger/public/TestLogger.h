@@ -26,6 +26,7 @@ typedef enum
    ALL_WRITERS
 } LoggerWriterID;
 
+
 class TestLogger
 {
 public:

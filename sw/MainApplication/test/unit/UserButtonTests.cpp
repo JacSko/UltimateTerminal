@@ -2,12 +2,12 @@
 #include "gmock/gmock.h"
 #include <atomic>
 #include <optional>
-#include "UserButtonHandler.h"
+#include "UserButton.h"
 #include "UserButtonDialogMock.h"
 #include "Logger.h"
 #include "GUIControllerMock.h"
 
-namespace GUI
+namespace MainApplication
 {
 
 using namespace ::testing;
@@ -28,9 +28,9 @@ auto WriterFunction = [](const std::string& str)->bool
 const std::string TEST_BUTTON_NAME = "TEST_NAME";
 constexpr uint32_t TEST_BUTTON_ID = 1;
 
-struct UserButtonHandlerFixture : public testing::Test
+struct UserButtonFixture : public testing::Test
 {
-   UserButtonHandlerFixture():
+   UserButtonFixture():
    test_controller(nullptr)
    {}
 
@@ -40,17 +40,17 @@ struct UserButtonHandlerFixture : public testing::Test
       UserButtonDialogMock_init();
       GUIControllerMock_init();
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID(TEST_BUTTON_NAME)).WillOnce(Return(TEST_BUTTON_ID));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
-      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
+      EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED,_));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
-      m_test_subject.reset(new UserButtonHandler(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
+      m_test_subject.reset(new UserButton(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
       m_test_subject->startThread();
 
    }
    void TearDown()
    {
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _));
-      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+      EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED,_));
 
       m_test_subject.reset(nullptr);
       GUIControllerMock_deinit();
@@ -59,14 +59,14 @@ struct UserButtonHandlerFixture : public testing::Test
       g_writer_mock = nullptr;
    }
 
-   std::unique_ptr<UserButtonHandler> m_test_subject;
+   std::unique_ptr<UserButton> m_test_subject;
    QPushButton test_button;
-   GUIController test_controller;
-   Persistence::PersistenceHandler fake_persistence;
-   ButtonEventListener* m_button_listener;
+   GUIController::GUIController test_controller;
+   Utilities::Persistence::Persistence fake_persistence;
+   GUIController::ButtonEventListener* m_button_listener;
 };
 
-TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
+TEST_F(UserButtonFixture, empty_commands_list_when_execution_requested)
 {
    /**
     * <b>scenario</b>: User requested to send commands, but no commands entered by user <br>
@@ -85,7 +85,7 @@ TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
    EXPECT_CALL(*g_writer_mock, write(_)).Times(0);
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -94,7 +94,7 @@ TEST_F(UserButtonHandlerFixture, empty_commands_list_when_execution_requested)
 
 }
 
-TEST_F(UserButtonHandlerFixture, commands_sending_requested)
+TEST_F(UserButtonFixture, commands_sending_requested)
 {
    /**
     * <b>scenario</b>: User requested to send commands  <br>
@@ -118,7 +118,7 @@ TEST_F(UserButtonHandlerFixture, commands_sending_requested)
                         return true;
                      }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
    /* request commands send */
    EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, false));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonEnabled(TEST_BUTTON_ID, true)).WillOnce(Invoke([&](uint32_t,  bool)
@@ -131,7 +131,7 @@ TEST_F(UserButtonHandlerFixture, commands_sending_requested)
    EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
 
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -139,7 +139,7 @@ TEST_F(UserButtonHandlerFixture, commands_sending_requested)
    }
 }
 
-TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
+TEST_F(UserButtonFixture, failed_to_send_commands)
 {
    /**
     * <b>scenario</b>: User requested to send commands, but sending fails <br>
@@ -163,7 +163,7 @@ TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
                         return true;
                      }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
 
    /* request commands send */
@@ -177,7 +177,7 @@ TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(false));
 
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    while(test_wait)
    {
@@ -185,7 +185,7 @@ TEST_F(UserButtonHandlerFixture, failed_to_send_commands)
    }
 }
 
-TEST_F(UserButtonHandlerFixture, persistence_read_write)
+TEST_F(UserButtonFixture, persistence_read_write)
 {
    /**
     * <b>scenario</b>: Persistence write and read requested <br>
@@ -194,7 +194,7 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
     *                  Data should be correctly deserialized. <br>
     * ************************************************
     */
-   Persistence::PersistenceListener::PersistenceItems data_buffer;
+   Utilities::Persistence::PersistenceListener::PersistenceItems data_buffer;
 
    /* simulate user settings change */
    Dialogs::UserButtonDialog::Settings new_settings;
@@ -208,28 +208,28 @@ TEST_F(UserButtonHandlerFixture, persistence_read_write)
                         return true;
                      }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
-   m_button_listener->onButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED);
+   m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED);
 
    /* simulate persistence write request */
    ASSERT_EQ(data_buffer.size(), 0);
-   reinterpret_cast<Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceWrite(data_buffer);
+   reinterpret_cast<Utilities::Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceWrite(data_buffer);
    EXPECT_THAT(data_buffer.size(), Gt(0));
 
    /* create new test object to test if persistence is read correctly */
    EXPECT_CALL(*GUIControllerMock_get(), getButtonID(TEST_BUTTON_NAME)).WillOnce(Return(TEST_BUTTON_ID));
-   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
-   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
+   EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED,_));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
 
    /* expect that button name will be set to value read from persistence */
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, new_settings.button_name));
-   std::unique_ptr<UserButtonHandler> new_test_subject = std::unique_ptr<UserButtonHandler>(new UserButtonHandler(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
+   std::unique_ptr<UserButton> new_test_subject = std::unique_ptr<UserButton>(new UserButton(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
 
    /* simulate persistence read notification */
-   reinterpret_cast<Persistence::PersistenceListener*>(new_test_subject.get())->onPersistenceRead(data_buffer);
+   reinterpret_cast<Utilities::Persistence::PersistenceListener*>(new_test_subject.get())->onPersistenceRead(data_buffer);
 
-   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CLICKED, _));
-   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, ButtonEvent::CONTEXT_MENU_REQUESTED,_));
+   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _));
+   EXPECT_CALL(*GUIControllerMock_get(), unsubscribeFromButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED,_));
 
 }
 

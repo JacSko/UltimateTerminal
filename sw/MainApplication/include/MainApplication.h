@@ -7,18 +7,21 @@
 
 #include "ui_MainWindow.h"
 #include "ITimers.h"
-#include "PortHandler.h"
+#include "Port.h"
 #include "LoggingSettingDialog.h"
-#include "PersistenceHandler.h"
-#include "UserButtonsTabHandler.h"
-#include "TraceFilterHandler.h"
+#include "Persistence.h"
+#include "UserButtonsTab.h"
+#include "TraceFilter.h"
 #include "IFileLogger.h"
 #include "GUIController.h"
 
-class MainApplication : public GUI::PortHandlerListener,
-                        public Persistence::PersistenceListener,
-                        public ButtonEventListener,
-                        public ThemeListener
+namespace MainApplication
+{
+
+class MainApplication : public PortListener,
+                        public Utilities::Persistence::PersistenceListener,
+                        public GUIController::ButtonEventListener,
+                        public GUIController::ThemeListener
 {
 public:
     MainApplication();
@@ -30,20 +33,20 @@ private:
    struct ButtonListener
    {
       uint32_t button_id;
-      ButtonEvent event;
+      GUIController::ButtonEvent event;
       std::function<void()> listener;
    };
    std::unique_ptr<Utilities::ITimers> m_timers;
    std::unique_ptr<IFileLogger> m_file_logger;
-   GUIController m_gui_controller;
-   std::vector<std::unique_ptr<GUI::PortHandler>> m_port_handlers;
-   std::mutex m_port_handler_mutex;
-   std::vector<std::unique_ptr<GUI::UserButtonsTabHandler>> m_user_buttons_tab_handlers;
-   std::vector<std::unique_ptr<TraceFilterHandler>> m_trace_filter_handlers;
+   GUIController::GUIController m_gui_controller;
+   std::vector<std::unique_ptr<Port>> m_ports;
+   std::mutex m_ports_mutex;
+   std::vector<std::unique_ptr<UserButtonsTab>> m_user_buttons_tabs;
+   std::vector<std::unique_ptr<TraceFilter>> m_trace_filters;
    uint32_t m_marker_index;
    std::string m_file_logging_path;
    std::string m_log_file_name;
-   Persistence::PersistenceHandler m_persistence;
+   Utilities::Persistence::Persistence m_persistence;
    uint32_t m_scroll_default_color;
    std::map<uint8_t,std::string> m_port_id_name_map;
    std::map<uint8_t, std::vector<std::string>> m_commands_history;
@@ -60,11 +63,11 @@ private:
    std::string m_current_port_name;
 
    /* ButtonEventListener */
-   void onButtonEvent(uint32_t button_id, ButtonEvent event) override;
+   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event) override;
    /* ThemeChangedListener */
    void onThemeChange(Theme theme) override;
 
-   void onPortHandlerEvent(const GUI::PortHandlerEvent&);
+   void onPortEvent(const PortEvent&);
    bool sendToPort(const std::string&);
    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color);
    void setButtonState(uint32_t button_id, bool active);
@@ -89,4 +92,6 @@ private:
    void onSettingsButtonClicked();
 
 };
+
+}
 #endif

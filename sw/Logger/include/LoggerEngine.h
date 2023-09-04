@@ -37,14 +37,17 @@
 /* =============================
  *      Global variables
  * =============================*/
-static constexpr uint32_t LOGGER_BUFFER_SIZE = 4096;
 /* =============================
  *       Data structures
  * =============================*/
+namespace Logger
+{
 
 class LoggerEngine
 {
 public:
+   static constexpr uint32_t LOGGER_BUFFER_SIZE = 4096;
+
    /**
     * @brief Creates LoggerEngine object.
     */
@@ -160,4 +163,5 @@ private:
 
 };
 
+}
 #endif

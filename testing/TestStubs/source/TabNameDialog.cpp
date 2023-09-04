@@ -1,6 +1,5 @@
 #include "TabNameDialog.h"
 #include "GUITestServer.h"
-#include "Logger.h"
 
 namespace Dialogs
 {

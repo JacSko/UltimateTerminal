@@ -2,7 +2,6 @@
 #include "gmock/gmock.h"
 #include <thread>
 
-#include "Logger.h"
 #include "test_api.h"
 #include "RPCClient.h"
 #include "RPCServer.h"

@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "Settings_config.h"
-#include "PersistenceHandler.h"
+#include "Persistence.h"
 
 #undef DEF_SETTING_GROUP
 #define DEF_SETTING_GROUP(name, type, default_value) name,
@@ -61,10 +61,10 @@ public:
 
 };
 
-class SettingsHandler : public Persistence::PersistenceListener
+class SettingsHandler : public Utilities::Persistence::PersistenceListener
 {
 public:
-   SettingsHandler(Persistence::PersistenceHandler& persistence);
+   SettingsHandler(Utilities::Persistence::Persistence& persistence);
    /**
     * @brief Returns instance of SettingsHandler object.
     * @return Pointer to SettingsHandler object
@@ -74,7 +74,7 @@ public:
     * @brief Creates SettingsHandler object.
     * @return void
     */
-   static void create(Persistence::PersistenceHandler& persistence);
+   static void create(Utilities::Persistence::Persistence& persistence);
    /**
     * @brief Destroys SettingsHandler object.
     * @return void
@@ -189,7 +189,7 @@ private:
 
    std::mutex m_settings_mutex;
    std::vector<std::pair<KeyID, SettingsListener*>> m_listeners;
-   Persistence::PersistenceHandler& m_persistence;
+   Utilities::Persistence::Persistence& m_persistence;
 };
 
 }

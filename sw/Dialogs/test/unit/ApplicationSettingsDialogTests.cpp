@@ -8,11 +8,11 @@
 #include "PortSettingDialogMock.h"
 #include "TraceFilterSettingDialogMock.h"
 #include "LoggingSettingDialogMock.h"
-#include "PortHandlerMock.h"
-#include "TraceFilterHandlerMock.h"
+#include "PortMock.h"
+#include "TraceFilterMock.h"
 #include "IFileLoggerMock.h"
 #include "ITimersMock.h"
-#include "PersistenceHandler.h"
+#include "Persistence.h"
 #include "Logger.h"
 #include "Settings.h"
 #include "SerialDriverMock.h"
@@ -35,9 +35,9 @@ using namespace ::testing;
 Utilities::ITimersMock* g_timers_mock;
 IFileLoggerMock* g_logger_mock;
 
-std::unique_ptr<IFileLogger> IFileLogger::create()
+std::unique_ptr<MainApplication::IFileLogger> MainApplication::IFileLogger::create()
 {
-   return std::unique_ptr<IFileLogger>(g_logger_mock);
+   return std::unique_ptr<MainApplication::IFileLogger>(g_logger_mock);
 }
 
 const uint8_t PORT_HANDLERS_COUNT = 5;
@@ -58,31 +58,33 @@ struct ApplicationSettingsDialogFixture : public testing::Test
       PortSettingDialogMock_init();
       TraceFilterSettingDialogMock_init();
       LoggingSettingDialogMock_init();
-      GUI::PortHandlerMock_init();
-      TraceFilterHandlerMock_init();
+      MainApplication::PortMock_init();
+      MainApplication::TraceFilterMock_init();
       GUIControllerMock_init();
       g_timers_mock = new Utilities::ITimersMock;
       g_logger_mock = new IFileLoggerMock;
 
       for (uint8_t i = 0; i < PORT_HANDLERS_COUNT; i++)
       {
-         test_handlers.emplace_back(std::unique_ptr<GUI::PortHandler>(
-             new GUI::PortHandler(i, test_controller, "", *g_timers_mock, nullptr, test_persistence)));
+         test_handlers.emplace_back(std::unique_ptr<MainApplication::Port>(
+             new MainApplication::Port(i, test_controller, "", *g_timers_mock, nullptr, test_persistence)));
       }
       for(uint8_t i = 0; i < TRACE_FILTERS_COUNT; i++)
       {
-         test_filters.emplace_back(std::unique_ptr<TraceFilterHandler>(new TraceFilterHandler(i, test_controller, "", test_persistence)));
+         test_filters.emplace_back(std::unique_ptr<MainApplication::TraceFilter>(
+                                   new MainApplication::TraceFilter(i, test_controller, "", test_persistence)));
       }
-      test_file_logger = IFileLogger::create();
-      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog(test_controller, test_handlers, test_filters, test_file_logger, test_logging_path, "persistence_path"));
+      test_file_logger = MainApplication::IFileLogger::create();
+      m_test_subject.reset(new Dialogs::ApplicationSettingsDialog
+              (test_controller, test_handlers, test_filters, test_file_logger, test_logging_path, "persistence_path"));
    }
    void TearDown()
    {
       m_test_subject.reset(nullptr);
       delete g_timers_mock;
       GUIControllerMock_deinit();
-      TraceFilterHandlerMock_deinit();
-      GUI::PortHandlerMock_deinit();
+      MainApplication::TraceFilterMock_deinit();
+      MainApplication::PortMock_deinit();
       LoggingSettingDialogMock_deinit();
       TraceFilterSettingDialogMock_deinit();
       PortSettingDialogMock_deinit();
@@ -92,12 +94,12 @@ struct ApplicationSettingsDialogFixture : public testing::Test
 
    QMainWindow m_parent;
 
-   std::vector<std::unique_ptr<GUI::PortHandler>> test_handlers;
-   std::vector<std::unique_ptr<TraceFilterHandler>> test_filters;
-   std::unique_ptr<IFileLogger> test_file_logger;
+   std::vector<std::unique_ptr<MainApplication::Port>> test_handlers;
+   std::vector<std::unique_ptr<MainApplication::TraceFilter>> test_filters;
+   std::unique_ptr<MainApplication::IFileLogger> test_file_logger;
    std::string test_logging_path;
-   Persistence::PersistenceHandler test_persistence;
-   GUIController test_controller;
+   Utilities::Persistence::Persistence test_persistence;
+   GUIController::GUIController test_controller;
    std::unique_ptr<Dialogs::ApplicationSettingsDialog> m_test_subject;
 
 };
@@ -212,17 +214,17 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* expect PORTS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_ports_tab,_,HasSubstr("PORT"))).Times(PORT_HANDLERS_COUNT);
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), getSettings(_)).WillRepeatedly(Invoke([&](uint8_t id) -> const Dialogs::PortSettingDialog::Settings&
+   EXPECT_CALL(*MainApplication::PortMock_get(), getSettings(_)).WillRepeatedly(Invoke([&](uint8_t id) -> const Dialogs::PortSettingDialog::Settings&
          {
             return port_handler_settings[id];
          }));
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), isOpened(_)).WillRepeatedly(Return(false));
+   EXPECT_CALL(*MainApplication::PortMock_get(), isOpened(_)).WillRepeatedly(Return(false));
    EXPECT_CALL(*PortSettingDialogMock_get(), createLayout(_,_,_)).WillRepeatedly(Return(nullptr));
 
    /* expect FILTERS subtabs creation */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_filters_tab,_,HasSubstr("FILTER"))).Times(TRACE_FILTERS_COUNT);
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), getSettings()).WillRepeatedly(Return(trace_settings));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), isActive()).WillRepeatedly(Return(false));
+   EXPECT_CALL(*MainApplication::TraceFilterMock_get(), getSettings()).WillRepeatedly(Return(trace_settings));
+   EXPECT_CALL(*MainApplication::TraceFilterMock_get(), isActive()).WillRepeatedly(Return(false));
    EXPECT_CALL(*TraceFilterSettingDialogMock_get(), createLayout(_,_,_)).WillRepeatedly(Return(nullptr));
 
    /* expect file logging tab creation */
@@ -281,8 +283,8 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_text(&test_setting_item)).WillRepeatedly(Return("0"));
 
    /* expect propagation of new settings */
-   EXPECT_CALL(*GUI::PortHandlerMock_get(), setSettings(new_port_settings_id,_)).WillOnce(Return(true));
-   EXPECT_CALL(*TraceFilterHandlerMock_get(), setSettings(new_trace_filter_settings_id,_)).WillOnce(Return(true));
+   EXPECT_CALL(*MainApplication::PortMock_get(), setSettings(new_port_settings_id,_)).WillOnce(Return(true));
+   EXPECT_CALL(*MainApplication::TraceFilterMock_get(), setSettings(new_trace_filter_settings_id,_)).WillOnce(Return(true));
 
    std::optional<bool> result = m_test_subject->showDialog(&m_parent);
 

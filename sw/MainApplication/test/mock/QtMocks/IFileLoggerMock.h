@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include "IFileLogger.h"
 
-struct IFileLoggerMock : public IFileLogger
+struct IFileLoggerMock : public MainApplication::IFileLogger
 {
    MOCK_METHOD0(isActive, bool());
    MOCK_METHOD1(openFile, bool(const std::string&));

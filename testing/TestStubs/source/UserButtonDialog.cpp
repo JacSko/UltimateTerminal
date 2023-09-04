@@ -1,7 +1,6 @@
 #include <QtCore/QString>
 #include "UserButtonDialog.h"
 #include "GUITestServer.h"
-#include "Logger.h"
 #include <sstream>
 
 namespace Dialogs

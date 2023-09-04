@@ -2,6 +2,9 @@
 
 #include <string>
 
+namespace Utilities
+{
+
 template<typename T>
 class EnumValue
 {
@@ -24,3 +27,5 @@ public:
       return value != lhs.value;
    }
 };
+
+}

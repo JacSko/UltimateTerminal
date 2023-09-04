@@ -12,8 +12,8 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 
-#include "PortHandler.h"
-#include "TraceFilterHandler.h"
+#include "Port.h"
+#include "TraceFilter.h"
 #include "LoggingSettingDialog.h"
 #include "IFileLogger.h"
 #include "GUIController.h"
@@ -41,10 +41,10 @@ class ApplicationSettingsDialog : public QObject
    Q_OBJECT
 
 public:
-   ApplicationSettingsDialog(GUIController& gui_controller,
-                             std::vector<std::unique_ptr<GUI::PortHandler>>& ports,
-                             std::vector<std::unique_ptr<TraceFilterHandler>>& filters,
-                             std::unique_ptr<IFileLogger>& logger,
+   ApplicationSettingsDialog(GUIController::GUIController& gui_controller,
+                             std::vector<std::unique_ptr<MainApplication::Port>>& ports,
+                             std::vector<std::unique_ptr<MainApplication::TraceFilter>>& filters,
+                             std::unique_ptr<MainApplication::IFileLogger>& logger,
                              std::string& logging_path,
                              const std::string& persistence_path);
    ~ApplicationSettingsDialog();
@@ -58,43 +58,43 @@ public:
     */
    std::optional<bool> showDialog(QWidget* parent);
 private:
-   struct PortHandlerItems
+   struct PortItems
    {
-      PortHandlerItems(std::vector<std::unique_ptr<GUI::PortHandler>>& handlers):
-      port_handlers(handlers),
-      dialogs {handlers.size()}
+      PortItems(std::vector<std::unique_ptr<MainApplication::Port>>& ports):
+      m_ports(ports),
+      m_dialogs {ports.size()}
       {
       }
-      std::vector<std::unique_ptr<GUI::PortHandler>>& port_handlers;
-      std::vector<Dialogs::PortSettingDialog> dialogs;
+      std::vector<std::unique_ptr<MainApplication::Port>>& m_ports;
+      std::vector<Dialogs::PortSettingDialog> m_dialogs;
    };
 
    struct TraceFilterItems
    {
-      TraceFilterItems(std::vector<std::unique_ptr<TraceFilterHandler>>& handlers):
-      filters(handlers),
-      dialogs {handlers.size()}
+      TraceFilterItems(std::vector<std::unique_ptr<MainApplication::TraceFilter>>& filters):
+      m_filters(filters),
+      m_dialogs {filters.size()}
       {
       }
-      std::vector<std::unique_ptr<TraceFilterHandler>>& filters;
-      std::vector<Dialogs::TraceFilterSettingDialog> dialogs;
+      std::vector<std::unique_ptr<MainApplication::TraceFilter>>& m_filters;
+      std::vector<Dialogs::TraceFilterSettingDialog> m_dialogs;
    };
 
    struct FileLoggingItems
    {
-      FileLoggingItems(std::string& path, std::unique_ptr<IFileLogger>& logger):
-      path(path),
-      dialog (),
-      logger(logger)
+      FileLoggingItems(std::string& path, std::unique_ptr<MainApplication::IFileLogger>& logger):
+      m_path(path),
+      m_dialog (),
+      m_logger(logger)
       {
       }
-      std::string& path;
-      Dialogs::LoggingSettingDialog dialog;
-      std::unique_ptr<IFileLogger>& logger;
+      std::string& m_path;
+      Dialogs::LoggingSettingDialog m_dialog;
+      std::unique_ptr<MainApplication::IFileLogger>& m_logger;
    };
 
    void createGeneralTab(QTabWidget*, QWidget* parent);
-   void createPortHandlersTab(QTabWidget*, QWidget*);
+   void createPortsTab(QTabWidget*, QWidget*);
    void createTraceFiltersTab(QTabWidget*, QWidget*);
    void createFileLoggerTab(QTabWidget*);
    void createDebugTab(QTabWidget*, QWidget*);
@@ -103,7 +103,7 @@ private:
    void createSystemSettingsTab(QTabWidget*, QWidget*);
    void writeSettingValue(int id, QLineEdit*);
 
-   void notifyPortHandlersChanges();
+   void notifyPortsChanges();
    void notifyTraceFiltersChanges();
    void notifyFileLoggingChanges();
    void notifyGeneralChanges();
@@ -115,10 +115,10 @@ private:
    void saveSystemStringSetting(int, QLineEdit*);
 
    void onDialogClosed();
-   PortHandlerItems m_handlers;
+   PortItems m_ports;
    TraceFilterItems m_filters;
    FileLoggingItems m_file_logging;
-   GUIController& m_gui_controller;
+   GUIController::GUIController& m_gui_controller;
    std::vector<QComboBox*> m_logger_comboboxes;
    std::vector<QLineEdit*> m_setting_lineedits;
    QComboBox* m_theme_combobox;

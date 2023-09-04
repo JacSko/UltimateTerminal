@@ -17,17 +17,17 @@ add_test(NAME ButtonCommandExecutorTests COMMAND ButtonCommandExecutorTests)
 
 #####################################################################################
 
-add_executable(UserButtonHandlerTests
-            UserButtonHandlerTests.cpp
-            ../../source/UserButtonHandler.cpp
+add_executable(UserButtonTests
+            UserButtonTests.cpp
+            ../../source/UserButton.cpp
 )
 
-target_include_directories(UserButtonHandlerTests PUBLIC
+target_include_directories(UserButtonTests PUBLIC
         ../../include
         ../../public
         ../mock
 )
-target_link_libraries(UserButtonHandlerTests PUBLIC
+target_link_libraries(UserButtonTests PUBLIC
         gtest_main
         gmock_main
         Logger
@@ -38,21 +38,21 @@ target_link_libraries(UserButtonHandlerTests PUBLIC
         DialogsMocks
         GUIControllerMock
 )
-add_test(NAME UserButtonHandlerTests COMMAND UserButtonHandlerTests)
+add_test(NAME UserButtonTests COMMAND UserButtonTests)
 
 #####################################################################################
 
-add_executable(TraceFilterHandlerTests
-            TraceFilterHandlerTests.cpp
-            ../../source/TraceFilterHandler.cpp
+add_executable(TraceFilterTests
+            TraceFilterTests.cpp
+            ../../source/TraceFilter.cpp
 )
 
-target_include_directories(TraceFilterHandlerTests PUBLIC
+target_include_directories(TraceFilterTests PUBLIC
         ../../include
         ../../public
         ../mock
 )
-target_link_libraries(TraceFilterHandlerTests PUBLIC
+target_link_libraries(TraceFilterTests PUBLIC
         gtest_main
         gmock_main
         Logger
@@ -63,21 +63,21 @@ target_link_libraries(TraceFilterHandlerTests PUBLIC
         DialogsMocks
         GUIControllerMock
 )
-add_test(NAME TraceFilterHandlerTests COMMAND TraceFilterHandlerTests)
+add_test(NAME TraceFilterTests COMMAND TraceFilterTests)
 
 #####################################################################################
 
-add_executable(PortHandlerTests
-            PortHandlerTests.cpp
-            ../../source/PortHandler.cpp
+add_executable(PortTests
+            PortTests.cpp
+            ../../source/Port.cpp
 )
 
-target_include_directories(PortHandlerTests PUBLIC
+target_include_directories(PortTests PUBLIC
         ../../include
         ../../public
         ../mock
 )
-target_link_libraries(PortHandlerTests PUBLIC
+target_link_libraries(PortTests PUBLIC
         gtest_main
         gmock_main
         Logger
@@ -89,7 +89,7 @@ target_link_libraries(PortHandlerTests PUBLIC
         DialogsMocks
         GUIControllerMock
 )
-add_test(NAME PortHandlerTests COMMAND PortHandlerTests)
+add_test(NAME PortTests COMMAND PortTests)
 
 #####################################################################################
 
@@ -119,17 +119,17 @@ add_test(NAME MainApplicationTests COMMAND MainApplicationTests)
 
 #####################################################################################
 
-add_executable(UserButtonsTabHandlerTests
-            UserButtonsTabHandlerTests.cpp
-            ../../source/UserButtonsTabHandler.cpp
+add_executable(UserButtonsTabTests
+            UserButtonsTabTests.cpp
+            ../../source/UserButtonsTab.cpp
 )
 
-target_include_directories(UserButtonsTabHandlerTests PUBLIC
+target_include_directories(UserButtonsTabTests PUBLIC
         ../../include
         ../../public
         ../mock
 )
-target_link_libraries(UserButtonsTabHandlerTests PUBLIC
+target_link_libraries(UserButtonsTabTests PUBLIC
         gtest_main
         gmock_main
         Logger
@@ -137,4 +137,4 @@ target_link_libraries(UserButtonsTabHandlerTests PUBLIC
         SettingsHandler
         MainApplicationMocks
 )
-add_test(NAME UserButtonsTabHandlerTests COMMAND UserButtonsTabHandlerTests)
+add_test(NAME UserButtonsTabTests COMMAND UserButtonsTabTests)

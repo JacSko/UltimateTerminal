@@ -71,7 +71,7 @@ SettingsHandler* SettingsHandler::get()
    return g_settings;
 }
 
-void SettingsHandler::create(Persistence::PersistenceHandler& persistence)
+void SettingsHandler::create(Utilities::Persistence::Persistence& persistence)
 {
    g_settings = new SettingsHandler(persistence);
 }
@@ -81,10 +81,10 @@ void SettingsHandler::destroy()
    delete g_settings;
 }
 
-SettingsHandler::SettingsHandler(Persistence::PersistenceHandler& persistence):
+SettingsHandler::SettingsHandler(Utilities::Persistence::Persistence& persistence):
 m_persistence(persistence)
 {
-   Persistence::PersistenceListener::setName("SETTINGS");
+   Utilities::Persistence::PersistenceListener::setName("SETTINGS");
 /* load default settings from SettingsHolder.h macro */
 #undef DEF_SETTING_GROUP
 #define DEF_SETTING_GROUP(name, type, default_value) (set_setting<type>(name, default_value));

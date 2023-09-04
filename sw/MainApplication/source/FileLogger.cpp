@@ -1,5 +1,7 @@
 #include "FileLogger.h"
 
+namespace MainApplication
+{
 
 std::unique_ptr<IFileLogger> IFileLogger::create()
 {
@@ -44,4 +46,6 @@ void FileLogger::putLog(const std::string& log)
       m_file_stream << log;
       m_file_stream.flush();
    }
+}
+
 }

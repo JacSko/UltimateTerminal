@@ -7,16 +7,16 @@ endif()
 
 add_library(MainApplication STATIC 	   
 	   source/MainApplication.cpp
-	   source/PortHandler.cpp
-       source/UserButtonsTabHandler.cpp
-       source/UserButtonHandler.cpp
-       source/TraceFilterHandler.cpp
+	   source/Port.cpp
+       source/UserButtonsTab.cpp
+       source/UserButton.cpp
+       source/TraceFilter.cpp
        source/FileLogger.cpp
        include/MainApplication.h
-       include/UserButtonsTabHandler.h
-       include/UserButtonHandler.h
-       public/PortHandler.h
-       public/TraceFilterHandler.h)
+       include/UserButtonsTab.h
+       include/UserButton.h
+       public/Port.h
+       public/TraceFilter.h)
 
 target_include_directories(MainApplication PUBLIC 
    include/

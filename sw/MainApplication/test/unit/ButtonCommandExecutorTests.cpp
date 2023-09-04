@@ -3,9 +3,8 @@
 #include <optional>
 #include "ButtonCommandsExecutor.hpp"
 #include "Logger.h"
-namespace GUI
+namespace MainApplication
 {
-constexpr uint32_t THREAD_START_TIMEOUT = 1000;
 using namespace ::testing;
 
 struct WriterMock
@@ -31,6 +30,7 @@ struct ButtonCommandExecutorTests : public testing::Test
    {
       delete g_writer_mock;
    }
+   const uint32_t THREAD_START_TIMEOUT = 1000;
 };
 
 TEST_F(ButtonCommandExecutorTests, no_commands_execution)
