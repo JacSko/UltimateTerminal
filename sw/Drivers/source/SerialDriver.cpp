@@ -5,7 +5,6 @@
 #include <map>
 #include "SerialDriver.h"
 
-
 namespace Drivers
 {
 namespace Serial
@@ -258,6 +257,10 @@ void SerialDriver::receivingThread()
 {
    while(m_worker.isRunning())
    {
+      if (m_recv_buffer_idx == m_recv_buffer.size())
+      {
+         m_recv_buffer_idx = 0;
+      }
       int recv_bytes = read(m_fd, m_recv_buffer.data() + m_recv_buffer_idx, m_recv_buffer.size() - m_recv_buffer_idx);
       if (recv_bytes > 0)
       {
