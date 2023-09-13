@@ -22,7 +22,7 @@
    DEF_SETTING_GROUP(GUI_Dark_WindowBackground, uint32_t, 3947580) \
    DEF_SETTING_GROUP(GUI_Dark_WindowText, uint32_t, 11842740) \
    DEF_SETTING_GROUP(GUI_Dark_TerminalBackground, uint32_t, 5263440) \
-   DEF_SETTING_GROUP(GUI_UserButtons_Tabs, uint32_t, 1) \
+   DEF_SETTING_GROUP(GUI_UserButtons_Tabs, uint32_t, 3) \
    DEF_SETTING_GROUP(GUI_UserButtons_RowsPerTab, uint32_t, 2) \
    DEF_SETTING_GROUP(GUI_UserButtons_ButtonsPerRow, uint32_t, 5) \
    DEF_SETTING_GROUP(Throughput_Calculation_Window, uint32_t, 200) \

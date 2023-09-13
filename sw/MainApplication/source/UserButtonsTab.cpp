@@ -23,10 +23,11 @@ m_tab_name("TAB" + std::to_string(tab_id))
 
    for (uint8_t i = 0; i < buttons_count; i++)
    {
-      std::string buttonName = "BUTTON" + std::to_string((tab_id * buttons_count) + i);
+      const uint32_t buttonId = (tab_id * buttons_count) + i;
+      std::string buttonName = "BUTTON" + std::to_string(buttonId);
       m_buttons.emplace_back(std::unique_ptr<MainApplication::UserButton>(new MainApplication::UserButton(
                                                                          m_gui_controller,
-                                                                         i,
+                                                                         buttonId,
                                                                          buttonName,
                                                                          m_persistence,
                                                                          writer)));

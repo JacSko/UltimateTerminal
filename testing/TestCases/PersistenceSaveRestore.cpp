@@ -183,7 +183,10 @@ TEST_F(PersistenceSaveRestoreTests, allTraceFiltersShallBeStoredInPersistence)
 
 TEST_F(PersistenceSaveRestoreTests, allUserButtonsShallBeStoredInPersistence)
 {
-   const uint8_t USER_BUTTONS_COUNT = 5;
+   const uint8_t USER_BUTTONS_PER_ROW = 5;
+   const uint8_t USER_TABS_COUNT = 3;
+   const uint8_t USER_BUTTONS_ROWS = 2;
+   const uint16_t USER_BUTTONS_COUNT = USER_BUTTONS_PER_ROW * USER_BUTTONS_ROWS * USER_TABS_COUNT;
 
    /**
     * @test
