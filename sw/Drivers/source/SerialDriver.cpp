@@ -283,6 +283,10 @@ void SerialDriver::receivingThread()
          }
          while(is_next_new_line);
       }
+      else if (recv_bytes == 0)
+      {
+         printf("Recv bytes 0!\n");
+      }
       else if(recv_bytes == -1)
       {
          break;
