@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <map>
 #include "SerialDriver.h"
+#include "Logger.h"
 
 namespace Drivers
 {
@@ -142,12 +143,20 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
 {
    bool result = false;
    m_mode = mode;
+   UT_Log(SERIAL_DRV, LOW, "[%s] open - mode %u br %u sb %u pb %u db %u", settings.device.c_str(),
+                                                                          static_cast<uint8_t>(mode),
+                                                                          settings.baudRate.toName().c_str(),
+                                                                          settings.stopBits.toName().c_str(),
+                                                                          settings.parityBits.toName().c_str(),
+                                                                          settings.dataBits.toName().c_str());
    m_fd = ::open(settings.device.c_str(), O_RDWR);
    if (m_fd >= 0)
    {
+      UT_Log(SERIAL_DRV, LOW, "[%s] getting tc attributes", settings.device.c_str());
       struct termios tty;
       if (tcgetattr(m_fd, &tty) >= 0)
       {
+         UT_Log(SERIAL_DRV, LOW, "[%s] setting connection settings", settings.device.c_str());
          setCommonValues(tty);
          setBaudrates(settings.baudRate.value, tty);
          setDataBits(settings.dataBits.value, tty);
@@ -156,12 +165,14 @@ bool SerialDriver::open(DataMode mode, const Settings& settings)
 
          if (tcsetattr(m_fd, TCSANOW, &tty) == 0)
          {
+            UT_Log(SERIAL_DRV, LOW, "[%s] starting receiving thread", settings.device.c_str());
             result = true;
             m_worker.start(SERIAL_THREAD_START_TIMEOUT);
          }
       }
    }
 
+   UT_Log(SERIAL_DRV, ERROR, "[%s] opening error!", settings.device.c_str());
    return result;
 }
 void SerialDriver::setCommonValues(struct termios& tty)
@@ -242,6 +253,7 @@ void SerialDriver::setStopBits(StopBitType stopbits, struct termios& tty)
 
 void SerialDriver::close()
 {
+   UT_Log(SERIAL_DRV, LOW, "closing port");
    if (isOpened())
    {
       ::close(m_fd);
@@ -255,6 +267,7 @@ bool SerialDriver::isOpened()
 }
 void SerialDriver::receivingThread()
 {
+   UT_Log(SERIAL_DRV, LOW, "starting receiving thread");
    while(m_worker.isRunning())
    {
       if (m_recv_buffer_idx == m_recv_buffer.size())
@@ -283,10 +296,7 @@ void SerialDriver::receivingThread()
          }
          while(is_next_new_line);
       }
-      else if (recv_bytes == 0)
-      {
-         printf("Recv bytes 0!\n");
-      }
+      UT_Log_If(recv_bytes<=0, SERIAL_DRV, ERROR, "%d bytes received", recv_bytes);
       else if(recv_bytes == -1)
       {
          break;
@@ -320,6 +330,7 @@ void SerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>& d
 }
 bool SerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
+   UT_Log(SERIAL_DRV, HIGH, "writing %u bytes", size);
    return ::write(m_fd, data.data(), data.size()) == size;
 }
 

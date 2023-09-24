@@ -2,6 +2,7 @@
  *   Includes of project headers
  * =============================*/
 #include "SocketServer.h"
+#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -73,7 +74,7 @@ m_handlers {}
 {
    if (!m_working_thread.start(SERVER_THREAD_START_TIMEOUT))
    {
-      printf("cannot start thread %s", m_working_thread.getThreadName().c_str());
+      UT_Stdout_Log(SOCK_DRV, ERROR, "cannot start thread %s", m_working_thread.getThreadName().c_str());
    }
 }
 bool SocketServer::start(uint16_t port, uint8_t max_clients)
@@ -84,17 +85,21 @@ bool SocketServer::start(uint16_t port, uint8_t max_clients)
 
    if (port == 0)
    {
+      UT_Stdout_Log(SOCK_DRV, ERROR, "Invalid port: %u", port);
       return false;
    }
 
    m_server_fd = system_call::socket(AF_INET, SOCK_STREAM, 0);
+   UT_Stdout_Log_If(m_server_fd == -1, SOCK_DRV, ERROR, "[%d] cannot open server fd! error [%s]", m_port, strerror(errno));
    if (m_server_fd != -1)
    {
       struct timeval tv = {};
       tv.tv_usec = SERVER_RECEIVE_TIMEOUT * 1000; /* convert milliseconds to microseconds*/
+      UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] setting sockopt with timeout %u", m_port, SERVER_RECEIVE_TIMEOUT);
       if (system_call::setsockopt(m_server_fd, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval)) != -1)
       {
          int opt = 1;
+         UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] setting sockopt for IP and port reuse", m_port);
          if (system_call::setsockopt(m_server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != -1)
          {
             struct sockaddr_in address;
@@ -102,19 +107,23 @@ bool SocketServer::start(uint16_t port, uint8_t max_clients)
             address.sin_addr.s_addr = INADDR_ANY;
             address.sin_port = htons(m_port);
 
+            UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] Binding server to port", m_port);
             if (system_call::bind(m_server_fd, (struct sockaddr *)&address, sizeof(address)) != -1)
             {
+               UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] starting server thread", m_port);
                result = m_listening_thread.start(SERVER_THREAD_START_TIMEOUT);
             }
          }
       }
    }
 
+   UT_Stdout_Log_If(!result, SOCK_DRV, ERROR, "[%d] cannot open server", m_port);
    return result;
 }
 
 void SocketServer::stop()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] stopping server", m_port);
    m_listening_thread.stop();
    m_working_thread.stop();
 
@@ -124,6 +133,7 @@ void SocketServer::stop()
       m_server_fd = -1;
    }
    closeAllClients();
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] server stopped", m_port);
 }
 uint32_t SocketServer::clientsCount()
 {
@@ -133,6 +143,7 @@ uint32_t SocketServer::clientsCount()
 
 void SocketServer::closeAllClients()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] closing all clients", m_port);
    std::lock_guard<std::mutex> lock(m_handlers_mutex);
 
    for (auto& handler : m_handlers)
@@ -141,11 +152,13 @@ void SocketServer::closeAllClients()
       system_call::close(handler->getClientID());
       notifyListeners(handler->getClientID(), ServerEvent::CLIENT_DISCONNECTED, {}, 0);
    }
+   UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] %u clients closed", m_port, m_handlers.size());
    m_handlers.clear();
 }
 void SocketServer::listening_thread()
 {
    /* This method is calling from different thread! */
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] starting listening thread", m_port);
    struct sockaddr_in address;
    int addrlen = sizeof(address);
 
@@ -156,12 +169,14 @@ void SocketServer::listening_thread()
          int new_socket = system_call::accept(m_server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
          if (new_socket != -1)
          {
+            UT_Stdout_Log(SOCK_DRV, HIGH, "[%d] new client connected", m_port);
             bool handler_ready = true;
             {
                std::lock_guard<std::mutex> lock(m_handlers_mutex);
                m_handlers.emplace_back(std::unique_ptr<ISocketClientHandler>(new ClientHandler(new_socket, m_mode, this)));
                if (!m_handlers.back()->start(SERVER_THREAD_START_TIMEOUT))
                {
+                  UT_Stdout_Log(SOCK_DRV, ERROR, "[%d] cannot start thread for client!", m_port);
                   m_handlers.pop_back();
                   system_call::close(new_socket);
                   handler_ready = false;
@@ -211,6 +226,7 @@ void SocketServer::onClientEvent(int client_id, ClientEvent ev, const std::vecto
 void SocketServer::closeClient(int client_id)
 {
    std::lock_guard<std::mutex> lock(m_handlers_mutex);
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] closing client with ID%u", m_port, client_id);
 
    auto it = std::find_if(m_handlers.begin(), m_handlers.end(), [&](std::unique_ptr<ISocketClientHandler>& client){ return (client->getClientID() == client_id);});
    if (it != m_handlers.end())

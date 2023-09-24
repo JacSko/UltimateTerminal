@@ -3,6 +3,7 @@
  * =============================*/
 #include "ClientHandler.h"
 #include "SocketHeaderHandler.hpp"
+#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/
@@ -37,11 +38,13 @@ m_recv_buffer(SOCKET_MAX_PAYLOAD_LENGTH, 0x00),
 m_recv_buffer_idx(0),
 m_mode(mode)
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "creating handler for client %u", client_id);
    m_write_buffer.reserve(SOCKET_MAX_PAYLOAD_LENGTH);
 }
 
 bool ClientHandler::start(uint32_t timeout)
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] starting handler", m_client_id);
    return m_worker.start(timeout);
 }
 
@@ -55,6 +58,7 @@ bool ClientHandler::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
 
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] writing %u bytes", m_client_id, size);
    m_write_buffer.clear();
    if (m_mode == DataMode::PAYLOAD_HEADER)
    {
@@ -108,6 +112,7 @@ void ClientHandler::execute()
 
 void ClientHandler::startDelimiterMode()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] %s", m_client_id, __func__);
    while(m_worker.isRunning())
    {
       if (m_recv_buffer_idx == m_recv_buffer.size())
@@ -147,11 +152,11 @@ void ClientHandler::startDelimiterMode()
 
 void ClientHandler::startHeaderMode()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%u] %s", m_client_id, __func__);
    std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
    while(m_worker.isRunning())
    {
       int recv_bytes = system_call::recv(m_client_id, header.data(), HeaderHandler::HEADER_SIZE, 0);
-
       if (recv_bytes == HeaderHandler::HEADER_SIZE)
       {
          uint32_t payload_size = m_header_handler.decodeMessageLength(header);
@@ -163,6 +168,7 @@ void ClientHandler::startHeaderMode()
          else if (recv_bytes == 0)
          {
             /* client disconnected, break from main loop and wait for object destroy or restart */
+            UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] client disconnected!", m_client_id);
             if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
             break;
          }
@@ -170,6 +176,7 @@ void ClientHandler::startHeaderMode()
       else if (recv_bytes == 0)
       {
          /* client disconnected, break from main loop and wait for object destroy or restart */
+         UT_Stdout_Log(SOCK_DRV, ERROR, "[%u] client disconnected!", m_client_id);
          if (m_listener) m_listener->onClientEvent(m_client_id, ClientEvent::CLIENT_DISCONNECTED, {}, 0);
          break;
       }

@@ -82,31 +82,38 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
 {
    bool result = false;
    struct sockaddr_in serv_addr;
+   UT_Stdout_Log(SOCK_DRV, LOW, "connecting to %s:%d", m_ip_address.c_str(), m_port);
 
    if (!isConnected())
    {
       m_ip_address = ip_address;
       m_port = port;
 
+      UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] creating socket", m_ip_address.c_str(), m_port);
       m_sock_fd = system_call::socket(AF_INET, SOCK_STREAM, 0);
       if (m_sock_fd >= 0)
       {
          struct timeval tv = {};
          tv.tv_usec = CLIENT_RECEIVE_TIMEOUT * 1000; /* convert milliseconds to microseconds*/
+         UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] settings sockopt with timeout %u", m_ip_address.c_str(), m_port, CLIENT_RECEIVE_TIMEOUT);
          if (system_call::setsockopt(m_sock_fd, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval)) != -1)
          {
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = system_call::htons(m_port);
 
+            UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] settings pton", m_ip_address.c_str(), m_port);
             if (system_call::inet_pton(AF_INET, m_ip_address.c_str(), &serv_addr.sin_addr) > 0)
             {
+               UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] connecting to server", m_ip_address.c_str(), m_port);
                if (system_call::connect(m_sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == 0)
                {
+                  UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] connecting OK, starting thread", m_ip_address.c_str(), m_port);
                   std::unique_lock<std::mutex> lock(m_mutex);
                   m_state = State::CONNECTING;
                   m_cond_var.notify_all();
                   if (m_cond_var.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state != State::CONNECTING;}))
                   {
+                     UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] thread started", m_ip_address.c_str(), m_port);
                      result = true;
                   }
                }
@@ -130,10 +137,12 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
       }
    }
 
+   UT_Stdout_Log_If(!result, SOCK_DRV, ERROR, "cannot connect to %s:%d", ip_address.c_str(), port);
    return result;
 }
 void SocketClient::disconnect()
 {
+   UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] disconnect", m_ip_address.c_str(), m_port);
    if (isConnected())
    {
       std::unique_lock<std::mutex> lock(m_mutex);
@@ -164,6 +173,7 @@ bool SocketClient::write(const std::vector<uint8_t>& data, size_t size)
 {
    bool result = false;
 
+   UT_Stdout_Log(SOCK_DRV, HIGH, "[%s:%d] writing %d bytes", m_ip_address.c_str(), m_port, size);
    m_write_buffer.clear();
    if (m_mode == DataMode::PAYLOAD_HEADER)
    {
@@ -231,6 +241,7 @@ void SocketClient::receivingThread()
 }
 void SocketClient::startDelimiterMode()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%s:%d] %s", m_ip_address.c_str(), m_port, __func__);
    while(m_state == State::CONNECTED)
    {
       if (m_recv_buffer_idx == m_recv_buffer.size())
@@ -262,6 +273,7 @@ void SocketClient::startDelimiterMode()
       else if (recv_bytes == 0)
       {
          /* client disconnected */
+         UT_Stdout_Log(SOCK_DRV, LOW, "[%s:%d] connection closed by server", m_ip_address.c_str(), m_port);
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
          break;
       }
@@ -271,6 +283,7 @@ void SocketClient::startDelimiterMode()
 
 void SocketClient::startHeaderMode()
 {
+   UT_Stdout_Log(SOCK_DRV, LOW, "[%s:%d] %s", m_ip_address.c_str(), m_port, __func__);
    std::vector<uint8_t> header(HeaderHandler::HEADER_SIZE, 0x00);
 
    while(m_state == State::CONNECTED)
@@ -289,6 +302,7 @@ void SocketClient::startHeaderMode()
          else if (recv_bytes == 0)
          {
             /* server disconnected, break from main loop and wait for new connection */
+            UT_Stdout_Log(SOCK_DRV, LOW, "[%s:%d] connection closed by server", m_ip_address.c_str(), m_port);
             notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
             break;
          }
@@ -296,6 +310,7 @@ void SocketClient::startHeaderMode()
       else if (recv_bytes == 0)
       {
          /* client disconnected */
+         UT_Stdout_Log(SOCK_DRV, LOW, "[%s:%d] connection closed by server", m_ip_address.c_str(), m_port);
          notifyListeners(ClientEvent::SERVER_DISCONNECTED, {}, 0);
          break;
       }
