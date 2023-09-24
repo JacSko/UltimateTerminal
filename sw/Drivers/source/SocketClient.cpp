@@ -2,6 +2,7 @@
  *   Includes of project headers
  * =============================*/
 #include "SocketClient.h"
+#include "Logger.h"
 /* =============================
  *   Includes of common headers
  * =============================*/

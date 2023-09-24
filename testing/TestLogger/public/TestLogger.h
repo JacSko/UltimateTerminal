@@ -10,23 +10,6 @@
 
 #include "ILoggerWriter.h"
 
-typedef enum
-{
-   RPC_SERVER,
-   RPC_CLIENT,
-   TEST_FRAMEWORK,
-   TEST_SERVER,
-} LoggerGroupID;
-
-typedef enum
-{
-   STDOUT_WRITER,
-   SOCKET_WRITER,
-   FILE_WRITER,
-   ALL_WRITERS
-} LoggerWriterID;
-
-
 class TestLogger
 {
 public:

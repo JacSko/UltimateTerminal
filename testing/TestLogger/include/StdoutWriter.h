@@ -25,7 +25,6 @@
  *  Includes of project headers
  * =============================*/
 #include "ILoggerWriter.h"
-#include "TestLogger.h"
 /* =============================
  *      Global variables
  * =============================*/

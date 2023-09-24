@@ -19,7 +19,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 #########################################
 #  File paths configurations
 #########################################
-set(LOGS_FILE ".logs.log") 
+set(LOGS_FILE ".logs.log")
 set(PERSISTENCE_FILE ".persistence.json")
 if (UNIX)
    message(STATUS "Building for UNIX")
@@ -28,14 +28,21 @@ else()
    message(STATUS "Building for WINDOWS")
    set(DRIVER_VARIANT QtDrivers)
 endif()
-#########################################
+if (NOT SIMULATION)
+   set(LOGGER_VARIANT Logger)
+   message(STATUS "Using normal logger lib")
+else()
+   set(LOGGER_VARIANT TestLogger)
+   message(STATUS "Using test logger lib")
+endif()
+########################################
 #  Global project definitions
 #########################################
 add_definitions(-D_UNICODE
 			    -DUNICODE
 				-DLOGS_FILE="${LOGS_FILE}"
-                -DAPPLICATION_VERSION={"${PROJECT_VERSION}"} 
-                -DPERSISTENCE_FILE="${PERSISTENCE_FILE}" 
+                -DAPPLICATION_VERSION={"${PROJECT_VERSION}"}
+                -DPERSISTENCE_FILE="${PERSISTENCE_FILE}"
                 -DRUNTIME_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 #########################################
@@ -79,7 +86,7 @@ else()
       add_subdirectory(ext_libs/googletest)
       add_subdirectory(testing)
       add_subdirectory(tools)
-      add_definitions(-DSIMULATION) 
+      add_definitions(-DSIMULATION)
    endif()
 
 endif()
