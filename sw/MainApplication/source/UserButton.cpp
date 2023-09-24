@@ -52,12 +52,6 @@ void UserButton::onButtonEvent(uint32_t button_id, GUIController::ButtonEvent ev
       }
    }
 }
-
-bool UserButton::startThread()
-{
-   static const uint32_t THREAD_START_TIMEOUT = 1000;
-   return m_executor.start(THREAD_START_TIMEOUT);
-}
 void UserButton::handleNewSettings(const Dialogs::UserButtonDialog::Settings& settings)
 {
    m_settings = settings;

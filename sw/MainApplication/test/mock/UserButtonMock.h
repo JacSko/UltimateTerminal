@@ -30,9 +30,5 @@ void UserButton::onPersistenceWrite(PersistenceItems&)
 {
 
 }
-bool UserButton::startThread()
-{
-   return true;
-}
 void UserButton::onButtonEvent(uint32_t, GUIController::ButtonEvent){};
 }

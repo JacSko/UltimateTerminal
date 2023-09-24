@@ -44,7 +44,6 @@ struct UserButtonFixture : public testing::Test
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CONTEXT_MENU_REQUESTED,_));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonCheckable(TEST_BUTTON_ID, true));
       m_test_subject.reset(new UserButton(test_controller, 0, TEST_BUTTON_NAME, fake_persistence, WriterFunction));
-      m_test_subject->startThread();
 
    }
    void TearDown()

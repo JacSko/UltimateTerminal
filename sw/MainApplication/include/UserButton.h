@@ -22,7 +22,6 @@ public:
                      Utilities::Persistence::Persistence& persistence,
                      std::function<bool(const std::string&)> writer);
    ~UserButton();
-   bool startThread();
 private:
 
    GUIController::GUIController& m_gui_controller;
@@ -32,7 +31,7 @@ private:
    ButtonCommandsExecutor m_executor;
 
    /* ButtonEventListener */
-   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event);
+   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event) override;
 
    void handleNewSettings(const Dialogs::UserButtonDialog::Settings&);
    void setButtonName(const std::string name);

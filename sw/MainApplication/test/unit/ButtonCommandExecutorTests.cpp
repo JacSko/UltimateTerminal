@@ -30,7 +30,6 @@ struct ButtonCommandExecutorTests : public testing::Test
    {
       delete g_writer_mock;
    }
-   const uint32_t THREAD_START_TIMEOUT = 1000;
 };
 
 TEST_F(ButtonCommandExecutorTests, no_commands_execution)
@@ -51,7 +50,6 @@ TEST_F(ButtonCommandExecutorTests, no_commands_execution)
             condition_variable.notify_all();
          };
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    std::unique_lock<std::mutex> lock(mutex);
    test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
@@ -80,14 +78,12 @@ TEST_F(ButtonCommandExecutorTests, executing_one_command)
          };
    std::string raw_commands_text = "command1";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
    std::unique_lock<std::mutex> lock(mutex);
    test_subject.execute();
    condition_variable.wait(lock, [&](){ return callback_result;});
-
 
    EXPECT_TRUE(callback_result.has_value());
    EXPECT_TRUE(callback_result.value());
@@ -113,7 +109,6 @@ TEST_F(ButtonCommandExecutorTests, executing_more_than_one_command)
          };
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -146,7 +141,6 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
          };
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true))
@@ -164,7 +158,6 @@ TEST_F(ButtonCommandExecutorTests, executing_twice_the_same_command_set)
       EXPECT_TRUE(callback_result.has_value());
       EXPECT_TRUE(callback_result.value());
    }
-
    {
       /* second execution */
       callback_result.reset();
@@ -195,7 +188,6 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_added)
          };
    std::string raw_commands_text = "command1\n__wait(100)\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -231,7 +223,6 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_started_and_aborted)
          };
    std::string raw_commands_text = "command1\n__wait(10000)\ncommand3";
    ButtonCommandsExecutor test_subject (WriterFunction, callback);
-   test_subject.start(THREAD_START_TIMEOUT);
    test_subject.parseCommands(raw_commands_text);
 
    EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
@@ -241,7 +232,7 @@ TEST_F(ButtonCommandExecutorTests, commands_with_wait_started_and_aborted)
    test_subject.execute();
 
    std::this_thread::sleep_for(std::chrono::seconds(3));
-   test_subject.stop();
+   test_subject.abort();
 
    execution_finish = std::chrono::high_resolution_clock::now();
    execution_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(execution_finish - execution_start).count();

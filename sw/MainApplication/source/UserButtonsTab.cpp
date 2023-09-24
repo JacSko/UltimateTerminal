@@ -31,7 +31,6 @@ m_tab_name("TAB" + std::to_string(tab_id))
                                                                          buttonName,
                                                                          m_persistence,
                                                                          writer)));
-      UT_Assert(m_buttons.back()->startThread());
       UT_Log(USER_BTN_HANDLER, LOW, "BUTTONTAB%u[%s] Creating button with name [%s]", m_tab_id,
                                                                                       m_tab_name.c_str(),
                                                                                       buttonName.c_str());

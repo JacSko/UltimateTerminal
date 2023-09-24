@@ -5,9 +5,9 @@ else()
 	set(DIALOGS_LIB Dialogs)
 endif()
 
-add_library(MainApplication STATIC 	   
-	   source/MainApplication.cpp
-	   source/Port.cpp
+add_library(MainApplication STATIC
+       source/MainApplication.cpp
+       source/Port.cpp
        source/UserButtonsTab.cpp
        source/UserButton.cpp
        source/TraceFilter.cpp
@@ -18,7 +18,7 @@ add_library(MainApplication STATIC
        public/Port.h
        public/TraceFilter.h)
 
-target_include_directories(MainApplication PUBLIC 
+target_include_directories(MainApplication PUBLIC
    include/
    public/
 )
@@ -34,10 +34,10 @@ target_link_libraries(MainApplication
 )
 
 add_library(MainApplicationIf INTERFACE)
-target_include_directories(MainApplicationIf INTERFACE 
+target_include_directories(MainApplicationIf INTERFACE
    public/
 )
-target_link_libraries(MainApplicationIf INTERFACE 
+target_link_libraries(MainApplicationIf INTERFACE
    GUIControllerIf
 )
 
