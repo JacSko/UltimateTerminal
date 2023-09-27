@@ -101,6 +101,7 @@ private:
    void createAboutTab(QTabWidget*, QWidget*);
    void createLoggerTab(QTabWidget*, QWidget*);
    void createSystemSettingsTab(QTabWidget*, QWidget*);
+   void createShortcutsTab(QTabWidget*);
    void writeSettingValue(int id, QLineEdit*);
 
    void notifyPortsChanges();

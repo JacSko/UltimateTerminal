@@ -45,8 +45,8 @@ std::optional<bool> ApplicationSettingsDialog::showDialog(QWidget* parent)
    createTraceFiltersTab(main_tab_view, parent);
    createFileLoggerTab(main_tab_view);
    createDebugTab(main_tab_view, parent);
+   createShortcutsTab(main_tab_view);
    createAboutTab(main_tab_view, parent);
-
    QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, main_dialog);
 
    QObject::connect(button_box, SIGNAL(accepted()), main_dialog, SLOT(accept()));
@@ -204,6 +204,74 @@ void ApplicationSettingsDialog::createSystemSettingsTab(QTabWidget* debug_tab, Q
    }
    scroll->setWidget(setting_widget);
    debug_tab->addTab(scroll, "SETTINGS");
+}
+void ApplicationSettingsDialog::createShortcutsTab(QTabWidget* debug_tab)
+{
+   QWidget* shortcutsWidget = new QWidget();
+   QGridLayout* layout = new QGridLayout();
+
+   QLabel* shortcut = new QLabel("Button:");
+   shortcut->setAlignment(Qt::AlignCenter);
+   QLabel* description = new QLabel("Description:");
+   layout->addWidget(shortcut, 0, 0);
+   layout->addWidget(description, 0, 1);
+
+   shortcut = new QLabel("F1");
+   description = new QLabel("Toggle active port");
+   shortcut->setAlignment(Qt::AlignCenter);
+   layout->addWidget(shortcut, 1, 0);
+   layout->addWidget(description, 1, 1);
+
+   shortcut = new QLabel("F2");
+   description = new QLabel("Toggle file logging");
+   shortcut->setAlignment(Qt::AlignCenter);
+   layout->addWidget(shortcut, 2, 0);
+   layout->addWidget(description, 2, 1);
+
+   shortcut = new QLabel("F3");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Clear terminal view");
+   layout->addWidget(shortcut, 3, 0);
+   layout->addWidget(description, 3, 1);
+
+   shortcut = new QLabel("F4");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Clear trace filter view");
+   layout->addWidget(shortcut, 4, 0);
+   layout->addWidget(description, 4, 1);
+
+   shortcut = new QLabel("CTRL + 1");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Toggle PORT1 state");
+   layout->addWidget(shortcut, 5, 0);
+   layout->addWidget(description, 5, 1);
+
+   shortcut = new QLabel("CTRL + 2");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Toggle PORT2 state");
+   layout->addWidget(shortcut, 6, 0);
+   layout->addWidget(description, 6, 1);
+
+   shortcut = new QLabel("CTRL + 3");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Toggle PORT3 state");
+   layout->addWidget(shortcut, 7, 0);
+   layout->addWidget(description, 7, 1);
+
+   shortcut = new QLabel("CTRL + 4");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Toggle PORT4 state");
+   layout->addWidget(shortcut, 8, 0);
+   layout->addWidget(description, 8, 1);
+
+   shortcut = new QLabel("CTRL + 5");
+   shortcut->setAlignment(Qt::AlignCenter);
+   description = new QLabel("Toggle PORT5 state");
+   layout->addWidget(shortcut, 9, 0);
+   layout->addWidget(description, 9, 1);
+
+   shortcutsWidget->setLayout(layout);
+   debug_tab->addTab(shortcutsWidget, "SHORTCUTS");
 }
 void ApplicationSettingsDialog::writeSettingValue(int id, QLineEdit* edit)
 {

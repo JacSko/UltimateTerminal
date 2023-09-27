@@ -349,6 +349,7 @@ class QLabel : public QWidget
 public:
    QLabel(){}
    QLabel(QWidget*){}
+   QLabel(const char*){}
    void* operator new(size_t);
    void operator delete(void*){};
    void setAutoFillBackground(bool enabled);
@@ -381,6 +382,7 @@ public:
    void setSizeConstraint(SizeConstraint){};
    void addWidget(QWidget *, int, int, int, int, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
    void addWidget(QWidget *, int = 0, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
+   void addWidget(QWidget *, int, int){};
    void addLayout(QLayout *, int = 0){};
    void addLayout(QLayout *, int, int, int, int, Qt::AlignmentFlag = Qt::AlignmentFlag::AlignCenter){};
    void setContentsMargins(int, int, int, int){};

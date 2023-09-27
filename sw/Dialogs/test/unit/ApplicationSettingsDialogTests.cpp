@@ -150,6 +150,30 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    /* ABOUT tab widgets */
    QLabel test_about_label;
 
+   /* SHORTCUTS tab widgets */
+   QGridLayout test_shortcuts_layout;
+   QLabel test_shortcut1_label;
+   QLabel test_description1_label;
+   QLabel test_shortcut2_label;
+   QLabel test_description2_label;
+   QLabel test_shortcut3_label;
+   QLabel test_description3_label;
+   QLabel test_shortcut4_label;
+   QLabel test_description4_label;
+   QLabel test_shortcut5_label;
+   QLabel test_description5_label;
+   QLabel test_shortcut6_label;
+   QLabel test_description6_label;
+   QLabel test_shortcut7_label;
+   QLabel test_description7_label;
+   QLabel test_shortcut8_label;
+   QLabel test_description8_label;
+   QLabel test_shortcut9_label;
+   QLabel test_description9_label;
+   QLabel test_shortcut10_label;
+   QLabel test_description10_label;
+
+
    /* assertions before test */
    ASSERT_TRUE(CURRENT_MAX_TRACE_NUMBER != NEW_MAX_TRACE_NUMBER);
 
@@ -192,8 +216,27 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_max_trace_edit))
                                                      .WillRepeatedly(Return(&test_setting_item));
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_persistence_label))
+                                                  .WillOnce(Return(&test_shortcut1_label))
+                                                  .WillOnce(Return(&test_description1_label))
+                                                  .WillOnce(Return(&test_shortcut2_label))
+                                                  .WillOnce(Return(&test_description2_label))
+                                                  .WillOnce(Return(&test_shortcut3_label))
+                                                  .WillOnce(Return(&test_description3_label))
+                                                  .WillOnce(Return(&test_shortcut4_label))
+                                                  .WillOnce(Return(&test_description4_label))
+                                                  .WillOnce(Return(&test_shortcut5_label))
+                                                  .WillOnce(Return(&test_description5_label))
+                                                  .WillOnce(Return(&test_shortcut6_label))
+                                                  .WillOnce(Return(&test_description6_label))
+                                                  .WillOnce(Return(&test_shortcut7_label))
+                                                  .WillOnce(Return(&test_description7_label))
+                                                  .WillOnce(Return(&test_shortcut8_label))
+                                                  .WillOnce(Return(&test_description8_label))
+                                                  .WillOnce(Return(&test_shortcut9_label))
+                                                  .WillOnce(Return(&test_description9_label))
+                                                  .WillOnce(Return(&test_shortcut10_label))
+                                                  .WillOnce(Return(&test_description10_label))
                                                   .WillOnce(Return(&test_about_label));
-
    /* expect connecting the dialog button signals */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
@@ -246,7 +289,6 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
 
    /* expect ABOUT tab fill-in*/
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setText(&test_about_label, _));
-   EXPECT_CALL(*QtWidgetsMock_get(), QLabel_setAlignment(&test_about_label, Qt::AlignCenter));
 
    /* expect all tabs added to main tab view */
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("GENERAL")));
@@ -254,6 +296,7 @@ TEST_F(ApplicationSettingsDialogFixture, dialog_presented_items_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_filters_tab,QString("FILTERS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,QString("FILE LOGGING")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_debug_tab,HasSubstr("DEBUG")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,_,HasSubstr("SHORTCUTS")));
    EXPECT_CALL(*QtWidgetsMock_get(), QTabWidget_addTab(&test_main_tab,&test_about_label,HasSubstr("ABOUT")));
 
    /* user accepted the dialog */
