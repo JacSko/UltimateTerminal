@@ -123,7 +123,6 @@ bool SocketServer::start(uint16_t port, uint8_t max_clients)
 
 void SocketServer::stop()
 {
-   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] stopping server", m_port);
    m_listening_thread.stop();
    m_working_thread.stop();
 
@@ -133,7 +132,6 @@ void SocketServer::stop()
       m_server_fd = -1;
    }
    closeAllClients();
-   UT_Stdout_Log(SOCK_DRV, LOW, "[%d] server stopped", m_port);
 }
 uint32_t SocketServer::clientsCount()
 {
