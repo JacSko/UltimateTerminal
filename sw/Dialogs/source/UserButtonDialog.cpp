@@ -1,4 +1,5 @@
 #include <QtCore/QString>
+#include "MessageDialog.h"
 #include "UserButtonDialog.h"
 #include "Logger.h"
 #include <sstream>
@@ -56,9 +57,13 @@ void UserButtonDialog::addDialogButtons()
 {
    m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, m_dialog);
    m_buttonBox->setEnabled(m_editable);
+   m_helpButton = new QPushButton();
+   m_helpButton->setText(QString("HELP"));
+   m_form->addWidget(m_helpButton);
    m_form->addWidget(m_buttonBox);
    QObject::connect(m_buttonBox, SIGNAL(accepted()), m_dialog, SLOT(accept()));
    QObject::connect(m_buttonBox, SIGNAL(rejected()), m_dialog, SLOT(reject()));
+   QObject::connect(m_helpButton, SIGNAL(clicked()), this, SLOT(showHelp()));
 }
 bool UserButtonDialog::convertGuiValues(Settings& out_settings)
 {
@@ -67,5 +72,21 @@ bool UserButtonDialog::convertGuiValues(Settings& out_settings)
    UT_Log(GUI_DIALOG, HIGH, "got name %s and raw commands %s", out_settings.button_name.c_str(), out_settings.raw_commands.c_str());
    return true;
 }
+void UserButtonDialog::showHelp()
+{
+   std::string helpText = std::string("Commands can be written in a sequence, line by line.\n") +
+                                      "Example:\n"
+                                      "\t command 1\n"
+                                      "\t command 2\n\n"
+                                      "There are also some special control commands for different purposes.\n\n"
+                                      "__wait(<time_in_ms>)\n"
+                                      "This commands suspends the execution for defined time\n"
+                                      "Time shall be in milliseconds\n\n"
+                                      "__repeat_start(<count>)\n"
+                                      "__repeat_end()\n"
+                                      "This set of commands allow to repeats execution of defined commands in the loop.\n";
+   UT_Log(GUI_DIALOG, LOW, "%s", __func__);
+   MessageDialog::show(MessageDialog::Icon::Information, "Button help", helpText, m_dialog->palette());
 
+}
 }

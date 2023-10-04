@@ -7,6 +7,7 @@
 
 #include "UserButtonDialog.h"
 #include "Logger.h"
+#include "MessageDialogMock.h"
 
 /**
  * @file UserButtonDialogTests.cpp
@@ -46,11 +47,13 @@ struct UserButtonDialogParam : public testing::TestWithParam<TestParam>
    {
       QtCoreMock_init();
       QtWidgetsMock_init();
+      MessageDialogMock_init();
    }
    void TearDown()
    {
       QtCoreMock_deinit();
       QtWidgetsMock_deinit();
+      MessageDialogMock_deinit();
    }
 };
 
@@ -71,6 +74,7 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
    QFormLayout test_layout;
    QLineEdit test_linedit;
    QTextEdit test_textedit;
+   QPushButton test_helpbutton;
    QDialogButtonBox test_buttonbox;
    UserButtonDialog dialog;
 
@@ -93,16 +97,19 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_new()).WillOnce(Return(&test_linedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_new()).WillOnce(Return(&test_textedit));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_new()).WillOnce(Return(&test_helpbutton));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
 
    /* all GUI widgets added to layout */
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_linedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, &test_textedit));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_helpbutton));
 
    /* all signals connected */
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
+   EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_helpbutton,"clicked()",_,"showHelp()"));
 
    /* editable widgets should be enabled */
    EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setEnabled(&test_linedit, GetParam().editable));
@@ -112,6 +119,7 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
    /* expect correct values on GUI */
    EXPECT_CALL(*QtWidgetsMock_get(), QLineEdit_setText(&test_linedit, current_settings.button_name));
    EXPECT_CALL(*QtWidgetsMock_get(), QTextEdit_setText(&test_textedit, current_settings.raw_commands));
+   EXPECT_CALL(*QtWidgetsMock_get(), QPushButton_setText(&test_helpbutton, QString("HELP")));
 
    if (GetParam().accepted)
    {
@@ -123,7 +131,12 @@ TEST_P(UserButtonDialogParam, dialog_presented_item_changed)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowModality(&test_dialog, Qt::ApplicationModal));
 
    /* user takes decision */
-   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Return(GetParam().accepted? QDialog::Accepted : QDialog::Rejected));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialog_exec(&test_dialog)).WillOnce(Invoke([&]()->QDialog::DialogCode
+            {
+               EXPECT_CALL(*MessageDialogMock_get(), show(_,"Button help",_,_));
+               dialog.showHelp();
+               return GetParam().accepted? QDialog::Accepted : QDialog::Rejected;
+            }));
 
    std::optional<bool> result = dialog.showDialog(&test_parent, current_settings, received_settings, GetParam().editable);
 

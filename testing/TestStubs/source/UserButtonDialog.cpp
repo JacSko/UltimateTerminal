@@ -16,4 +16,8 @@ std::optional<bool> UserButtonDialog::showDialog(QWidget* parent, const Settings
 {
    return GUITestServer::onUserButtonSettingsDialogShow(parent, current_settings, out_settings, allow_edit);
 }
+void UserButtonDialog::showHelp()
+{
+
+}
 }

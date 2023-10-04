@@ -10,7 +10,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTextEdit>
-
+#include <QtWidgets/QPushButton>
 /**
  * @file UserButtonDialog.h
  *
@@ -71,6 +71,7 @@ public:
 private:
    QDialog* m_dialog;
    QFormLayout* m_form;
+   QPushButton* m_helpButton;
    QDialogButtonBox* m_buttonBox;
    QLineEdit* m_buttonNameEdit;
    QTextEdit* m_commandEdit;
@@ -78,6 +79,9 @@ private:
 
    void addDialogButtons();
    bool convertGuiValues(Settings& out_settings);
+
+public slots:
+   void showHelp();
 };
 
 }

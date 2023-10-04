@@ -6,6 +6,7 @@ add_executable(UserButtonDialogTests
 target_include_directories(UserButtonDialogTests PUBLIC
         ../../include
         ../../public
+        ../mock/
 )
 target_link_libraries(UserButtonDialogTests PUBLIC
         gtest_main

@@ -408,3 +408,99 @@ TEST_F(UserButtonsSendingTests, sending_when_two_ports_opened)
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SECOND_SOCKET_PORT));
 
 }
+
+TEST_F(UserButtonsSendingTests, sending_multiple_commands_including_repeat_command)
+{
+   /**
+    * @test
+    * <b>scenario</b>: <br>
+    *       Set state of BUTTON1 that includes the special "repeat" command. <br>
+    * <b>expected</b>: <br>
+    *       Command shall be repeated and sent correctly <br>
+    * ************************************************
+    */
+
+   const uint8_t PORT_ID = 0;
+   const uint8_t USER_BUTTON_ID = 1;
+   const std::string USER_BUTTON_NAME = "BUTTON" + std::to_string(USER_BUTTON_ID);
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
+   const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+
+   /* start socket server on TEST_SOCKET_PORT */
+   EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
+
+   PortSettingDialog::Settings port_settings;
+   port_settings.port_name = NEW_PORT_NAME;
+   port_settings.type = PortSettingDialog::PortType::ETHERNET;
+   port_settings.ip_address = TEST_IP_ADDRESS;
+   port_settings.port = TEST_SOCKET_PORT;
+   port_settings.port_id = PORT_ID;
+   port_settings.trace_color = 0xAA;
+   port_settings.font_color = 0xBB;
+
+   Dialogs::UserButtonDialog::Settings user_button_settings;
+   user_button_settings.id = USER_BUTTON_ID;
+   user_button_settings.button_name = "TEST_BUTTON_NAME";
+   user_button_settings.raw_commands = std::string("example_command\n") +
+                                                   "__repeat_start(2)\n" +
+                                                      "repeatedCommand1\n" +
+                                                      "__wait(2000)\n" +
+                                                      "repeatedCommand2\n" +
+                                                   "__repeat_end()\n" +
+                                                   "example_command2\n";
+
+   /* set new port settings */
+   EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* set user button state */
+   EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(USER_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(USER_BUTTON_NAME), user_button_settings.button_name);
+
+   /* open port by clicking on button */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_TRUE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+   EXPECT_EQ(TF::Common::getTargetPort(), NEW_PORT_NAME);
+
+   /* set line ending */
+   EXPECT_TRUE(TF::Common::setLineEnding("\\n"));
+
+   /* check button state before execution */
+   EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
+
+   /* simulate button click and wait for check if first command was executed */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
+   TF::wait(200);
+   EXPECT_TRUE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+   EXPECT_FALSE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
+
+   /* wait for the second command (delayed) */
+   TF::wait(5000);
+   EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
+
+   /* check user button state after test */
+   EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
+
+   /* check if all messages were received */
+   EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 6);
+   EXPECT_TRUE(TF::Socket::checkMessageReceived(TEST_SOCKET_PORT, "example_command\n"));
+   EXPECT_TRUE(TF::Socket::checkMessageReceived(TEST_SOCKET_PORT, "example_command2\n"));
+   EXPECT_TRUE(TF::Socket::checkMessageReceived(TEST_SOCKET_PORT, "repeatedCommand1\n"));
+   EXPECT_TRUE(TF::Socket::checkMessageReceived(TEST_SOCKET_PORT, "repeatedCommand2\n"));
+
+   /* close socket in application */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+
+   /* close socket server on FIRST_SOCKET_PORT */
+   EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
+
+}
+
