@@ -38,7 +38,6 @@ class LoggerSocketWriter : public ILoggerWriter
 {
 public:
    LoggerSocketWriter(uint16_t port):
-   m_server(Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER)),
    m_port(port)
    {
    }
@@ -48,12 +47,28 @@ public:
     * @param[in[ port - path for log file
     * @return True if everything is OK, in case of problems with file open false is returned
     */
-   bool init () override {return m_server->start(m_port, 1);}
+   bool init () override
+   {
+      bool result = false;
+      if (!m_server)
+      {
+         m_server = Drivers::SocketServer::ISocketServer::create(Drivers::SocketServer::DataMode::NEW_LINE_DELIMITER);
+         result = m_server->start(m_port,1);
+      }
+      return result;
+   }
    /**
     * @brief Deinitialize the File writer.
     * @return void
     */
-   void deinit () override {m_server->stop();}
+   void deinit () override
+   {
+      if (m_server)
+      {
+         m_server->stop();
+         m_server.reset(nullptr);
+      }
+   }
    /**
     * @brief Write log to file
     * @param[in] log - trace to write.
@@ -61,7 +76,10 @@ public:
     */
    void writeLog(const char* log) override
    {
-      m_server->write({(const uint8_t*) log, (const uint8_t*) log + strlen(log)}, strlen(log));
+      if (m_server)
+      {
+         m_server->write({(const uint8_t*) log, (const uint8_t*) log + strlen(log)}, strlen(log));
+      }
    }
 
    /**

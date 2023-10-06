@@ -59,18 +59,6 @@ LoggerEngine* LoggerEngine::get()
    return &logger_engine;
 }
 
-LoggerEngine::LoggerEngine()
-{
-}
-
-LoggerEngine::~LoggerEngine()
-{
-   for (auto& frontend : m_frontends)
-   {
-      frontend->deinit();
-   }
-}
-
 void LoggerEngine::startFrontends(const std::string& file_path)
 {
    refreshGroupLevelSettings();

@@ -59,15 +59,11 @@ LoggerEngine* LoggerEngine::get()
    return &logger_engine;
 }
 
-LoggerEngine::LoggerEngine()
-{
-}
-
-LoggerEngine::~LoggerEngine()
-{
-}
-
 void LoggerEngine::startFrontends(const std::string&)
+{
+}
+
+void LoggerEngine::stopFrontends()
 {
 }
 

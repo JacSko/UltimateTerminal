@@ -170,6 +170,7 @@ MainApplication::~MainApplication()
    m_persistence.removeListener(*this);
    Settings::SettingsHandler::get()->stop();
    Settings::SettingsHandler::destroy();
+   Logger::LoggerEngine::get()->stopFrontends();
 }
 void MainApplication::onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event)
 {

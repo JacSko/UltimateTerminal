@@ -49,15 +49,6 @@ public:
    static constexpr uint32_t LOGGER_BUFFER_SIZE = 4096;
 
    /**
-    * @brief Creates LoggerEngine object.
-    */
-   LoggerEngine();
-   /**
-    * @brief Destructs LoggerEngine object.
-    */
-   ~LoggerEngine();
-
-   /**
     * @brief Get LoggerEngine singleton object
     */
    static LoggerEngine* get();
