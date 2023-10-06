@@ -25,9 +25,9 @@ __attribute__((weak)) std::string getExecutablePath()
 {
 #if defined unix
    constexpr uint32_t MAX_PATH_LENGTH = 4096;
-   char result[MAX_PATH_LENGTH];
+   char result[MAX_PATH_LENGTH + 1] = {};
    ssize_t count = readlink("/proc/self/exe", result, MAX_PATH_LENGTH);
-   const char *path;
+   const char *path = nullptr;
    if (count != -1) {
        path = dirname(result);
    }
