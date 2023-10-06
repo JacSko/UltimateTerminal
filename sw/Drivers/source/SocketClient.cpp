@@ -82,7 +82,7 @@ bool SocketClient::connect(std::string ip_address, uint16_t port)
 {
    bool result = false;
    struct sockaddr_in serv_addr;
-   UT_Stdout_Log(SOCK_DRV, LOW, "connecting to %s:%d", m_ip_address.c_str(), m_port);
+   UT_Stdout_Log(SOCK_DRV, LOW, "connecting to %s:%d", ip_address.c_str(), m_port);
 
    if (!isConnected())
    {

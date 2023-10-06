@@ -15,7 +15,7 @@ struct PersistenceSaveRestoreTests : public testing::Test
    {
       TF::deletePersistenceFile();
       ASSERT_TRUE(TF::StartTestSubject());
-      TF::wait(500);
+      TF::wait(2000);
       ASSERT_TRUE(TF::Connect());
       TF::wait(1000);
       TF::BeginTest();
