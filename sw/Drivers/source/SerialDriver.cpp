@@ -296,9 +296,19 @@ void SerialDriver::receivingThread()
          }
          while(is_next_new_line);
       }
-      UT_Log_If(recv_bytes<=0, SERIAL_DRV, ERROR, "%d bytes received", recv_bytes);
-      else if(recv_bytes == -1)
+      else if(recv_bytes == 0)
       {
+         UT_Log(SERIAL_DRV, HIGH, "No bytes received, querying device");
+         struct termios tty;
+         if (tcgetattr(m_fd, &tty) != 0)
+         {
+            UT_Log(SERIAL_DRV, ERROR, "device disconnected!", recv_bytes);
+            break;
+         }
+      }
+      else
+      {
+         UT_Log(SERIAL_DRV, ERROR, "read returned %d, aborting", recv_bytes);
          break;
       }
    }
