@@ -134,7 +134,8 @@ std::unique_ptr<ISerialDriver> ISerialDriver::create()
 SerialDriver::SerialDriver():
 m_worker(std::bind(&SerialDriver::receivingThread, this), "SERIAL_WORKER"),
 m_recv_buffer(SERIAL_MAX_PAYLOAD_LENGTH, 0x00),
-m_recv_buffer_idx(0)
+m_recv_buffer_idx(0),
+m_fd(-1)
 {
 
 }
@@ -263,7 +264,7 @@ void SerialDriver::close()
 }
 bool SerialDriver::isOpened()
 {
-   return m_worker.isRunning();
+   return m_fd != -1;
 }
 void SerialDriver::receivingThread()
 {
@@ -303,12 +304,14 @@ void SerialDriver::receivingThread()
          if (tcgetattr(m_fd, &tty) != 0)
          {
             UT_Log(SERIAL_DRV, ERROR, "device disconnected!", recv_bytes);
+            notifyListeners(DriverEvent::COMMUNICATION_ERROR, {}, 0);
             break;
          }
       }
       else
       {
          UT_Log(SERIAL_DRV, ERROR, "read returned %d, aborting", recv_bytes);
+         notifyListeners(DriverEvent::COMMUNICATION_ERROR, {}, 0);
          break;
       }
    }

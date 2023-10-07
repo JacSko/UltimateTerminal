@@ -31,7 +31,8 @@ namespace Serial
 
 enum class DriverEvent
 {
-   DATA_RECV,       /**< New data received on serial port */
+   COMMUNICATION_ERROR,    /**< Serial port was disconnected */
+   DATA_RECV,              /**< New data received on serial port */
 };
 
 enum class DataMode
