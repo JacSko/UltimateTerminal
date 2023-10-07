@@ -6,6 +6,43 @@
 #include "SerialDriver.h"
 #include "Logger.h"
 
+/* namespace wrapper around system function to allow replace in unit tests */
+namespace system_call
+{
+__attribute__((weak)) int open(const char* file, int flags)
+{
+   return ::open(file, flags);
+}
+__attribute__((weak)) int tcgetattr(int fd, struct termios* termios)
+{
+   return ::tcgetattr(fd, termios);
+}
+__attribute__((weak)) int tcsetattr(int fd, int actions, const struct termios* termios)
+{
+   return ::tcsetattr(fd, actions, termios);
+}
+__attribute__((weak)) int close (int fd)
+{
+   return ::close(fd);
+}
+__attribute__((weak)) int cfsetispeed (struct termios* termios, speed_t speed)
+{
+   return ::cfsetispeed(termios, speed);
+}
+__attribute__((weak)) int cfsetospeed (struct termios* termios, speed_t speed)
+{
+   return ::cfsetospeed(termios, speed);
+}
+__attribute__((weak)) ssize_t read(int fd, void *buffer, size_t length)
+{
+   return ::read(fd, buffer, length);
+}
+__attribute__((weak)) ssize_t write(int fd, const void *buffer, size_t length)
+{
+   return ::write(fd, buffer, length);
+}
+}
+
 namespace Drivers
 {
 namespace Serial
@@ -63,7 +100,7 @@ std::string Utilities::EnumValue<Drivers::Serial::DataBitType>::toName() const
 }
 
 template<typename T>
-T Utilities::EnumValue<T>::fromName(const std::string& name)
+T Utilities::EnumValue<T>::fromName(const std::string&)
 {
    return {};
 }
@@ -131,50 +168,93 @@ std::unique_ptr<ISerialDriver> ISerialDriver::create()
    return std::unique_ptr<ISerialDriver>(new SerialDriver());
 }
 
+const std::chrono::milliseconds COND_VAR_WAIT_MS = std::chrono::milliseconds(500);
+
 SerialDriver::SerialDriver():
 m_worker(std::bind(&SerialDriver::receivingThread, this), "SERIAL_WORKER"),
-m_recv_buffer(SERIAL_MAX_PAYLOAD_LENGTH, 0x00),
-m_recv_buffer_idx(0),
-m_fd(-1)
+m_buffer(SERIAL_MAX_PAYLOAD_LENGTH, 0x00),
+m_bufferIndex(0),
+m_fd(-1),
+m_state(State::IDLE)
 {
-
+   m_worker.start(SERIAL_THREAD_START_TIMEOUT);
 }
-
+SerialDriver::~SerialDriver()
+{
+   if (isOpened())
+   {
+      close();
+   }
+   {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::CLOSING;
+      m_conditionVariable.notify_all();
+   }
+   if (m_worker.isRunning())
+   {
+      m_worker.stop();
+   }
+}
 bool SerialDriver::open(DataMode mode, const Settings& settings)
 {
    bool result = false;
-   m_mode = mode;
-   UT_Log(SERIAL_DRV, LOW, "[%s] open - mode %u br %u sb %u pb %u db %u", settings.device.c_str(),
-                                                                          static_cast<uint8_t>(mode),
-                                                                          settings.baudRate.toName().c_str(),
-                                                                          settings.stopBits.toName().c_str(),
-                                                                          settings.parityBits.toName().c_str(),
-                                                                          settings.dataBits.toName().c_str());
-   m_fd = ::open(settings.device.c_str(), O_RDWR);
-   if (m_fd >= 0)
+   if (!isOpened())
    {
-      UT_Log(SERIAL_DRV, LOW, "[%s] getting tc attributes", settings.device.c_str());
-      struct termios tty;
-      if (tcgetattr(m_fd, &tty) >= 0)
+      m_mode = mode;
+      UT_Log(SERIAL_DRV, LOW, "[%s] open - mode %u br %s sb %s pb %s db %s", settings.device.c_str(),
+                                                                             static_cast<uint8_t>(mode),
+                                                                             settings.baudRate.toName().c_str(),
+                                                                             settings.stopBits.toName().c_str(),
+                                                                             settings.parityBits.toName().c_str(),
+                                                                             settings.dataBits.toName().c_str());
+      m_fd = system_call::open(settings.device.c_str(), O_RDWR);
+      if (m_fd >= 0)
       {
-         UT_Log(SERIAL_DRV, LOW, "[%s] setting connection settings", settings.device.c_str());
-         setCommonValues(tty);
-         setBaudrates(settings.baudRate.value, tty);
-         setDataBits(settings.dataBits.value, tty);
-         setParityBits(settings.parityBits.value, tty);
-         setStopBits(settings.stopBits.value, tty);
-
-         if (tcsetattr(m_fd, TCSANOW, &tty) == 0)
+         UT_Log(SERIAL_DRV, LOW, "[%s] getting tc attributes", settings.device.c_str());
+         struct termios tty;
+         if (system_call::tcgetattr(m_fd, &tty) >= 0)
          {
-            UT_Log(SERIAL_DRV, LOW, "[%s] starting receiving thread", settings.device.c_str());
-            result = true;
-            m_worker.start(SERIAL_THREAD_START_TIMEOUT);
+            UT_Log(SERIAL_DRV, LOW, "[%s] setting connection settings", settings.device.c_str());
+            setCommonValues(tty);
+            setBaudrates(settings.baudRate.value, tty);
+            setDataBits(settings.dataBits.value, tty);
+            setParityBits(settings.parityBits.value, tty);
+            setStopBits(settings.stopBits.value, tty);
+            if (system_call::tcsetattr(m_fd, TCSANOW, &tty) == 0)
+            {
+               UT_Log(SERIAL_DRV, LOW, "[%s] starting receiving thread", settings.device.c_str());
+               std::unique_lock<std::mutex> lock(m_mutex);
+               m_state = State::CONNECTING;
+               m_conditionVariable.notify_all();
+               if (m_conditionVariable.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state != State::CONNECTING;}))
+               {
+                  UT_Log(SERIAL_DRV, HIGH, "[%s] thread started", settings.device.c_str());
+                  result = true;
+               }
+            }
+            else
+            {
+               closeDescriptor();
+               UT_Log(SERIAL_DRV, ERROR, "[%s] cannot set tc attributes!", settings.device.c_str());
+            }
+         }
+         else
+         {
+            closeDescriptor();
+            UT_Log(SERIAL_DRV, ERROR, "[%s] cannot get tc attributes!", settings.device.c_str());
          }
       }
    }
-
-   UT_Log(SERIAL_DRV, ERROR, "[%s] opening error!", settings.device.c_str());
+   else
+   {
+      UT_Log(SERIAL_DRV, ERROR, "already opened!");
+   }
    return result;
+}
+void SerialDriver::closeDescriptor()
+{
+   system_call::close(m_fd);
+   m_fd = -1;
 }
 void SerialDriver::setCommonValues(struct termios& tty)
 {
@@ -195,8 +275,8 @@ void SerialDriver::setCommonValues(struct termios& tty)
 }
 void SerialDriver::setBaudrates(BaudRate baudrate, struct termios& tty)
 {
-   cfsetispeed(&tty, g_baudrates_map.at(baudrate));
-   cfsetospeed(&tty, g_baudrates_map.at(baudrate));
+   system_call::cfsetispeed(&tty, g_baudrates_map.at(baudrate));
+   system_call::cfsetospeed(&tty, g_baudrates_map.at(baudrate));
 }
 void SerialDriver::setDataBits(DataBitType databits, struct termios& tty)
 {
@@ -257,60 +337,95 @@ void SerialDriver::close()
    UT_Log(SERIAL_DRV, LOW, "closing port");
    if (isOpened())
    {
-      ::close(m_fd);
-      m_fd = -1;
-      m_worker.stop();
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_state = State::DISCONNECTING;
+      m_conditionVariable.notify_all();
+      m_conditionVariable.wait_for(lock, COND_VAR_WAIT_MS, [&](){return m_state == State::IDLE;});
    }
+   UT_Log(SERIAL_DRV, LOW, "close exit!");
 }
 bool SerialDriver::isOpened()
 {
-   return m_fd != -1;
+   return m_state == State::CONNECTING || m_state == State::CONNECTED;
 }
 void SerialDriver::receivingThread()
 {
    UT_Log(SERIAL_DRV, LOW, "starting receiving thread");
    while(m_worker.isRunning())
    {
-      if (m_recv_buffer_idx == m_recv_buffer.size())
-      {
-         m_recv_buffer_idx = 0;
-      }
-      int recv_bytes = read(m_fd, m_recv_buffer.data() + m_recv_buffer_idx, m_recv_buffer.size() - m_recv_buffer_idx);
-      if (recv_bytes > 0)
-      {
-         m_recv_buffer_idx += recv_bytes;
-         bool is_next_new_line = true;
-         do
+       {
+         std::unique_lock<std::mutex> lock(m_mutex);
+         UT_Log(SERIAL_DRV, HIGH, "thread paused");
+         m_conditionVariable.wait(lock, [&](){return m_state != State::IDLE;});
+         UT_Log(SERIAL_DRV, HIGH, "thread unlocked");
+         if (m_state == State::CONNECTING)
          {
-            auto it = std::find(m_recv_buffer.begin(), (m_recv_buffer.begin() + m_recv_buffer_idx), (uint8_t)DATA_DELIMITER);
-            if (it != (m_recv_buffer.begin() + m_recv_buffer_idx))
+            m_state = State::CONNECTED;
+            m_conditionVariable.notify_all();
+         }
+         else if (m_state == State::CLOSING)
+         {
+            break;
+         }
+      }
+      if(m_state == State::CONNECTED)
+      {
+         startReadingLoop();
+      }
+      m_state = State::IDLE;
+      closeDescriptor();
+      m_conditionVariable.notify_all();
+   }
+   UT_Log(SERIAL_DRV, LOW, "closing receiving thread");
+}
+void SerialDriver::startReadingLoop()
+{
+   UT_Log(SERIAL_DRV, LOW, "%s", __func__);
+   while(m_state == State::CONNECTED)
+   {
+      if (m_bufferIndex == m_buffer.size())
+      {
+         m_bufferIndex = 0;
+      }
+      int bytesReceived = system_call::read(m_fd, m_buffer.data() + m_bufferIndex,
+                                               m_buffer.size() - m_bufferIndex);
+      if (bytesReceived > 0)
+      {
+         m_bufferIndex += bytesReceived;
+         while(1)
+         {
+            auto it = std::find(m_buffer.begin(),
+                               (m_buffer.begin() + m_bufferIndex),
+                               (uint8_t)DATA_DELIMITER);
+            if (it != (m_buffer.begin() + m_bufferIndex))
             {
                it++; //include the found newline too
-               notifyListeners(DriverEvent::DATA_RECV, std::vector<uint8_t>(m_recv_buffer.begin(), it), std::distance(m_recv_buffer.begin(), it));
-               std::copy(it, m_recv_buffer.begin() + m_recv_buffer_idx, m_recv_buffer.begin());
-               m_recv_buffer_idx = std::distance(it, m_recv_buffer.begin() + m_recv_buffer_idx);
+               notifyListeners(DriverEvent::DATA_RECV,
+                               std::vector<uint8_t>(m_buffer.begin(), it),
+                               std::distance(m_buffer.begin(), it));
+               std::copy(it, m_buffer.begin() + m_bufferIndex, m_buffer.begin());
+               m_bufferIndex = std::distance(it, m_buffer.begin() + m_bufferIndex);
             }
             else
             {
-               is_next_new_line = false;
+               break;
             }
          }
-         while(is_next_new_line);
       }
-      else if(recv_bytes == 0)
+      else if(bytesReceived == 0)
       {
          UT_Log(SERIAL_DRV, HIGH, "No bytes received, querying device");
          struct termios tty;
-         if (tcgetattr(m_fd, &tty) != 0)
+         if (system_call::tcgetattr(m_fd, &tty) != 0)
          {
-            UT_Log(SERIAL_DRV, ERROR, "device disconnected!", recv_bytes);
+            UT_Log(SERIAL_DRV, ERROR, "device disconnected!", bytesReceived);
             notifyListeners(DriverEvent::COMMUNICATION_ERROR, {}, 0);
             break;
          }
       }
       else
       {
-         UT_Log(SERIAL_DRV, ERROR, "read returned %d, aborting", recv_bytes);
+         UT_Log(SERIAL_DRV, ERROR, "read returned %d, aborting", bytesReceived);
          notifyListeners(DriverEvent::COMMUNICATION_ERROR, {}, 0);
          break;
       }
@@ -344,7 +459,7 @@ void SerialDriver::notifyListeners(DriverEvent ev, const std::vector<uint8_t>& d
 bool SerialDriver::write(const std::vector<uint8_t>& data, ssize_t size)
 {
    UT_Log(SERIAL_DRV, HIGH, "writing %u bytes", size);
-   return ::write(m_fd, data.data(), data.size()) == size;
+   return system_call::write(m_fd, data.data(), data.size()) == size;
 }
 
 }

@@ -97,6 +97,17 @@ Event Port::toPortEvent(Drivers::SocketClient::ClientEvent event)
       return Event::NEW_DATA;
    }
 }
+Event Port::toPortEvent(Drivers::Serial::DriverEvent event)
+{
+   if (event == Drivers::Serial::DriverEvent::COMMUNICATION_ERROR)
+   {
+      return Event::SERIAL_DRIVER_ERROR;
+   }
+   else
+   {
+      return Event::NEW_DATA;
+   }
+}
 const std::string& Port::getName()
 {
    return m_settings.port_name;
@@ -140,16 +151,16 @@ bool Port::isOpened()
    return (m_button_state != ButtonState::DISCONNECTED);
 }
 
-void Port::onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t)
+void Port::onClientEvent(Drivers::SocketClient::ClientEvent event, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortEvent(ev), data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortEvent(event), data});
    onPortEvent();
 }
-void Port::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>& data, size_t)
+void Port::onSerialEvent(Drivers::Serial::DriverEvent event, const std::vector<uint8_t>& data, size_t)
 {
    std::lock_guard<std::mutex> lock(m_event_mutex);
-   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, Event::NEW_DATA, data});
+   m_events.push({m_settings.port_id, m_settings.port_name, m_settings.trace_color, m_settings.font_color, toPortEvent(event), data});
    onPortEvent();
 }
 void Port::onPortEvent()
@@ -160,7 +171,6 @@ void Port::onPortEvent()
       if (event.event == Event::DISCONNECTED)
       {
          UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] server disconnected, trying to reconnect", m_settings.port_id, m_settings.port_name.c_str());
-         m_socket->disconnect();
          setButtonState(ButtonState::CONNECTING);
          notifyListeners(Event::CONNECTING);
          tryConnectToSocket();
@@ -169,6 +179,13 @@ void Port::onPortEvent()
       {
          m_throughputCalculator.reportBytes(event.data.size());
          notifyListeners(Event::NEW_DATA, event.data);
+      }
+      else if(event.event == Event::SERIAL_DRIVER_ERROR)
+      {
+         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] serial device disconnected, trying to reconnect", m_settings.port_id, m_settings.port_name.c_str());
+         setButtonState(ButtonState::CONNECTING);
+         notifyListeners(Event::CONNECTING);
+         tryConnectToSerial();
       }
       else
       {
@@ -183,7 +200,14 @@ void Port::onTimeout(uint32_t timer_id)
    if (timer_id == m_timer_id)
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Retrying connect...", m_settings.port_id, m_settings.port_name.c_str());
-      tryConnectToSocket();
+      if (m_settings.type.value == Dialogs::PortSettingDialog::PortType::SERIAL)
+      {
+         tryConnectToSerial();
+      }
+      else
+      {
+         tryConnectToSocket();
+      }
    }
 
    if (timer_id == m_throughputCalculatorTimerID)
@@ -275,6 +299,13 @@ void Port::handleButtonClickSerial()
          m_throughputCalculator.start();
          m_timers.startTimer(m_throughputCalculatorTimerID);
       }
+      else if (m_button_state == ButtonState::CONNECTING)
+      {
+         UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] aborting connection attempts!", m_settings.port_id, m_settings.port_name.c_str());
+         m_timers.stopTimer(m_timer_id);
+         setButtonState(ButtonState::DISCONNECTED);
+         notifyListeners(Event::DISCONNECTED);
+      }
       else
       {
          UT_Log(PORT_HANDLER, ERROR, "PORT%u[%s] Cannot open serial", m_settings.port_id, m_settings.port_name.c_str());
@@ -309,9 +340,14 @@ void Port::handleButtonClickEthernet()
 }
 void Port::tryConnectToSocket()
 {
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] %s", m_settings.port_id, m_settings.port_name.c_str(), __func__);
+   m_socket->disconnect();
    if(m_socket->connect(m_settings.ip_address, m_settings.port))
    {
-      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Successfully connected to %s:%u", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port);
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Successfully connected to %s:%u", m_settings.port_id,
+                                                                              m_settings.port_name.c_str(),
+                                                                              m_settings.ip_address.c_str(),
+                                                                              m_settings.port);
       m_timers.stopTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTED);
       notifyListeners(Event::CONNECTED);
@@ -320,7 +356,38 @@ void Port::tryConnectToSocket()
    }
    else
    {
-      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s:%u, scheduling retries with %u ms period", m_settings.port_id, m_settings.port_name.c_str(), m_settings.ip_address.c_str(), m_settings.port, m_connect_retry_period);
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s:%u, scheduling retries with %u ms period",
+                                                                                    m_settings.port_id,
+                                                                                    m_settings.port_name.c_str(),
+                                                                                    m_settings.ip_address.c_str(),
+                                                                                    m_settings.port,
+                                                                                    m_connect_retry_period);
+      m_timers.setTimeout(m_timer_id, m_connect_retry_period);
+      m_timers.startTimer(m_timer_id);
+      setButtonState(ButtonState::CONNECTING);
+      notifyListeners(Event::CONNECTING);
+   }
+}
+void Port::tryConnectToSerial()
+{
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] %s", m_settings.port_id, m_settings.port_name.c_str(), __func__);
+   m_serial->close();
+   if(m_serial->open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER, m_settings.serialSettings))
+   {
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Successfully opened %s", m_settings.port_id, m_settings.port_name.c_str(), m_settings.serialSettings.device.c_str());
+      m_timers.stopTimer(m_timer_id);
+      setButtonState(ButtonState::CONNECTED);
+      notifyListeners(Event::CONNECTED);
+      m_throughputCalculator.start();
+      m_timers.startTimer(m_throughputCalculatorTimerID);
+   }
+   else
+   {
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] Cannot connect to %s, scheduling retries with %u ms period",
+                                                                                    m_settings.port_id,
+                                                                                    m_settings.port_name.c_str(),
+                                                                                    m_settings.serialSettings.device.c_str(),
+                                                                                    m_connect_retry_period);
       m_timers.setTimeout(m_timer_id, m_connect_retry_period);
       m_timers.startTimer(m_timer_id);
       setButtonState(ButtonState::CONNECTING);

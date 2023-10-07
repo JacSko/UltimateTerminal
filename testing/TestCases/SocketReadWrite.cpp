@@ -406,3 +406,61 @@ TEST_F(SocketRead, open_close_socket_multiple_times_during_high_traffic)
    EXPECT_TRUE(serial_data_generator.stopApplication());
    TF::wait(5000);
 }
+
+TEST_F(SocketRead, openSocketPortWhenNoServerAvailable_reconnectingModeShallBeEnabled)
+{
+   /**
+    * @test
+    * <b>scenario</b>: <br>
+    *       Open PORT in socket mode, but there is no server available. <br>
+    * <b>expected</b>: <br>
+    *       Port shall switch to reconnecting mode. <br>
+    *       Button shall be BLUE. <br>
+    *       On button click, reconnecting mode shall be stopped and port shall be disabled. <br>
+    * ************************************************
+    */
+
+   const uint8_t PORT_ID = 1;
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
+   const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+   const uint32_t BACKGROUND_COLOR = TEST_BACKGROUND_COLOR;
+   const uint32_t FONT_COLOR = TEST_FONT_COLOR;
+
+   PortSettingDialog::Settings port_settings;
+   port_settings.port_name = NEW_PORT_NAME;
+   port_settings.type = PortSettingDialog::PortType::ETHERNET;
+   port_settings.ip_address = TEST_IP_ADDRESS;
+   port_settings.port = TEST_SOCKET_PORT;
+   port_settings.port_id = PORT_ID;
+   port_settings.trace_color = BACKGROUND_COLOR;
+   port_settings.font_color = FONT_COLOR;
+
+   /* set new port settings */
+   EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* open port by clicking on button */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+   TF::wait(1000);
+
+   /* check button state after open */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), BLUE_COLOR);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+
+   /* close socket in application */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
+   EXPECT_FALSE(TF::Common::isTargetPortVisible(NEW_PORT_NAME));
+
+   /* check button and label state */
+   EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
+   EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
+   EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+}
+

@@ -40,10 +40,11 @@ namespace MainApplication
 /** Event from Port */
 enum class Event
 {
-   DISCONNECTED, /**< Port is disconnected        */
-   CONNECTING,   /**< Port connection started     */
-   CONNECTED,    /**< Port is connected           */
-   NEW_DATA,     /**< New data received from port */
+   DISCONNECTED,            /**< Port is disconnected        */
+   CONNECTING,              /**< Port connection started     */
+   CONNECTED,               /**< Port is connected           */
+   NEW_DATA,                /**< New data received from port */
+   SERIAL_DRIVER_ERROR,     /**< Communication error reported by serial driver */
 };
 
 /** Data structure used for notifying listeners */
@@ -160,6 +161,7 @@ private:
    void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
    void onTimeout(uint32_t timer_id);
    void tryConnectToSocket();
+   void tryConnectToSerial();
    void handleNewSettings(const Dialogs::PortSettingDialog::Settings&);
    void handleButtonClickSerial();
    void handleButtonClickEthernet();
@@ -167,6 +169,7 @@ private:
    void setButtonName(const std::string name);
    void notifyListeners(Event event, const std::vector<uint8_t>& data = {});
    Event toPortEvent(Drivers::SocketClient::ClientEvent);
+   Event toPortEvent(Drivers::Serial::DriverEvent event);
    void onPersistenceRead(const PersistenceItems&) override;
    void onPersistenceWrite(PersistenceItems&) override;
    void reportThroughput(const Utilities::ThroughputResult& throughput);

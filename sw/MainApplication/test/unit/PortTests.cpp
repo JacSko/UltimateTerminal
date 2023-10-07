@@ -36,7 +36,6 @@ struct PortListenerMock : public PortListener
    MOCK_METHOD1(onPortEvent, void(const PortEvent&));
 };
 
-constexpr uint32_t RED_COLOR = 0xFF0000;
 constexpr uint32_t GREEN_COLOR = 0x00FF00;
 constexpr uint32_t BLUE_COLOR = 0x0000FF;
 constexpr uint32_t BLACK_COLOR = 0x000000;
@@ -474,25 +473,25 @@ TEST_F(PortFixture, aborting_connection_trials)
    EXPECT_TRUE(receivied_event.data.empty());
 }
 
-TEST_F(PortFixture, socket_server_closed_retrying_connection)
+TEST_P(PortParamFixture, device_closed_retrying_connection)
 {
    /**
-    * <b>scenario</b>: Socket server closed connection unexpectedly. <br>
-    * <b>expected</b>: Socket connection requested. <br>
-    *                  Button color changed to CONNECTING <br>
-    *                  Connection started successfully. <br>
-    *                  After socket disconnection, button color shall change to CONNECTING. <br>
-    *                  Listeners notified about disconnection. <br>
-    *                  When server is back again, connection shall be restored.<br>
+    * <b>scenario</b>: Port opened successfully, but after some time the port was disconnected (socket server closed or serial device disconnected). <br>
+    * <b>expected</b>: Port shall switch to auto-reconnecting mode. <br>
+    *                  Communication shall be restored, when device available again. <br>
     * ************************************************
     */
 
    PortEvent receivied_event;
    Dialogs::PortSettingDialog::Settings user_settings;
    user_settings.port_name = "TEST_NAME";
-   user_settings.type = Dialogs::PortSettingDialog::PortType::ETHERNET;
+   user_settings.type = GetParam().type;
    user_settings.ip_address = "192.168.1.100";
    user_settings.port = 1234;
+   user_settings.serialSettings.baudRate = Drivers::Serial::BaudRate::BR_9600;
+   user_settings.serialSettings.stopBits = Drivers::Serial::StopBitType::TWO;
+   user_settings.serialSettings.dataBits = Drivers::Serial::DataBitType::EIGHT;
+   user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
 
    setNewSettings(user_settings);
    requestPortOpen(user_settings);
@@ -502,11 +501,28 @@ TEST_F(PortFixture, socket_server_closed_retrying_connection)
    /* server disconnected unexpectedly */
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
-   EXPECT_CALL(*g_socket_mock, disconnect());
-   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
+   if (GetParam().type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      EXPECT_CALL(*g_socket_mock, disconnect());
+      EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
+   }
+   else
+   {
+      EXPECT_CALL(*g_serial_mock, close());
+      EXPECT_CALL(*g_serial_mock, open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER,_)).WillOnce(Return(false));
+   }
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(AtLeast(1));
-   ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED, {}, 0);
+
+   if (GetParam().type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED, {}, 0);
+   }
+   else
+   {
+      ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(Drivers::Serial::DriverEvent::COMMUNICATION_ERROR, {}, 0);
+   }
+
    /* expect notification via listener */
    EXPECT_EQ(receivied_event.event, Event::CONNECTING);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
@@ -517,7 +533,16 @@ TEST_F(PortFixture, socket_server_closed_retrying_connection)
    EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
-   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   if (GetParam().type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      EXPECT_CALL(*g_socket_mock, disconnect());
+      EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
+   }
+   else
+   {
+      EXPECT_CALL(*g_serial_mock, close());
+      EXPECT_CALL(*g_serial_mock, open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER,_)).WillOnce(Return(true));
+   }
    ((Utilities::ITimerClient*)m_test_subject.get())->onTimeout(TEST_TIMER_ID);
 
    /* expect notification via listener */
