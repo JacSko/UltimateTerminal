@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "SettingsHandler.h"
-#include "nlohmann/json.hpp"
 #include "Logger.h"
 #include "Settings.h"
 /* =============================

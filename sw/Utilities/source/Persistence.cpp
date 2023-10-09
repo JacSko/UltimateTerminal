@@ -1,9 +1,12 @@
 #include <sstream>
 #include <fstream>
 #include <numeric>
+#include "nlohmann/json.hpp"
 #include "Persistence.h"
 #include "Logger.h"
 
+
+nlohmann::json g_jsonFile;
 
 namespace Utilities
 {
@@ -16,7 +19,7 @@ bool Persistence::loadFile(const std::string& file_name)
    if (file)
    {
       UT_Log(PERSISTENCE, LOW, "Persistence file opened [%s], reading file content", file_name.c_str());
-      m_jsonFile = nlohmann::json::parse(file);
+      g_jsonFile = nlohmann::json::parse(file);
       result = true;
    }
    UT_Log_If(!result, PERSISTENCE, ERROR, "Cannot open [%s]", file_name.c_str());
@@ -66,7 +69,7 @@ void Persistence::restoreModule(PersistenceListener& listener)
 {
    UT_Log(PERSISTENCE, HIGH, "%s %s", __func__, listener.getName().c_str());
    PersistenceListener::PersistenceItems items = {};
-   auto& moduleSettings = m_jsonFile[listener.getName()];
+   auto& moduleSettings = g_jsonFile[listener.getName()];
    for (auto& setting : moduleSettings.items())
    {
       std::string key = setting.key();
@@ -80,5 +83,10 @@ void Persistence::restoreModule(PersistenceListener& listener)
       listener.onPersistenceRead(items);
    }
 }
+void Persistence::clearFile()
+{
+   g_jsonFile = {};
+}
+
 }
 }

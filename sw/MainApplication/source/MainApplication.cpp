@@ -139,6 +139,7 @@ m_marker_index(0)
 
    m_file_logging_path = system_call::getExecutablePath();
    m_persistence.restore();
+   m_persistence.clearFile();
 }
 MainApplication::~MainApplication()
 {

@@ -84,6 +84,7 @@ struct MainApplicationFixture : public testing::Test
       EXPECT_CALL(*g_timers_mock, start());
       EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), loadFile(_)).WillOnce(Return(true));
       EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), restore());
+      EXPECT_CALL(*Utilities::Persistence::PersistenceMock_get(), clearFile());
       EXPECT_CALL(*GUIControllerMock_get(), run());
       EXPECT_CALL(*GUIControllerMock_get(), reloadTheme(_));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForThemeReloadEvent(_)).WillOnce(SaveArg<0>(&m_theme_listener));

@@ -2,7 +2,6 @@
  *   Includes of project headers
  * =============================*/
 #include "SettingsHandler.h"
-#include "nlohmann/json.hpp"
 #include "Logger.h"
 #include "Settings.h"
 #include "Serialize.hpp"
@@ -12,7 +11,7 @@
 #include <array>
 #include <map>
 #include <fstream>
-
+#include <sstream>
 
 namespace Settings
 {

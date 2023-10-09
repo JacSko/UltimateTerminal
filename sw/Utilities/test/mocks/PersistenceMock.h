@@ -1,6 +1,8 @@
 #pragma once
+#include <gmock/gmock.h>
 #include <vector>
 #include "Persistence.h"
+#include "Logger.h"
 
 namespace Utilities
 {
@@ -12,6 +14,7 @@ struct PersistenceMock
    MOCK_METHOD1(loadFile, bool(const std::string&));
    MOCK_METHOD0(restore, void());
    MOCK_METHOD1(save, bool(const std::string&));
+   MOCK_METHOD0(clearFile, void());
 };
 
 PersistenceMock* g_pers_mock;
@@ -37,6 +40,10 @@ PersistenceMock* PersistenceMock_get()
 {
    UT_Assert(g_pers_mock && "Create persistence handler mock first!");
    return g_pers_mock;
+}
+void Persistence::clearFile()
+{
+   return g_pers_mock->clearFile();
 }
 bool Persistence::loadFile(const std::string& name)
 {
