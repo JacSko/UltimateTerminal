@@ -8,26 +8,37 @@
 #include <QtWidgets/QShortcut>
 
 #include "GenericListener.hpp"
-#include "ISocketClient.h"
-#include "ISerialDriver.h"
 #include "PortSettingDialog.h"
 #include "ITimers.h"
 #include "Persistence.h"
 #include "GUIController.h"
 #include "ThroughputCalculator.h"
+#include "DriversProxy.hpp"
 
 /**
  * @file Port.h
  *
  * @brief
- *    Class is responsible for handling communication over serial or socket backend basing on configuration.
+ *       Class is responsible for handling communication over serial or socket backend basing on
+ *    configuration, as well as controlling the GUI state of the port.
  *
  * @details
- *    Port handles the GUI elements directly related to port instance (QPushButton and QLabel) - it controls the button color, button text, label text and label stylesheet.
- *    Subscribes for clicked() and customContextMenuRequested() signals of push button.
- *    When context menu is requested, it shows the settings dialog that allows to configure the port. This dialog is not editable when port is already opened.
+ *       Port handles the GUI elements directly via GUIController interface - it controls the button
+ *    color, button text, label text and label stylesheet.
+ *    Subscribes for clicked() and customContextMenuRequested() signals to get the events from user.
+ *
+ *    When context menu is requested, it shows the settings dialog that allows to configure the port.
+ *       This dialog is not editable when port is already opened.
+ *
  *    On push button clicked() signal it opens the port according to configuration retrieved from user.
- *    If socket driver is used and remote server gets closed or it is not available at all, Port keeps reconnecting trials until user action (disabling port).
+ *    If port cannot be opened, the behavior is different depending on type:
+ *
+ *    -> Ethernet - port is switched into auto-reconnecting mode. This means that it keeps the reconnection
+ *                  trials in loop until successfull connection or user abort
+ *    -> Serial port - Popup with detailed error displayed.
+ *
+ *    When port is already connected and remote endpoint get disconnected (server or serial port disconnected)
+ *    port is switching into auto-reconnecting mode despite the communicaton type.
  *
  * @author Jacek Skowronek
  * @date   26/10/2022
@@ -44,7 +55,6 @@ enum class Event
    CONNECTING,              /**< Port connection started     */
    CONNECTED,               /**< Port is connected           */
    NEW_DATA,                /**< New data received from port */
-   SERIAL_DRIVER_ERROR,     /**< Communication error reported by serial driver */
 };
 
 /** Data structure used for notifying listeners */
@@ -68,9 +78,8 @@ public:
 
 class Port : public QObject,
                     public Utilities::GenericListener<PortListener>,
-                    public Drivers::SocketClient::ClientListener,
-                    public Drivers::Serial::SerialListener,
                     public Utilities::ITimerClient,
+                    public DriversProxy::Listener,
                     public Utilities::Persistence::PersistenceListener,
                     public GUIController::ButtonEventListener
 {
@@ -88,11 +97,11 @@ public:
     * @return None.
     */
    Port(uint8_t id,
-               GUIController::GUIController& gui_controller,
-               const std::string& button_name,
-               Utilities::ITimers& timers,
-               PortListener* listener,
-               Utilities::Persistence::Persistence& persistence);
+        GUIController::GUIController& gui_controller,
+        const std::string& button_name,
+        Utilities::ITimers& timers,
+        PortListener* listener,
+        Utilities::Persistence::Persistence& persistence);
 
    ~Port();
    /**
@@ -139,43 +148,37 @@ private:
       CONNECTED,
    };
 
-   uint32_t m_button_id;
-   GUIController::GUIController& m_gui_controller;
+   uint32_t m_buttonId;
+   GUIController::GUIController& m_guiController;
    Dialogs::PortSettingDialog::Settings m_settings;
-   uint32_t m_connect_retry_period;
+   uint32_t m_connectRetryPeriod;
    Utilities::ITimers& m_timers;
-   std::unique_ptr<Drivers::SocketClient::ISocketClient> m_socket;
-   std::unique_ptr<Drivers::Serial::ISerialDriver> m_serial;
-   uint32_t m_timer_id;
-   std::atomic<ButtonState> m_button_state;
-   std::queue<PortEvent> m_events;
-   std::mutex m_event_mutex;
-   std::mutex m_listener_mutex;
+   std::unique_ptr<DriversProxy> m_proxy;
+   uint32_t m_timerId;
+   std::atomic<ButtonState> m_buttonState;
+   std::mutex m_listenerMutex;
    Utilities::Persistence::Persistence& m_persistence;
    Utilities::ThroughputCalculator m_throughputCalculator;
    uint32_t m_throughputCalculatorTimerID;
    /* ButtonEventListener */
-   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event);
+   void onButtonEvent(uint32_t button_id, GUIController::ButtonEvent event) override;
 
-   void onClientEvent(Drivers::SocketClient::ClientEvent ev, const std::vector<uint8_t>& data, size_t size);
-   void onSerialEvent(Drivers::Serial::DriverEvent ev, const std::vector<uint8_t>& data, size_t size);
-   void onTimeout(uint32_t timer_id);
-   void tryConnectToSocket();
-   void tryConnectToSerial();
+   void onEvent(DriversProxy::Event event, const std::vector<uint8_t>& data, uint32_t size) override;
+   void onTimeout(uint32_t timer_id) override;
    void handleNewSettings(const Dialogs::PortSettingDialog::Settings&);
-   void handleButtonClickSerial();
-   void handleButtonClickEthernet();
-   void setButtonState(ButtonState);
+   bool tryConnect();
+   void onSerialConnectionFailed();
+   void onEthernetConnectionFailed();
+   void setButtonColors(ButtonState);
    void setButtonName(const std::string name);
+   void setState(ButtonState state);
    void notifyListeners(Event event, const std::vector<uint8_t>& data = {});
-   Event toPortEvent(Drivers::SocketClient::ClientEvent);
-   Event toPortEvent(Drivers::Serial::DriverEvent event);
    void onPersistenceRead(const PersistenceItems&) override;
    void onPersistenceWrite(PersistenceItems&) override;
    void reportThroughput(const Utilities::ThroughputResult& throughput);
+   void scheduleConnectionTrial();
    void onPortButtonContextMenuRequested();
    void onPortButtonClicked();
-   void onPortEvent();
 };
 
 

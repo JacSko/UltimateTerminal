@@ -45,8 +45,8 @@ Port::Port(uint8_t id,
                          const std::string&,
                          Utilities::ITimers& timers,
                          PortListener*,
-                         Utilities::Persistence::Persistence& persistence)
-: m_gui_controller(gui_controller),
+                         Utilities::Persistence::Persistence& persistence):
+m_guiController(gui_controller),
 m_timers(timers),
 m_persistence(persistence)
 {
@@ -81,8 +81,7 @@ bool Port::isOpened()
    return PortMock_get()->isOpened(m_settings.port_id);
 }
 
-void Port::onClientEvent(Drivers::SocketClient::ClientEvent, const std::vector<uint8_t>&, size_t){};
-void Port::onSerialEvent(Drivers::Serial::DriverEvent, const std::vector<uint8_t>&, size_t){};
+void Port::onEvent(DriversProxy::Event, const std::vector<uint8_t>&, uint32_t){};
 void Port::onTimeout(uint32_t){};
 void Port::onPersistenceRead(const PersistenceItems&){};
 void Port::onPersistenceWrite(PersistenceItems&){};

@@ -75,7 +75,6 @@ struct PortFixture : public testing::Test
       EXPECT_CALL(timer_mock, createTimer(_,DEFAULT_CONNECT_RETRY_PERIOD)).WillOnce(Return(TEST_TIMER_ID));
       EXPECT_CALL(timer_mock, createTimer(_,THROUGHTPUT_CALC_WINDOW_MS)).WillOnce(Return(THROUGHPUT_TIMER_ID));
       EXPECT_CALL(listener_mock, onPortEvent(_));
-      EXPECT_CALL(*g_socket_mock, addListener(_));
       EXPECT_CALL(*g_serial_mock, addListener(_));
       EXPECT_CALL(*GUIControllerMock_get(), getButtonID(TEST_BUTTON_NAME)).WillOnce(Return(TEST_BUTTON_ID));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED, _)).WillOnce(SaveArg<2>(&m_button_listener));
@@ -101,10 +100,8 @@ struct PortFixture : public testing::Test
    {
       EXPECT_CALL(timer_mock, removeTimer(TEST_TIMER_ID));
       EXPECT_CALL(timer_mock, removeTimer(THROUGHPUT_TIMER_ID));
-      EXPECT_CALL(*g_socket_mock, removeListener(_));
-      EXPECT_CALL(*g_serial_mock, removeListener(_));
-      EXPECT_CALL(*g_socket_mock, disconnect());
-      EXPECT_CALL(*g_serial_mock, close());
+      EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, _));
+      EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       m_test_subject.reset(nullptr);
@@ -130,7 +127,14 @@ struct PortFixture : public testing::Test
 
    void setNewSettings(const Dialogs::PortSettingDialog::Settings& user_settings)
    {
-      /* settings change requested */
+      if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+      {
+         g_socket_mock = new Drivers::SocketClient::ISocketClientMock;
+      }
+      else
+      {
+         g_serial_mock = new Drivers::Serial::ISerialDriverMock;
+      }
       EXPECT_CALL(*GUIControllerMock_get(), getParent()).WillOnce(Return(nullptr));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name));
       EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
@@ -146,17 +150,21 @@ struct PortFixture : public testing::Test
       /* port opening */
       if (user_settings.type == Dialogs::PortSettingDialog::PortType::SERIAL)
       {
+         EXPECT_CALL(*g_serial_mock, close());
          EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
          EXPECT_CALL(*g_serial_mock, open(_,_)).WillOnce(Return(true));
       }
       else
       {
+         EXPECT_CALL(*g_socket_mock, disconnect());
          EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
          EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(true));
-         EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
       }
       EXPECT_CALL(timer_mock, startTimer(THROUGHPUT_TIMER_ID));
+      EXPECT_CALL(timer_mock, stopTimer(TEST_TIMER_ID));
       EXPECT_CALL(listener_mock, onPortEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
+      EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name));
+      EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
       m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
@@ -183,6 +191,8 @@ struct PortFixture : public testing::Test
          EXPECT_CALL(*g_socket_mock, disconnect());
       }
       EXPECT_CALL(listener_mock, onPortEvent(_)).WillOnce(SaveArg<0>(&receivied_event));
+      EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name));
+      EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
       EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
       m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
@@ -193,7 +203,7 @@ struct PortFixture : public testing::Test
       EXPECT_TRUE(receivied_event.data.empty());
    }
 
-   void simulateNewDataReceived(Dialogs::PortSettingDialog::PortType type, const std::vector<uint8_t>& event_data)
+   void simulateNewDataReceived(const std::vector<uint8_t>& event_data)
    {
       PortEvent receivied_event;
 
@@ -201,22 +211,15 @@ struct PortFixture : public testing::Test
                                                        .WillOnce(SaveArg<0>(&receivied_event))
                                                        .WillOnce(SaveArg<0>(&receivied_event));
 
-      if (type == Dialogs::PortSettingDialog::PortType::SERIAL)
-      {
-         Drivers::Serial::DriverEvent event = Drivers::Serial::DriverEvent::DATA_RECV;
-         /* force three events with new data */
-         ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
-         ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
-         ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(event, event_data, event_data.size());
-      }
-      else
-      {
-         Drivers::SocketClient::ClientEvent event = Drivers::SocketClient::ClientEvent::SERVER_DATA_RECV;
-         /* force three events with new data */
-         ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
-         ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
-         ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(event, event_data, event_data.size());
-      }
+      ((DriversProxy::Listener*)m_test_subject.get())->onEvent(DriversProxy::Event::DATA_RECEIVED,
+                                                               event_data,
+                                                               event_data.size());
+      ((DriversProxy::Listener*)m_test_subject.get())->onEvent(DriversProxy::Event::DATA_RECEIVED,
+                                                               event_data,
+                                                               event_data.size());
+      ((DriversProxy::Listener*)m_test_subject.get())->onEvent(DriversProxy::Event::DATA_RECEIVED,
+                                                               event_data,
+                                                               event_data.size());
       EXPECT_EQ(receivied_event.event, Event::NEW_DATA);
       EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
       EXPECT_THAT(receivied_event.data, ContainerEq(event_data));
@@ -225,13 +228,10 @@ struct PortFixture : public testing::Test
    {
       if (type == Dialogs::PortSettingDialog::PortType::SERIAL)
       {
-         EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
-         EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
          EXPECT_CALL(*g_serial_mock, write(_,_)).WillOnce(Return(true));
       }
       else
       {
-         EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(true));
          EXPECT_CALL(*g_socket_mock, write(_,_)).WillOnce(Return(true));
       }
       m_test_subject->write(data_to_write, data_to_write.size());
@@ -274,10 +274,9 @@ TEST_P(PortParamFixture, settings_change_and_port_connection)
    user_settings.serialSettings.parityBits = Drivers::Serial::ParityType::EVEN;
    user_settings.ip_address = "192.168.1.100";
    user_settings.port = 1234;
-
    setNewSettings(user_settings);
    requestPortOpen(user_settings);
-   simulateNewDataReceived(user_settings.type.value, std::vector<uint8_t>{'a', 'b', 'c', '\r', '\n', 'd', 'e', 'f', '\n'});
+   simulateNewDataReceived(std::vector<uint8_t>{'a', 'b', 'c', '\r', '\n', 'd', 'e', 'f', '\n'});
 
    simulateDataWrite(user_settings.type.value, std::vector<uint8_t>{'a', 'b', 'c', '\r', '\n', 'd', 'e', 'f', '\n'});
    requestPortClose(user_settings);
@@ -370,13 +369,17 @@ TEST_F(PortFixture, cannot_connect_to_socket_server)
    /* port opening */
    EXPECT_CALL(listener_mock, onPortEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
    EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false));
+   EXPECT_CALL(*g_socket_mock, disconnect()).Times(7);
    EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
                                                                                       .WillOnce(Return(false))
-                                                                                      .WillOnce(Return(true)); //finally connected to server
+                                                                                      .WillOnce(Return(true));
+   //finally connected to server
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, _)).Times(AtLeast(1));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(6);
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(7);
@@ -406,6 +409,8 @@ TEST_F(PortFixture, cannot_connect_to_socket_server)
    EXPECT_EQ(receivied_event.event, Event::CONNECTED);
    EXPECT_THAT(receivied_event.name, HasSubstr("TEST_NAME"));
    EXPECT_TRUE(receivied_event.data.empty());
+
+   requestPortClose(user_settings);
 }
 
 TEST_F(PortFixture, aborting_connection_trials)
@@ -434,17 +439,21 @@ TEST_F(PortFixture, aborting_connection_trials)
    EXPECT_CALL(listener_mock, onPortEvent(_)).WillRepeatedly(SaveArg<0>(&receivied_event));
    EXPECT_CALL(*g_socket_mock, isConnected()).WillOnce(Return(false))
                                              .WillOnce(Return(false));
-   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false))
-                                                                                      .WillOnce(Return(false))
-                                                                                      .WillOnce(Return(false))
-                                                                                      .WillOnce(Return(false))
-                                                                                      .WillOnce(Return(false))
-                                                                                      .WillOnce(Return(false))
-                                                                                      .WillOnce(Invoke([&](std::string, uint16_t)
-                                                                                            {
-                                                                                                simulate_abort = true;
-                                                                                                return false;
-                                                                                            }));
+   EXPECT_CALL(*g_socket_mock, disconnect()).Times(7);
+   EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Return(false))
+                                                                 .WillOnce(Invoke([&](std::string, uint16_t)
+                                                                 {
+                                                                     simulate_abort = true;
+                                                                     return false;
+                                                                 }));
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, _)).Times(AtLeast(1));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
@@ -511,17 +520,12 @@ TEST_P(PortParamFixture, device_closed_retrying_connection)
       EXPECT_CALL(*g_serial_mock, close());
       EXPECT_CALL(*g_serial_mock, open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER,_)).WillOnce(Return(false));
    }
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name)).Times(AtLeast(1));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR)).Times(AtLeast(1));
 
-   if (GetParam().type == Dialogs::PortSettingDialog::PortType::ETHERNET)
-   {
-      ((Drivers::SocketClient::ClientListener*)m_test_subject.get())->onClientEvent(Drivers::SocketClient::ClientEvent::SERVER_DISCONNECTED, {}, 0);
-   }
-   else
-   {
-      ((Drivers::Serial::SerialListener*)m_test_subject.get())->onSerialEvent(Drivers::Serial::DriverEvent::COMMUNICATION_ERROR, {}, 0);
-   }
+   ((DriversProxy::Listener*)m_test_subject.get())->onEvent(DriversProxy::Event::ENDPOINT_DISCONNECTED, {}, 0);
 
    /* expect notification via listener */
    EXPECT_EQ(receivied_event.event, Event::CONNECTING);
@@ -583,6 +587,8 @@ TEST_F(PortFixture, refreshing_ui_tests)
     * ************************************************
     */
    /* port opening */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
@@ -614,6 +620,8 @@ TEST_F(PortFixture, settings_set_and_get_tests)
     * <b>expected</b>: Settings shall be rejected. <br>
     * ************************************************
     */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "PORT0"));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, GREEN_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BLACK_COLOR));
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(false));
@@ -630,6 +638,8 @@ TEST_F(PortFixture, settings_set_and_get_tests)
     * <b>expected</b>: Settings shall be accepted. <br>
     * ************************************************
     */
+   EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "PORT0"));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    EXPECT_CALL(*g_serial_mock, isOpened()).WillOnce(Return(true));
@@ -641,6 +651,14 @@ TEST_F(PortFixture, settings_set_and_get_tests)
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      g_socket_mock = new Drivers::SocketClient::ISocketClientMock;
+   }
+   else
+   {
+      g_serial_mock = new Drivers::Serial::ISerialDriverMock;
+   }
    EXPECT_TRUE(m_test_subject->setSettings(user_settings));
 
 }
@@ -672,6 +690,14 @@ TEST_F(PortFixture, persistence_writing)
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(TEST_PORT_ID, HasSubstr(user_settings.serialSettings.baudRate.toName())));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      g_socket_mock = new Drivers::SocketClient::ISocketClientMock;
+   }
+   else
+   {
+      g_serial_mock = new Drivers::Serial::ISerialDriverMock;
+   }
    EXPECT_TRUE(m_test_subject->setSettings(user_settings));
 
    Utilities::Persistence::PersistenceListener::PersistenceItems persistence_written;
@@ -748,6 +774,14 @@ TEST_F(PortFixture, persistence_restoring)
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, user_settings.shortSettingsString()));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
+   if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
+   {
+      g_socket_mock = new Drivers::SocketClient::ISocketClientMock;
+   }
+   else
+   {
+      g_serial_mock = new Drivers::Serial::ISerialDriverMock;
+   }
    dynamic_cast<Utilities::Persistence::PersistenceListener*>(m_test_subject.get())->onPersistenceRead(persistence_written);
 
    EXPECT_TRUE(user_settings == m_test_subject->getSettings());
