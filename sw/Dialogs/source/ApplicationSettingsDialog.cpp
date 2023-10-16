@@ -153,8 +153,8 @@ void ApplicationSettingsDialog::createAboutTab(QTabWidget* main_tab, QWidget*)
                             #endif
                             + '\n'
                             + "Build date: " + std::string(__DATE__) + '\n'
-                            + "Build time: " + std::string(__TIME__)
-                            ;
+                            + "Build time: " + std::string(__TIME__) + '\n'
+                            + "Commit hash: " + std::string(GIT_COMMIT_HASH);
 
    about_label->setText(about_text.c_str());
    about_label->setAlignment(Qt::AlignCenter);

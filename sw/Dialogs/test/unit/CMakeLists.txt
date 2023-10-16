@@ -70,7 +70,7 @@ add_executable(ApplicationSettingsDialogTests
             ApplicationSettingsDialogTests.cpp
             ../../source/ApplicationSettingsDialog.cpp
 )
-
+target_compile_definitions(ApplicationSettingsDialogTests PRIVATE "-DGIT_COMMIT_HASH=\"\"")
 target_include_directories(ApplicationSettingsDialogTests PUBLIC
         ../../include
         ../../public
