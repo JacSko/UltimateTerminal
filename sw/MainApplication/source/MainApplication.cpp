@@ -17,7 +17,7 @@
 #endif
 
 constexpr uint32_t TRACE_MARKER_COLOR = 0xFF0000;
-constexpr uint8_t PORT_HANDLERS_COUNT = 5;
+constexpr int8_t DEFAULT_PORT_ID = -1;
 
 namespace system_call
 {
@@ -120,8 +120,15 @@ m_marker_index(0)
    for (uint32_t i = 0; i < count_tabs; i++)
    {
       m_user_buttons_tabs.emplace_back(std::unique_ptr<UserButtonsTab>(
-          new UserButtonsTab(m_gui_controller, i, m_gui_controller.countButtonsPerTab(), m_persistence,
-                                         std::bind(&MainApplication::sendToPort, this, std::placeholders::_1))));
+          new UserButtonsTab(m_gui_controller,
+                             i,
+                             m_gui_controller.countButtonsPerTab(),
+                             m_persistence,
+                             std::bind(&MainApplication::sendToPort,
+                                       this,
+                                       std::placeholders::_1,
+                                       std::placeholders::_2)
+                             )));
    }
    UT_Log(MAIN, LOW, "%u UserButtonsTabs created", count_tabs);
 
@@ -210,20 +217,17 @@ void MainApplication::onPortEvent(const PortEvent& event)
    }
    else if (event.event == Event::CONNECTED)
    {
-      m_port_id_name_map[event.port_id] = event.name;
       m_gui_controller.registerPortOpened(event.name);
       UT_Log(MAIN, INFO, "Port opened: %u [%s]", event.port_id, event.name.c_str());
    }
    else if (event.event == Event::DISCONNECTED)
    {
       m_gui_controller.registerPortClosed(event.name);
-      m_port_id_name_map[event.port_id] = "";
       UT_Log(MAIN, INFO, "Port closed: %u [%s]", event.port_id, event.name.c_str());
    }
    else if (event.event == Event::CONNECTING)
    {
       m_gui_controller.registerPortClosed(event.name);
-      m_port_id_name_map[event.port_id] = "";
       UT_Log(MAIN, INFO, "Port connecting: %u [%s]", event.port_id, event.name.c_str());
    }
 }
@@ -341,16 +345,30 @@ bool MainApplication::onCurrentPortSelectionChanged(const std::string& port_name
 void MainApplication::onSettingsButtonClicked()
 {
    UT_Log(MAIN, LOW, "Setting windows show");
-   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller, m_ports, m_trace_filters, m_file_logger, m_file_logging_path, getPersistenceFile());
+   Dialogs::ApplicationSettingsDialog dialog (m_gui_controller,
+                                              m_ports,
+                                              m_trace_filters,
+                                              m_file_logger,
+                                              m_file_logging_path,
+                                              getPersistenceFile());
    dialog.showDialog(m_gui_controller.getParent());
 }
 
-bool MainApplication::sendToPort(const std::string& string)
+bool MainApplication::sendToPort(int8_t portId, const std::string& string)
 {
    bool result = false;
-   uint8_t port_id = portNameToId(m_current_port_name);
+
+   if (portId == DEFAULT_PORT_ID)
+   {
+      portId = portNameToId(m_current_port_name);
+   }
+
+   UT_Assert((static_cast<uint32_t>(portId) < m_ports.size() && "Invalid portId"));
+   auto& port = m_ports[portId];
+
    std::string data_to_send = string;
-   UT_Log(MAIN, HIGH, "Trying to send data to port %u[%s] - %s", port_id, m_current_port_name.c_str(), string.c_str());
+   UT_Log(MAIN, HIGH, "Trying to send data to port %u - %s", portId,
+                                                             string.c_str());
    std::string current_ending = m_gui_controller.getCurrentLineEnding();
    if (current_ending == "\\r\\n")
    {
@@ -361,32 +379,21 @@ bool MainApplication::sendToPort(const std::string& string)
       data_to_send += '\n';
    }
 
-   for (const auto& handler : m_ports)
+   if (port->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
    {
-      if (handler->getName() == m_current_port_name)
-      {
-         if (handler->write({data_to_send.begin(), data_to_send.end()}, data_to_send.size()))
-         {
-            result = true;
-            addToCommandHistory(port_id, string);
-         }
-         else
-         {
-            std::string error = "Cannot send data to port ";
-            error += m_current_port_name;
-            UT_Log(MAIN, ERROR, "%s", error.c_str());
-            error += '\n';
-            Dialogs::MessageDialog::show(Dialogs::MessageDialog::Icon::Critical, "Error", error, m_gui_controller.getApplicationPalette());
-         }
-      }
+      result = true;
+      addToCommandHistory(portId, string);
    }
+   UT_Log(MAIN, result? HIGH : ERROR, "Send data [%s] to port %u - %s", data_to_send.c_str(),
+                                                                       portId,
+                                                                       result? "OK" : "ERROR");
    return result;
 }
 
 void MainApplication::onSendButtonClicked()
 {
    UT_Log(MAIN, LOW, "Send button clicked");
-   (void)sendToPort(m_gui_controller.getCurrentCommand());
+   (void)sendToPort(DEFAULT_PORT_ID, m_gui_controller.getCurrentCommand());
    m_gui_controller.clearCommand();
 }
 
@@ -498,10 +505,11 @@ void MainApplication::removeCommandHistoryDuplicates(std::vector<std::string>& h
 }
 uint8_t MainApplication::portNameToId(const std::string& name)
 {
-   auto result = std::find_if(m_port_id_name_map.begin(), m_port_id_name_map.end(), [&](const auto& obj){return obj.second == name;});
-   if (result != m_port_id_name_map.end())
+   auto result = std::find_if(m_ports.begin(), m_ports.end(),
+                 [&](const auto& port){return port->getName() == name;});
+   if (result != m_ports.end())
    {
-      return result->first;
+      return std::distance(m_ports.begin(), result);
    }
    else
    {

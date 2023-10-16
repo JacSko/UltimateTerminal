@@ -14,20 +14,20 @@ using namespace ::testing;
 
 struct WriterMock
 {
-   MOCK_METHOD1(write, bool(const std::string&));
+   MOCK_METHOD2(write, bool(int8_t, const std::string&));
 };
 
 WriterMock* g_writer_mock;
 
-auto WriterFunction = [](const std::string& str)->bool
+auto WriterFunction = [](int8_t portId, const std::string& command)->bool
       {
          UT_Assert(g_writer_mock && "create writer mock");
-         return g_writer_mock->write(str);
+         return g_writer_mock->write(portId, command);
       };
 
 const std::string TEST_BUTTON_NAME = "TEST_NAME";
 constexpr uint32_t TEST_BUTTON_ID = 1;
-
+constexpr int8_t DEFAULT_PORT_ID = -1;
 struct UserButtonFixture : public testing::Test
 {
    UserButtonFixture():
@@ -83,7 +83,7 @@ TEST_F(UserButtonFixture, empty_commands_list_when_execution_requested)
          }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
-   EXPECT_CALL(*g_writer_mock, write(_)).Times(0);
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, _)).Times(0);
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
    while(test_wait)
@@ -126,9 +126,9 @@ TEST_F(UserButtonFixture, commands_sending_requested)
          }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
 
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 
@@ -173,8 +173,8 @@ TEST_F(UserButtonFixture, failed_to_send_commands)
          }));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, true));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonChecked(TEST_BUTTON_ID, false));
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(false));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(false));
 
    m_button_listener->onButtonEvent(TEST_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 

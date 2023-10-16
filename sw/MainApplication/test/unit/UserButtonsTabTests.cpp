@@ -10,22 +10,6 @@ namespace MainApplication
 
 using namespace ::testing;
 
-struct WriterMock
-{
-   MOCK_METHOD1(write, bool(const std::string&));
-};
-
-WriterMock* g_writer_mock;
-
-auto WriterFunction = [](const std::string& str)->bool
-      {
-         UT_Assert(g_writer_mock && "create writer mock");
-         return g_writer_mock->write(str);
-      };
-
-constexpr uint32_t TEST_TAB_ID = 1;
-constexpr uint32_t TEST_BUTTONS_COUNT = 10;
-
 struct UserButtonsTabFixture : public testing::Test
 {
    UserButtonsTabFixture():
@@ -34,14 +18,13 @@ struct UserButtonsTabFixture : public testing::Test
 
    void SetUp()
    {
-      g_writer_mock = new WriterMock();
       GUIControllerMock_init();
       TabNameDialogMock_init();
       EXPECT_CALL(*GUIControllerMock_get(), setTabName(TEST_TAB_ID,TEST_TAB_NAME));
       EXPECT_CALL(*GUIControllerMock_get(), subscribeForTabNameChangeRequest(TEST_TAB_ID, _)).
                                                                   WillOnce(SaveArg<1>(&tab_name_listener));
       m_test_subject.reset(new UserButtonsTab(test_controller, TEST_TAB_ID, TEST_BUTTONS_COUNT,
-    		  	  	  	  	  	  	  	  	  	  	 fake_persistence, WriterFunction));
+    		  	  	  	  	  	  	  	  	  	  	 fake_persistence, {}));
       ASSERT_TRUE(tab_name_listener);
    }
    void TearDown()
@@ -51,8 +34,6 @@ struct UserButtonsTabFixture : public testing::Test
       m_test_subject.reset(nullptr);
       GUIControllerMock_deinit();
       TabNameDialogMock_deinit();
-      delete g_writer_mock;
-      g_writer_mock = nullptr;
    }
 
    const uint32_t TEST_TAB_ID = 1;

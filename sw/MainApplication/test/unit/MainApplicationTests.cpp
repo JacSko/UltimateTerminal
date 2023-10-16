@@ -447,6 +447,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_no_port_opened)
 
    /* different name to not match empty name from combobox */
    EXPECT_CALL(*PortMock_get(), getName(_)).WillRepeatedly(ReturnRef(PORT_NAME));
+   EXPECT_CALL(*PortMock_get(), write(_,_)).WillOnce(Return(false));
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 
@@ -469,13 +470,15 @@ TEST_F(MainApplicationFixture, sending_data_to_port)
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
    /* simulate user action that changing the current port */
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
    m_port_change_listener(PORT_NAME);
+   Mock::VerifyAndClearExpectations(PortMock_get());
 
    /* size to write should be 1 byte more because \n is added */
    std::string data_payload = DATA_TO_SEND + '\n';
    EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
-                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
+                                           .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
    EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(data_payload.begin(), data_payload.end()), data_payload.size())).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
@@ -501,10 +504,11 @@ TEST_F(MainApplicationFixture, sending_data_to_port_empty_line_ending)
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
    /* simulate user action that changing the current port */
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_)).Times(2); //second time when writing to terminal
    m_port_change_listener(PORT_NAME);
    EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
-                                                      .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
+                                           .WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
    EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(true));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
@@ -530,6 +534,7 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*GUIControllerMock_get(), getCurrentLineEnding()).WillOnce(Return(LINE_ENDING));
 
    /* simulate user action that changing the current port */
+   EXPECT_CALL(*PortMock_get(), getName(_)).WillRepeatedly(ReturnRef(INCORRECT_PORT_NAME));
    EXPECT_CALL(*GUIControllerMock_get(), setCommandsHistory(_));
    m_port_change_listener(PORT_NAME);
    EXPECT_CALL(*PortMock_get(), getName(_)).WillOnce(ReturnRef(PORT_NAME))
@@ -537,7 +542,6 @@ TEST_F(MainApplicationFixture, sending_data_to_port_failed)
    EXPECT_CALL(*PortMock_get(), write(std::vector<uint8_t>(DATA_TO_SEND.begin(), DATA_TO_SEND.end()), DATA_TO_SEND.size())).WillOnce(Return(false));
    EXPECT_CALL(*GUIControllerMock_get(), clearCommand());
 
-   EXPECT_CALL(*MessageDialogMock_get(), show(_, "Error", _, _));
    m_button_listener->onButtonEvent(SEND_BUTTON_ID, GUIController::ButtonEvent::CLICKED);
 }
 

@@ -9,15 +9,15 @@ using namespace ::testing;
 
 struct WriterMock
 {
-   MOCK_METHOD1(write, bool(const std::string&));
+   MOCK_METHOD2(write, bool(int8_t portId, const std::string&));
 };
 
 WriterMock* g_writer_mock;
 
-auto WriterFunction = [](const std::string& str)->bool
+auto WriterFunction = [](int8_t portId, const std::string& command)->bool
       {
          UT_Assert(g_writer_mock && "create writer mock");
-         return g_writer_mock->write(str);
+         return g_writer_mock->write(portId, command);
       };
 
 struct ButtonCommandExecutorTests : public testing::Test
@@ -49,6 +49,7 @@ struct ButtonCommandExecutorTests : public testing::Test
    std::condition_variable conditionVariable;
    std::mutex mutex;
    std::unique_ptr<ButtonCommandsExecutor> m_testSubject;
+   const int8_t DEFAULT_PORT_ID = -1;
 };
 
 TEST_F(ButtonCommandExecutorTests, noCommandsAdded_NoCommandsSentOnTrigger)
@@ -75,7 +76,7 @@ TEST_F(ButtonCommandExecutorTests, oneCommandAdded_oneCommandSent)
    std::string raw_commands_text = "command1";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -93,9 +94,9 @@ TEST_F(ButtonCommandExecutorTests, moreThanOneCommandAdded_allCommandsSent)
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -112,11 +113,11 @@ TEST_F(ButtonCommandExecutorTests, buttonPressedTwoTimes_allCommandsSentTwice)
    std::string raw_commands_text = "command1\ncommand2\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true))
                                                    .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true))
                                                    .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true))
                                                    .WillOnce(Return(true));
 
    {
@@ -143,8 +144,8 @@ TEST_F(ButtonCommandExecutorTests, commandWithWaitAdded_waitExecuted)
    std::string raw_commands_text = "command1\n__wait(100)\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -165,8 +166,8 @@ TEST_F(ButtonCommandExecutorTests, waitWithNegativeValueAdded_commandsExecutedWi
    std::string raw_commands_text = "command1\n__wait(-5000)\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
    auto callbackResult = executeAndWaitResult();
@@ -191,8 +192,8 @@ TEST_F(ButtonCommandExecutorTests, waitWithTextArgumentAdded_commandsExecutedWit
    std::string raw_commands_text = "command1\n__wait(aabbcc5000)\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
    auto callbackResult = executeAndWaitResult();
@@ -219,7 +220,7 @@ TEST_F(ButtonCommandExecutorTests, commandsWithWaitAbortedByUser_waitShallBeInte
    std::string raw_commands_text = "command1\n__wait(10000)\ncommand3";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
 
@@ -251,12 +252,12 @@ TEST_F(ButtonCommandExecutorTests, repeatCommandUsed_commandsRepeated)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -282,18 +283,18 @@ TEST_F(ButtonCommandExecutorTests, repeatCommandUsedTwice_commandsRepeated)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat3")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat3")).WillOnce(Return(true))
                                                          .WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat4")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat4")).WillOnce(Return(true))
                                                          .WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -314,8 +315,8 @@ TEST_F(ButtonCommandExecutorTests, oneEmptyLoop_commandsSkipped)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -337,8 +338,8 @@ TEST_F(ButtonCommandExecutorTests, twoEmptyLoops_commandsSkipped)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -359,10 +360,10 @@ TEST_F(ButtonCommandExecutorTests, repeatStartButNoEnd_commandsSentWithoutRepeat
                                                "command4\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command3")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command4")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command4")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -384,10 +385,10 @@ TEST_F(ButtonCommandExecutorTests, invalidRepeatStartCommand_commandsSentWithout
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -409,10 +410,10 @@ TEST_F(ButtonCommandExecutorTests, negativeRepeatCount_commandsSentWithoutRepeat
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -434,10 +435,10 @@ TEST_F(ButtonCommandExecutorTests, textRepeatCount_commandsSentWithoutRepeating)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -459,10 +460,10 @@ TEST_F(ButtonCommandExecutorTests, mistypedStartCommand_commandsSentWithoutRepea
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -484,10 +485,10 @@ TEST_F(ButtonCommandExecutorTests, mistypedEndCommand_commandsSentWithoutRepeati
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -508,10 +509,10 @@ TEST_F(ButtonCommandExecutorTests, missingStartCommand_commandsSentWithoutRepeat
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());
@@ -538,12 +539,12 @@ TEST_F(ButtonCommandExecutorTests, repeatWithWaitadded_commandsRepeated)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat1")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("commandToRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "commandToRepeat2")).WillOnce(Return(true))
                                                          .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
    auto callbackResult = executeAndWaitResult();
@@ -578,24 +579,24 @@ TEST_F(ButtonCommandExecutorTests, nestedRepeatWithWaitadded_commandsRepeated)
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("firstRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "firstRepeat1")).WillOnce(Return(true))
                                                      .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("firstRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "firstRepeat2")).WillOnce(Return(true))
                                                      .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("secondRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "secondRepeat1")).WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("secondRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "secondRepeat2")).WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true))
                                                       .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
 
    execution_start = std::chrono::high_resolution_clock::now();
    auto callbackResult = executeAndWaitResult();
@@ -627,15 +628,159 @@ TEST_F(ButtonCommandExecutorTests, nestedRepeatWithOneInvalidCommand_onlyCorrect
                                                "command2\n";
    m_testSubject->parseCommands(raw_commands_text);
 
-   EXPECT_CALL(*g_writer_mock, write("command1")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("firstRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "firstRepeat1")).WillOnce(Return(true))
                                                      .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("firstRepeat2")).WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("secondRepeat1")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "firstRepeat2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "secondRepeat1")).WillOnce(Return(true))
                                                       .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("secondRepeat2")).WillOnce(Return(true))
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "secondRepeat2")).WillOnce(Return(true))
                                                       .WillOnce(Return(true));
-   EXPECT_CALL(*g_writer_mock, write("command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, emptyTargetPort_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port tag, but the port ID is empty <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("command1\n") +
+                                               "@>command2\n"
+                                               "command2\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@>command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, incompleteTargetPortTag_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port tag, but is incmplete <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("command1\n") +
+                                               "@command2\n"
+                                               ">command3\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, ">command3")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, portAsTextEntered_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port ID as text that cannot be converted to text <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("command1\n") +
+                                               "@TWO>command2\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@TWO>command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, invalidPortNumberEntered_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port ID as text that cannot be converted to text <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("command1\n") +
+                                               "@9>command2\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@9>command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, negativePortNumberEntered_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port ID as negative number that cannot be converted to text <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("@-1>command1\n") +
+                                               "@-99>command2\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@-1>command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "@-99>command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+TEST_F(ButtonCommandExecutorTests, portTagEnteredInTheMiddleOfCommand_defaultPortUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port ID in the middle of the command <br>
+    * <b>expected</b>: Command shall be sent as normal command to default port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("prefix@0>command1\n") +
+                                               "prefix@1>command2\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "prefix@0>command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(DEFAULT_PORT_ID, "prefix@1>command2")).WillOnce(Return(true));
+
+   auto callbackResult = executeAndWaitResult();
+   EXPECT_TRUE(callbackResult.has_value());
+   EXPECT_TRUE(callbackResult.value());
+}
+
+
+TEST_F(ButtonCommandExecutorTests, portNumberEntered_portUsed)
+{
+   /**
+    * <b>scenario</b>: User used the port ID in correct range <br>
+    * <b>expected</b>: Command shall be sent to correct port.<br>
+    * ************************************************
+    */
+   std::string raw_commands_text = std::string("@0>command1\n") +
+                                               "@1>command2\n"+
+                                               "@2>command3\n"+
+                                               "@3>command4\n"+
+                                               "@4>command5\n";
+   m_testSubject->parseCommands(raw_commands_text);
+
+   EXPECT_CALL(*g_writer_mock, write(0, "command1")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(1, "command2")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(2, "command3")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(3, "command4")).WillOnce(Return(true));
+   EXPECT_CALL(*g_writer_mock, write(4, "command5")).WillOnce(Return(true));
 
    auto callbackResult = executeAndWaitResult();
    EXPECT_TRUE(callbackResult.has_value());

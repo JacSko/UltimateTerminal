@@ -7,10 +7,10 @@ namespace MainApplication
 {
 
 UserButton::UserButton(GUIController::GUIController& controller,
-                                     uint8_t id,
-                                     const std::string&,
-                                     Utilities::Persistence::Persistence& persistence,
-                                     std::function<bool(const std::string&)> writer):
+                       uint8_t id,
+                       const std::string&,
+                       Utilities::Persistence::Persistence& persistence,
+                       std::function<bool(int8_t portId, const std::string&)> writer):
 m_gui_controller(controller),
 m_button_id(id),
 m_persistence(persistence),

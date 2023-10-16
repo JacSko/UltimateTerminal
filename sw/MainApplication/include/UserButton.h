@@ -20,7 +20,7 @@ public:
                      uint8_t id,
                      const std::string& button_name,
                      Utilities::Persistence::Persistence& persistence,
-                     std::function<bool(const std::string&)> writer);
+                     std::function<bool(int8_t portId, const std::string&)> writer);
    ~UserButton();
 private:
 

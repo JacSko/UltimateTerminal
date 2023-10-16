@@ -82,9 +82,13 @@ void UserButtonDialog::showHelp()
                                       "__wait(<time_in_ms>)\n"
                                       "This commands suspends the execution for defined time\n"
                                       "Time shall be in milliseconds\n\n"
-                                      "__repeat_start(<count>)\n"
-                                      "__repeat_end()\n"
-                                      "This set of commands allow to repeats execution of defined commands in the loop.\n";
+                                      "\t __repeat_start(<count>)\n"
+                                      "\t __repeat_end()\n"
+                                      "This set of commands allow to repeats execution of defined commands in the loop.\n\n"
+                                      "Commands can be send also to specific port by using the '@x>' prefix where 'x' is the port ID\n"
+                                      "Acceptable are port ID's in range 0-4\n\n"
+                                      "\t @0>command1\n"
+                                      "This command will be send to port with ID 0\n";
    UT_Log(GUI_DIALOG, LOW, "%s", __func__);
    MessageDialog::show(MessageDialog::Icon::Information, "Button help", helpText, m_dialog->palette());
 

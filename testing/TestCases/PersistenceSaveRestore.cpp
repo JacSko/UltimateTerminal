@@ -203,7 +203,7 @@ TEST_F(PersistenceSaveRestoreTests, allUserButtonsShallBeStoredInPersistence)
 
       const std::string USER_BUTTON_NAME = "BUTTON" + std::to_string(i);
       const std::string USER_BUTTON_TEXT = "TEST BTN " + std::to_string(i);
-      const std::string USER_BUTTON_COMMAND = "cmd1\ncmd2\ncmd3\n";
+      const std::string USER_BUTTON_COMMAND = "cmd1\n@0>cmd2\ncmd3\n";
       Dialogs::UserButtonDialog::Settings settings;
       settings.id = i;
       settings.button_name = USER_BUTTON_TEXT;
@@ -241,7 +241,7 @@ TEST_F(PersistenceSaveRestoreTests, allUserButtonsShallBeStoredInPersistence)
    {
       const std::string USER_BUTTON_NAME = "BUTTON" + std::to_string(i);
       const std::string USER_BUTTON_TEXT = "TEST BTN " + std::to_string(i);
-      const std::string USER_BUTTON_COMMAND = "cmd1\ncmd2\ncmd3\n";
+      const std::string USER_BUTTON_COMMAND = "cmd1\n@0>cmd2\ncmd3\n";
       EXPECT_EQ(TF::Buttons::getText(USER_BUTTON_NAME), USER_BUTTON_TEXT);
 
       TF::Socket::clearMessageBuffer(port_settings.port);

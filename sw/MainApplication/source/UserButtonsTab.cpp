@@ -9,7 +9,7 @@ UserButtonsTab::UserButtonsTab(GUIController::GUIController& controller,
                                uint8_t tab_id,
                                uint8_t buttons_count,
                                Utilities::Persistence::Persistence& persistence,
-                               std::function<bool(const std::string&)> writer):
+                               std::function<bool(int8_t portId, const std::string&)> writer):
 m_gui_controller(controller),
 m_tab_id(tab_id),
 m_persistence(persistence),

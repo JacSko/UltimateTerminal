@@ -48,7 +48,6 @@ private:
    std::string m_log_file_name;
    Utilities::Persistence::Persistence m_persistence;
    uint32_t m_scroll_default_color;
-   std::map<uint8_t,std::string> m_port_id_name_map;
    std::map<uint8_t, std::vector<std::string>> m_commands_history;
    std::vector<ButtonListener> m_button_listeners;
 
@@ -67,8 +66,8 @@ private:
    /* ThemeChangedListener */
    void onThemeChange(Theme theme) override;
 
-   void onPortEvent(const PortEvent&);
-   bool sendToPort(const std::string&);
+   void onPortEvent(const PortEvent&) override;
+   bool sendToPort(int8_t portId, const std::string&);
    void addToTerminal(const std::string& port_name, const std::string& data, uint32_t background_color, uint32_t font_color);
    void setButtonState(uint32_t button_id, bool active);
    void onPersistenceRead(const PersistenceItems&) override;

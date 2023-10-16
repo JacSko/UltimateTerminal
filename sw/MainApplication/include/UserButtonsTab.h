@@ -11,7 +11,11 @@ class UserButtonsTab : public Utilities::Persistence::PersistenceListener,
                               public GUIController::TabNameChangeRequestListener
 {
 public:
-   UserButtonsTab(GUIController::GUIController& controller, uint8_t tab_id, uint8_t buttons_count, Utilities::Persistence::Persistence& persistence, std::function<bool(const std::string&)> writer);
+   UserButtonsTab(GUIController::GUIController& controller,
+                  uint8_t tab_id,
+                  uint8_t buttons_count,
+                  Utilities::Persistence::Persistence& persistence,
+                  std::function<bool(int8_t portId, const std::string&)> writer);
    ~UserButtonsTab();
    bool run();
 private:
@@ -23,7 +27,7 @@ private:
    std::vector<std::unique_ptr<UserButton>> m_buttons;
    void onPersistenceRead(const PersistenceItems&) override;
    void onPersistenceWrite(PersistenceItems&) override;
-   void onTabNameChangeRequest();
+   void onTabNameChangeRequest() override;
    void setTabName(const std::string& name);
 };
 

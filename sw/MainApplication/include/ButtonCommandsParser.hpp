@@ -35,13 +35,16 @@
 namespace MainApplication
 {
 
-/** Maximum waiting time - see details for more description */
-constexpr uint32_t MAXIMUM_WAIT_TIME = 500;
-
 class ButtonCommandsParser
 {
 public:
-   int parseCommands(const std::string& text, std::function<bool(const std::string&)> writer)
+
+   /** Maximum waiting time - see details for more description */
+   const uint32_t MAXIMUM_WAIT_TIME = 500;
+   /** Default port ID */
+   const int8_t DEFAULT_PORT_ID = -1;
+
+   int parseCommands(const std::string& text, std::function<bool(int8_t portId, const std::string&)> writer)
    {
       m_writer = writer;
       m_commands.clear();
@@ -94,10 +97,16 @@ private:
          {
             it += processSpecialCommand({it, strings.end()});
          }
+         else if (isPortSpecified(*it))
+         {
+            auto portCommand = parsePortCommand(*it);
+            m_commands.push_back([this, portCommand]()->bool { return m_writer(portCommand.first, portCommand.second);});
+            it++;
+         }
          else
          {
             std::string command = *it;
-            m_commands.push_back([this, command]()->bool { return m_writer(command);});
+            m_commands.push_back([this, command]()->bool { return m_writer(DEFAULT_PORT_ID, command);});
             it++;
          }
       }
@@ -105,6 +114,24 @@ private:
    bool isSpecialCommand(const std::string& command)
    {
       return command.find("__", 0) == 0;
+   }
+   bool isPortSpecified(const std::string& command)
+   {
+      return command.find("@", 0) == 0;
+   }
+   std::pair<int8_t, std::string> parsePortCommand(const std::string& command)
+   {
+      std::pair<int8_t, std::string> result {DEFAULT_PORT_ID, command};
+      std::smatch matches;
+      std::regex_match(command.cbegin(), command.cend(), matches, std::regex("@([0-4])>(.*)"));
+      UT_Log_If(matches.size() < 3, USER_BTN_HANDLER, ERROR, "No valid port found in command [%s]", command.c_str());
+      if (matches.size() > 2)
+      {
+         result.first = atoi(matches[1].str().c_str());
+         result.second = matches[2].str();
+         UT_Log(USER_BTN_HANDLER, LOW, "Found port %u and command [%s] in string [%s]", result.first, result.second.c_str(), command.c_str());
+      }
+      return result;
    }
    int processSpecialCommand(const std::vector<std::string>& substrings)
    {
@@ -200,7 +227,7 @@ private:
       return result;
    }
 
-   std::function<bool(const std::string&)> m_writer;
+   std::function<bool(int8_t portId, const std::string&)> m_writer;
    std::vector<std::function<bool()>> m_commands;
    std::vector<std::function<bool()>>::iterator m_current_command;
 };

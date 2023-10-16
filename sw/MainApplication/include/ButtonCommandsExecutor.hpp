@@ -36,7 +36,7 @@ public:
     *
     * @return None.
     */
-   ButtonCommandsExecutor(std::function<bool(const std::string&)> writer, std::function<void(bool)> callback):
+   ButtonCommandsExecutor(std::function<bool(int8_t portId, const std::string&)> writer, std::function<void(bool)> callback):
    m_writer(writer),
    m_callback(callback),
    m_isRunning(false),
@@ -127,7 +127,7 @@ private:
    }
 
    std::string m_raw_text;
-   std::function<bool(const std::string&)> m_writer;
+   std::function<bool(int8_t, const std::string&)> m_writer;
    ButtonCommandsParser m_parser;
    std::function<void(bool)> m_callback;
    std::atomic<bool> m_isRunning;
