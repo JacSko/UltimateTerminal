@@ -1,0 +1,16 @@
+UltimateTerminal v0.2.0
+17.10.2023
+- Name of tabs with command buttons can be changed with right-click
+- Command looping feature added to user buttons
+- Port selecting prefix added to user buttons
+- Serial device disconnect detection - now, when device gets disconnected, port
+  is switched to auto-reconnecting mode like in socket mode
+- FIX - Serial driver 100%CPU usage when device was disconnected
+- FIX - Persistence restoration when there were multiple tabs with buttons
+- FIX - Data that is being sent to port is not written to terminal view
+
+UltimateTerminal v0.1.0
+27.08.2023
+Inital application version
+
+

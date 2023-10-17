@@ -3,6 +3,7 @@
 CUSTOM_EXECUTOR_NUMBER=8
 CUSTOM_CMAKE_PARAMETERS="-DCMAKE_BUILD_TYPE=Release"
 
+rm -rf build_release
 mkdir -p build_release
 pushd build_release
 

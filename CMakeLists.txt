@@ -1,6 +1,6 @@
 ########################################
 cmake_minimum_required(VERSION 3.1.0)
-project(UltimateTerminal VERSION 0.1 LANGUAGES CXX)
+project(UltimateTerminal VERSION 0.2.0 LANGUAGES CXX)
 ########################################
 
 #########################################
