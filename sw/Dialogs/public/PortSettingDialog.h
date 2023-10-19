@@ -101,7 +101,7 @@ enum class PortType
       uint32_t trace_color;                     /**< Color of traces that will be shown in terminal */
       uint32_t font_color;                      /**< Color of the font in terminal */
 
-      std::string shortSettingsString() const
+      std::string settingsString() const
       {
          std::string result = "";
          if (type == PortType::SERIAL)
@@ -120,6 +120,12 @@ enum class PortType
          }
          return result;
       }
+      std::string summaryString() const
+      {
+         std::string result = "[" + std::to_string(port_id) + "]: ";
+         result += preparePortSpecificLabel();
+         return result;
+      }
       bool operator== (const Settings& rhs)
       {
          return (type == rhs.type) &&
@@ -133,6 +139,59 @@ enum class PortType
       bool operator!= (const Settings& rhs)
       {
          return !(*this == rhs);
+      }
+   private:
+      std::string preparePortSpecificLabel() const
+      {
+         std::string result = "";
+         using namespace Drivers::Serial;
+         static const std::map<BaudRate, std::string> baudRatesMap = {{BaudRate::BR_1200, "1200"},
+                                                                      {BaudRate::BR_2400, "2400"},
+                                                                      {BaudRate::BR_4800, "4800"},
+                                                                      {BaudRate::BR_9600, "9600"},
+                                                                      {BaudRate::BR_19200, "19200"},
+                                                                      {BaudRate::BR_38400, "38400"},
+                                                                      {BaudRate::BR_57600, "57600"},
+                                                                      {BaudRate::BR_115200, "115200"},
+                                                                      {BaudRate::BAUDRATE_MAX, "INVALID"}};
+         static const std::map<DataBitType, std::string> dataBitsMap = {{DataBitType::FIVE, "1200"},
+                                                                        {DataBitType::SIX, "6"},
+                                                                        {DataBitType::SEVEN, "7"},
+                                                                        {DataBitType::EIGHT, "8"},
+                                                                        {DataBitType::DATA_BIT_MAX, "INVALID"}};
+         static const std::map<StopBitType, std::string> stopBitsMap = {{StopBitType::ONE, "1"},
+                                                                        {StopBitType::TWO, "2"},
+                                                                        {StopBitType::STOP_BIT_MAX, "INVALID"}};
+         static const std::map<ParityType, std::string> parityBitsMap = {{ParityType::NONE, "n"},
+                                                                         {ParityType::ODD, "o"},
+                                                                         {ParityType::EVEN, "e"},
+                                                                         {ParityType::PARITY_BIT_MAX, "INVALID"}};
+
+         if (type == Dialogs::PortSettingDialog::PortType::SERIAL)
+         {
+            result += extractDeviceName(serialSettings.device);
+            result += "/" + baudRatesMap.at(serialSettings.baudRate.value);
+            result += "/" + dataBitsMap.at(serialSettings.dataBits.value);
+            result += "/" + parityBitsMap.at(serialSettings.parityBits.value);
+            result += "/" + stopBitsMap.at(serialSettings.stopBits.value);
+         }
+         else
+         {
+            result += ip_address;
+            result += ":";
+            result += std::to_string(port);
+         }
+         return result;
+      }
+      std::string extractDeviceName(const std::string& device) const
+      {
+         std::string result = "";
+         auto it = device.find_last_of('/');
+         if (it != std::string::npos)
+         {
+            result = device.substr(it+1);
+         }
+         return result;
       }
    };
 

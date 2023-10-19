@@ -45,11 +45,11 @@ std::optional<bool> PortSettingDialog::showDialog(QWidget* parent, const Setting
    m_dialog->setLayout(createLayout(m_dialog, current_settings, allow_edit));
    addDialogButtons();
 
-   UT_Log(GUI_DIALOG, LOW, "%s settings [%s] edit possible: %u", __func__, current_settings.shortSettingsString().c_str(), allow_edit);
+   UT_Log(GUI_DIALOG, LOW, "%s settings [%s] edit possible: %u", __func__, current_settings.settingsString().c_str(), allow_edit);
    if (m_dialog->exec() == QDialog::Accepted)
    {
       result = convertGuiValues(out_settings);
-      UT_Log(GUI_DIALOG, LOW, "%s new settings [%s]", __func__, out_settings.shortSettingsString().c_str());
+      UT_Log(GUI_DIALOG, LOW, "%s new settings [%s]", __func__, out_settings.settingsString().c_str());
    }
 
    clearDialog();
@@ -129,7 +129,7 @@ void PortSettingDialog::addDialogButtons()
 }
 void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& settings)
 {
-   UT_Log(GUI_DIALOG, HIGH, "rendering view for SERIAL, settings %s", settings.shortSettingsString().c_str());
+   UT_Log(GUI_DIALOG, HIGH, "rendering view for SERIAL, settings %s", settings.settingsString().c_str());
    clearDialog();
 
    /* create port name */
@@ -236,7 +236,7 @@ void PortSettingDialog::renderSerialView(QFormLayout* form, const Settings& sett
 }
 void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& settings)
 {
-   UT_Log(GUI_DIALOG, HIGH, "rendering view for ETHERNET, settings %s", settings.shortSettingsString().c_str());
+   UT_Log(GUI_DIALOG, HIGH, "rendering view for ETHERNET, settings %s", settings.settingsString().c_str());
    clearDialog();
 
    /* create port name */

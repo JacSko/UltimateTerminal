@@ -94,7 +94,7 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PortSettingDialog::Settings{}.summaryString());
 
    /* check throughput label before test */
    EXPECT_EQ(TF::Ports::getThroughput(PORT_ID), "");
@@ -103,7 +103,7 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* open port by clicking on button */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -114,7 +114,7 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* check throughput label after port open */
    TF::wait(500);
@@ -137,7 +137,7 @@ TEST_F(SocketRead, read_data_from_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* check throughput label after test */
    TF::wait(500);
@@ -192,13 +192,15 @@ TEST_F(SocketRead, write_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), PORT_BUTTON_TEXT);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), PORT_BUTTON_TEXT + PortSettingDialog::Settings{}.shortSettingsString());
+   PortSettingDialog::Settings expectedSettings = {};
+   expectedSettings.port_id = PORT_ID;
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), expectedSettings.summaryString());
 
    /* set new port settings */
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* open port by clicking on button */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -209,7 +211,7 @@ TEST_F(SocketRead, write_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* send data from application to server */
    EXPECT_TRUE(TF::Common::setLineEnding("\\n"));
@@ -237,7 +239,7 @@ TEST_F(SocketRead, write_socket)
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* close socket server on FIRST_SOCKET_PORT */
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
@@ -292,7 +294,7 @@ TEST_F(SocketRead, server_reconnection)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* open port by clicking on button */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -375,7 +377,7 @@ TEST_F(SocketRead, open_close_socket_multiple_times_during_high_traffic)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* start SocketDataGenerator - generate a string data every 2ms */
    TF::ApplicationExecutor serial_data_generator;
@@ -440,7 +442,7 @@ TEST_F(SocketRead, openSocketPortWhenNoServerAvailable_reconnectingModeShallBeEn
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* open port by clicking on button */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -451,7 +453,7 @@ TEST_F(SocketRead, openSocketPortWhenNoServerAvailable_reconnectingModeShallBeEn
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), BLUE_COLOR);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), BLACK_COLOR);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* close socket in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -461,6 +463,6 @@ TEST_F(SocketRead, openSocketPortWhenNoServerAvailable_reconnectingModeShallBeEn
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GUI_Dark_WindowBackground);
    EXPECT_EQ(TF::Buttons::getFontColor(PORT_BUTTON_NAME), GUI_Dark_WindowText);
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 }
 

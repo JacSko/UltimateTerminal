@@ -75,7 +75,7 @@ TEST_F(PersistenceSaveRestoreTests, allPortsShallBeStoredInPersistence)
       EXPECT_TRUE(TF::Ports::setPortSettings(i, port_settings));
       EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
       EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.shortSettingsString());
+      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.summaryString());
    }
 
    restartApplication();
@@ -290,7 +290,7 @@ TEST_F(PersistenceSaveRestoreTests, allCommandsHistoryShallBeStoredInPersistence
       EXPECT_TRUE(TF::Ports::setPortSettings(i, port_settings));
       EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
       EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.shortSettingsString());
+      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.summaryString());
 
       EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
       TF::wait(500);
@@ -329,7 +329,7 @@ TEST_F(PersistenceSaveRestoreTests, allCommandsHistoryShallBeStoredInPersistence
       EXPECT_TRUE(TF::Ports::setPortSettings(i, port_settings));
       EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
       EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.shortSettingsString());
+      EXPECT_EQ(TF::Ports::getLabelText(i), port_settings.summaryString());
 
       EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
       TF::wait(500);

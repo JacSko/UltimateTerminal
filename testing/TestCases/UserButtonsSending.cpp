@@ -78,7 +78,7 @@ TEST_F(UserButtonsSendingTests, empty_button_pressed)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* open port by clicking on button */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -147,7 +147,7 @@ TEST_F(UserButtonsSendingTests, sending_one_command_multiple_times)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -232,7 +232,7 @@ TEST_F(UserButtonsSendingTests, sending_multiple_commands_including_wait_command
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -335,13 +335,13 @@ TEST_F(UserButtonsSendingTests, sending_when_two_ports_opened)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set new port settings on second port*/
    EXPECT_TRUE(TF::Ports::setPortSettings(SECOND_PORT_ID, second_port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(SECOND_PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(SECOND_PORT_BUTTON_NAME), SECOND_NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -454,7 +454,7 @@ TEST_F(UserButtonsSendingTests, sending_multiple_commands_including_repeat_comma
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -548,7 +548,7 @@ TEST_F(UserButtonsSendingTests, invalidPortIdSpecified_commandSentToCurrentPort)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -635,7 +635,7 @@ TEST_F(UserButtonsSendingTests, sendingToClosedPort_commandSendingAborted)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
@@ -727,13 +727,13 @@ TEST_F(UserButtonsSendingTests, twoPortsOpened_commandsDispatchedCorrectly)
    EXPECT_TRUE(TF::Ports::setPortSettings(PORT_ID, port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(PORT_BUTTON_NAME), NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(PORT_ID), port_settings.summaryString());
 
    /* set new port settings on second port*/
    EXPECT_TRUE(TF::Ports::setPortSettings(SECOND_PORT_ID, second_port_settings));
    EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(SECOND_PORT_BUTTON_NAME));
    EXPECT_EQ(TF::Buttons::getText(SECOND_PORT_BUTTON_NAME), SECOND_NEW_PORT_NAME);
-   EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.shortSettingsString());
+   EXPECT_EQ(TF::Ports::getLabelText(SECOND_PORT_ID), second_port_settings.summaryString());
 
    /* set user button state */
    EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));

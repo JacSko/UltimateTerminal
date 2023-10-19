@@ -687,7 +687,7 @@ TEST_F(PortFixture, persistence_writing)
     * ************************************************
     */
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, "TEST_NAME"));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(TEST_PORT_ID, HasSubstr(user_settings.serialSettings.baudRate.toName())));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(TEST_PORT_ID, HasSubstr("9600/8/e/2")));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
@@ -771,7 +771,7 @@ TEST_F(PortFixture, persistence_restoring)
    Utilities::Persistence::writeItem(persistence_written, "type", user_settings.type.toName());
 
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name));
-   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, user_settings.shortSettingsString()));
+   EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, HasSubstr("9600/8/e/2")));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BUTTON_DEFAULT_BACKGROUND_COLOR));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonFontColor(TEST_BUTTON_ID, BUTTON_DEFAULT_FONT_COLOR));
    if (user_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)

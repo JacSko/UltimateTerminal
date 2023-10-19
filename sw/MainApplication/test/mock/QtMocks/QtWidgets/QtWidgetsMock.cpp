@@ -339,7 +339,7 @@ void QTabWidget::setTabText(int index, const QString& text)
 }
 int QTabWidget::count()
 {
-   g_widgets_mock->QTabWidget_count(this);
+   return g_widgets_mock->QTabWidget_count(this);
 }
 void QScrollArea::setWidget(QWidget* widget)
 {

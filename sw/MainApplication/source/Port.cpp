@@ -209,7 +209,7 @@ void Port::handleNewSettings(const Dialogs::PortSettingDialog::Settings& setting
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] creating serial driver proxy, settings %s",
                                                                      m_settings.port_id,
                                                                      m_settings.port_name.c_str(),
-                                                                     m_settings.shortSettingsString().c_str());
+                                                                     m_settings.settingsString().c_str());
       m_proxy.reset(new DriversProxy(m_settings.serialSettings, this));
    }
    else
@@ -217,19 +217,22 @@ void Port::handleNewSettings(const Dialogs::PortSettingDialog::Settings& setting
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] creating ethrnet driver proxy, settings %s",
                                                                      m_settings.port_id,
                                                                      m_settings.port_name.c_str(),
-                                                                     m_settings.shortSettingsString().c_str());
+                                                                     m_settings.settingsString().c_str());
       m_proxy.reset(new DriversProxy(m_settings.ip_address, m_settings.port, this));
    }
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id,
                                                                m_settings.port_name.c_str(),
-                                                               m_settings.shortSettingsString().c_str());
+                                                               m_settings.settingsString().c_str());
    setState(m_buttonState);
 }
 void Port::setState(ButtonState state)
 {
-   UT_Log(PORT_HANDLER, LOW, "new button state %u -> %u", m_buttonState.load(), state);
+   UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] new button state %u -> %u", m_settings.port_id,
+                                                                     m_settings.port_name.c_str(),
+                                                                     m_buttonState.load(),
+                                                                     state);
    m_buttonState = state;
-   m_guiController.setPortLabelText(m_settings.port_id, m_settings.shortSettingsString().c_str());
+   m_guiController.setPortLabelText(m_settings.port_id, m_settings.summaryString());
    setButtonName(m_settings.port_name);
    setButtonColors(m_buttonState);
 }
@@ -406,7 +409,7 @@ void Port::onPersistenceWrite(PersistenceItems& buffer)
 {
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] saving persistence [%s]", m_settings.port_id,
                                                                    m_settings.port_name.c_str(),
-                                                                   m_settings.shortSettingsString().c_str());
+                                                                   m_settings.settingsString().c_str());
 
    Utilities::Persistence::writeItem(buffer, "ipAddress", m_settings.ip_address);
    Utilities::Persistence::writeItem(buffer, "ipPort", m_settings.port);

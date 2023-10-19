@@ -37,8 +37,8 @@ struct TestParam
       ost << "Test with settings: " << std::endl;
       ost << "editable: " << param.editable << std::endl;
       ost << "accepted: " << param.accepted << std::endl;
-      ost << "old: " << param.current_settings.shortSettingsString() << std::endl;
-      ost << "new: " << param.new_settings.shortSettingsString() << std::endl;
+      ost << "old: " << param.current_settings.settingsString() << std::endl;
+      ost << "new: " << param.new_settings.settingsString() << std::endl;
       return ost;
    }
 

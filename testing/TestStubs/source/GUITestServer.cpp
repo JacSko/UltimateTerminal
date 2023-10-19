@@ -447,7 +447,7 @@ bool GUITestServer::onSetPortSettings(const std::vector<uint8_t>& data)
    reply.result = true;
    g_port_settings[id] = request.settings;
 
-   UT_Log(TEST_SERVER, LOW, "%s result %u id %u settings %s", __func__, reply.result, id, request.settings.shortSettingsString().c_str());
+   UT_Log(TEST_SERVER, LOW, "%s result %u id %u settings %s", __func__, reply.result, id, request.settings.settingsString().c_str());
    return rpc_server->respond<RPC::SetPortSettingsReply>(reply);
 }
 bool GUITestServer::onGetPortSettings(const std::vector<uint8_t>& data)
@@ -460,7 +460,7 @@ bool GUITestServer::onGetPortSettings(const std::vector<uint8_t>& data)
    reply.port_id = request.port_id;
    reply.settings = g_port_settings[id];
 
-   UT_Log(TEST_SERVER, LOW, "%s id %u settings %s", __func__, id, reply.settings.shortSettingsString().c_str());
+   UT_Log(TEST_SERVER, LOW, "%s id %u settings %s", __func__, id, reply.settings.settingsString().c_str());
    return rpc_server->respond<RPC::GetPortSettingsReply>(reply);
 }
 bool GUITestServer::onSetTraceFilterSettings(const std::vector<uint8_t>& data)

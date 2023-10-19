@@ -270,7 +270,7 @@ bool closeSerialPort(const std::string& device)
    auto it = g_serial_drivers.find(device);
    if (it != g_serial_drivers.end())
    {
-      TF_Log(TEST_FRAMEWORK, "%s device %s found, closing", __func__, device);
+      TF_Log(TEST_FRAMEWORK, "%s device %s found, closing", __func__, device.c_str());
       g_serial_drivers[device]->close();
       g_serial_drivers[device].reset(nullptr);
       g_serial_drivers.erase(it);
@@ -285,7 +285,7 @@ bool sendMessage(const std::string& device, const std::string& message)
    {
       result = g_serial_drivers[device]->write({message.begin(), message.end()}, message.size());
    }
-   TF_Log_If(!result, TEST_FRAMEWORK, "%s device %s not found or not opened!", __func__, device);
+   TF_Log_If(!result, TEST_FRAMEWORK, "%s device %s not found or not opened!", __func__, device.c_str());
    return result;
 }
 
@@ -774,7 +774,7 @@ Dialogs::PortSettingDialog::Settings getPortSettings(uint8_t port_id)
    {
       result = reply.reply.settings;
    }
-   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u settings %s", __func__, reply.ready(), port_id, reply.reply.settings.shortSettingsString().c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u settings %s", __func__, reply.ready(), port_id, reply.reply.settings.settingsString().c_str());
    return result;
 }
 bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings& settings)
@@ -789,7 +789,7 @@ bool setPortSettings(uint8_t port_id, const Dialogs::PortSettingDialog::Settings
    {
       result = reply.reply.result;
    }
-   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u result %u settings %s", __func__, reply.ready(), port_id, reply.reply.result, settings.shortSettingsString().c_str());
+   TF_Log(TEST_FRAMEWORK, "%s ready %u id %u result %u settings %s", __func__, reply.ready(), port_id, reply.reply.result, settings.settingsString().c_str());
    return result;
 }
 
