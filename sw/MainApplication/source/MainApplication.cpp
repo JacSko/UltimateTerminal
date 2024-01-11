@@ -149,6 +149,8 @@ m_marker_index(0)
    m_file_logging_path = system_call::getExecutablePath();
    m_persistence.restore();
    m_persistence.clearFile();
+
+   UT_Log(MAIN, ALWAYS, "application started");
 }
 MainApplication::~MainApplication()
 {
@@ -178,6 +180,7 @@ MainApplication::~MainApplication()
 
    m_timers->stop();
    m_persistence.removeListener(*this);
+   UT_Log(MAIN, ALWAYS, "application stopped");
    Settings::SettingsHandler::get()->stop();
    Settings::SettingsHandler::destroy();
    Logger::LoggerEngine::get()->stopFrontends();

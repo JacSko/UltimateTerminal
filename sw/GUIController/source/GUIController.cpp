@@ -635,7 +635,7 @@ void GUIController::onRegisterPortClosedSignal(QString name)
    {
       ui->portComboBox->removeItem(index);
    }
-   UT_Log_If(index == -1, GUI_CONTROLLER, ERROR, "%s %s not found", __func__, name.toStdString().c_str());
+   UT_Log_If(index == -1, GUI_CONTROLLER, LOW, "%s %s not found", __func__, name.toStdString().c_str());
 }
 void GUIController::onSetCommandHistorySignal(QVector<QString> history)
 {
@@ -679,25 +679,23 @@ void GUIController::onSetTraceFilterEnabledSignal(qint8 id, bool enabled)
 }
 void GUIController::onSetTraceFilterBackgroundColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::BACKGROUND_COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
    filters[id].line_edit->update();
-   UT_Log(GUI_CONTROLLER, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetTraceFilterFontColorSignal(qint32 id, qint32 color)
 {
-   UT_Log(GUI_CONTROLLER, LOW, "%s id %u color %x", __func__, id, color);
    auto& filters = ui->getTraceFilters();
    UT_Assert((size_t)id < filters.size());
    Stylesheet ss (filters[id].line_edit->styleSheet().toStdString());
    ss.setColor(Stylesheet::Item::COLOR, color);
    filters[id].line_edit->setStyleSheet(QString(ss.stylesheet().c_str()));
    filters[id].line_edit->update();
-   UT_Log(GUI_CONTROLLER, ERROR, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
+   UT_Log(GUI_CONTROLLER, LOW, "%s stylesheet [%s] trace filter %u, color %d", __func__, ss.stylesheet().c_str(), id, color);
 }
 void GUIController::onSetPortLabelTextSignal(qint8 id, QString description)
 {

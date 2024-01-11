@@ -77,7 +77,7 @@ void Persistence::restoreModule(PersistenceListener& listener)
       UT_Log(PERSISTENCE, HIGH, "Got item - module %s key %s value %s", listener.getName().c_str(), key.c_str(), value.c_str());
       items.push_back(PersistenceListener::PersistenceItem{key, value});
    }
-   UT_Log_If(items.empty(), PERSISTENCE, ERROR, "No keys found for [%s]", listener.getName().c_str());
+   UT_Log_If(items.empty(), PERSISTENCE, LOW, "No keys found for [%s]", listener.getName().c_str());
    if (!items.empty())
    {
       listener.onPersistenceRead(items);

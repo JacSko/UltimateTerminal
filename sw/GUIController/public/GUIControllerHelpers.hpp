@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <condition_variable>
 
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
