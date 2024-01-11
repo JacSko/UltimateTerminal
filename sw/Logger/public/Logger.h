@@ -20,8 +20,8 @@
 /* Definitions of all logger groups system-wise */
 #define LOGGER_LEVELS        \
    DEF_LOGGER_LEVEL(ASSERT)  \
-   DEF_LOGGER_LEVEL(ERROR)   \
    DEF_LOGGER_LEVEL(ALWAYS)  \
+   DEF_LOGGER_LEVEL(ERROR)   \
    DEF_LOGGER_LEVEL(INFO)    \
    DEF_LOGGER_LEVEL(LOW)     \
    DEF_LOGGER_LEVEL(MEDIUM)  \
