@@ -39,8 +39,9 @@ class LoggerFileWriter : public ILoggerWriter
 {
 public:
 
-   LoggerFileWriter(const std::string& file_path):
-   m_path(file_path)
+   LoggerFileWriter(const std::string& file_path, uint32_t max_file_size):
+   m_path(file_path),
+   m_max_file_size(max_file_size)
    {}
    /**
     * @brief Initialize the File writer.
@@ -50,7 +51,13 @@ public:
    bool init () override
    {
       bool result = false;
-      m_file_stream.open(m_path, std::ios::out);
+      std::ios_base::openmode mode = std::ios::out;
+
+      if (getFileSize() < m_max_file_size)
+      {
+         mode |= std::ios::app;
+      }
+      m_file_stream.open(m_path, mode);
       if (m_file_stream)
       {
          result = true;
@@ -89,8 +96,23 @@ public:
    }
 
 private:
+
+   uint32_t getFileSize()
+   {
+      uint32_t result = 0;
+      m_file_stream.open(m_path, std::ios::out | std::ios::app);
+      if (m_file_stream)
+      {
+         m_file_stream.seekp(0, std::ios::end);
+         result = m_file_stream.tellp();
+         m_file_stream.close();
+      }
+      return result;
+   }
+
    std::string m_path;
    std::ofstream m_file_stream;
+   const uint32_t m_max_file_size;
 };
 
 }

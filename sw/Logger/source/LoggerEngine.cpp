@@ -70,7 +70,7 @@ void LoggerEngine::startFrontends(const std::string& file_path)
 
    if (SETTING_GET_BOOL(Logger_supportFileLogging))
    {
-      m_frontends.emplace_back(new LoggerFileWriter(file_path));
+      m_frontends.emplace_back(new LoggerFileWriter(file_path, SETTING_GET_U32(Logger_maxFileSize)));
    }
 
    if (SETTING_GET_BOOL(Logger_supportSocketLogging))

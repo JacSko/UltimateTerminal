@@ -64,6 +64,7 @@ m_marker_index(0)
    Settings::SettingsHandler::get()->start();
    Logger::LoggerEngine::get()->setPersistence(&m_persistence);
    Logger::LoggerEngine::get()->startFrontends(system_call::getExecutablePath() + '/' + LOGS_FILE);
+   UT_Log(MAIN, ALWAYS, "--------------------------------");
    UT_Log(MAIN, ALWAYS, "UltimateTerminal version %s", std::string(APPLICATION_VERSION).c_str());
 
    m_gui_controller.run();

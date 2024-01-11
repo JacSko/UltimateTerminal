@@ -6,6 +6,7 @@
    DEF_SETTING_GROUP(Logger_supportStdoutLogging, bool, false) \
    DEF_SETTING_GROUP(Logger_supportSocketLogging, bool, true) \
    DEF_SETTING_GROUP(Logger_socketPort, uint32_t, 5555) \
+   DEF_SETTING_GROUP(Logger_maxFileSize, uint32_t, 104857600) \
    DEF_SETTING_GROUP(MainApplication_maxTerminalTraces, uint32_t, 10000) \
    DEF_SETTING_GROUP(MainApplication_statusBarTimeout, uint32_t, 10000) \
    DEF_SETTING_GROUP(PortSettingDialog_maxLineEditLength, uint32_t, 30) \
