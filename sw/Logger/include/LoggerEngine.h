@@ -34,6 +34,7 @@
 #include "FileWriter.h"
 #include "SocketWriter.h"
 #include "ISocketServer.h"
+#include "Persistence.h"
 /* =============================
  *      Global variables
  * =============================*/
@@ -43,7 +44,7 @@
 namespace Logger
 {
 
-class LoggerEngine
+class LoggerEngine : public Utilities::Persistence::PersistenceListener
 {
 public:
    static constexpr uint32_t LOGGER_BUFFER_SIZE = 4096;
@@ -132,11 +133,11 @@ public:
    LoggerLevelID levelFromString(const std::string& name);
 
    /**
-    * @brief Creates the new file where logs will be stored
-    * @param[in] path - path to the file
-    * @return true if new file was created successfully
+    * @brief Passes peristence into LoggerEngine
+    * @param[in] persistence - pointer to Persistence
+    * @return None
     */
-   bool setLogFileName(const std::string& path);
+   void setPersistence(Utilities::Persistence::Persistence* persistence);
 
 private:
    void refreshGroupLevelSettings();
@@ -145,12 +146,15 @@ private:
    int writeHeading(int logger_group, int logger_level, const char* filename, int line);
    void writeLog(int logger_writer, const char* log);
    void prepareBuffer(int logger_group, int logger_level, const char* fmt, va_list list);
+   void onPersistenceWrite(PersistenceItems& buffer) override;
+   void onPersistenceRead(const PersistenceItems& buffer) override;
+
    char m_buffer [LOGGER_BUFFER_SIZE];
    std::recursive_mutex m_mutex;
 
    std::vector<std::unique_ptr<ILoggerWriter>> m_frontends;
    std::string m_file_name;
-
+   Utilities::Persistence::Persistence* m_persistence;
 
 };
 

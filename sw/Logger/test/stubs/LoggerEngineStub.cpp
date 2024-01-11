@@ -188,5 +188,16 @@ LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
    }
    return result;
 }
+void LoggerEngine::setPersistence(Utilities::Persistence::Persistence* persistence)
+{
+   Utilities::Persistence::PersistenceListener::setName("LOGGERENGINESTUB");
+   m_persistence = persistence;
+}
+void LoggerEngine::onPersistenceWrite(PersistenceItems&)
+{
+}
+void LoggerEngine::onPersistenceRead(const PersistenceItems&)
+{
+}
 
 }

@@ -240,5 +240,28 @@ LoggerLevelID LoggerEngine::levelFromString(const std::string& name)
    }
    return result;
 }
+void LoggerEngine::setPersistence(Utilities::Persistence::Persistence* persistence)
+{
+   UT_Assert(persistence);
+   Utilities::Persistence::PersistenceListener::setName("LOGGERENGINE");
+   m_persistence = persistence;
+   m_persistence->addListener(*this);
+}
+void LoggerEngine::onPersistenceWrite(PersistenceItems& buffer)
+{
+   for (uint32_t i = 0; i < m_group_names.size(); i++)
+   {
+      Utilities::Persistence::writeItem(buffer, m_group_names[i], getLevelName(m_group_levels[i]));
+   }
+}
+void LoggerEngine::onPersistenceRead(const PersistenceItems& buffer)
+{
+   for (const auto& item : buffer)
+   {
+      LoggerGroupID groupId = groupFromString(item.key);
+      LoggerLevelID levelId = levelFromString(item.value);
+      setLevel(groupId, levelId);
+   }
+}
 
 }
