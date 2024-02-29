@@ -135,6 +135,10 @@ void* QDialogButtonBox::operator new(size_t)
 {
    return g_widgets_mock->QDialogButtonBox_new();
 }
+QPushButton* QDialogButtonBox::button(QDialogButtonBox::StandardButton bn)
+{
+   return g_widgets_mock->QDialogButtonBox_button(this, bn);
+}
 void QWidget::setEnabled(bool enabled)
 {
    g_widgets_mock->QWidget_setEnabled(this, enabled);

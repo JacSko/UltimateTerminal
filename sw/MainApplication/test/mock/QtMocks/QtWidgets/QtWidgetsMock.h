@@ -191,20 +191,6 @@ public:
    virtual int exec();
 };
 
-class QDialogButtonBox : public QWidget
-{
-public:
-   enum StandardButton
-   {
-      Ok                 = 0x00000400,
-      Cancel             = 0x00400000,
-   };
-   QDialogButtonBox(){};
-   QDialogButtonBox(int, Qt::Orientation, QWidget * = nullptr){}
-   void* operator new(size_t);
-   void operator delete(void*){};
-};
-
 class QLineEdit : public QWidget
 {
 public:
@@ -269,6 +255,21 @@ public:
    void setChecked(bool);
    void repaint();
 
+};
+
+class QDialogButtonBox : public QWidget
+{
+public:
+   enum StandardButton
+   {
+      Ok                 = 0x00000400,
+      Cancel             = 0x00400000,
+   };
+   QDialogButtonBox(){};
+   QDialogButtonBox(int, Qt::Orientation, QWidget * = nullptr){}
+   QPushButton* button(StandardButton button);
+   void* operator new(size_t);
+   void operator delete(void*){};
 };
 
 class QAbstractViewItem
@@ -527,6 +528,7 @@ struct QtWidgetsMock
    MOCK_METHOD1(QPushButton_repaint, void(QPushButton*));
 
    MOCK_METHOD0(QDialogButtonBox_new, void*());
+   MOCK_METHOD2(QDialogButtonBox_button, QPushButton*(QDialogButtonBox*, QDialogButtonBox::StandardButton));
 
    MOCK_METHOD2(QWidget_setEnabled, void(QWidget*, bool));
    MOCK_METHOD2(QWidget_setDisabled, void(QWidget*, bool));

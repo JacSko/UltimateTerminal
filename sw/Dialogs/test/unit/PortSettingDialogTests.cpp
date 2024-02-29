@@ -70,6 +70,7 @@ TEST_P(PortSettingDialogParam, some_test)
    QLineEdit test_portname;
    QPushButton test_color_button;
    QPushButton test_font_color_button;
+   QPushButton test_dialog_OK_button;
    QLabel test_info_label;
 
    /* widgets related to ETHERNET port */
@@ -106,6 +107,7 @@ TEST_P(PortSettingDialogParam, some_test)
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_new()).WillOnce(Return(&test_dialog));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_new()).WillOnce(Return(&test_layout));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_new()).WillOnce(Return(&test_buttonbox));
+   EXPECT_CALL(*QtWidgetsMock_get(), QDialogButtonBox_button(&test_buttonbox, QDialogButtonBox::StandardButton::Ok)).WillRepeatedly(Return(&test_dialog_OK_button));
    EXPECT_CALL(*QtWidgetsMock_get(), QLabel_new()).WillOnce(Return(&test_info_label));
    EXPECT_CALL(*QtWidgetsMock_get(), QDialog_setWindowTitle(&test_dialog, HasSubstr(std::string("PORT" + std::to_string(current_settings.port_id)))));
    if (current_settings.type == PortSettingDialog::PortType::ETHERNET)
@@ -310,7 +312,7 @@ TEST_P(PortSettingDialogParam, some_test)
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addWidget(&test_layout, &test_buttonbox));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"accepted()",&test_dialog,"accept()"));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_buttonbox,"rejected()",&test_dialog,"reject()"));
-   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_buttonbox,!editable));
+   EXPECT_CALL(*QtWidgetsMock_get(), QWidget_setDisabled(&test_dialog_OK_button,!editable));
 
    /* info label fill */
    if (!editable)
