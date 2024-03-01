@@ -528,8 +528,8 @@ std::string MainApplication::createLogFileName()
    auto currentTime = std::chrono::system_clock::now();
    std::time_t tt = std::chrono::system_clock::to_time_t ( currentTime );
    auto ts = localtime (&tt);
-   result = QString().asprintf("log_%u%.2u%u_%.2u%.2u%.2u",
-                                   ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
+   result = QString().asprintf("log_%.2u%.2u%u_%.2u%.2u%.2u",
+                                   ts->tm_mday, ts->tm_mon + 1, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec).toStdString();
    return result;
 }
