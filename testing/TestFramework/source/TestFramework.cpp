@@ -136,7 +136,7 @@ std::string createTimestamp()
    auto ts = localtime (&tt);
 
    char buffer [50];
-   std::snprintf(buffer, 50, "%.2u%.2u%.2u_%.2u%.2u%.2u", ts->tm_mday, ts->tm_mon, ts->tm_year, ts->tm_hour, ts->tm_min, ts->tm_sec);
+   std::snprintf(buffer, 50, "%.2u%.2u%.2u_%.2u%.2u%.2u", ts->tm_mday, ts->tm_mon + 1, ts->tm_year + 1900, ts->tm_hour, ts->tm_min, ts->tm_sec);
    return buffer;
 }
 

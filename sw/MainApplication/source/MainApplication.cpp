@@ -244,7 +244,7 @@ void MainApplication::addToTerminal(const std::string& port_name, const std::str
    auto ts = localtime (&tt);
 
    QString new_line = QString().asprintf("[%s]<%u-%.2u-%u %u:%.2u:%.2u:%.3lu>: %s", port_name.c_str(),
-                                   ts->tm_mday, ts->tm_mon, ts->tm_year + 1900,
+                                   ts->tm_mday, ts->tm_mon + 1, ts->tm_year + 1900,
                                    ts->tm_hour, ts->tm_min, ts->tm_sec, millis,
                                    data.c_str());
 
