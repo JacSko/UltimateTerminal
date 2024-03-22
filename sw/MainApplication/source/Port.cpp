@@ -11,7 +11,7 @@
 namespace MainApplication
 {
 
-constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
+constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 5000;
 
 Port::Port(uint8_t id,
            GUIController::GUIController& gui_controller,
@@ -212,7 +212,7 @@ void Port::handleNewSettings(const Dialogs::PortSettingDialog::Settings& setting
                                                                      m_settings.settingsString().c_str());
       m_proxy.reset(new DriversProxy(m_settings.serialSettings, this));
    }
-   else
+   else if (m_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
    {
       UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] creating ethrnet driver proxy, settings %s",
                                                                      m_settings.port_id,
@@ -220,6 +220,15 @@ void Port::handleNewSettings(const Dialogs::PortSettingDialog::Settings& setting
                                                                      m_settings.settingsString().c_str());
       m_proxy.reset(new DriversProxy(m_settings.ip_address, m_settings.port, this));
    }
+   else if (m_settings.type == Dialogs::PortSettingDialog::PortType::COMMAND)
+   {
+      UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] creating command driver proxy, settings %s",
+                                                                     m_settings.port_id,
+                                                                     m_settings.port_name.c_str(),
+                                                                     m_settings.settingsString().c_str());
+      m_proxy.reset(new DriversProxy(m_settings.command, this));
+   }
+
    UT_Log(PORT_HANDLER, LOW, "PORT%u[%s] got new settings %s", m_settings.port_id,
                                                                m_settings.port_name.c_str(),
                                                                m_settings.settingsString().c_str());
@@ -279,7 +288,7 @@ void Port::onPortButtonClicked()
          {
             onSerialConnectionFailed();
          }
-         else
+         else if (m_settings.type == Dialogs::PortSettingDialog::PortType::ETHERNET)
          {
             onEthernetConnectionFailed();
          }
@@ -384,6 +393,7 @@ void Port::onPersistenceRead(const PersistenceItems& items)
    std::string porttype_name = m_settings.type.toName();
 
    Utilities::Persistence::readItem(items, "ipAddress", new_settings.ip_address);
+   Utilities::Persistence::readItem(items, "command", new_settings.command);
    Utilities::Persistence::readItem(items, "ipPort", new_settings.port);
    Utilities::Persistence::readItem(items, "portId", new_settings.port_id);
    Utilities::Persistence::readItem(items, "portName", new_settings.port_name);
@@ -412,6 +422,7 @@ void Port::onPersistenceWrite(PersistenceItems& buffer)
                                                                    m_settings.settingsString().c_str());
 
    Utilities::Persistence::writeItem(buffer, "ipAddress", m_settings.ip_address);
+   Utilities::Persistence::writeItem(buffer, "command", m_settings.command);
    Utilities::Persistence::writeItem(buffer, "ipPort", m_settings.port);
    Utilities::Persistence::writeItem(buffer, "portId", m_settings.port_id);
    Utilities::Persistence::writeItem(buffer, "portName", m_settings.port_name);

@@ -2,7 +2,8 @@ if (UNIX)
 add_library(NativeDrivers source/SocketClient.cpp
                           source/SocketServer.cpp
                           source/ClientHandler.cpp
-                          source/SerialDriver.cpp)
+                          source/SerialDriver.cpp
+                          source/ProcessDriver.cpp)
 target_include_directories(NativeDrivers PUBLIC public/ PRIVATE include/)
 target_link_libraries(NativeDrivers PRIVATE
                       UtilitiesIf

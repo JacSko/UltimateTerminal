@@ -166,7 +166,7 @@ bool Connect()
       TF_Assert(g_trace_client);
       result = g_trace_client->connect("127.0.0.1", 14261);
       g_trace_client->addListener(&g_trace_forwarder);
-      TF_Log_If(!result, TEST_FRAMEWORK, "Cannot connect to trace server at 127.0.0.1:5555");
+      TF_Log_If(!result, TEST_FRAMEWORK, "Cannot connect to trace server at 127.0.0.1:14261");
    }
    return result;
 }

@@ -783,7 +783,7 @@ TEST_P(SerialPortWritingTests, serialDeviceDisconnectedWhenOpened_reconnectedAga
 
    /* port forwarding started again */
    EXPECT_TRUE(TF::Serial::startForwarding(FIRST_SERIAL_PORT_LINK, SECOND_SERIAL_PORT_LINK));
-   TF::wait(2000);
+   TF::wait(10000);
 
    /* both ports shall be reconnected */
    EXPECT_EQ(TF::Buttons::getBackgroundColor(FIRST_PORT_BUTTON_NAME), GREEN_COLOR);

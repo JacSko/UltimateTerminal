@@ -21,6 +21,7 @@ m_dataBitsBox(nullptr),
 m_parityBitsBox(nullptr),
 m_stopBitsBox(nullptr),
 m_ipAddressEdit(nullptr),
+m_commandEdit(nullptr),
 m_ipPortEdit(nullptr),
 m_traceColorSelectionButton(nullptr),
 m_fontColorSelectionButton(nullptr),
@@ -74,6 +75,10 @@ QLayout* PortSettingDialog::createLayout(QWidget* parent, const Settings& curren
    else if (current_settings.type == PortType::ETHERNET)
    {
       renderEthernetView(m_form, current_settings);
+   }
+   else if (current_settings.type == PortType::COMMAND)
+   {
+      renderCommandView(m_form, current_settings);
    }
    else
    {
@@ -289,6 +294,54 @@ void PortSettingDialog::renderEthernetView(QFormLayout* form, const Settings& se
    QObject::connect(m_fontColorSelectionButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
 
 }
+void PortSettingDialog::renderCommandView(QFormLayout* form, const Settings& settings)
+{
+   UT_Log(GUI_DIALOG, HIGH, "rendering view for COMMAND, settings %s", settings.settingsString().c_str());
+   clearDialog();
+
+   /* create port name */
+   QString portname_label = QString("Port name:");
+   m_portNameEdit = new QLineEdit(m_parent);
+   m_portNameEdit->setText(QString(settings.port_name.c_str()));
+   m_portNameEdit->setDisabled(!m_editable);
+   m_portNameEdit->setMaxLength(SETTING_GET_U32(PortSettingDialog_maxLineEditLength));
+   form->insertRow(1, portname_label, m_portNameEdit);
+   m_current_widgets.push_back(m_portNameEdit);
+
+   /* create command field */
+   QString address_label = QString("Command:");
+   m_commandEdit= new QLineEdit(m_parent);
+   m_commandEdit->setText(QString(settings.command.c_str()));
+   m_commandEdit->setDisabled(!m_editable);
+   form->insertRow(2, address_label, m_commandEdit);
+   m_current_widgets.push_back(m_commandEdit);
+
+   /* create color button */
+   QString color_label = QString("Background color");
+   m_traceColorSelectionButton = new QPushButton(m_parent);
+   m_traceColorSelectionButton->setDisabled(!m_editable);
+   QPalette palette = m_traceColorSelectionButton->palette();
+   palette.setColor(QPalette::Button, QColor(settings.trace_color));
+   m_traceColorSelectionButton->setPalette(palette);
+   m_traceColorSelectionButton->update();
+   form->insertRow(3, color_label, m_traceColorSelectionButton);
+   m_current_widgets.push_back(m_traceColorSelectionButton);
+   QObject::connect(m_traceColorSelectionButton, SIGNAL(clicked()), this, SLOT(onBackgroundColorButtonClicked()));
+
+   /* create font color button */
+   QString font_color_label = QString("Font color");
+   m_fontColorSelectionButton = new QPushButton(m_parent);
+   m_fontColorSelectionButton->setDisabled(!m_editable);
+   QPalette font_palette = m_fontColorSelectionButton->palette();
+   font_palette.setColor(QPalette::Button, QColor(settings.font_color));
+   m_fontColorSelectionButton->setPalette(font_palette);
+   m_fontColorSelectionButton->update();
+   form->insertRow(4, font_color_label, m_fontColorSelectionButton);
+   m_current_widgets.push_back(m_fontColorSelectionButton);
+   QObject::connect(m_fontColorSelectionButton, SIGNAL(clicked()), this, SLOT(onFontColorButtonClicked()));
+
+}
+
 void PortSettingDialog::onBackgroundColorButtonClicked()
 {
    UT_Log(GUI_DIALOG, HIGH, "color button clicked, current RGB %.6x", m_current_settings.trace_color);
@@ -349,6 +402,10 @@ bool PortSettingDialog::convertGuiValues(Settings& out_settings)
       out_settings.ip_address = m_ipAddressEdit->text().toStdString();
       out_settings.port = m_ipPortEdit->text().toUInt();
    }
+   else if (out_settings.type == PortType::COMMAND)
+   {
+      out_settings.command= m_commandEdit->text().toStdString();
+   }
 
    out_settings.port_name = m_portNameEdit->text().toStdString();
    out_settings.trace_color = m_current_settings.trace_color;
@@ -364,9 +421,13 @@ void PortSettingDialog::onPortTypeChanged(const QString & name)
    {
       renderSerialView(m_form, m_current_settings);
    }
-   else
+   else if (Utilities::EnumValue<PortType>(name.toStdString()) == PortType::ETHERNET)
    {
       renderEthernetView(m_form, m_current_settings);
+   }
+   else if (Utilities::EnumValue<PortType>(name.toStdString()) == PortType::COMMAND)
+   {
+      renderCommandView(m_form, m_current_settings);
    }
 }
 

@@ -315,7 +315,7 @@ TEST_F(SocketRead, server_reconnection)
    EXPECT_TRUE(TF::Socket::startServer(TEST_SOCKET_PORT));
 
    /* wait 2 seconds for reconnection */
-   TF::wait(2000);
+   TF::wait(10000);
 
    /* check button color after server reconnection */
    EXPECT_EQ(TF::Buttons::getBackgroundColor(PORT_BUTTON_NAME), GREEN_COLOR);

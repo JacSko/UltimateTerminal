@@ -27,7 +27,6 @@ private:
       CLOSING,
    };
 
-   void extracted();
    bool open(DataMode mode, const Settings &settings) override;
    void close() override;
    bool isOpened() override;

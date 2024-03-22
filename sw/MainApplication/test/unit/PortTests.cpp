@@ -47,7 +47,7 @@ constexpr int THROUGHPUT_TIMER_ID = 2;
 const std::string TEST_BUTTON_NAME = "BUTTON_NAME";
 constexpr uint32_t TEST_BUTTON_ID = 1;
 constexpr uint8_t TEST_PORT_ID = 0;
-constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 1000;
+constexpr uint32_t DEFAULT_CONNECT_RETRY_PERIOD = 5000;
 constexpr uint32_t THROUGHTPUT_CALC_WINDOW_MS = 200;
 
 struct TestParam

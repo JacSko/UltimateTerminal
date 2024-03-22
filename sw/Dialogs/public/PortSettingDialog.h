@@ -35,6 +35,7 @@ namespace Dialogs
 #define DEF_PORT_TYPES     \
    DEF_PORT_TYPE(SERIAL)   \
    DEF_PORT_TYPE(ETHERNET) \
+   DEF_PORT_TYPE(COMMAND) \
 
 class PortSettingDialog : public QObject
 {
@@ -70,6 +71,7 @@ enum class PortType
       serialSettings({}),
       ip_address("127.0.0.1"),
       port(1234),
+      command(""),
       trace_color(0xFFFFFF),
       font_color(0x000000)
       {}
@@ -80,6 +82,7 @@ enum class PortType
                const Drivers::Serial::Settings& serial,
                const std::string& ip_address,
                uint32_t port,
+               const std::string& command,
                uint32_t trace_color,
                uint32_t font_color):
       port_id(id),
@@ -88,6 +91,7 @@ enum class PortType
       serialSettings(serial),
       ip_address(ip_address),
       port(port),
+      command(command),
       trace_color(trace_color),
       font_color(font_color)
       {}
@@ -98,6 +102,7 @@ enum class PortType
       Drivers::Serial::Settings serialSettings; /**< Settings for serial connection */
       std::string ip_address;                   /**< Server's IP address            */
       uint32_t port;                            /**< Server's port                  */
+      std::string command;                      /**< Command to be executed         */
       uint32_t trace_color;                     /**< Color of traces that will be shown in terminal */
       uint32_t font_color;                      /**< Color of the font in terminal */
 
@@ -111,12 +116,17 @@ enum class PortType
             result += std::string("SER") + "/";
             result += serialSettings.baudRate.toName();
          }
-         else
+         else if (type == PortType::ETHERNET)
          {
             result += port_name + "/";
             result += std::string("ETH") + "/";
             result += ip_address + ":";
             result += std::to_string(port);
+         }
+         else
+         {
+            result += port_name + "/";
+            result += command;
          }
          return result;
       }
@@ -133,6 +143,7 @@ enum class PortType
                 (serialSettings == rhs.serialSettings) &&
                 (ip_address == rhs.ip_address) &&
                 (port == rhs.port) &&
+                (command== rhs.command) &&
                 (trace_color == rhs.trace_color) &&
                 (font_color == rhs.font_color);
       }
@@ -175,11 +186,15 @@ enum class PortType
             result += "/" + parityBitsMap.at(serialSettings.parityBits.value);
             result += "/" + stopBitsMap.at(serialSettings.stopBits.value);
          }
-         else
+         else if (type == PortType::ETHERNET)
          {
             result += ip_address;
             result += ":";
             result += std::to_string(port);
+         }
+         else
+         {
+            result += command;
          }
          return result;
       }
@@ -232,6 +247,7 @@ private:
    void addDialogButtons();
    void renderSerialView(QFormLayout* form, const Settings& settings = {});
    void renderEthernetView(QFormLayout* form, const Settings& settings = {});
+   void renderCommandView(QFormLayout* form, const Settings& settings = {});
    void clearDialog();
    QWidget* m_parent;
    QDialog* m_dialog;
@@ -248,6 +264,7 @@ private:
    QComboBox* m_parityBitsBox;
    QComboBox* m_stopBitsBox;
    QLineEdit* m_ipAddressEdit;
+   QLineEdit* m_commandEdit;
    QLineEdit* m_ipPortEdit;
    QPushButton* m_traceColorSelectionButton;
    QPushButton* m_fontColorSelectionButton;

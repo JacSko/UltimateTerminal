@@ -303,6 +303,7 @@ TEST_P(PortSettingDialogParam, some_test)
    /* All port types added to combobox */
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("SERIAL")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("ETHERNET")));
+   EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_addItem(&test_porttype, QString("COMMAND")));
    EXPECT_CALL(*QtWidgetsMock_get(), QComboBox_setCurrentText(&test_porttype, QString(current_settings.type.toName().c_str())));
    EXPECT_CALL(*QtWidgetsMock_get(), QFormLayout_addRow(&test_layout, _, &test_porttype));
    EXPECT_CALL(*QtCoreMock_get(), QObject_connect(&test_porttype,_,_,_));
@@ -462,6 +463,7 @@ constexpr const char* TEST_NEW_DEVICE_PATH = "/dev/ttyUSB3";
 constexpr const char* TEST_CORRECT_IP_ADDRESS = "127.0.0.1";
 constexpr const char* TEST_NEW_CORRECT_IP_ADDRESS = "127.0.0.4";
 constexpr const char* TEST_INCORRECT_IP_ADDRESS = "222.333.444.555";
+constexpr const char* TEST_COMMAND = "COMMAND_OK";
 constexpr uint8_t TEST_PORT_ID = 3;
 constexpr uint32_t TEST_CORRECT_IP_PORT = 1234;
 constexpr uint32_t TEST_NEW_CORRECT_IP_PORT = 4321;
@@ -499,6 +501,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -513,6 +516,7 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -543,6 +547,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -557,6 +562,7 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -586,6 +592,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -600,6 +607,7 @@ TestParam params[] =
                                        },
                                        TEST_NEW_CORRECT_IP_ADDRESS,
                                        TEST_NEW_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -629,6 +637,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -643,6 +652,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -672,6 +682,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -686,6 +697,7 @@ TestParam params[] =
                                        },
                                        TEST_INCORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -715,6 +727,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{TEST_PORT_ID,
@@ -729,6 +742,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_INCORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_NEW_TRACE_COLOR,
                                        TEST_NEW_FONT_COLOR}, // new settings
       },
@@ -757,6 +771,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{}, // new settings
@@ -786,6 +801,7 @@ TestParam params[] =
                                        },
                                        TEST_CORRECT_IP_ADDRESS,
                                        TEST_CORRECT_IP_PORT,
+                                       TEST_COMMAND,
                                        TEST_TRACE_COLOR,
                                        TEST_FONT_COLOR}, // old settings
             PortSettingDialog::Settings{}, // new settings
