@@ -128,10 +128,7 @@ void Port::onEvent(DriversProxy::Event event, const std::vector<uint8_t>& data, 
                                                                               m_settings.port_name.c_str());
       setState(ButtonState::CONNECTING);
       notifyListeners(Event::CONNECTING);
-      if (!tryConnect())
-      {
-         scheduleConnectionTrial();
-      }
+      scheduleConnectionTrial();
    }
    else if (event == DriversProxy::Event::DATA_RECEIVED)
    {

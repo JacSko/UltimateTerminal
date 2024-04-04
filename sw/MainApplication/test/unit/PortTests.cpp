@@ -510,16 +510,6 @@ TEST_P(PortParamFixture, device_closed_retrying_connection)
    /* server disconnected unexpectedly */
    EXPECT_CALL(timer_mock, setTimeout(TEST_TIMER_ID, _)).Times(AtLeast(1));
    EXPECT_CALL(timer_mock, startTimer(TEST_TIMER_ID)).Times(AtLeast(1));
-   if (GetParam().type == Dialogs::PortSettingDialog::PortType::ETHERNET)
-   {
-      EXPECT_CALL(*g_socket_mock, disconnect());
-      EXPECT_CALL(*g_socket_mock, connect(user_settings.ip_address,user_settings.port)).WillOnce(Return(false));
-   }
-   else
-   {
-      EXPECT_CALL(*g_serial_mock, close());
-      EXPECT_CALL(*g_serial_mock, open(Drivers::Serial::DataMode::NEW_LINE_DELIMITER,_)).WillOnce(Return(false));
-   }
    EXPECT_CALL(*GUIControllerMock_get(), setButtonText(TEST_BUTTON_ID, user_settings.port_name)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setPortLabelText(_, _)).Times(AtLeast(1));
    EXPECT_CALL(*GUIControllerMock_get(), setButtonBackgroundColor(TEST_BUTTON_ID, BLUE_COLOR)).Times(AtLeast(1));
