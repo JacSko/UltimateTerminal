@@ -199,7 +199,8 @@ void MainApplication::onButtonEvent(uint32_t button_id, GUIController::ButtonEve
 }
 void MainApplication::onThemeChange(Theme theme)
 {
-   UT_Log(MAIN, LOW, "%s: theme %s", __func__, m_gui_controller.themeToName(theme).c_str());
+   std::string themeName = m_gui_controller.themeToName(theme);
+   UT_Log(MAIN, LOW, "%s: theme %s", __func__, themeName.c_str());
    if (!m_file_logger->isActive())
    {
       setButtonState(m_logging_button_id, false);

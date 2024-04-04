@@ -39,8 +39,8 @@ endif()
 #  Global project definitions
 #########################################
 add_definitions(-D_UNICODE
-			    -DUNICODE
-				-DLOGS_FILE="${LOGS_FILE}"
+   			    -DUNICODE
+                -DLOGS_FILE="${LOGS_FILE}"
                 -DAPPLICATION_VERSION={"${PROJECT_VERSION}"}
                 -DPERSISTENCE_FILE="${PERSISTENCE_FILE}"
                 -DRUNTIME_OUTPUT_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -60,6 +60,9 @@ if(UNIT_TESTS)
    #  Unit tests executable
    #########################################
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-exceptions -fPIC -O0")
+   if (COVERAGE)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+   endif()
    enable_testing()
    set(UNIT_TESTS ON)
    add_definitions(-DUNIT_TESTS)
