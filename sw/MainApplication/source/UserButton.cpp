@@ -76,10 +76,17 @@ void UserButton::onUserButtonContextMenuRequested()
 }
 void UserButton::onUserButtonClicked()
 {
-   UT_Log(USER_BTN_HANDLER, HIGH, "BUTTON%u[%s] Sending commands", m_settings.id, m_settings.button_name.c_str());
-   m_gui_controller.setButtonChecked(m_button_id, true);
-   m_gui_controller.setButtonEnabled(m_button_id, false);
-   m_executor.execute();
+   if (!m_executor.isExecution())
+   {
+      UT_Log(USER_BTN_HANDLER, HIGH, "BUTTON%u[%s] Sending commands", m_settings.id, m_settings.button_name.c_str());
+      m_gui_controller.setButtonChecked(m_button_id, true);
+      m_executor.execute();
+   }
+   else
+   {
+      UT_Log(USER_BTN_HANDLER, LOW, "BUTTON%u[%s] button is active, aborting sending", m_settings.id, m_settings.button_name.c_str());
+      m_executor.abort();
+   }
 }
 void UserButton::setButtonName(const std::string name)
 {
@@ -107,7 +114,6 @@ void UserButton::onPersistenceWrite(PersistenceItems& buffer)
 void UserButton::onCommandExecutionEvent(bool result)
 {
    m_gui_controller.setButtonChecked(m_button_id, false);
-   m_gui_controller.setButtonEnabled(m_button_id, true);
    UT_Log(USER_BTN_HANDLER, LOW, "BUTTON%u[%s] Commands executed %scorrectly", m_settings.id, m_settings.button_name.c_str(), result? "" : "not ");
 }
 

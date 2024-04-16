@@ -87,7 +87,6 @@ TEST_F(UserButtonsSendingTests, empty_button_pressed)
 
    /* check user button state before test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* trigger BUTTON1 click  */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
@@ -95,7 +94,6 @@ TEST_F(UserButtonsSendingTests, empty_button_pressed)
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* expect no message sent */
    EXPECT_EQ(TF::Socket::bufferSize(PORT_ID), 0);
@@ -166,19 +164,16 @@ TEST_F(UserButtonsSendingTests, sending_one_command_multiple_times)
    for (uint8_t i = 0; i < TEST_BUTTON_CLICK_COUNT; i++)
    {
       EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-      EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
       EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
       TF::wait(50);
 
       EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-      EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    }
    TF::wait(100);
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* expect all messages received */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), TEST_BUTTON_CLICK_COUNT);
@@ -249,24 +244,20 @@ TEST_F(UserButtonsSendingTests, sending_multiple_commands_including_wait_command
 
    /* check button state before execution */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* simulate button click and wait for check if first command was executed */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(200);
    EXPECT_TRUE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_FALSE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 1);
 
    /* wait for the second command (delayed) */
    TF::wait(5000);
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 2);
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* close socket in application */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(PORT_BUTTON_NAME));
@@ -363,11 +354,9 @@ TEST_F(UserButtonsSendingTests, sending_when_two_ports_opened)
 
    /* trigger BUTTON1 click */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(50);
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* expect message received on first port */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 1);
@@ -378,11 +367,9 @@ TEST_F(UserButtonsSendingTests, sending_when_two_ports_opened)
 
    /* trigger BUTTON1 click */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(50);
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* expect message received on second port */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SECOND_SOCKET_PORT), 1);
@@ -471,22 +458,18 @@ TEST_F(UserButtonsSendingTests, sending_multiple_commands_including_repeat_comma
 
    /* check button state before execution */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* simulate button click and wait for check if first command was executed */
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(200);
    EXPECT_TRUE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_FALSE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* wait for the second command (delayed) */
    TF::wait(5000);
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* check if all messages were received */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 6);
@@ -565,14 +548,12 @@ TEST_F(UserButtonsSendingTests, invalidPortIdSpecified_commandSentToCurrentPort)
 
    /* check button state before execution */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(1000);
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* check if all messages were received */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 6);
@@ -652,14 +633,12 @@ TEST_F(UserButtonsSendingTests, sendingToClosedPort_commandSendingAborted)
 
    /* check button state before execution */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(1000);
 
    /* check user button state after test */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* check if all messages were received */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 1);
@@ -755,11 +734,9 @@ TEST_F(UserButtonsSendingTests, twoPortsOpened_commandsDispatchedCorrectly)
 
    /* trigger BUTTON1 click */
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
    EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
    TF::wait(500);
    EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
-   EXPECT_TRUE(TF::Buttons::isEnabled(USER_BUTTON_NAME));
 
    /* expect messages received on both ports */
    EXPECT_EQ(TF::Socket::bufferSize(TEST_SOCKET_PORT), 1);
@@ -775,4 +752,50 @@ TEST_F(UserButtonsSendingTests, twoPortsOpened_commandsDispatchedCorrectly)
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SOCKET_PORT));
    EXPECT_TRUE(TF::Socket::stopServer(TEST_SECOND_SOCKET_PORT));
 }
+
+TEST_F(UserButtonsSendingTests, aborting_commands_sending)
+{
+   /**
+    * @test
+    * <b>scenario</b>: <br>
+    *       Butoon has been pressed, but abort request was received <br>
+    * <b>expected</b>: <br>
+    *       Command sending shall be abort and button shall be available again. <br>
+    * ************************************************
+    */
+
+   const uint8_t PORT_ID = 0;
+   const uint8_t USER_BUTTON_ID = 1;
+   const std::string USER_BUTTON_NAME = "BUTTON" + std::to_string(USER_BUTTON_ID);
+   const std::string PORT_BUTTON_NAME = "portButton_" + std::to_string(PORT_ID);
+   const std::string PORT_BUTTON_TEXT = "PORT" + std::to_string(PORT_ID);
+   const std::string NEW_PORT_NAME = "NEW_NAME" + std::to_string(PORT_ID);
+
+   Dialogs::UserButtonDialog::Settings user_button_settings;
+   user_button_settings.id = USER_BUTTON_ID;
+   user_button_settings.button_name = "TEST_BUTTON_NAME";
+   user_button_settings.raw_commands = "__wait(5000)\n";
+
+   /* set user button state */
+   EXPECT_TRUE(TF::UserButtons::setSettings(USER_BUTTON_ID, user_button_settings));
+   EXPECT_TRUE(TF::Buttons::simulateContextMenuClick(USER_BUTTON_NAME));
+   EXPECT_EQ(TF::Buttons::getText(USER_BUTTON_NAME), user_button_settings.button_name);
+
+   /* check button state before execution */
+   EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+
+   /* simulate button click and wait for check if first command was executed */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
+   TF::wait(2000);
+   EXPECT_TRUE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+
+   /* abort already running commands */
+   EXPECT_TRUE(TF::Buttons::simulateButtonClick(USER_BUTTON_NAME));
+   TF::wait(2000);
+   /* check user button state after test */
+   EXPECT_FALSE(TF::Buttons::isChecked(USER_BUTTON_NAME));
+
+}
+
+
 
